@@ -1,0 +1,22 @@
+doctrine:
+    dbal:
+        # SQLite — zero config, works out of the box.
+        # Flex may overwrite DATABASE_URL in .env with Postgres — ignore it.
+        driver: pdo_sqlite
+        path: '%kernel.project_dir%/var/data.db'
+        profiling_collect_backtrace: '%kernel.debug%'
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App
+
+doctrine_migrations:
+    migrations_paths:
+        'DoctrineMigrations': '%kernel.project_dir%/migrations'
+    enable_profiler: false
