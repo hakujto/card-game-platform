@@ -16,7 +16,7 @@ The goal of this project is to demonstrate:
 - ability to build the same system in different stacks,
 - comparison of frameworks and ecosystems.
 
-A large-scale platform with hundreds of thousands of players, featuring:
+featuring:
 - tournaments,
 - peer-to-peer marketplace,
 - seasonal system,
@@ -40,7 +40,7 @@ Celem projektu jest pokazanie:
 - umiejętności budowania tego samego systemu w różnych stackach,
 - porównania frameworków oraz ekosystemów.
 
-Duża platforma z setkami tysięcy graczy, zawierająca:
+zawierająca:
 - turnieje,
 - marketplace peer-to-peer,
 - system sezonów,
