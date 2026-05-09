@@ -7,6 +7,9 @@ This repository contains multiple backend implementations of the same card game 
 Currently implemented:
 - Django
 - Symfony
+- Rails
+- Express
+- .NET
 
 More implementations will be added regularly over time.
 
@@ -31,6 +34,9 @@ To repozytorium zawiera wiele implementacji backendu tej samej platformy gry kar
 Aktualnie zaimplementowane:
 - Django
 - Symfony
+- Rails
+- Express
+- .NET
 
 Projekt będzie regularnie rozwijany o kolejne implementacje.
 
