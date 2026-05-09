@@ -270,6 +270,6 @@ class __TwigTemplate_9588d5da2d26124f8433f3ce7caf49c8 extends Template
     {% endblock swagger_initialization %}
 </body>
 </html>
-", "@NelmioApiDoc/Stoplight/index.html.twig", "/Users/rafalkalitowski/mm/dev/symfony/vendor/nelmio/api-doc-bundle/templates/Stoplight/index.html.twig");
+", "@NelmioApiDoc/Stoplight/index.html.twig", "/Users/rafalkalitowski/mm/git/card-game-platform/symfony/vendor/nelmio/api-doc-bundle/templates/Stoplight/index.html.twig");
     }
 }

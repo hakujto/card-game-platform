@@ -326,6 +326,6 @@ class __TwigTemplate_f5b95304f9d68b1277109f2add1b1bc1 extends Template
     {% endblock swagger_initialization %}
 </body>
 </html>
-", "@NelmioApiDoc/Redocly/index.html.twig", "/Users/rafalkalitowski/mm/dev/symfony/vendor/nelmio/api-doc-bundle/templates/Redocly/index.html.twig");
+", "@NelmioApiDoc/Redocly/index.html.twig", "/Users/rafalkalitowski/mm/git/card-game-platform/symfony/vendor/nelmio/api-doc-bundle/templates/Redocly/index.html.twig");
     }
 }

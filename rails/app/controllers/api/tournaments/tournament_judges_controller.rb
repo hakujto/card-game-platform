@@ -1,0 +1,55 @@
+module Api
+  module Tournaments
+    class TournamentJudgesController < ApplicationController
+      before_action :set_tournamentJudge, only: [:show, :update, :destroy]
+
+      # GET /api/tournament_judges
+      def index
+        @tournament_judges = TournamentJudge.all
+        render json: @tournament_judges
+      end
+
+      # POST /api/tournament_judges
+      def create
+        @tournamentJudge = TournamentJudge.new(tournament_judge_params)
+        if @tournamentJudge.save
+          render json: @tournamentJudge, status: :created
+        else
+          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_entity
+        end
+      end
+
+      # GET /api/tournament_judges/:id
+      def show
+        render json: @tournamentJudge
+      end
+
+      # PATCH/PUT /api/tournament_judges/:id
+      def update
+        if @tournamentJudge.update(tournament_judge_params)
+          render json: @tournamentJudge
+        else
+          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_entity
+        end
+      end
+
+      # DELETE /api/tournament_judges/:id
+      def destroy
+        @tournamentJudge.destroy
+        head :no_content
+      end
+
+      private
+
+      def set_tournamentJudge
+        @tournamentJudge = TournamentJudge.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentJudge not found' }, status: :not_found
+      end
+
+      def tournament_judge_params
+        params.permit(:role, :tournament_id, :player_id)
+      end
+    end
+  end
+end

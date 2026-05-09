@@ -468,6 +468,6 @@ file that was distributed with this source code. #}
     {% endblock swagger_initialization %}
 </body>
 </html>
-", "@NelmioApiDoc/SwaggerUi/index.html.twig", "/Users/rafalkalitowski/mm/dev/symfony/vendor/nelmio/api-doc-bundle/templates/SwaggerUi/index.html.twig");
+", "@NelmioApiDoc/SwaggerUi/index.html.twig", "/Users/rafalkalitowski/mm/git/card-game-platform/symfony/vendor/nelmio/api-doc-bundle/templates/SwaggerUi/index.html.twig");
     }
 }

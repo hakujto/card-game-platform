@@ -213,6 +213,6 @@ class __TwigTemplate_d7661c1acfe4ef0d4c82761caf146c9c extends Template
         {% block body %}{% endblock %}
     </body>
 </html>
-", "base.html.twig", "/Users/rafalkalitowski/mm/dev/symfony/templates/base.html.twig");
+", "base.html.twig", "/Users/rafalkalitowski/mm/git/card-game-platform/symfony/templates/base.html.twig");
     }
 }

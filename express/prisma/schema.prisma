@@ -1,0 +1,1013 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  createdAt DateTime @default(now())
+  players  Player[]  @relation("PlayerUser")
+}
+
+model Card {
+  id  Int  @id @default(autoincrement())
+  cardType  CardCardTypeEnum?
+  rarity  CardRarityEnum?
+  manaColors  CardManaColorsEnum?
+  legalFormats  CardLegalFormatsEnum?
+  name  String
+  manaCost  Int @default(0)
+  attack  Int?
+  defense  Int?
+  loyalty  Int?
+  description  String
+  flavorText  String?
+  imageUrl  String?
+  artistName  String?
+  isBanned  Boolean @default(false)
+  isRestricted  Boolean @default(false)
+  powerLevel  Int @default(1)
+  setId  Int?
+  set    CardSet?  @relation("CardSet", fields: [setId], references: [id])
+  rulingsId  Int?
+  rulings    CardRuling?  @relation("CardRulings", fields: [rulingsId], references: [id])
+  abilitiesId  Int?
+  abilities    CardAbility?  @relation("CardAbilities", fields: [abilitiesId], references: [id])
+  cardRulings  CardRuling[]  @relation("CardRulingCard")
+  cardAbilities  CardAbility[]  @relation("CardAbilityCard")
+  decks  Deck[]  @relation("DeckCards")
+  decksViaDeckSideboardCards  Deck[]  @relation("DeckSideboardCards")
+  deckCards  DeckCard[]  @relation("DeckCardCard")
+  deckSideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardCard")
+  playerCollections  PlayerCollection[]  @relation("PlayerCollectionCard")
+  craftingRecipes  CraftingRecipe[]  @relation("CraftingRecipeResultCard")
+  craftingRecipesViaCraftingRecipeRequiredCards  CraftingRecipe[]  @relation("CraftingRecipeRequiredCards")
+  craftingIngredients  CraftingIngredient[]  @relation("CraftingIngredientCard")
+  products  Product[]  @relation("ProductCard")
+  tradelistings  Tradelisting[]  @relation("TradelistingCard")
+  cardPriceHistories  CardPriceHistory[]  @relation("CardPriceHistoryCard")
+  draftPicks  DraftPick[]  @relation("DraftPickCard")
+}
+
+model CardSet {
+  id  Int  @id @default(autoincrement())
+  setType  CardSetSetTypeEnum?
+  name  String
+  code  String
+  releaseDate  DateTime
+  totalCards  Int @default(0)
+  description  String?
+  logoUrl  String?
+  cards  Card[]  @relation("CardSet")
+  products  Product[]  @relation("ProductCardSet")
+  draftSessions  DraftSession[]  @relation("DraftSessionCardSet")
+}
+
+model CardRuling {
+  id  Int  @id @default(autoincrement())
+  rulingText  String
+  publishedAt  DateTime
+  source  String
+  cardId  Int?
+  card    Card?  @relation("CardRulingCard", fields: [cardId], references: [id])
+  cards  Card[]  @relation("CardRulings")
+}
+
+model CardAbility {
+  id  Int  @id @default(autoincrement())
+  abilityType  CardAbilityAbilityTypeEnum?
+  timing  CardAbilityTimingEnum?
+  keyword  String?
+  abilityText  String
+  cardId  Int?
+  card    Card?  @relation("CardAbilityCard", fields: [cardId], references: [id])
+  cards  Card[]  @relation("CardAbilities")
+}
+
+model Deck {
+  id  Int  @id @default(autoincrement())
+  format  DeckFormatEnum?
+  archetype  DeckArchetypeEnum?
+  name  String
+  description  String?
+  isPublic  Boolean @default(false)
+  isTournamentLegal  Boolean @default(false)
+  wins  Int @default(0)
+  losses  Int @default(0)
+  createdAt  DateTime
+  updatedAt  DateTime
+  playerId  Int?
+  player    Player?  @relation("DeckPlayer", fields: [playerId], references: [id])
+  cards  Card[]  @relation("DeckCards")
+  sideboardCards  Card[]  @relation("DeckSideboardCards")
+  tags  DeckTag[]  @relation("DeckTags")
+  deckCards  DeckCard[]  @relation("DeckCardDeck")
+  deckSideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardDeck")
+  deckTagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentDeck")
+  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationDeck")
+  articles  Article[]  @relation("ArticleFeaturedDeck")
+}
+
+model DeckCard {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  isCommander  Boolean @default(false)
+  deckId  Int?
+  deck    Deck?  @relation("DeckCardDeck", fields: [deckId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("DeckCardCard", fields: [cardId], references: [id])
+}
+
+model DeckSideboardCard {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  deckId  Int?
+  deck    Deck?  @relation("DeckSideboardCardDeck", fields: [deckId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("DeckSideboardCardCard", fields: [cardId], references: [id])
+}
+
+model DeckTag {
+  id  Int  @id @default(autoincrement())
+  name  String
+  color  String?
+  decks  Deck[]  @relation("DeckTags")
+  deckTagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentTag")
+}
+
+model DeckTagAssignment {
+  id  Int  @id @default(autoincrement())
+  deckId  Int?
+  deck    Deck?  @relation("DeckTagAssignmentDeck", fields: [deckId], references: [id])
+  tagId  Int?
+  tag    DeckTag?  @relation("DeckTagAssignmentTag", fields: [tagId], references: [id])
+}
+
+model Player {
+  id  Int  @id @default(autoincrement())
+  rank  PlayerRankEnum?
+  preferredFormat  PlayerPreferredFormatEnum?
+  displayName  String
+  rating  Int @default(1000)
+  peakRating  Int @default(1000)
+  bio  String?
+  countryCode  String?
+  avatarUrl  String?
+  isVerified  Boolean @default(false)
+  createdAt  DateTime
+  lastActiveAt  DateTime?
+  userId  Int?
+  user    User?  @relation("PlayerUser", fields: [userId], references: [id])
+  seasonStatsId  Int?
+  seasonStats    PlayerSeasonStats?  @relation("PlayerSeasonStats", fields: [seasonStatsId], references: [id])
+  achievements  Achievement[]  @relation("PlayerAchievements")
+  friends  Player[]  @relation("PlayerFriends")
+  friendsOf  Player[]  @relation("PlayerFriends")
+  decks  Deck[]  @relation("DeckPlayer")
+  playerSeasonStatses  PlayerSeasonStats[]  @relation("PlayerSeasonStatsPlayer")
+  playerCollections  PlayerCollection[]  @relation("PlayerCollectionPlayer")
+  friendships  Friendship[]  @relation("FriendshipRequester")
+  friendshipsViaFriendshipReceiver  Friendship[]  @relation("FriendshipReceiver")
+  playerAchievements  PlayerAchievement[]  @relation("PlayerAchievementPlayer")
+  tournaments  Tournament[]  @relation("TournamentOrganizer")
+  tournamentsViaTournamentJudges  Tournament[]  @relation("TournamentJudges")
+  tournamentJudges  TournamentJudge[]  @relation("TournamentJudgePlayer")
+  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationPlayer")
+  matches  Match[]  @relation("MatchPlayer1")
+  matchesViaMatchPlayer2  Match[]  @relation("MatchPlayer2")
+  games  Game[]  @relation("GameWinner")
+  awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePlayer")
+  orders  Order[]  @relation("OrderPlayer")
+  tradelistings  Tradelisting[]  @relation("TradelistingSeller")
+  tradeBids  TradeBid[]  @relation("TradeBidBidder")
+  tradeTransactions  TradeTransaction[]  @relation("TradeTransactionBuyer")
+  tradeTransactionsViaTradeTransactionSeller  TradeTransaction[]  @relation("TradeTransactionSeller")
+  tradeDisputes  TradeDispute[]  @relation("TradeDisputeOpenedBy")
+  tradeDisputesViaTradeDisputeResolvedBy  TradeDispute[]  @relation("TradeDisputeResolvedBy")
+  draftParticipants  DraftParticipant[]  @relation("DraftParticipantPlayer")
+  articles  Article[]  @relation("ArticleAuthor")
+  articleComments  ArticleComment[]  @relation("ArticleCommentAuthor")
+  streams  Stream[]  @relation("StreamStreamer")
+}
+
+model PlayerSeasonStats {
+  id  Int  @id @default(autoincrement())
+  highestRank  PlayerSeasonStatsHighestRankEnum?
+  wins  Int @default(0)
+  losses  Int @default(0)
+  draws  Int @default(0)
+  tournamentWins  Int @default(0)
+  seasonPoints  Int @default(0)
+  playerId  Int?
+  player    Player?  @relation("PlayerSeasonStatsPlayer", fields: [playerId], references: [id])
+  seasonId  Int?
+  season    Season?  @relation("PlayerSeasonStatsSeason", fields: [seasonId], references: [id])
+  players  Player[]  @relation("PlayerSeasonStats")
+}
+
+model PlayerCollection {
+  id  Int  @id @default(autoincrement())
+  condition  PlayerCollectionConditionEnum?
+  acquiredVia  PlayerCollectionAcquiredViaEnum?
+  quantity  Int @default(1)
+  foil  Boolean @default(false)
+  acquiredAt  DateTime
+  playerId  Int?
+  player    Player?  @relation("PlayerCollectionPlayer", fields: [playerId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("PlayerCollectionCard", fields: [cardId], references: [id])
+}
+
+model Friendship {
+  id  Int  @id @default(autoincrement())
+  status  FriendshipStatusEnum?
+  createdAt  DateTime
+  requesterId  Int?
+  requester    Player?  @relation("FriendshipRequester", fields: [requesterId], references: [id])
+  receiverId  Int?
+  receiver    Player?  @relation("FriendshipReceiver", fields: [receiverId], references: [id])
+}
+
+model Achievement {
+  id  Int  @id @default(autoincrement())
+  rarity  AchievementRarityEnum?
+  name  String
+  description  String
+  iconUrl  String?
+  points  Int @default(10)
+  isHidden  Boolean @default(false)
+  players  Player[]  @relation("PlayerAchievements")
+  playerAchievements  PlayerAchievement[]  @relation("PlayerAchievementAchievement")
+}
+
+model PlayerAchievement {
+  id  Int  @id @default(autoincrement())
+  earnedAt  DateTime
+  progress  Int @default(0)
+  isCompleted  Boolean @default(false)
+  playerId  Int?
+  player    Player?  @relation("PlayerAchievementPlayer", fields: [playerId], references: [id])
+  achievementId  Int?
+  achievement    Achievement?  @relation("PlayerAchievementAchievement", fields: [achievementId], references: [id])
+}
+
+model CraftingRecipe {
+  id  Int  @id @default(autoincrement())
+  dustCost  Int @default(0)
+  isAvailable  Boolean @default(true)
+  resultCardId  Int?
+  resultCard    Card?  @relation("CraftingRecipeResultCard", fields: [resultCardId], references: [id])
+  requiredCards  Card[]  @relation("CraftingRecipeRequiredCards")
+  craftingIngredients  CraftingIngredient[]  @relation("CraftingIngredientRecipe")
+}
+
+model CraftingIngredient {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  recipeId  Int?
+  recipe    CraftingRecipe?  @relation("CraftingIngredientRecipe", fields: [recipeId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("CraftingIngredientCard", fields: [cardId], references: [id])
+}
+
+model Season {
+  id  Int  @id @default(autoincrement())
+  format  SeasonFormatEnum?
+  name  String
+  startDate  DateTime
+  endDate  DateTime
+  isActive  Boolean @default(false)
+  rewardDescription  String?
+  playerSeasonStatses  PlayerSeasonStats[]  @relation("PlayerSeasonStatsSeason")
+  tournaments  Tournament[]  @relation("TournamentSeason")
+}
+
+model Tournament {
+  id  Int  @id @default(autoincrement())
+  format  TournamentFormatEnum?
+  tournamentType  TournamentTournamentTypeEnum?
+  status  TournamentStatusEnum?
+  name  String
+  description  String?
+  maxPlayers  Int @default(0)
+  entryFee  Decimal @default(0)
+  prizePool  Decimal @default(0)
+  startTime  DateTime
+  endTime  DateTime?
+  isOnline  Boolean @default(true)
+  location  String?
+  rulesText  String?
+  createdAt  DateTime
+  seasonId  Int?
+  season    Season?  @relation("TournamentSeason", fields: [seasonId], references: [id])
+  organizerId  Int?
+  organizer    Player?  @relation("TournamentOrganizer", fields: [organizerId], references: [id])
+  registrationsId  Int?
+  registrations    TournamentRegistration?  @relation("TournamentRegistrations", fields: [registrationsId], references: [id])
+  roundsId  Int?
+  rounds    TournamentRound?  @relation("TournamentRounds", fields: [roundsId], references: [id])
+  prizesId  Int?
+  prizes    TournamentPrize?  @relation("TournamentPrizes", fields: [prizesId], references: [id])
+  judges  Player[]  @relation("TournamentJudges")
+  tournamentJudges  TournamentJudge[]  @relation("TournamentJudgeTournament")
+  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationTournament")
+  tournamentRounds  TournamentRound[]  @relation("TournamentRoundTournament")
+  tournamentPrizes  TournamentPrize[]  @relation("TournamentPrizeTournament")
+  streams  Stream[]  @relation("StreamTournament")
+}
+
+model TournamentJudge {
+  id  Int  @id @default(autoincrement())
+  role  TournamentJudgeRoleEnum?
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentJudgeTournament", fields: [tournamentId], references: [id])
+  playerId  Int?
+  player    Player?  @relation("TournamentJudgePlayer", fields: [playerId], references: [id])
+}
+
+model TournamentRegistration {
+  id  Int  @id @default(autoincrement())
+  status  TournamentRegistrationStatusEnum?
+  seed  Int?
+  finalStanding  Int?
+  pointsEarned  Int @default(0)
+  registeredAt  DateTime
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentRegistrationTournament", fields: [tournamentId], references: [id])
+  playerId  Int?
+  player    Player?  @relation("TournamentRegistrationPlayer", fields: [playerId], references: [id])
+  deckId  Int?
+  deck    Deck?  @relation("TournamentRegistrationDeck", fields: [deckId], references: [id])
+  tournaments  Tournament[]  @relation("TournamentRegistrations")
+}
+
+model TournamentRound {
+  id  Int  @id @default(autoincrement())
+  status  TournamentRoundStatusEnum?
+  roundNumber  Int @default(0)
+  startedAt  DateTime?
+  endedAt  DateTime?
+  timeLimitMinutes  Int @default(50)
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentRoundTournament", fields: [tournamentId], references: [id])
+  matchesId  Int?
+  matches    Match?  @relation("TournamentRoundMatches", fields: [matchesId], references: [id])
+  tournaments  Tournament[]  @relation("TournamentRounds")
+  matchesViaMatchRound  Match[]  @relation("MatchRound")
+}
+
+model Match {
+  id  Int  @id @default(autoincrement())
+  status  MatchStatusEnum?
+  tableNumber  Int?
+  player1Wins  Int @default(0)
+  player2Wins  Int @default(0)
+  startedAt  DateTime?
+  endedAt  DateTime?
+  resultNotes  String?
+  roundId  Int?
+  round    TournamentRound?  @relation("MatchRound", fields: [roundId], references: [id])
+  player1Id  Int?
+  player1    Player?  @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player2Id  Int?
+  player2    Player?  @relation("MatchPlayer2", fields: [player2Id], references: [id])
+  gamesId  Int?
+  games    Game?  @relation("MatchGames", fields: [gamesId], references: [id])
+  tournamentRounds  TournamentRound[]  @relation("TournamentRoundMatches")
+  gamesViaGameMatch  Game[]  @relation("GameMatch")
+}
+
+model Game {
+  id  Int  @id @default(autoincrement())
+  winnerSide  GameWinnerSideEnum?
+  endedBy  GameEndedByEnum?
+  gameNumber  Int @default(0)
+  turnsPlayed  Int?
+  durationSeconds  Int?
+  replayUrl  String?
+  matchId  Int?
+  match    Match?  @relation("GameMatch", fields: [matchId], references: [id])
+  winnerId  Int?
+  winner    Player?  @relation("GameWinner", fields: [winnerId], references: [id])
+  matches  Match[]  @relation("MatchGames")
+}
+
+model TournamentPrize {
+  id  Int  @id @default(autoincrement())
+  prizeType  TournamentPrizePrizeTypeEnum?
+  placementFrom  Int @default(0)
+  placementTo  Int @default(0)
+  amount  Decimal @default(0)
+  description  String?
+  packsCount  Int?
+  seasonPoints  Int @default(0)
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentPrizeTournament", fields: [tournamentId], references: [id])
+  tournaments  Tournament[]  @relation("TournamentPrizes")
+  awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePrize")
+}
+
+model AwardedPrize {
+  id  Int  @id @default(autoincrement())
+  finalPlacement  Int @default(0)
+  awardedAt  DateTime
+  claimed  Boolean @default(false)
+  claimedAt  DateTime?
+  prizeId  Int?
+  prize    TournamentPrize?  @relation("AwardedPrizePrize", fields: [prizeId], references: [id])
+  playerId  Int?
+  player    Player?  @relation("AwardedPrizePlayer", fields: [playerId], references: [id])
+}
+
+model Product {
+  id  Int  @id @default(autoincrement())
+  productType  ProductProductTypeEnum?
+  name  String
+  price  Decimal @default(0)
+  stock  Int @default(0)
+  active  Boolean @default(true)
+  discountPercent  Int @default(0)
+  description  String?
+  imageUrl  String?
+  featured  Boolean @default(false)
+  cardId  Int?
+  card    Card?  @relation("ProductCard", fields: [cardId], references: [id])
+  cardSetId  Int?
+  cardSet    CardSet?  @relation("ProductCardSet", fields: [cardSetId], references: [id])
+  orderItems  OrderItem[]  @relation("OrderItemProduct")
+}
+
+model Order {
+  id  Int  @id @default(autoincrement())
+  status  OrderStatusEnum?
+  paymentMethod  OrderPaymentMethodEnum?
+  total  Decimal @default(0)
+  discountApplied  Decimal @default(0)
+  currency  String @default("USD")
+  paymentReference  String?
+  shippingAddress  String?
+  trackingNumber  String?
+  createdAt  DateTime
+  paidAt  DateTime?
+  shippedAt  DateTime?
+  playerId  Int?
+  player    Player?  @relation("OrderPlayer", fields: [playerId], references: [id])
+  itemsId  Int?
+  items    OrderItem?  @relation("OrderItems", fields: [itemsId], references: [id])
+  couponId  Int?
+  coupon    Coupon?  @relation("OrderCoupon", fields: [couponId], references: [id])
+  orderItems  OrderItem[]  @relation("OrderItemOrder")
+}
+
+model OrderItem {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(0)
+  priceAtPurchase  Decimal @default(0)
+  foil  Boolean @default(false)
+  orderId  Int?
+  order    Order?  @relation("OrderItemOrder", fields: [orderId], references: [id])
+  productId  Int?
+  product    Product?  @relation("OrderItemProduct", fields: [productId], references: [id])
+  orders  Order[]  @relation("OrderItems")
+}
+
+model Coupon {
+  id  Int  @id @default(autoincrement())
+  discountType  CouponDiscountTypeEnum?
+  code  String
+  discountValue  Decimal @default(0)
+  minOrderValue  Decimal @default(0)
+  maxUses  Int?
+  usesCount  Int @default(0)
+  validFrom  DateTime
+  validUntil  DateTime
+  isActive  Boolean @default(true)
+  orders  Order[]  @relation("OrderCoupon")
+}
+
+model Tradelisting {
+  id  Int  @id @default(autoincrement())
+  listingType  TradelistingListingTypeEnum?
+  condition  TradelistingConditionEnum?
+  status  TradelistingStatusEnum?
+  askingPrice  Decimal?
+  auctionStartPrice  Decimal?
+  auctionCurrentBid  Decimal?
+  auctionEndTime  DateTime?
+  foil  Boolean @default(false)
+  quantity  Int @default(1)
+  description  String?
+  createdAt  DateTime
+  expiresAt  DateTime?
+  sellerId  Int?
+  seller    Player?  @relation("TradelistingSeller", fields: [sellerId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("TradelistingCard", fields: [cardId], references: [id])
+  bidsId  Int?
+  bids    TradeBid?  @relation("TradelistingBids", fields: [bidsId], references: [id])
+  tradeBids  TradeBid[]  @relation("TradeBidListing")
+  tradeTransactions  TradeTransaction[]  @relation("TradeTransactionListing")
+}
+
+model TradeBid {
+  id  Int  @id @default(autoincrement())
+  amount  Decimal @default(0)
+  placedAt  DateTime
+  isWinning  Boolean @default(false)
+  listingId  Int?
+  listing    Tradelisting?  @relation("TradeBidListing", fields: [listingId], references: [id])
+  bidderId  Int?
+  bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id])
+  tradelistings  Tradelisting[]  @relation("TradelistingBids")
+}
+
+model TradeTransaction {
+  id  Int  @id @default(autoincrement())
+  status  TradeTransactionStatusEnum?
+  finalPrice  Decimal @default(0)
+  platformFee  Decimal @default(0)
+  completedAt  DateTime?
+  listingId  Int?
+  listing    Tradelisting?  @relation("TradeTransactionListing", fields: [listingId], references: [id])
+  buyerId  Int?
+  buyer    Player?  @relation("TradeTransactionBuyer", fields: [buyerId], references: [id])
+  sellerId  Int?
+  seller    Player?  @relation("TradeTransactionSeller", fields: [sellerId], references: [id])
+  tradeDisputes  TradeDispute[]  @relation("TradeDisputeTransaction")
+}
+
+model CardPriceHistory {
+  id  Int  @id @default(autoincrement())
+  priceDate  DateTime
+  avgPrice  Decimal @default(0)
+  minPrice  Decimal @default(0)
+  maxPrice  Decimal @default(0)
+  volume  Int @default(0)
+  foil  Boolean @default(false)
+  cardId  Int?
+  card    Card?  @relation("CardPriceHistoryCard", fields: [cardId], references: [id])
+}
+
+model TradeDispute {
+  id  Int  @id @default(autoincrement())
+  reason  TradeDisputeReasonEnum?
+  status  TradeDisputeStatusEnum?
+  description  String
+  resolution  String?
+  openedAt  DateTime
+  resolvedAt  DateTime?
+  transactionId  Int?
+  transaction    TradeTransaction?  @relation("TradeDisputeTransaction", fields: [transactionId], references: [id])
+  openedById  Int?
+  openedBy    Player?  @relation("TradeDisputeOpenedBy", fields: [openedById], references: [id])
+  resolvedById  Int?
+  resolvedBy    Player?  @relation("TradeDisputeResolvedBy", fields: [resolvedById], references: [id])
+}
+
+model DraftSession {
+  id  Int  @id @default(autoincrement())
+  status  DraftSessionStatusEnum?
+  draftType  DraftSessionDraftTypeEnum?
+  seats  Int @default(8)
+  createdAt  DateTime
+  completedAt  DateTime?
+  cardSetId  Int?
+  cardSet    CardSet?  @relation("DraftSessionCardSet", fields: [cardSetId], references: [id])
+  participantsId  Int?
+  participants    DraftParticipant?  @relation("DraftSessionParticipants", fields: [participantsId], references: [id])
+  draftParticipants  DraftParticipant[]  @relation("DraftParticipantSession")
+}
+
+model DraftParticipant {
+  id  Int  @id @default(autoincrement())
+  seatNumber  Int @default(0)
+  joinedAt  DateTime
+  sessionId  Int?
+  session    DraftSession?  @relation("DraftParticipantSession", fields: [sessionId], references: [id])
+  playerId  Int?
+  player    Player?  @relation("DraftParticipantPlayer", fields: [playerId], references: [id])
+  draftedCardsId  Int?
+  draftedCards    DraftPick?  @relation("DraftParticipantDraftedCards", fields: [draftedCardsId], references: [id])
+  draftSessions  DraftSession[]  @relation("DraftSessionParticipants")
+  draftPicks  DraftPick[]  @relation("DraftPickParticipant")
+}
+
+model DraftPick {
+  id  Int  @id @default(autoincrement())
+  pickNumber  Int @default(0)
+  packNumber  Int @default(0)
+  pickedAt  DateTime
+  participantId  Int?
+  participant    DraftParticipant?  @relation("DraftPickParticipant", fields: [participantId], references: [id])
+  cardId  Int?
+  card    Card?  @relation("DraftPickCard", fields: [cardId], references: [id])
+  draftParticipants  DraftParticipant[]  @relation("DraftParticipantDraftedCards")
+}
+
+model Article {
+  id  Int  @id @default(autoincrement())
+  status  ArticleStatusEnum?
+  articleType  ArticleArticleTypeEnum?
+  title  String
+  slug  String
+  body  String
+  excerpt  String?
+  coverImageUrl  String?
+  viewCount  Int @default(0)
+  publishedAt  DateTime?
+  createdAt  DateTime
+  updatedAt  DateTime
+  authorId  Int?
+  author    Player?  @relation("ArticleAuthor", fields: [authorId], references: [id])
+  featuredDeckId  Int?
+  featuredDeck    Deck?  @relation("ArticleFeaturedDeck", fields: [featuredDeckId], references: [id])
+  commentsId  Int?
+  comments    ArticleComment?  @relation("ArticleComments", fields: [commentsId], references: [id])
+  tags  ArticleTag[]  @relation("ArticleTags")
+  articleTagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentArticle")
+  articleComments  ArticleComment[]  @relation("ArticleCommentArticle")
+}
+
+model ArticleTag {
+  id  Int  @id @default(autoincrement())
+  name  String
+  slug  String
+  articles  Article[]  @relation("ArticleTags")
+  articleTagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentTag")
+}
+
+model ArticleTagAssignment {
+  id  Int  @id @default(autoincrement())
+  articleId  Int?
+  article    Article?  @relation("ArticleTagAssignmentArticle", fields: [articleId], references: [id])
+  tagId  Int?
+  tag    ArticleTag?  @relation("ArticleTagAssignmentTag", fields: [tagId], references: [id])
+}
+
+model ArticleComment {
+  id  Int  @id @default(autoincrement())
+  body  String
+  isHidden  Boolean @default(false)
+  createdAt  DateTime
+  articleId  Int?
+  article    Article?  @relation("ArticleCommentArticle", fields: [articleId], references: [id])
+  authorId  Int?
+  author    Player?  @relation("ArticleCommentAuthor", fields: [authorId], references: [id])
+  parentCommentId  Int?
+  parentComment    ArticleComment?  @relation("ArticleCommentParentComment", fields: [parentCommentId], references: [id])
+  parentCommentChildren  ArticleComment[]  @relation("ArticleCommentParentComment")
+  articles  Article[]  @relation("ArticleComments")
+}
+
+model Stream {
+  id  Int  @id @default(autoincrement())
+  platform  StreamPlatformEnum?
+  status  StreamStatusEnum?
+  title  String
+  streamUrl  String
+  viewerCountPeak  Int @default(0)
+  scheduledStart  DateTime
+  actualStart  DateTime?
+  endedAt  DateTime?
+  vodUrl  String?
+  tournamentId  Int?
+  tournament    Tournament?  @relation("StreamTournament", fields: [tournamentId], references: [id])
+  streamerId  Int?
+  streamer    Player?  @relation("StreamStreamer", fields: [streamerId], references: [id])
+}
+
+enum CardCardTypeEnum {
+  CREATURE
+  SPELL
+  LAND
+  ARTIFACT
+  ENCHANTMENT
+  PLANESWALKER
+}
+
+enum CardRarityEnum {
+  COMMON
+  UNCOMMON
+  RARE
+  MYTHICRARE
+  LEGENDARY
+}
+
+enum CardManaColorsEnum {
+  WHITE
+  BLUE
+  BLACK
+  RED
+  GREEN
+  COLORLESS
+}
+
+enum CardLegalFormatsEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum CardSetSetTypeEnum {
+  CORE
+  EXPANSION
+  SUPPLEMENTAL
+  MASTERS
+  DRAFT
+}
+
+enum CardAbilityAbilityTypeEnum {
+  KEYWORD
+  ACTIVATED
+  TRIGGERED
+  STATIC
+}
+
+enum CardAbilityTimingEnum {
+  ANY
+  SORCERY
+  INSTANT
+  COMBAT
+}
+
+enum DeckFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum DeckArchetypeEnum {
+  AGGRO
+  CONTROL
+  MIDRANGE
+  COMBO
+  PRISON
+  TEMPO
+}
+
+enum PlayerRankEnum {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  GRANDMASTER
+}
+
+enum PlayerPreferredFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum PlayerSeasonStatsHighestRankEnum {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  GRANDMASTER
+}
+
+enum PlayerCollectionConditionEnum {
+  MINT
+  NEARMINT
+  EXCELLENT
+  GOOD
+  PLAYED
+}
+
+enum PlayerCollectionAcquiredViaEnum {
+  PURCHASE
+  TRADE
+  TOURNAMENTREWARD
+  PACK
+  CRAFT
+}
+
+enum FriendshipStatusEnum {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+enum AchievementRarityEnum {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum SeasonFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum TournamentFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum TournamentTournamentTypeEnum {
+  SWISS
+  SINGLEELIMINATION
+  DOUBLEELIMINATION
+  ROUNDROBIN
+}
+
+enum TournamentStatusEnum {
+  DRAFT
+  REGISTRATION
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TournamentJudgeRoleEnum {
+  HEADJUDGE
+  JUDGE
+  SCOREKEEPERJUDGE
+}
+
+enum TournamentRegistrationStatusEnum {
+  REGISTERED
+  WAITLISTED
+  WITHDRAWN
+  DISQUALIFIED
+}
+
+enum TournamentRoundStatusEnum {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum MatchStatusEnum {
+  PENDING
+  ACTIVE
+  COMPLETED
+  BYE
+  DRAW
+}
+
+enum GameWinnerSideEnum {
+  PLAYER1
+  PLAYER2
+  DRAW
+}
+
+enum GameEndedByEnum {
+  NORMAL
+  TIMEOUT
+  CONCESSION
+  DRAWOFFER
+}
+
+enum TournamentPrizePrizeTypeEnum {
+  CURRENCY
+  CARDS
+  BOOSTERPACKS
+  TROPHY
+  SEASONPOINTS
+  MIXED
+}
+
+enum ProductProductTypeEnum {
+  SINGLECARD
+  BOOSTERPACK
+  BUNDLE
+  PRECONSTRUCTEDDECK
+  ACCESSORY
+}
+
+enum OrderStatusEnum {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderPaymentMethodEnum {
+  CARD
+  PAYPAL
+  CRYPTO
+  PLATFORMCREDITS
+}
+
+enum CouponDiscountTypeEnum {
+  PERCENT
+  FIXED
+}
+
+enum TradelistingListingTypeEnum {
+  FIXEDPRICE
+  AUCTION
+  TRADEOFFER
+}
+
+enum TradelistingConditionEnum {
+  MINT
+  NEARMINT
+  EXCELLENT
+  GOOD
+  PLAYED
+}
+
+enum TradelistingStatusEnum {
+  ACTIVE
+  SOLD
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum TradeTransactionStatusEnum {
+  PENDING
+  COMPLETED
+  DISPUTED
+  REFUNDED
+}
+
+enum TradeDisputeReasonEnum {
+  ITEMNOTRECEIVED
+  ITEMNOTASDESCRIBED
+  FRAUDSUSPECTED
+  OTHER
+}
+
+enum TradeDisputeStatusEnum {
+  OPEN
+  UNDERREVIEW
+  RESOLVED
+  ESCALATED
+}
+
+enum DraftSessionStatusEnum {
+  WAITINGFORPLAYERS
+  DRAFTING
+  COMPLETED
+  ABANDONED
+}
+
+enum DraftSessionDraftTypeEnum {
+  BOOSTER
+  CUBE
+  ROCHESTER
+}
+
+enum ArticleStatusEnum {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ArticleArticleTypeEnum {
+  GUIDE
+  TIERLIST
+  MATCHUP
+  NEWS
+  SPOTLIGHT
+  DECKLIST
+}
+
+enum StreamPlatformEnum {
+  TWITCH
+  YOUTUBE
+  KICKSTREAM
+  PLATFORM
+}
+
+enum StreamStatusEnum {
+  SCHEDULED
+  LIVE
+  ENDED
+}

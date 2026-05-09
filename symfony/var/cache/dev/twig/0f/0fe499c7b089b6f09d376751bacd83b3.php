@@ -180,6 +180,6 @@ class __TwigTemplate_f0eb48b5701e99dc5d4e2a9805147e44 extends Template
         {%- endfor -%}
     </pre>
 {% endif %}
-", "@Doctrine/Collector/explain.html.twig", "/Users/rafalkalitowski/mm/dev/symfony/vendor/doctrine/doctrine-bundle/templates/Collector/explain.html.twig");
+", "@Doctrine/Collector/explain.html.twig", "/Users/rafalkalitowski/mm/git/card-game-platform/symfony/vendor/doctrine/doctrine-bundle/templates/Collector/explain.html.twig");
     }
 }
