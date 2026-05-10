@@ -5,11 +5,15 @@
 This repository contains multiple backend implementations of the same card game platform built with different programming languages and frameworks.
 
 Currently implemented:
-- Django
-- Symfony
-- Rails
-- Express
-- .NET
+- Python — Django
+- PHP — Symfony
+- Ruby — Rails
+- TypeScript — Express
+- C# — .NET
+- Elixir — Phoenix
+- Python — FastAPI
+- Java — Spring
+- PHP — Laravel
 
 More implementations will be added regularly over time.
 
@@ -32,11 +36,15 @@ featuring:
 To repozytorium zawiera wiele implementacji backendu tej samej platformy gry karcianej zbudowanych w różnych językach programowania i frameworkach.
 
 Aktualnie zaimplementowane:
-- Django
-- Symfony
-- Rails
-- Express
-- .NET
+- Python — Django
+- PHP — Symfony
+- Ruby — Rails
+- TypeScript — Express
+- C# — .NET
+- Elixir — Phoenix
+- Python — FastAPI
+- Java — Spring
+- PHP — Laravel
 
 Projekt będzie regularnie rozwijany o kolejne implementacje.
 
