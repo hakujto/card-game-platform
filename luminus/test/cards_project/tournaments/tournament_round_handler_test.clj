@@ -1,0 +1,46 @@
+(ns cards_project.tournaments.tournament-round-handler-test
+  (:require [clojure.test :refer [deftest testing is]]
+            [cards_project.core :refer [app]]
+            [ring.mock.request :as mock]
+            [cheshire.core :as json]))
+
+(def valid-params {   :round-number 0
+   :status "Pending"
+   :time-limit-minutes 0
+   :tournament-id 1
+   :matches-id 1})
+
+(deftest test-list-tournament-rounds
+  (testing "GET /api/tournament_rounds returns 200"
+    (let [resp (app (mock/request :get "/api/tournament_rounds"))]
+      (is (= 200 (:status resp)))))
+)
+
+(deftest test-create-tournament-round
+  (testing "POST /api/tournament_rounds returns 201"
+    (let [resp (app (-> (mock/request :post "/api/tournament_rounds")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string valid-params))))]
+      (is (= 201 (:status resp)))))
+)
+
+(deftest test-get-tournament-round
+  (testing "GET /api/tournament_rounds/1 returns 200 or 404"
+    (let [resp (app (mock/request :get "/api/tournament_rounds/1"))]
+      (is (#{200 404} (:status resp)))))
+)
+
+(deftest test-update-tournament-round
+  (testing "PUT /api/tournament_rounds/1 returns 200 or 404"
+    (let [resp (app (-> (mock/request :put "/api/tournament_rounds/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string valid-params))))]
+      (is (#{200 404} (:status resp)))))
+)
+
+(deftest test-delete-tournament-round
+  (testing "DELETE /api/tournament_rounds/1 returns 204 or 404"
+    (let [resp (app (mock/request :delete "/api/tournament_rounds/1"))]
+      (is (#{204 404} (:status resp)))))
+)
+

@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS tournament_prizes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  placement_from INTEGER NOT NULL,
+  placement_to INTEGER NOT NULL,
+  prize_type VARCHAR NOT NULL,
+  amount DECIMAL NOT NULL DEFAULT 0,
+  description TEXT,
+  packs_count INTEGER,
+  season_points INTEGER NOT NULL DEFAULT 0,
+  tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

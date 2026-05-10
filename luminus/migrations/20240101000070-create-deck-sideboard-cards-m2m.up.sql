@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS decks_sideboard_cards_m2m (
+  left_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+  right_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+  PRIMARY KEY (left_id, right_id)
+);

@@ -1,0 +1,29 @@
+{:paths ["src" "resources"]
+
+ :deps {org.clojure/clojure                    {:mvn/version "1.11.1"}
+        http-kit/http-kit                       {:mvn/version "2.8.1"}
+        compojure/compojure                     {:mvn/version "1.7.1"}
+        ring/ring-core                          {:mvn/version "1.15.4"}
+        ring/ring-json                          {:mvn/version "0.5.1"}
+        ring-cors/ring-cors                     {:mvn/version "0.1.13"}
+        com.layerware/hugsql-core               {:mvn/version "0.5.3"}
+        com.layerware/hugsql-adapter-next-jdbc  {:mvn/version "0.5.3"}
+        com.github.seancorfield/next.jdbc       {:mvn/version "1.3.939"}
+        org.xerial/sqlite-jdbc                  {:mvn/version "3.46.1.3"}
+        migratus/migratus                       {:mvn/version "1.6.6"}
+        cheshire/cheshire                       {:mvn/version "5.13.0"}}
+
+ :aliases
+ {:run {:main-opts ["-m" "cards_project.core"]}
+
+  :migrate {:extra-paths ["dev"]
+            :main-opts   ["-m" "cards_project.migrate"]}
+
+  :rollback {:extra-paths ["dev"]
+             :main-opts   ["-m" "cards_project.migrate" "rollback"]}
+
+  :test {:extra-paths ["test"]
+         :extra-deps  {ring/ring-mock {:mvn/version "0.4.0"}}}
+
+  :uberjar {:extra-deps {org.clojure/tools.build {:mvn/version "0.10.5"}}
+            :main-opts ["-m" "build" "uber"]}}}

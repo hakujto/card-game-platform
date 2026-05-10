@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS players (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  display_name VARCHAR NOT NULL,
+  rank VARCHAR NOT NULL DEFAULT 'Bronze',
+  rating INTEGER NOT NULL DEFAULT 1000,
+  peak_rating INTEGER NOT NULL DEFAULT 1000,
+  bio TEXT,
+  country_code VARCHAR,
+  avatar_url VARCHAR,
+  preferred_format VARCHAR,
+  is_verified BOOLEAN NOT NULL DEFAULT 0,
+  last_active_at DATETIME,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  season_stats_id INTEGER NOT NULL REFERENCES player_season_statses(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

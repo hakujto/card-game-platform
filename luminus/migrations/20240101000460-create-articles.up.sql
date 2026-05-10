@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS articles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title VARCHAR NOT NULL,
+  slug VARCHAR NOT NULL,
+  body TEXT NOT NULL,
+  excerpt TEXT,
+  cover_image_url VARCHAR,
+  status VARCHAR NOT NULL DEFAULT 'Draft',
+  article_type VARCHAR NOT NULL DEFAULT 'Guide',
+  view_count INTEGER NOT NULL DEFAULT 0,
+  published_at DATETIME,
+  author_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,
+  featured_deck_id INTEGER REFERENCES decks(id) ON DELETE SET NULL,
+  comments_id INTEGER NOT NULL REFERENCES article_comments(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
