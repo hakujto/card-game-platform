@@ -1,0 +1,33 @@
+package cardsproject.service.cards;
+
+import cardsproject.domain.cards.DeckTag;
+import cardsproject.repository.cards.DeckTagRepository;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class DeckTagService {
+
+    private final DeckTagRepository repository;
+
+    public DeckTagService(DeckTagRepository repository) {
+        this.repository = repository;
+    }
+
+    public List<DeckTag> findAll() {
+        return repository.findAll();
+    }
+
+    public Optional<DeckTag> findById(Long id) {
+        return repository.findById(id);
+    }
+
+    public DeckTag save(DeckTag entity) {
+        return repository.save(entity);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+}

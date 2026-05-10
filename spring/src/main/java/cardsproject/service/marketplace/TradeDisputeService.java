@@ -1,0 +1,33 @@
+package cardsproject.service.marketplace;
+
+import cardsproject.domain.marketplace.TradeDispute;
+import cardsproject.repository.marketplace.TradeDisputeRepository;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class TradeDisputeService {
+
+    private final TradeDisputeRepository repository;
+
+    public TradeDisputeService(TradeDisputeRepository repository) {
+        this.repository = repository;
+    }
+
+    public List<TradeDispute> findAll() {
+        return repository.findAll();
+    }
+
+    public Optional<TradeDispute> findById(Long id) {
+        return repository.findById(id);
+    }
+
+    public TradeDispute save(TradeDispute entity) {
+        return repository.save(entity);
+    }
+
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+}

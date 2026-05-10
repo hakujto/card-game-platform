@@ -1,0 +1,24 @@
+defmodule CardsProject.Marketplace.TradeTransaction do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "trade_transactions" do
+    field :final_price, :decimal
+    field :platform_fee, :decimal
+    field :status, :string
+    field :completed_at, :naive_datetime
+    belongs_to :listing, CardsProject.Marketplace.Tradelisting
+    belongs_to :buyer, CardsProject.Players.Player
+    belongs_to :seller, CardsProject.Players.Player
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(record, attrs) do
+    record
+    |> cast(attrs, [:final_price, :platform_fee, :status, :completed_at, :listing_id, :buyer_id, :seller_id])
+    |> validate_required([:final_price, :platform_fee])
+    |> validate_inclusion(:status, ["Pending", "Completed", "Disputed", "Refunded"])
+  end
+end

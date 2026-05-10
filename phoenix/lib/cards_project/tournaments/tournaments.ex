@@ -1,0 +1,235 @@
+defmodule CardsProject.Tournaments do
+  @moduledoc """
+  The Tournaments BC context.
+  """
+
+  import Ecto.Query, warn: false
+  alias CardsProject.Repo
+
+  alias CardsProject.Tournaments.Season
+  alias CardsProject.Tournaments.Tournament
+  alias CardsProject.Tournaments.TournamentJudge
+  alias CardsProject.Tournaments.TournamentRegistration
+  alias CardsProject.Tournaments.TournamentRound
+  alias CardsProject.Tournaments.Match
+  alias CardsProject.Tournaments.Game
+  alias CardsProject.Tournaments.TournamentPrize
+  alias CardsProject.Tournaments.AwardedPrize
+
+  # ── Season ─────────────────────────────────────────────────────
+
+  def list_seasons, do: Repo.all(Season)
+
+  def get_season!(id), do: Repo.get!(Season, id)
+
+  def create_season(attrs \\ %{}) do
+    %Season{}
+    |> Season.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_season(%Season{} = season, attrs) do
+    season
+    |> Season.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_season(%Season{} = season), do: Repo.delete(season)
+
+  def change_season(%Season{} = season, attrs \\ %{}) do
+    Season.changeset(season, attrs)
+  end
+
+  # ── Tournament ─────────────────────────────────────────────────────
+
+  def list_tournaments, do: Repo.all(Tournament)
+
+  def get_tournament!(id), do: Repo.get!(Tournament, id)
+
+  def create_tournament(attrs \\ %{}) do
+    %Tournament{}
+    |> Tournament.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tournament(%Tournament{} = tournament, attrs) do
+    tournament
+    |> Tournament.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tournament(%Tournament{} = tournament), do: Repo.delete(tournament)
+
+  def change_tournament(%Tournament{} = tournament, attrs \\ %{}) do
+    Tournament.changeset(tournament, attrs)
+  end
+
+  # ── TournamentJudge ─────────────────────────────────────────────────────
+
+  def list_tournament_judges, do: Repo.all(TournamentJudge)
+
+  def get_tournament_judge!(id), do: Repo.get!(TournamentJudge, id)
+
+  def create_tournament_judge(attrs \\ %{}) do
+    %TournamentJudge{}
+    |> TournamentJudge.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tournament_judge(%TournamentJudge{} = tournament_judge, attrs) do
+    tournament_judge
+    |> TournamentJudge.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tournament_judge(%TournamentJudge{} = tournament_judge), do: Repo.delete(tournament_judge)
+
+  def change_tournament_judge(%TournamentJudge{} = tournament_judge, attrs \\ %{}) do
+    TournamentJudge.changeset(tournament_judge, attrs)
+  end
+
+  # ── TournamentRegistration ─────────────────────────────────────────────────────
+
+  def list_tournament_registrations, do: Repo.all(TournamentRegistration)
+
+  def get_tournament_registration!(id), do: Repo.get!(TournamentRegistration, id)
+
+  def create_tournament_registration(attrs \\ %{}) do
+    %TournamentRegistration{}
+    |> TournamentRegistration.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tournament_registration(%TournamentRegistration{} = tournament_registration, attrs) do
+    tournament_registration
+    |> TournamentRegistration.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tournament_registration(%TournamentRegistration{} = tournament_registration), do: Repo.delete(tournament_registration)
+
+  def change_tournament_registration(%TournamentRegistration{} = tournament_registration, attrs \\ %{}) do
+    TournamentRegistration.changeset(tournament_registration, attrs)
+  end
+
+  # ── TournamentRound ─────────────────────────────────────────────────────
+
+  def list_tournament_rounds, do: Repo.all(TournamentRound)
+
+  def get_tournament_round!(id), do: Repo.get!(TournamentRound, id)
+
+  def create_tournament_round(attrs \\ %{}) do
+    %TournamentRound{}
+    |> TournamentRound.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tournament_round(%TournamentRound{} = tournament_round, attrs) do
+    tournament_round
+    |> TournamentRound.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tournament_round(%TournamentRound{} = tournament_round), do: Repo.delete(tournament_round)
+
+  def change_tournament_round(%TournamentRound{} = tournament_round, attrs \\ %{}) do
+    TournamentRound.changeset(tournament_round, attrs)
+  end
+
+  # ── Match ─────────────────────────────────────────────────────
+
+  def list_matches, do: Repo.all(Match)
+
+  def get_match!(id), do: Repo.get!(Match, id)
+
+  def create_match(attrs \\ %{}) do
+    %Match{}
+    |> Match.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_match(%Match{} = match, attrs) do
+    match
+    |> Match.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_match(%Match{} = match), do: Repo.delete(match)
+
+  def change_match(%Match{} = match, attrs \\ %{}) do
+    Match.changeset(match, attrs)
+  end
+
+  # ── Game ─────────────────────────────────────────────────────
+
+  def list_games, do: Repo.all(Game)
+
+  def get_game!(id), do: Repo.get!(Game, id)
+
+  def create_game(attrs \\ %{}) do
+    %Game{}
+    |> Game.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_game(%Game{} = game, attrs) do
+    game
+    |> Game.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_game(%Game{} = game), do: Repo.delete(game)
+
+  def change_game(%Game{} = game, attrs \\ %{}) do
+    Game.changeset(game, attrs)
+  end
+
+  # ── TournamentPrize ─────────────────────────────────────────────────────
+
+  def list_tournament_prizes, do: Repo.all(TournamentPrize)
+
+  def get_tournament_prize!(id), do: Repo.get!(TournamentPrize, id)
+
+  def create_tournament_prize(attrs \\ %{}) do
+    %TournamentPrize{}
+    |> TournamentPrize.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_tournament_prize(%TournamentPrize{} = tournament_prize, attrs) do
+    tournament_prize
+    |> TournamentPrize.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_tournament_prize(%TournamentPrize{} = tournament_prize), do: Repo.delete(tournament_prize)
+
+  def change_tournament_prize(%TournamentPrize{} = tournament_prize, attrs \\ %{}) do
+    TournamentPrize.changeset(tournament_prize, attrs)
+  end
+
+  # ── AwardedPrize ─────────────────────────────────────────────────────
+
+  def list_awarded_prizes, do: Repo.all(AwardedPrize)
+
+  def get_awarded_prize!(id), do: Repo.get!(AwardedPrize, id)
+
+  def create_awarded_prize(attrs \\ %{}) do
+    %AwardedPrize{}
+    |> AwardedPrize.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_awarded_prize(%AwardedPrize{} = awarded_prize, attrs) do
+    awarded_prize
+    |> AwardedPrize.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_awarded_prize(%AwardedPrize{} = awarded_prize), do: Repo.delete(awarded_prize)
+
+  def change_awarded_prize(%AwardedPrize{} = awarded_prize, attrs \\ %{}) do
+    AwardedPrize.changeset(awarded_prize, attrs)
+  end
+
+end
