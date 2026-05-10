@@ -1,0 +1,11 @@
+dist-newstyle/
+.stack-work/
+*.o
+*.hi
+*.dyn_o
+*.dyn_hi
+db/*.db
+.env
+.idea/
+*.iml
+cabal.project.local

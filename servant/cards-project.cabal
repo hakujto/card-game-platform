@@ -1,0 +1,140 @@
+cabal-version: 3.0
+name:          cards-project
+version:       0.1.0.0
+license:       MIT
+build-type:    Simple
+
+common shared
+  default-language: Haskell2010
+  ghc-options: -Wno-all
+  build-depends:
+      base >=4.14 && <5
+    , aeson
+    , aeson-casing
+    , text
+    , servant-server
+    , wai
+    , warp
+    , sqlite-simple
+    , http-types
+    , wai-cors
+    , bytestring
+    , case-insensitive
+
+library
+  import: shared
+  hs-source-dirs: src
+  exposed-modules:
+    CardsProject.App
+    CardsProject.Db
+    CardsProject.Cards.Types
+    CardsProject.Players.Types
+    CardsProject.Tournaments.Types
+    CardsProject.Marketplace.Types
+    CardsProject.Content.Types
+    CardsProject.Cards.CardHandler
+    CardsProject.Cards.CardSetHandler
+    CardsProject.Cards.CardRulingHandler
+    CardsProject.Cards.CardAbilityHandler
+    CardsProject.Cards.DeckHandler
+    CardsProject.Cards.DeckCardHandler
+    CardsProject.Cards.DeckSideboardCardHandler
+    CardsProject.Cards.DeckTagHandler
+    CardsProject.Cards.DeckTagAssignmentHandler
+    CardsProject.Players.PlayerHandler
+    CardsProject.Players.PlayerSeasonStatsHandler
+    CardsProject.Players.PlayerCollectionHandler
+    CardsProject.Players.FriendshipHandler
+    CardsProject.Players.AchievementHandler
+    CardsProject.Players.PlayerAchievementHandler
+    CardsProject.Players.CraftingRecipeHandler
+    CardsProject.Players.CraftingIngredientHandler
+    CardsProject.Tournaments.SeasonHandler
+    CardsProject.Tournaments.TournamentHandler
+    CardsProject.Tournaments.TournamentJudgeHandler
+    CardsProject.Tournaments.TournamentRegistrationHandler
+    CardsProject.Tournaments.TournamentRoundHandler
+    CardsProject.Tournaments.MatchHandler
+    CardsProject.Tournaments.GameHandler
+    CardsProject.Tournaments.TournamentPrizeHandler
+    CardsProject.Tournaments.AwardedPrizeHandler
+    CardsProject.Marketplace.ProductHandler
+    CardsProject.Marketplace.OrderHandler
+    CardsProject.Marketplace.OrderItemHandler
+    CardsProject.Marketplace.CouponHandler
+    CardsProject.Marketplace.TradelistingHandler
+    CardsProject.Marketplace.TradeBidHandler
+    CardsProject.Marketplace.TradeTransactionHandler
+    CardsProject.Marketplace.CardPriceHistoryHandler
+    CardsProject.Marketplace.TradeDisputeHandler
+    CardsProject.Content.DraftSessionHandler
+    CardsProject.Content.DraftParticipantHandler
+    CardsProject.Content.DraftPickHandler
+    CardsProject.Content.ArticleHandler
+    CardsProject.Content.ArticleTagHandler
+    CardsProject.Content.ArticleTagAssignmentHandler
+    CardsProject.Content.ArticleCommentHandler
+    CardsProject.Content.StreamHandler
+    CardsProject.Cards.CardService
+    CardsProject.Cards.CardSetService
+    CardsProject.Cards.CardRulingService
+    CardsProject.Cards.CardAbilityService
+    CardsProject.Cards.DeckService
+    CardsProject.Cards.DeckCardService
+    CardsProject.Cards.DeckSideboardCardService
+    CardsProject.Cards.DeckTagService
+    CardsProject.Cards.DeckTagAssignmentService
+    CardsProject.Players.PlayerService
+    CardsProject.Players.PlayerSeasonStatsService
+    CardsProject.Players.PlayerCollectionService
+    CardsProject.Players.FriendshipService
+    CardsProject.Players.AchievementService
+    CardsProject.Players.PlayerAchievementService
+    CardsProject.Players.CraftingRecipeService
+    CardsProject.Players.CraftingIngredientService
+    CardsProject.Tournaments.SeasonService
+    CardsProject.Tournaments.TournamentService
+    CardsProject.Tournaments.TournamentJudgeService
+    CardsProject.Tournaments.TournamentRegistrationService
+    CardsProject.Tournaments.TournamentRoundService
+    CardsProject.Tournaments.MatchService
+    CardsProject.Tournaments.GameService
+    CardsProject.Tournaments.TournamentPrizeService
+    CardsProject.Tournaments.AwardedPrizeService
+    CardsProject.Marketplace.ProductService
+    CardsProject.Marketplace.OrderService
+    CardsProject.Marketplace.OrderItemService
+    CardsProject.Marketplace.CouponService
+    CardsProject.Marketplace.TradelistingService
+    CardsProject.Marketplace.TradeBidService
+    CardsProject.Marketplace.TradeTransactionService
+    CardsProject.Marketplace.CardPriceHistoryService
+    CardsProject.Marketplace.TradeDisputeService
+    CardsProject.Content.DraftSessionService
+    CardsProject.Content.DraftParticipantService
+    CardsProject.Content.DraftPickService
+    CardsProject.Content.ArticleService
+    CardsProject.Content.ArticleTagService
+    CardsProject.Content.ArticleTagAssignmentService
+    CardsProject.Content.ArticleCommentService
+    CardsProject.Content.StreamService
+
+executable cards-project
+  import: shared
+  hs-source-dirs: app
+  main-is: Main.hs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    cards-project
+
+test-suite cards-project-test
+  import: shared
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Spec.hs
+  build-depends:
+      cards-project
+    , hspec
+    , hspec-wai
+    , hspec-wai-json
+    , wai-extra

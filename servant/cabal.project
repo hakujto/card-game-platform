@@ -1,0 +1,6 @@
+packages: .
+
+-- GHC 9.12/9.14 ships base 4.21/4.22. Many Hackage packages (servant, singleton-bool,
+-- wai-cors, hspec-wai, aeson-casing...) have not yet bumped their upper bounds.
+-- allow-newer: all relaxes every upper bound globally so cabal can resolve the plan.
+allow-newer: all
