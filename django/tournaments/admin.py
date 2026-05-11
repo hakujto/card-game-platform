@@ -34,14 +34,14 @@ class TournamentRegistrationAdmin(admin.ModelAdmin):
 class TournamentRoundAdmin(admin.ModelAdmin):
     list_display = ["id", "round_number", "status", "started_at", "ended_at"]
     search_fields = ["status"]
-    list_filter = ["status", "tournament", "matches"]
+    list_filter = ["status", "tournament"]
 
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
     list_display = ["id", "table_number", "status", "player1_wins", "player2_wins"]
     search_fields = ["status", "result_notes"]
-    list_filter = ["status", "round", "player1", "player2", "games"]
+    list_filter = ["status", "round", "player1", "player2"]
 
 
 @admin.register(Game)

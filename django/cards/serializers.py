@@ -24,8 +24,6 @@ class CardSerializer(serializers.ModelSerializer):
             "is_restricted",
             "power_level",
             "set",
-            "rulings",
-            "abilities",
         ]
         read_only_fields = ["id"]
 

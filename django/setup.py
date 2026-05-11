@@ -49,7 +49,11 @@ def main():
     else:
         print("==> Superuser already exists, skipping.")
 
-    # 3. runserver
+    # 3. collectstatic
+    print("==> Collecting static files...")
+    call_command("collectstatic", "--noinput")
+
+    # 4. runserver
     print("")
     print("==> Server starting at http://localhost:8000")
     print("    Admin: http://localhost:8000/admin/  (admin/admin)")

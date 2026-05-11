@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CardViewSet, CardSetViewSet, CardRulingViewSet, CardAbilityViewSet, DeckViewSet, DeckCardViewSet, DeckSideboardCardViewSet, DeckTagViewSet, DeckTagAssignmentViewSet
+from .viewsets import CardViewSet, CardSetViewSet, CardRulingViewSet, CardAbilityViewSet, DeckViewSet, DeckCardViewSet, DeckSideboardCardViewSet, DeckTagViewSet, DeckTagAssignmentViewSet
 
 router = DefaultRouter()
 router.register(r"cards", CardViewSet, basename="card")

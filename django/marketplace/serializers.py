@@ -39,7 +39,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "paid_at",
             "shipped_at",
             "player",
-            "items",
             "coupon",
         ]
         read_only_fields = ["id"]
@@ -96,7 +95,6 @@ class TradelistingSerializer(serializers.ModelSerializer):
             "expires_at",
             "seller",
             "card",
-            "bids",
         ]
         read_only_fields = ["id"]
 

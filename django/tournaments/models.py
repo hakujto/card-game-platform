@@ -69,10 +69,7 @@ class Tournament(models.Model):
     created_at = models.DateTimeField()
     season = models.ForeignKey("Season", on_delete=models.CASCADE, related_name="tournaments")
     organizer = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="organized_tournaments")
-    judges = models.ManyToManyField("players.Player", through="TournamentJudge", related_name="judged_tournaments")
-    registrations = models.ForeignKey("TournamentRegistration", on_delete=models.CASCADE, null=True, blank=True)
-    rounds = models.ForeignKey("TournamentRound", on_delete=models.CASCADE, null=True, blank=True)
-    prizes = models.ForeignKey("TournamentPrize", on_delete=models.CASCADE, null=True, blank=True)
+    judges = models.ManyToManyField("players.Player", through="TournamentJudge", related_name="+")
 
     class Meta:
         verbose_name = "Tournament"
@@ -142,7 +139,6 @@ class TournamentRound(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
     time_limit_minutes = models.IntegerField(default=50)
     tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE)
-    matches = models.ForeignKey("Match", on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Tournament Round"
@@ -172,7 +168,6 @@ class Match(models.Model):
     round = models.ForeignKey("TournamentRound", on_delete=models.CASCADE, null=True, blank=True)
     player1 = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="matches_as_player1")
     player2 = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="matches_as_player2", null=True, blank=True)
-    games = models.ForeignKey("Game", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Match"

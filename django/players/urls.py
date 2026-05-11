@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PlayerViewSet, PlayerSeasonStatsViewSet, PlayerCollectionViewSet, FriendshipViewSet, AchievementViewSet, PlayerAchievementViewSet, CraftingRecipeViewSet, CraftingIngredientViewSet
+from .viewsets import PlayerViewSet, PlayerSeasonStatsViewSet, PlayerCollectionViewSet, FriendshipViewSet, AchievementViewSet, PlayerAchievementViewSet, CraftingRecipeViewSet, CraftingIngredientViewSet
 
 router = DefaultRouter()
 router.register(r"players", PlayerViewSet, basename="player")

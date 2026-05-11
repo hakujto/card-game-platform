@@ -39,9 +39,6 @@ class TournamentSerializer(serializers.ModelSerializer):
             "season",
             "organizer",
             "judges",
-            "registrations",
-            "rounds",
-            "prizes",
         ]
         read_only_fields = ["id"]
 
@@ -86,7 +83,6 @@ class TournamentRoundSerializer(serializers.ModelSerializer):
             "ended_at",
             "time_limit_minutes",
             "tournament",
-            "matches",
         ]
         read_only_fields = ["id"]
 
@@ -106,7 +102,6 @@ class MatchSerializer(serializers.ModelSerializer):
             "round",
             "player1",
             "player2",
-            "games",
         ]
         read_only_fields = ["id"]
 

@@ -19,7 +19,6 @@ class PlayerSerializer(serializers.ModelSerializer):
             "created_at",
             "last_active_at",
             "user",
-            "season_stats",
             "achievements",
             "friends",
         ]

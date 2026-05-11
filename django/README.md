@@ -5,6 +5,7 @@
 ```bash
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
+cp .env.example .env      # optional: adjust settings
 python setup.py
 ```
 
@@ -126,6 +127,12 @@ Base URL: `http://localhost:8000`
 
 `http://localhost:8000/admin/`
 
+## Testing
+
+```bash
+python manage.py test
+```
+
 ## Architecture
 
 Bounded Contexts:
@@ -135,3 +142,15 @@ Bounded Contexts:
 - **Tournaments BC** (`tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8000:8000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+installs dependencies, runs migrations, and executes the test suite.

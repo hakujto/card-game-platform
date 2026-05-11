@@ -62,7 +62,6 @@ class Order(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     shipped_at = models.DateTimeField(null=True, blank=True)
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="orders")
-    items = models.ForeignKey("OrderItem", on_delete=models.CASCADE)
     coupon = models.ForeignKey("Coupon", on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
 
     class Meta:
@@ -152,7 +151,6 @@ class Tradelisting(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True)
     seller = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="trade_listings")
     card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="trade_listings")
-    bids = models.ForeignKey("TradeBid", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Tradelisting"

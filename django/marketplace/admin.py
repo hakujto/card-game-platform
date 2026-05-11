@@ -13,7 +13,7 @@ class ProductAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     list_display = ["id", "status", "total", "discount_applied", "currency"]
     search_fields = ["status", "currency", "payment_method"]
-    list_filter = ["status", "payment_method", "player", "items", "coupon"]
+    list_filter = ["status", "payment_method", "player", "coupon"]
 
 
 @admin.register(OrderItem)

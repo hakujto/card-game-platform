@@ -5,71 +5,80 @@ from .serializers import SeasonSerializer, TournamentSerializer, TournamentJudge
 
 
 class SeasonViewSet(viewsets.ModelViewSet):
-    queryset = Season.objects.all()
+    queryset = Season.objects.select_related().all()
     serializer_class = SeasonSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "format", "reward_description"]
     filterset_fields = ["format"]
+    ordering_fields = "__all__"
 
 
 class TournamentViewSet(viewsets.ModelViewSet):
-    queryset = Tournament.objects.all()
+    queryset = Tournament.objects.select_related().all()
     serializer_class = TournamentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "description", "format"]
     filterset_fields = ["format", "tournament_type", "status", "season", "organizer"]
+    ordering_fields = "__all__"
 
 
 class TournamentJudgeViewSet(viewsets.ModelViewSet):
-    queryset = TournamentJudge.objects.all()
+    queryset = TournamentJudge.objects.select_related().all()
     serializer_class = TournamentJudgeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["role"]
     filterset_fields = ["role", "tournament", "player"]
+    ordering_fields = "__all__"
 
 
 class TournamentRegistrationViewSet(viewsets.ModelViewSet):
-    queryset = TournamentRegistration.objects.all()
+    queryset = TournamentRegistration.objects.select_related().all()
     serializer_class = TournamentRegistrationSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     filterset_fields = ["status", "tournament", "player", "deck"]
+    ordering_fields = "__all__"
 
 
 class TournamentRoundViewSet(viewsets.ModelViewSet):
-    queryset = TournamentRound.objects.all()
+    queryset = TournamentRound.objects.select_related().all()
     serializer_class = TournamentRoundSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
-    filterset_fields = ["status", "tournament", "matches"]
+    filterset_fields = ["status", "tournament"]
+    ordering_fields = "__all__"
 
 
 class MatchViewSet(viewsets.ModelViewSet):
-    queryset = Match.objects.all()
+    queryset = Match.objects.select_related().all()
     serializer_class = MatchSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status", "result_notes"]
-    filterset_fields = ["status", "round", "player1", "player2", "games"]
+    filterset_fields = ["status", "round", "player1", "player2"]
+    ordering_fields = "__all__"
 
 
 class GameViewSet(viewsets.ModelViewSet):
-    queryset = Game.objects.all()
+    queryset = Game.objects.select_related().all()
     serializer_class = GameSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["winner_side", "ended_by"]
     filterset_fields = ["winner_side", "ended_by", "match", "winner"]
+    ordering_fields = "__all__"
 
 
 class TournamentPrizeViewSet(viewsets.ModelViewSet):
-    queryset = TournamentPrize.objects.all()
+    queryset = TournamentPrize.objects.select_related().all()
     serializer_class = TournamentPrizeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["prize_type", "description"]
     filterset_fields = ["prize_type", "tournament"]
+    ordering_fields = "__all__"
 
 
 class AwardedPrizeViewSet(viewsets.ModelViewSet):
-    queryset = AwardedPrize.objects.all()
+    queryset = AwardedPrize.objects.select_related().all()
     serializer_class = AwardedPrizeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["prize", "player"]
+    ordering_fields = "__all__"

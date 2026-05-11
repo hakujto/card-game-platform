@@ -6,13 +6,13 @@ from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleT
 class DraftSessionAdmin(admin.ModelAdmin):
     list_display = ["id", "status", "draft_type", "seats", "created_at"]
     search_fields = ["status", "draft_type"]
-    list_filter = ["status", "draft_type", "card_set", "participants"]
+    list_filter = ["status", "draft_type", "card_set"]
 
 
 @admin.register(DraftParticipant)
 class DraftParticipantAdmin(admin.ModelAdmin):
     list_display = ["id", "seat_number", "joined_at", "session", "player"]
-    list_filter = ["session", "player", "drafted_cards"]
+    list_filter = ["session", "player"]
 
 
 @admin.register(DraftPick)
@@ -25,7 +25,7 @@ class DraftPickAdmin(admin.ModelAdmin):
 class ArticleAdmin(admin.ModelAdmin):
     list_display = ["id", "title", "slug", "body", "excerpt"]
     search_fields = ["title", "slug", "body"]
-    list_filter = ["status", "article_type", "author", "featured_deck", "comments"]
+    list_filter = ["status", "article_type", "author", "featured_deck"]
 
 
 @admin.register(ArticleTag)

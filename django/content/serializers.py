@@ -13,7 +13,6 @@ class DraftSessionSerializer(serializers.ModelSerializer):
             "created_at",
             "completed_at",
             "card_set",
-            "participants",
         ]
         read_only_fields = ["id"]
 
@@ -27,7 +26,6 @@ class DraftParticipantSerializer(serializers.ModelSerializer):
             "joined_at",
             "session",
             "player",
-            "drafted_cards",
         ]
         read_only_fields = ["id"]
 
@@ -65,7 +63,6 @@ class ArticleSerializer(serializers.ModelSerializer):
             "author",
             "featured_deck",
             "tags",
-            "comments",
         ]
         read_only_fields = ["id"]
 

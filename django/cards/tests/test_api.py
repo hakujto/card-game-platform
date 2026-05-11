@@ -1,29 +1,14 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
+from ..models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
 
 
 class CardAPITest(APITestCase):
     def setUp(self):
-        self.card_set = CardSet.objects.create()
-        self.card_ruling = CardRuling.objects.create()
-        self.card_ability = CardAbility.objects.create()
-        self.obj = Card.objects.create(
-            set=self.card_set,
-            rulings=self.card_ruling,
-            abilities=self.card_ability,
-            name="test",
-            mana_colors="test",
-            attack=0,
-            defense=0,
-            loyalty=0,
-            description="test",
-            flavor_text="test",
-            image_url="https://example.com",
-            artist_name="test",
-            legal_formats="test",
-        )
+        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
+        self.cardset = _dep_card_set
+        self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_colors="White", description="test", legal_formats="Standard")
         self.list_url = reverse("card-list")
         self.detail_url = reverse("card-detail", args=[self.obj.pk])
 
@@ -32,7 +17,19 @@ class CardAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"name": "test", "card_type": "test", "rarity": "test", "mana_cost": 0, "mana_colors": "test", "description": "test", "legal_formats": "test", "is_banned": False, "is_restricted": False, "power_level": 0}
+        data = {
+            "name": "test",
+            "card_type": "Creature",
+            "rarity": "Common",
+            "mana_cost": 0,
+            "mana_colors": "White",
+            "description": "test",
+            "legal_formats": "Standard",
+            "is_banned": False,
+            "is_restricted": False,
+            "power_level": 0,
+            "set": self.cardset.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -51,14 +48,7 @@ class CardAPITest(APITestCase):
 
 class CardSetAPITest(APITestCase):
     def setUp(self):
-        self.obj = CardSet.objects.create(
-            name="test",
-            code="test",
-            release_date="2024-01-01",
-            total_cards=0,
-            description="test",
-            logo_url="https://example.com",
-        )
+        self.obj = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
         self.list_url = reverse("card_set-list")
         self.detail_url = reverse("card_set-detail", args=[self.obj.pk])
 
@@ -67,7 +57,13 @@ class CardSetAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "test", "total_cards": 0}
+        data = {
+            "name": "test",
+            "code": "test",
+            "release_date": "2024-01-01",
+            "set_type": "Core",
+            "total_cards": 0
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -86,13 +82,11 @@ class CardSetAPITest(APITestCase):
 
 class CardRulingAPITest(APITestCase):
     def setUp(self):
-        self.card = Card.objects.create()
-        self.obj = CardRuling.objects.create(
-            card=self.card,
-            ruling_text="test",
-            published_at="2024-01-01",
-            source="test",
-        )
+        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
+        _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
+        self.cardset = _dep_card_set
+        self.card = _dep_card
+        self.obj = CardRuling.objects.create(card=_dep_card, ruling_text="test", published_at="2024-01-01", source="test")
         self.list_url = reverse("card_ruling-list")
         self.detail_url = reverse("card_ruling-detail", args=[self.obj.pk])
 
@@ -101,7 +95,12 @@ class CardRulingAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"ruling_text": "test", "published_at": "2024-01-01", "source": "test"}
+        data = {
+            "ruling_text": "test",
+            "published_at": "2024-01-01",
+            "source": "test",
+            "card": self.card.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -120,13 +119,11 @@ class CardRulingAPITest(APITestCase):
 
 class CardAbilityAPITest(APITestCase):
     def setUp(self):
-        self.card = Card.objects.create()
-        self.obj = CardAbility.objects.create(
-            card=self.card,
-            keyword="test",
-            ability_text="test",
-            timing="test",
-        )
+        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
+        _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
+        self.cardset = _dep_card_set
+        self.card = _dep_card
+        self.obj = CardAbility.objects.create(card=_dep_card, ability_text="test")
         self.list_url = reverse("card_ability-list")
         self.detail_url = reverse("card_ability-detail", args=[self.obj.pk])
 
@@ -135,7 +132,11 @@ class CardAbilityAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"ability_type": "test", "ability_text": "test"}
+        data = {
+            "ability_type": "Keyword",
+            "ability_text": "test",
+            "card": self.card.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -144,7 +145,7 @@ class CardAbilityAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"ability_type": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"keyword": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
@@ -154,14 +155,10 @@ class CardAbilityAPITest(APITestCase):
 
 class DeckAPITest(APITestCase):
     def setUp(self):
-        # TODO: create related Player (cross-app dependency)
-        self.obj = Deck.objects.create(
-            name="test",
-            description="test",
-            archetype="test",
-            created_at="2024-01-01T00:00:00Z",
-            updated_at="2024-01-01T00:00:00Z",
-        )
+        from players.models import Player as _PlayerCls
+        _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        self.player = _dep_player
+        self.obj = Deck.objects.create(player=_dep_player, name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("deck-list")
         self.detail_url = reverse("deck-detail", args=[self.obj.pk])
 
@@ -170,7 +167,17 @@ class DeckAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"name": "test", "format": "test", "is_public": False, "is_tournament_legal": False, "wins": 0, "losses": 0, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z"}
+        data = {
+            "name": "test",
+            "format": "Standard",
+            "is_public": False,
+            "is_tournament_legal": False,
+            "wins": 0,
+            "losses": 0,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+            "player": self.player.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -189,12 +196,16 @@ class DeckAPITest(APITestCase):
 
 class DeckCardAPITest(APITestCase):
     def setUp(self):
-        self.deck = Deck.objects.create()
-        self.card = Card.objects.create()
-        self.obj = DeckCard.objects.create(
-            deck=self.deck,
-            card=self.card,
-        )
+        from players.models import Player as _PlayerCls
+        _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
+        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
+        _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
+        self.player = _dep_player
+        self.deck = _dep_deck
+        self.cardset = _dep_card_set
+        self.card = _dep_card
+        self.obj = DeckCard.objects.create(deck=_dep_deck, card=_dep_card)
         self.list_url = reverse("deck_card-list")
         self.detail_url = reverse("deck_card-detail", args=[self.obj.pk])
 
@@ -203,7 +214,12 @@ class DeckCardAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"quantity": 0, "is_commander": False}
+        data = {
+            "quantity": 0,
+            "is_commander": False,
+            "deck": self.deck.pk,
+            "card": self.card.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -222,12 +238,16 @@ class DeckCardAPITest(APITestCase):
 
 class DeckSideboardCardAPITest(APITestCase):
     def setUp(self):
-        self.deck = Deck.objects.create()
-        self.card = Card.objects.create()
-        self.obj = DeckSideboardCard.objects.create(
-            deck=self.deck,
-            card=self.card,
-        )
+        from players.models import Player as _PlayerCls
+        _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
+        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
+        _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
+        self.player = _dep_player
+        self.deck = _dep_deck
+        self.cardset = _dep_card_set
+        self.card = _dep_card
+        self.obj = DeckSideboardCard.objects.create(deck=_dep_deck, card=_dep_card)
         self.list_url = reverse("deck_sideboard_card-list")
         self.detail_url = reverse("deck_sideboard_card-detail", args=[self.obj.pk])
 
@@ -236,7 +256,11 @@ class DeckSideboardCardAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"quantity": 0}
+        data = {
+            "quantity": 0,
+            "deck": self.deck.pk,
+            "card": self.card.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -255,10 +279,7 @@ class DeckSideboardCardAPITest(APITestCase):
 
 class DeckTagAPITest(APITestCase):
     def setUp(self):
-        self.obj = DeckTag.objects.create(
-            name="test",
-            color="test",
-        )
+        self.obj = DeckTag.objects.create(name="test")
         self.list_url = reverse("deck_tag-list")
         self.detail_url = reverse("deck_tag-detail", args=[self.obj.pk])
 
@@ -267,7 +288,9 @@ class DeckTagAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {"name": "test"}
+        data = {
+            "name": "test"
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -286,12 +309,14 @@ class DeckTagAPITest(APITestCase):
 
 class DeckTagAssignmentAPITest(APITestCase):
     def setUp(self):
-        self.deck = Deck.objects.create()
-        self.deck_tag = DeckTag.objects.create()
-        self.obj = DeckTagAssignment.objects.create(
-            deck=self.deck,
-            tag=self.deck_tag,
-        )
+        from players.models import Player as _PlayerCls
+        _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
+        _dep_deck_tag = DeckTag.objects.create(name="test")
+        self.player = _dep_player
+        self.deck = _dep_deck
+        self.decktag = _dep_deck_tag
+        self.obj = DeckTagAssignment.objects.create(deck=_dep_deck, tag=_dep_deck_tag)
         self.list_url = reverse("deck_tag_assignment-list")
         self.detail_url = reverse("deck_tag_assignment-detail", args=[self.obj.pk])
 
@@ -300,7 +325,10 @@ class DeckTagAssignmentAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        data = {}
+        data = {
+            "deck": self.deck.pk,
+            "tag": self.decktag.pk
+        }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 

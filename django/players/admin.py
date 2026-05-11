@@ -6,7 +6,7 @@ from .models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Ach
 class PlayerAdmin(admin.ModelAdmin):
     list_display = ["id", "display_name", "rank", "rating", "peak_rating"]
     search_fields = ["display_name", "rank", "bio"]
-    list_filter = ["rank", "preferred_format", "user", "season_stats"]
+    list_filter = ["rank", "preferred_format", "user"]
 
 
 @admin.register(PlayerSeasonStats)

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import DraftSessionViewSet, DraftParticipantViewSet, DraftPickViewSet, ArticleViewSet, ArticleTagViewSet, ArticleTagAssignmentViewSet, ArticleCommentViewSet, StreamViewSet
+from .viewsets import DraftSessionViewSet, DraftParticipantViewSet, DraftPickViewSet, ArticleViewSet, ArticleTagViewSet, ArticleTagAssignmentViewSet, ArticleCommentViewSet, StreamViewSet
 
 router = DefaultRouter()
 router.register(r"draft_sessions", DraftSessionViewSet, basename="draft_session")

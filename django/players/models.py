@@ -34,9 +34,8 @@ class Player(models.Model):
     created_at = models.DateTimeField()
     last_active_at = models.DateTimeField(null=True, blank=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="player_profile", null=True, blank=True)
-    season_stats = models.ForeignKey("PlayerSeasonStats", on_delete=models.CASCADE)
-    achievements = models.ManyToManyField("Achievement", through="PlayerAchievement", related_name="players")
-    friends = models.ManyToManyField("Player", through="Friendship", related_name="friends_of")
+    achievements = models.ManyToManyField("Achievement", through="PlayerAchievement", related_name="+")
+    friends = models.ManyToManyField("Player", through="Friendship", related_name="+")
 
     class Meta:
         verbose_name = "Player"

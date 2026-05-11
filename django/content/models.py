@@ -22,7 +22,6 @@ class DraftSession(models.Model):
     created_at = models.DateTimeField()
     completed_at = models.DateTimeField(null=True, blank=True)
     card_set = models.ForeignKey("cards.CardSet", on_delete=models.CASCADE, related_name="draft_sessions")
-    participants = models.ForeignKey("DraftParticipant", on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Draft Session"
@@ -38,7 +37,6 @@ class DraftParticipant(models.Model):
     joined_at = models.DateTimeField()
     session = models.ForeignKey("DraftSession", on_delete=models.CASCADE, null=True, blank=True)
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="draft_sessions")
-    drafted_cards = models.ForeignKey("DraftPick", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Draft Participant"
@@ -95,7 +93,6 @@ class Article(models.Model):
     author = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="articles")
     featured_deck = models.ForeignKey("cards.Deck", on_delete=models.CASCADE, related_name="articles", null=True, blank=True)
     tags = models.ManyToManyField("ArticleTag", through="ArticleTagAssignment")
-    comments = models.ForeignKey("ArticleComment", on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Article"

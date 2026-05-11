@@ -55,8 +55,6 @@ class Card(models.Model):
     is_restricted = models.BooleanField(default=False)
     power_level = models.IntegerField(default=1)
     set = models.ForeignKey("CardSet", on_delete=models.CASCADE, related_name="cards")
-    rulings = models.ForeignKey("CardRuling", on_delete=models.CASCADE, null=True, blank=True)
-    abilities = models.ForeignKey("CardAbility", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = "Card"
@@ -168,8 +166,8 @@ class Deck(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="decks")
-    cards = models.ManyToManyField("Card", through="DeckCard", related_name="decks")
-    sideboard_cards = models.ManyToManyField("Card", through="DeckSideboardCard", related_name="sideboard_decks")
+    cards = models.ManyToManyField("Card", through="DeckCard", related_name="+")
+    sideboard_cards = models.ManyToManyField("Card", through="DeckSideboardCard", related_name="+")
     tags = models.ManyToManyField("DeckTag", through="DeckTagAssignment")
 
     class Meta:
@@ -199,7 +197,7 @@ class DeckCard(models.Model):
 class DeckSideboardCard(models.Model):
     quantity = models.IntegerField(default=1)
     deck = models.ForeignKey("Deck", on_delete=models.CASCADE)
-    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="sideboard_decks")
+    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="+")
 
     class Meta:
         verbose_name = "Deck Sideboard Card"
