@@ -19,7 +19,7 @@ class AchievementApiTest extends TestCase
             'name' => 'test',
             'description' => 'test',
             'points' => 1,
-            'rarity' => 'test',
+            'rarity' => 'Common',
             'is_hidden' => true,
         ]);
         $this->entityId = $entity->id;
@@ -37,6 +37,7 @@ class AchievementApiTest extends TestCase
             'name' => 'test',
             'description' => 'test',
             'points' => 1,
+            'rarity' => 'Common',
             'is_hidden' => true,
         ]);
         $response->assertStatus(201);

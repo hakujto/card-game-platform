@@ -21,7 +21,7 @@ class DraftParticipantController extends Controller
         $validated = $request->validate([
             'seat_number' => 'required|integer|max:200',
             'joined_at' => 'required|date|max:200',
-            'session_id' => 'nullable|exists:draft_sessions,id',
+            'session_id' => 'required|exists:draft_sessions,id',
             'player_id' => 'required|exists:players,id',
         ]);
         $item = DraftParticipant::create($validated);

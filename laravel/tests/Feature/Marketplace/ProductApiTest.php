@@ -17,7 +17,7 @@ class ProductApiTest extends TestCase
         parent::setUp();
         $entity = Product::create([
             'name' => 'test',
-            'product_type' => 'test',
+            'product_type' => 'SingleCard',
             'price' => '0.00',
             'stock' => 1,
             'active' => true,
@@ -37,6 +37,7 @@ class ProductApiTest extends TestCase
     {
         $response = $this->postJson('/api/products', [
             'name' => 'test',
+            'product_type' => 'SingleCard',
             'price' => '0.00',
             'stock' => 1,
             'active' => true,

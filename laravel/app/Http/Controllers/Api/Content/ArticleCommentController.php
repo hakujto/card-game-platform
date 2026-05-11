@@ -22,7 +22,7 @@ class ArticleCommentController extends Controller
             'body' => 'required|string|max:200',
             'is_hidden' => 'required|boolean|max:200',
             'created_at' => 'required|date|max:200',
-            'article_id' => 'nullable|exists:articles,id',
+            'article_id' => 'required|exists:articles,id',
             'author_id' => 'required|exists:players,id',
             'parent_comment_id' => 'nullable|exists:article_comments,id',
         ]);

@@ -26,7 +26,7 @@ class MatchRecordController extends Controller
             'started_at' => 'nullable|date|max:200',
             'ended_at' => 'nullable|date|max:200',
             'result_notes' => 'nullable|string|max:200',
-            'round_id' => 'nullable|exists:tournament_rounds,id',
+            'round_id' => 'required|exists:tournament_rounds,id',
             'player1_id' => 'required|exists:players,id',
             'player2_id' => 'nullable|exists:players,id',
         ]);

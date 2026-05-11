@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\Content\DraftSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Cards\CardSet;
 
 class DraftSessionApiTest extends TestCase
 {
@@ -12,14 +13,24 @@ class DraftSessionApiTest extends TestCase
 
     private int $entityId;
 
+    private CardSet $depCardSet;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
         $entity = DraftSession::create([
-            'status' => 'test',
-            'draft_type' => 'test',
+            'status' => 'WaitingForPlayers',
+            'draft_type' => 'Booster',
             'seats' => 1,
             'created_at' => '2024-01-01 00:00:00',
+            'card_set_id' => $this->depCardSet->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -33,8 +44,11 @@ class DraftSessionApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/draft_sessions', [
+            'status' => 'WaitingForPlayers',
+            'draft_type' => 'Booster',
             'seats' => 1,
             'created_at' => '2024-01-01 00:00:00',
+            'card_set_id' => $this->depCardSet->id,
         ]);
         $response->assertStatus(201);
     }

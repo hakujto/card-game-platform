@@ -5,6 +5,8 @@ namespace Tests\Feature\Players;
 use App\Models\Players\PlayerAchievement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
+use App\Models\Players\Achievement;
 
 class PlayerAchievementApiTest extends TestCase
 {
@@ -12,13 +14,33 @@ class PlayerAchievementApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depPlayer;
+    private Achievement $depAchievement;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depAchievement = Achievement::create([
+            'name' => 'test',
+            'description' => 'test',
+            'points' => 1,
+            'rarity' => 'Common',
+            'is_hidden' => true,
+        ]);
         $entity = PlayerAchievement::create([
             'earned_at' => '2024-01-01 00:00:00',
             'progress' => 1,
             'is_completed' => true,
+            'player_id' => $this->depPlayer->id,
+            'achievement_id' => $this->depAchievement->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -35,6 +57,8 @@ class PlayerAchievementApiTest extends TestCase
             'earned_at' => '2024-01-01 00:00:00',
             'progress' => 1,
             'is_completed' => true,
+            'player_id' => $this->depPlayer->id,
+            'achievement_id' => $this->depAchievement->id,
         ]);
         $response->assertStatus(201);
     }

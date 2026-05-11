@@ -5,6 +5,9 @@ namespace Tests\Feature\Marketplace;
 use App\Models\Marketplace\Tradelisting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
+use App\Models\Cards\CardSet;
+use App\Models\Cards\Card;
 
 class TradelistingApiTest extends TestCase
 {
@@ -12,16 +15,50 @@ class TradelistingApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depSeller;
+    private CardSet $auxCardSet;
+    private Card $depCard;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $entity = Tradelisting::create([
-            'listing_type' => 'test',
-            'foil' => true,
-            'condition' => 'test',
-            'quantity' => 1,
-            'status' => 'test',
+        $this->depSeller = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->depCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
+            'description' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
+        $entity = Tradelisting::create([
+            'listing_type' => 'FixedPrice',
+            'foil' => true,
+            'condition' => 'Mint',
+            'quantity' => 1,
+            'status' => 'Active',
+            'created_at' => '2024-01-01 00:00:00',
+            'seller_id' => $this->depSeller->id,
+            'card_id' => $this->depCard->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -35,9 +72,14 @@ class TradelistingApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/tradelistings', [
+            'listing_type' => 'FixedPrice',
             'foil' => true,
+            'condition' => 'Mint',
             'quantity' => 1,
+            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
+            'seller_id' => $this->depSeller->id,
+            'card_id' => $this->depCard->id,
         ]);
         $response->assertStatus(201);
     }

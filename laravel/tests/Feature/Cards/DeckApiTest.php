@@ -5,6 +5,7 @@ namespace Tests\Feature\Cards;
 use App\Models\Cards\Deck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
 
 class DeckApiTest extends TestCase
 {
@@ -12,18 +13,29 @@ class DeckApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depPlayer;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
         $entity = Deck::create([
             'name' => 'test',
-            'format' => 'test',
+            'format' => 'Standard',
             'is_public' => true,
             'is_tournament_legal' => true,
             'wins' => 1,
             'losses' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->depPlayer->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -38,12 +50,14 @@ class DeckApiTest extends TestCase
     {
         $response = $this->postJson('/api/decks', [
             'name' => 'test',
+            'format' => 'Standard',
             'is_public' => true,
             'is_tournament_legal' => true,
             'wins' => 1,
             'losses' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->depPlayer->id,
         ]);
         $response->assertStatus(201);
     }

@@ -5,6 +5,11 @@ namespace Tests\Feature\Content;
 use App\Models\Content\DraftPick;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Cards\CardSet;
+use App\Models\Content\DraftSession;
+use App\Models\Players\Player;
+use App\Models\Content\DraftParticipant;
+use App\Models\Cards\Card;
 
 class DraftPickApiTest extends TestCase
 {
@@ -12,13 +17,62 @@ class DraftPickApiTest extends TestCase
 
     private int $entityId;
 
+    private CardSet $auxCardSet;
+    private DraftSession $auxDraftSession;
+    private Player $auxPlayer;
+    private DraftParticipant $depParticipant;
+    private Card $depCard;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->auxDraftSession = DraftSession::create([
+            'status' => 'WaitingForPlayers',
+            'draft_type' => 'Booster',
+            'seats' => 1,
+            'created_at' => '2024-01-01 00:00:00',
+            'card_set_id' => $this->auxCardSet->id,
+        ]);
+        $this->auxPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depParticipant = DraftParticipant::create([
+            'seat_number' => 1,
+            'joined_at' => '2024-01-01 00:00:00',
+            'session_id' => $this->auxDraftSession->id,
+            'player_id' => $this->auxPlayer->id,
+        ]);
+        $this->depCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
+            'description' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
         $entity = DraftPick::create([
             'pick_number' => 1,
             'pack_number' => 1,
             'picked_at' => '2024-01-01 00:00:00',
+            'participant_id' => $this->depParticipant->id,
+            'card_id' => $this->depCard->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -35,6 +89,8 @@ class DraftPickApiTest extends TestCase
             'pick_number' => 1,
             'pack_number' => 1,
             'picked_at' => '2024-01-01 00:00:00',
+            'participant_id' => $this->depParticipant->id,
+            'card_id' => $this->depCard->id,
         ]);
         $response->assertStatus(201);
     }

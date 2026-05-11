@@ -25,7 +25,7 @@ class PlayerSeasonStatsController extends Controller
             'tournament_wins' => 'required|integer|max:200',
             'highest_rank' => 'nullable|string|in:Bronze,Silver,Gold,Platinum,Diamond,Master,Grandmaster|max:20',
             'season_points' => 'required|integer|max:200',
-            'player_id' => 'nullable|exists:players,id',
+            'player_id' => 'required|exists:players,id',
             'season_id' => 'required|exists:seasons,id',
         ]);
         $item = PlayerSeasonStats::create($validated);

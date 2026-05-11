@@ -22,7 +22,7 @@ class OrderItemController extends Controller
             'quantity' => 'required|integer|max:200',
             'price_at_purchase' => 'required|max:200',
             'foil' => 'required|boolean|max:200',
-            'order_id' => 'nullable|exists:orders,id',
+            'order_id' => 'required|exists:orders,id',
             'product_id' => 'required|exists:products,id',
         ]);
         $item = OrderItem::create($validated);

@@ -13,8 +13,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('price_at_purchase', 10, 2);
             $table->boolean('foil')->default(false);
-            $table->unsignedBigInteger('order_id')->nullable();
-            $table->foreign('order_id')->references('id')->on('orders')->nullOnDelete();
+            $table->unsignedBigInteger('order_id');
+            $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete();
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products')->cascadeOnDelete();
             $table->timestamps();

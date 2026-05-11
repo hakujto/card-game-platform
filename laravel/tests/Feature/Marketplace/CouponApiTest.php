@@ -17,7 +17,7 @@ class CouponApiTest extends TestCase
         parent::setUp();
         $entity = Coupon::create([
             'code' => 'test',
-            'discount_type' => 'test',
+            'discount_type' => 'Percent',
             'discount_value' => '0.00',
             'min_order_value' => '0.00',
             'uses_count' => 1,
@@ -38,6 +38,7 @@ class CouponApiTest extends TestCase
     {
         $response = $this->postJson('/api/coupons', [
             'code' => 'test',
+            'discount_type' => 'Percent',
             'discount_value' => '0.00',
             'min_order_value' => '0.00',
             'uses_count' => 1,

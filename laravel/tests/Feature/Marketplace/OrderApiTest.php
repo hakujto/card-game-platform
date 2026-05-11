@@ -5,6 +5,7 @@ namespace Tests\Feature\Marketplace;
 use App\Models\Marketplace\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
 
 class OrderApiTest extends TestCase
 {
@@ -12,15 +13,26 @@ class OrderApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depPlayer;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
         $entity = Order::create([
-            'status' => 'test',
+            'status' => 'Pending',
             'total' => '0.00',
             'discount_applied' => '0.00',
-            'currency' => 'test',
+            'currency' => 'xxx',
             'created_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->depPlayer->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -34,10 +46,12 @@ class OrderApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/orders', [
+            'status' => 'Pending',
             'total' => '0.00',
             'discount_applied' => '0.00',
-            'currency' => 'test',
+            'currency' => 'xxx',
             'created_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->depPlayer->id,
         ]);
         $response->assertStatus(201);
     }

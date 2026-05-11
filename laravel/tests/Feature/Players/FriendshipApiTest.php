@@ -5,6 +5,7 @@ namespace Tests\Feature\Players;
 use App\Models\Players\Friendship;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
 
 class FriendshipApiTest extends TestCase
 {
@@ -12,12 +13,33 @@ class FriendshipApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depRequester;
+    private Player $depReceiver;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $entity = Friendship::create([
-            'status' => 'test',
+        $this->depRequester = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depReceiver = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $entity = Friendship::create([
+            'status' => 'Pending',
+            'created_at' => '2024-01-01 00:00:00',
+            'requester_id' => $this->depRequester->id,
+            'receiver_id' => $this->depReceiver->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -31,7 +53,10 @@ class FriendshipApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/friendships', [
+            'status' => 'Pending',
             'created_at' => '2024-01-01 00:00:00',
+            'requester_id' => $this->depRequester->id,
+            'receiver_id' => $this->depReceiver->id,
         ]);
         $response->assertStatus(201);
     }

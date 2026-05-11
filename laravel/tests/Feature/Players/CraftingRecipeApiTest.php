@@ -5,6 +5,8 @@ namespace Tests\Feature\Players;
 use App\Models\Players\CraftingRecipe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Cards\CardSet;
+use App\Models\Cards\Card;
 
 class CraftingRecipeApiTest extends TestCase
 {
@@ -12,12 +14,36 @@ class CraftingRecipeApiTest extends TestCase
 
     private int $entityId;
 
+    private CardSet $auxCardSet;
+    private Card $depResultCard;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->depResultCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
+            'description' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
         $entity = CraftingRecipe::create([
             'dust_cost' => 1,
             'is_available' => true,
+            'result_card_id' => $this->depResultCard->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -33,6 +59,7 @@ class CraftingRecipeApiTest extends TestCase
         $response = $this->postJson('/api/crafting_recipes', [
             'dust_cost' => 1,
             'is_available' => true,
+            'result_card_id' => $this->depResultCard->id,
         ]);
         $response->assertStatus(201);
     }

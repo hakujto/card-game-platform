@@ -5,6 +5,10 @@ namespace Tests\Feature\Tournaments;
 use App\Models\Tournaments\TournamentRegistration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Tournaments\Season;
+use App\Models\Players\Player;
+use App\Models\Tournaments\Tournament;
+use App\Models\Cards\Deck;
 
 class TournamentRegistrationApiTest extends TestCase
 {
@@ -12,13 +16,70 @@ class TournamentRegistrationApiTest extends TestCase
 
     private int $entityId;
 
+    private Season $auxSeason;
+    private Player $auxPlayer;
+    private Tournament $depTournament;
+    private Player $depPlayer;
+    private Deck $depDeck;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->auxSeason = Season::create([
+            'name' => 'test',
+            'start_date' => '2024-01-01',
+            'end_date' => '2024-01-01',
+            'format' => 'Standard',
+            'is_active' => true,
+        ]);
+        $this->auxPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depTournament = Tournament::create([
+            'name' => 'test',
+            'format' => 'Standard',
+            'tournament_type' => 'Swiss',
+            'status' => 'Draft',
+            'max_players' => 1,
+            'entry_fee' => '0.00',
+            'prize_pool' => '0.00',
+            'start_time' => '2024-01-01 00:00:00',
+            'is_online' => true,
+            'created_at' => '2024-01-01 00:00:00',
+            'season_id' => $this->auxSeason->id,
+            'organizer_id' => $this->auxPlayer->id,
+        ]);
+        $this->depPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depDeck = Deck::create([
+            'name' => 'test',
+            'format' => 'Standard',
+            'is_public' => true,
+            'is_tournament_legal' => true,
+            'wins' => 1,
+            'losses' => 1,
+            'created_at' => '2024-01-01 00:00:00',
+            'updated_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->depPlayer->id,
+        ]);
         $entity = TournamentRegistration::create([
-            'status' => 'test',
+            'status' => 'Registered',
             'points_earned' => 1,
             'registered_at' => '2024-01-01 00:00:00',
+            'tournament_id' => $this->depTournament->id,
+            'player_id' => $this->depPlayer->id,
+            'deck_id' => $this->depDeck->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -32,8 +93,12 @@ class TournamentRegistrationApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/tournament_registrations', [
+            'status' => 'Registered',
             'points_earned' => 1,
             'registered_at' => '2024-01-01 00:00:00',
+            'tournament_id' => $this->depTournament->id,
+            'player_id' => $this->depPlayer->id,
+            'deck_id' => $this->depDeck->id,
         ]);
         $response->assertStatus(201);
     }

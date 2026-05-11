@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\Content\Article;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
 
 class ArticleApiTest extends TestCase
 {
@@ -12,18 +13,29 @@ class ArticleApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depAuthor;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depAuthor = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
         $entity = Article::create([
             'title' => 'test',
             'slug' => 'test',
             'body' => 'test',
-            'status' => 'test',
-            'article_type' => 'test',
+            'status' => 'Draft',
+            'article_type' => 'Guide',
             'view_count' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
+            'author_id' => $this->depAuthor->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -40,9 +52,12 @@ class ArticleApiTest extends TestCase
             'title' => 'test',
             'slug' => 'test',
             'body' => 'test',
+            'status' => 'Draft',
+            'article_type' => 'Guide',
             'view_count' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
+            'author_id' => $this->depAuthor->id,
         ]);
         $response->assertStatus(201);
     }

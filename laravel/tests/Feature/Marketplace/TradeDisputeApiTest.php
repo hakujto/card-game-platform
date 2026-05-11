@@ -5,6 +5,11 @@ namespace Tests\Feature\Marketplace;
 use App\Models\Marketplace\TradeDispute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
+use App\Models\Cards\CardSet;
+use App\Models\Cards\Card;
+use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeTransaction;
 
 class TradeDisputeApiTest extends TestCase
 {
@@ -12,14 +17,77 @@ class TradeDisputeApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $auxPlayer;
+    private CardSet $auxCardSet;
+    private Card $auxCard;
+    private Tradelisting $auxTradelisting;
+    private TradeTransaction $depTransaction;
+    private Player $depOpenedBy;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $entity = TradeDispute::create([
-            'reason' => 'test',
+        $this->auxPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->auxCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
             'description' => 'test',
-            'status' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
+        $this->auxTradelisting = Tradelisting::create([
+            'listing_type' => 'FixedPrice',
+            'foil' => true,
+            'condition' => 'Mint',
+            'quantity' => 1,
+            'status' => 'Active',
+            'created_at' => '2024-01-01 00:00:00',
+            'seller_id' => $this->auxPlayer->id,
+            'card_id' => $this->auxCard->id,
+        ]);
+        $this->depTransaction = TradeTransaction::create([
+            'final_price' => '0.00',
+            'platform_fee' => '0.00',
+            'status' => 'Pending',
+            'listing_id' => $this->auxTradelisting->id,
+            'buyer_id' => $this->auxPlayer->id,
+            'seller_id' => $this->auxPlayer->id,
+        ]);
+        $this->depOpenedBy = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $entity = TradeDispute::create([
+            'reason' => 'ItemNotReceived',
+            'description' => 'test',
+            'status' => 'Open',
             'opened_at' => '2024-01-01 00:00:00',
+            'transaction_id' => $this->depTransaction->id,
+            'opened_by_id' => $this->depOpenedBy->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -32,9 +100,15 @@ class TradeDisputeApiTest extends TestCase
 
     public function test_create_returns_201(): void
     {
+        $freshSubListing = Tradelisting::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
+        $freshTransaction = TradeTransaction::create(['final_price' => '0.00', 'platform_fee' => '0.00', 'status' => 'Pending', 'listing_id' => $freshSubListing->id, 'buyer_id' => $this->auxPlayer->id, 'seller_id' => $this->auxPlayer->id]);
         $response = $this->postJson('/api/trade_disputes', [
+            'reason' => 'ItemNotReceived',
             'description' => 'test',
+            'status' => 'Open',
             'opened_at' => '2024-01-01 00:00:00',
+            'transaction_id' => $freshTransaction->id,
+            'opened_by_id' => $this->depOpenedBy->id,
         ]);
         $response->assertStatus(201);
     }

@@ -17,7 +17,7 @@ class PlayerApiTest extends TestCase
         parent::setUp();
         $entity = Player::create([
             'display_name' => 'test',
-            'rank' => 'test',
+            'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
             'is_verified' => true,
@@ -36,6 +36,7 @@ class PlayerApiTest extends TestCase
     {
         $response = $this->postJson('/api/players', [
             'display_name' => 'test',
+            'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
             'is_verified' => true,

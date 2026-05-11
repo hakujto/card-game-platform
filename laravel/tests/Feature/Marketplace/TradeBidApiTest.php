@@ -5,6 +5,10 @@ namespace Tests\Feature\Marketplace;
 use App\Models\Marketplace\TradeBid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
+use App\Models\Cards\CardSet;
+use App\Models\Cards\Card;
+use App\Models\Marketplace\Tradelisting;
 
 class TradeBidApiTest extends TestCase
 {
@@ -12,13 +16,67 @@ class TradeBidApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $auxPlayer;
+    private CardSet $auxCardSet;
+    private Card $auxCard;
+    private Tradelisting $depListing;
+    private Player $depBidder;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->auxPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->auxCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
+            'description' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
+        $this->depListing = Tradelisting::create([
+            'listing_type' => 'FixedPrice',
+            'foil' => true,
+            'condition' => 'Mint',
+            'quantity' => 1,
+            'status' => 'Active',
+            'created_at' => '2024-01-01 00:00:00',
+            'seller_id' => $this->auxPlayer->id,
+            'card_id' => $this->auxCard->id,
+        ]);
+        $this->depBidder = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
         $entity = TradeBid::create([
             'amount' => '0.00',
             'placed_at' => '2024-01-01 00:00:00',
             'is_winning' => true,
+            'listing_id' => $this->depListing->id,
+            'bidder_id' => $this->depBidder->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -35,6 +93,8 @@ class TradeBidApiTest extends TestCase
             'amount' => '0.00',
             'placed_at' => '2024-01-01 00:00:00',
             'is_winning' => true,
+            'listing_id' => $this->depListing->id,
+            'bidder_id' => $this->depBidder->id,
         ]);
         $response->assertStatus(201);
     }

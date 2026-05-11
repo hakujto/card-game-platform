@@ -19,7 +19,7 @@ class CardSetApiTest extends TestCase
             'name' => 'test',
             'code' => 'test',
             'release_date' => '2024-01-01',
-            'set_type' => 'test',
+            'set_type' => 'Core',
             'total_cards' => 1,
         ]);
         $this->entityId = $entity->id;
@@ -37,6 +37,7 @@ class CardSetApiTest extends TestCase
             'name' => 'test',
             'code' => 'test',
             'release_date' => '2024-01-01',
+            'set_type' => 'Core',
             'total_cards' => 1,
         ]);
         $response->assertStatus(201);

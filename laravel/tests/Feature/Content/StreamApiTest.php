@@ -5,6 +5,7 @@ namespace Tests\Feature\Content;
 use App\Models\Content\Stream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
 
 class StreamApiTest extends TestCase
 {
@@ -12,16 +13,27 @@ class StreamApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $depStreamer;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depStreamer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
         $entity = Stream::create([
             'title' => 'test',
             'stream_url' => 'https://example.com',
-            'platform' => 'test',
-            'status' => 'test',
+            'platform' => 'Twitch',
+            'status' => 'Scheduled',
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
+            'streamer_id' => $this->depStreamer->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -37,8 +49,11 @@ class StreamApiTest extends TestCase
         $response = $this->postJson('/api/streams', [
             'title' => 'test',
             'stream_url' => 'https://example.com',
+            'platform' => 'Twitch',
+            'status' => 'Scheduled',
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
+            'streamer_id' => $this->depStreamer->id,
         ]);
         $response->assertStatus(201);
     }

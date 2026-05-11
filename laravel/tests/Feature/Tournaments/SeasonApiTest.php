@@ -19,7 +19,7 @@ class SeasonApiTest extends TestCase
             'name' => 'test',
             'start_date' => '2024-01-01',
             'end_date' => '2024-01-01',
-            'format' => 'test',
+            'format' => 'Standard',
             'is_active' => true,
         ]);
         $this->entityId = $entity->id;
@@ -37,6 +37,7 @@ class SeasonApiTest extends TestCase
             'name' => 'test',
             'start_date' => '2024-01-01',
             'end_date' => '2024-01-01',
+            'format' => 'Standard',
             'is_active' => true,
         ]);
         $response->assertStatus(201);

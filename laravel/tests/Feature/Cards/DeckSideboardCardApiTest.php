@@ -5,6 +5,10 @@ namespace Tests\Feature\Cards;
 use App\Models\Cards\DeckSideboardCard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Players\Player;
+use App\Models\Cards\Deck;
+use App\Models\Cards\CardSet;
+use App\Models\Cards\Card;
 
 class DeckSideboardCardApiTest extends TestCase
 {
@@ -12,11 +16,57 @@ class DeckSideboardCardApiTest extends TestCase
 
     private int $entityId;
 
+    private Player $auxPlayer;
+    private Deck $depDeck;
+    private CardSet $auxCardSet;
+    private Card $depCard;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->auxPlayer = Player::create([
+            'display_name' => 'test',
+            'rank' => 'Bronze',
+            'rating' => 1,
+            'peak_rating' => 1,
+            'is_verified' => true,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+        $this->depDeck = Deck::create([
+            'name' => 'test',
+            'format' => 'Standard',
+            'is_public' => true,
+            'is_tournament_legal' => true,
+            'wins' => 1,
+            'losses' => 1,
+            'created_at' => '2024-01-01 00:00:00',
+            'updated_at' => '2024-01-01 00:00:00',
+            'player_id' => $this->auxPlayer->id,
+        ]);
+        $this->auxCardSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
+        $this->depCard = Card::create([
+            'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
+            'mana_cost' => 1,
+            'mana_colors' => 'White',
+            'description' => 'test',
+            'legal_formats' => 'Standard',
+            'is_banned' => true,
+            'is_restricted' => true,
+            'power_level' => 1,
+            'set_id' => $this->auxCardSet->id,
+        ]);
         $entity = DeckSideboardCard::create([
             'quantity' => 1,
+            'deck_id' => $this->depDeck->id,
+            'card_id' => $this->depCard->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -31,6 +81,8 @@ class DeckSideboardCardApiTest extends TestCase
     {
         $response = $this->postJson('/api/deck_sideboard_cards', [
             'quantity' => 1,
+            'deck_id' => $this->depDeck->id,
+            'card_id' => $this->depCard->id,
         ]);
         $response->assertStatus(201);
     }

@@ -5,6 +5,7 @@ namespace Tests\Feature\Cards;
 use App\Models\Cards\Card;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Cards\CardSet;
 
 class CardApiTest extends TestCase
 {
@@ -12,20 +13,30 @@ class CardApiTest extends TestCase
 
     private int $entityId;
 
+    private CardSet $depSet;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->depSet = CardSet::create([
+            'name' => 'test',
+            'code' => 'test',
+            'release_date' => '2024-01-01',
+            'set_type' => 'Core',
+            'total_cards' => 1,
+        ]);
         $entity = Card::create([
             'name' => 'test',
-            'card_type' => 'test',
-            'rarity' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
             'mana_cost' => 1,
-            'mana_colors' => 'test',
+            'mana_colors' => 'White',
             'description' => 'test',
-            'legal_formats' => 'test',
+            'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
             'power_level' => 1,
+            'set_id' => $this->depSet->id,
         ]);
         $this->entityId = $entity->id;
     }
@@ -40,11 +51,16 @@ class CardApiTest extends TestCase
     {
         $response = $this->postJson('/api/cards', [
             'name' => 'test',
+            'card_type' => 'Creature',
+            'rarity' => 'Common',
             'mana_cost' => 1,
+            'mana_colors' => 'White',
             'description' => 'test',
+            'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
             'power_level' => 1,
+            'set_id' => $this->depSet->id,
         ]);
         $response->assertStatus(201);
     }
