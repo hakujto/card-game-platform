@@ -8,12 +8,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class DeckTagApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $entity = new DeckTag();
@@ -26,16 +27,14 @@ class DeckTagApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/deck_tags');
+        $this->client->request('GET', '/api/deck_tags');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/deck_tags', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/deck_tags', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
         ])
@@ -45,16 +44,14 @@ class DeckTagApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/deck_tags/' . $this->entityId);
+        $this->client->request('GET', '/api/deck_tags/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/deck_tags/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('PATCH', '/api/deck_tags/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['name' => 'test'])
         );
         $this->assertResponseIsSuccessful();
@@ -63,8 +60,7 @@ class DeckTagApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/deck_tags/' . $this->entityId);
+        $this->client->request('DELETE', '/api/deck_tags/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

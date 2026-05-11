@@ -5,21 +5,53 @@ namespace App\Tests\Content;
 use App\Entity\Content\DraftPick;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tournaments\Season;
+use App\Entity\Players\PlayerSeasonStats;
+use App\Entity\Players\Player;
+use App\Entity\Content\DraftParticipant;
+use App\Entity\Cards\CardSet;
+use App\Entity\Cards\Card;
 
 class DraftPickApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
+    private Season $auxSeason;
+    private PlayerSeasonStats $auxPlayerSeasonStats;
+    private Player $auxPlayer;
+    private DraftParticipant $depParticipant;
+    private CardSet $auxCardSet;
+    private Card $depCard;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $this->auxSeason = new Season();
+        $this->em->persist($this->auxSeason);
+        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
+        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
+        $this->em->persist($this->auxPlayerSeasonStats);
+        $this->auxPlayer = new Player();
+        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
+        $this->em->persist($this->auxPlayer);
+        $this->depParticipant = new DraftParticipant();
+        $this->depParticipant->setPlayer($this->auxPlayer);
+        $this->em->persist($this->depParticipant);
+        $this->auxCardSet = new CardSet();
+        $this->em->persist($this->auxCardSet);
+        $this->depCard = new Card();
+        $this->depCard->setSet($this->auxCardSet);
+        $this->em->persist($this->depCard);
 
         $entity = new DraftPick();
         $entity->setPickNumber(1);
         $entity->setPackNumber(1);
         $entity->setPickedAt(new \DateTime('2024-01-01'));
+        $entity->setParticipant($this->depParticipant);
+        $entity->setCard($this->depCard);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -28,20 +60,20 @@ class DraftPickApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/draft_picks');
+        $this->client->request('GET', '/api/draft_picks');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'pick_number' => 1,
-            'pack_number' => 1,
-            'picked_at' => new \DateTime('2024-01-01'),
+            'pickNumber' => 1,
+            'packNumber' => 1,
+            'pickedAt' => '2024-01-01T00:00:00+00:00',
+            'participant' => (int) $this->depParticipant->getId(),
+            'card' => (int) $this->depCard->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -49,17 +81,15 @@ class DraftPickApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/draft_picks/' . $this->entityId);
+        $this->client->request('GET', '/api/draft_picks/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/draft_picks/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['pick_number' => 1])
+        $this->client->request('PATCH', '/api/draft_picks/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['pickNumber' => 1])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -67,8 +97,7 @@ class DraftPickApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/draft_picks/' . $this->entityId);
+        $this->client->request('DELETE', '/api/draft_picks/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

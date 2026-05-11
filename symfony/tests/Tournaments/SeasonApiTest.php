@@ -8,12 +8,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class SeasonApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $entity = new Season();
@@ -28,21 +29,19 @@ class SeasonApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/seasons');
+        $this->client->request('GET', '/api/seasons');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/seasons', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/seasons', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'start_date' => new \DateTime('2024-01-01'),
-            'end_date' => new \DateTime('2024-01-01'),
-            'is_active' => true,
+            'startDate' => '2024-01-01',
+            'endDate' => '2024-01-01',
+            'isActive' => true,
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -50,16 +49,14 @@ class SeasonApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/seasons/' . $this->entityId);
+        $this->client->request('GET', '/api/seasons/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/seasons/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('PATCH', '/api/seasons/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['name' => 'test'])
         );
         $this->assertResponseIsSuccessful();
@@ -68,8 +65,7 @@ class SeasonApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/seasons/' . $this->entityId);
+        $this->client->request('DELETE', '/api/seasons/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

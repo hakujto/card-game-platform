@@ -5,19 +5,35 @@ namespace App\Tests\Tournaments;
 use App\Entity\Tournaments\MatchRecord;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tournaments\Season;
+use App\Entity\Players\PlayerSeasonStats;
+use App\Entity\Players\Player;
 
 class MatchRecordApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
+    private Season $auxSeason;
+    private PlayerSeasonStats $auxPlayerSeasonStats;
+    private Player $depPlayer1;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $entity = new MatchRecord();
+        $this->auxSeason = new Season();
+        $this->em->persist($this->auxSeason);
+        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
+        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
+        $this->em->persist($this->auxPlayerSeasonStats);
+        $this->depPlayer1 = new Player();
+        $this->depPlayer1->setSeasonStats($this->auxPlayerSeasonStats);
+        $this->em->persist($this->depPlayer1);
 
+        $entity = new MatchRecord();
+        $entity->setPlayer1($this->depPlayer1);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -26,19 +42,18 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/matches');
+        $this->client->request('GET', '/api/matches');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'player1_wins' => 1,
-            'player2_wins' => 1,
+            'player1Wins' => 1,
+            'player2Wins' => 1,
+            'player1' => (int) $this->depPlayer1->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -46,17 +61,15 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/matches/' . $this->entityId);
+        $this->client->request('GET', '/api/matches/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/matches/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['table_number' => 1])
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['tableNumber' => 1])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -64,8 +77,7 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/matches/' . $this->entityId);
+        $this->client->request('DELETE', '/api/matches/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

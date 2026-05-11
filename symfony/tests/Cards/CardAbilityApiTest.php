@@ -5,19 +5,31 @@ namespace App\Tests\Cards;
 use App\Entity\Cards\CardAbility;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Cards\CardSet;
+use App\Entity\Cards\Card;
 
 class CardAbilityApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
+    private CardSet $auxCardSet;
+    private Card $depCard;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $this->auxCardSet = new CardSet();
+        $this->em->persist($this->auxCardSet);
+        $this->depCard = new Card();
+        $this->depCard->setSet($this->auxCardSet);
+        $this->em->persist($this->depCard);
 
         $entity = new CardAbility();
         $entity->setAbilityText('test');
+        $entity->setCard($this->depCard);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -26,18 +38,17 @@ class CardAbilityApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/card_abilities');
+        $this->client->request('GET', '/api/card_abilities');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/card_abilities', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/card_abilities', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'ability_text' => 'test',
+            'abilityText' => 'test',
+            'card' => (int) $this->depCard->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -45,17 +56,15 @@ class CardAbilityApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/card_abilities/' . $this->entityId);
+        $this->client->request('GET', '/api/card_abilities/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/card_abilities/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['ability_type' => 'test'])
+        $this->client->request('PATCH', '/api/card_abilities/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['abilityType' => 'test'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -63,8 +72,7 @@ class CardAbilityApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/card_abilities/' . $this->entityId);
+        $this->client->request('DELETE', '/api/card_abilities/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

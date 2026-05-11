@@ -5,20 +5,37 @@ namespace App\Tests\Content;
 use App\Entity\Content\DraftParticipant;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tournaments\Season;
+use App\Entity\Players\PlayerSeasonStats;
+use App\Entity\Players\Player;
 
 class DraftParticipantApiTest extends WebTestCase
 {
+    private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
+    private Season $auxSeason;
+    private PlayerSeasonStats $auxPlayerSeasonStats;
+    private Player $depPlayer;
 
     protected function setUp(): void
     {
-        $client = static::createClient();
+        $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $this->auxSeason = new Season();
+        $this->em->persist($this->auxSeason);
+        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
+        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
+        $this->em->persist($this->auxPlayerSeasonStats);
+        $this->depPlayer = new Player();
+        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
+        $this->em->persist($this->depPlayer);
 
         $entity = new DraftParticipant();
         $entity->setSeatNumber(1);
         $entity->setJoinedAt(new \DateTime('2024-01-01'));
+        $entity->setPlayer($this->depPlayer);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -27,19 +44,18 @@ class DraftParticipantApiTest extends WebTestCase
 
     public function testListReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/draft_participants');
+        $this->client->request('GET', '/api/draft_participants');
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testCreateReturns201(): void
     {
-        $client = static::createClient();
-        $client->request('POST', '/api/draft_participants', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $this->client->request('POST', '/api/draft_participants', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'seat_number' => 1,
-            'joined_at' => new \DateTime('2024-01-01'),
+            'seatNumber' => 1,
+            'joinedAt' => '2024-01-01T00:00:00+00:00',
+            'player' => (int) $this->depPlayer->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -47,17 +63,15 @@ class DraftParticipantApiTest extends WebTestCase
 
     public function testShowReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/api/draft_participants/' . $this->entityId);
+        $this->client->request('GET', '/api/draft_participants/' . $this->entityId);
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
     }
 
     public function testUpdateReturns200(): void
     {
-        $client = static::createClient();
-        $client->request('PATCH', '/api/draft_participants/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['seat_number' => 1])
+        $this->client->request('PATCH', '/api/draft_participants/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['seatNumber' => 1])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -65,8 +79,7 @@ class DraftParticipantApiTest extends WebTestCase
 
     public function testDeleteReturns204(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/draft_participants/' . $this->entityId);
+        $this->client->request('DELETE', '/api/draft_participants/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
 }

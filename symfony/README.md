@@ -1,12 +1,22 @@
 # CardsProject
 
+## Stack
+
+- Symfony 7 + Doctrine ORM (SQLite)
+- NelmioApiDocBundle (Swagger UI)
+- NelmioCorsBundle
+- PHPUnit
+
 ## Quick Start
 
 ```bash
 composer install
-php bin/console doctrine:migrations:migrate
+php bin/console doctrine:schema:create
 php -S localhost:8000 -t public/
 ```
+
+API:     http://localhost:8000/api/
+Swagger: http://localhost:8000/api/doc
 
 ## API Endpoints
 
@@ -105,3 +115,21 @@ php -S localhost:8000 -t public/
 - `GET/PUT/PATCH/DELETE` `/api/article_comments/{id}`
 - `GET/POST` `/api/streams`
 - `GET/PUT/PATCH/DELETE` `/api/streams/{id}`
+
+## Tests
+
+```bash
+php bin/phpunit
+```
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8000:8000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up PHP 8.4 with pdo_sqlite, installs Composer dependencies, creates the schema, and runs PHPUnit.

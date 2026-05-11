@@ -1,12 +1,1 @@
-vendor/
-.env
-.env.local
-*.log
-cache/
-tmp/
-*.cache
-composer.lock
-.idea/
-.vscode/
-*.swp
-node_modules/
+404: Not Found
