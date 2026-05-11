@@ -23,8 +23,6 @@ class CardBase(BaseModel):
     is_restricted: bool
     power_level: int
     set_id: int
-    rulings_id: int | None = None
-    abilities_id: int | None = None
 
 
 class CardCreate(CardBase):
@@ -49,8 +47,6 @@ class CardUpdate(BaseModel):
     is_restricted: bool | None = None
     power_level: int | None = None
     set_id: int | None = None
-    rulings_id: int | None = None
-    abilities_id: int | None = None
 
 
 class CardRead(CardBase):

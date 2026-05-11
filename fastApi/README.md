@@ -3,10 +3,10 @@
 ## Quick Start
 
 ```bash
-bash setup.sh
+python setup.py
 ```
 
-> `setup.sh` creates venv, installs dependencies, and starts uvicorn.
+> `setup.py` creates venv, installs dependencies, and starts uvicorn.
 
 ## Manual setup
 
@@ -130,3 +130,25 @@ Interactive docs: `http://localhost:8000/docs`
 source venv/bin/activate
 pytest
 ```
+
+## Architecture
+
+Bounded Contexts:
+
+- **Cards BC** (`cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
+- **Players BC** (`players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
+- **Tournaments BC** (`tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
+- **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Content BC** (`content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8000:8000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up Python 3.12, installs dependencies, and runs pytest.

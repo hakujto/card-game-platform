@@ -18,7 +18,6 @@ class PlayerBase(BaseModel):
     created_at: datetime
     last_active_at: datetime | None = None
     user_id: int | None = None
-    season_stats_id: int
     achievements_ids: list[int] = []
     friends_ids: list[int] = []
 
@@ -40,7 +39,6 @@ class PlayerUpdate(BaseModel):
     created_at: datetime | None = None
     last_active_at: datetime | None = None
     user_id: int | None = None
-    season_stats_id: int | None = None
     achievements_ids: list[int] | None = None
     friends_ids: list[int] | None = None
 

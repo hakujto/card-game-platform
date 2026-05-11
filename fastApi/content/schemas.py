@@ -12,7 +12,6 @@ class DraftSessionBase(BaseModel):
     created_at: datetime
     completed_at: datetime | None = None
     card_set_id: int
-    participants_id: int
 
 
 class DraftSessionCreate(DraftSessionBase):
@@ -26,7 +25,6 @@ class DraftSessionUpdate(BaseModel):
     created_at: datetime | None = None
     completed_at: datetime | None = None
     card_set_id: int | None = None
-    participants_id: int | None = None
 
 
 class DraftSessionRead(DraftSessionBase):
@@ -39,7 +37,6 @@ class DraftParticipantBase(BaseModel):
     joined_at: datetime
     session_id: int | None = None
     player_id: int
-    drafted_cards_id: int | None = None
 
 
 class DraftParticipantCreate(DraftParticipantBase):
@@ -51,7 +48,6 @@ class DraftParticipantUpdate(BaseModel):
     joined_at: datetime | None = None
     session_id: int | None = None
     player_id: int | None = None
-    drafted_cards_id: int | None = None
 
 
 class DraftParticipantRead(DraftParticipantBase):
@@ -98,7 +94,6 @@ class ArticleBase(BaseModel):
     updated_at: datetime
     author_id: int
     featured_deck_id: int | None = None
-    comments_id: int
     tags_ids: list[int] = []
 
 
@@ -120,7 +115,6 @@ class ArticleUpdate(BaseModel):
     updated_at: datetime | None = None
     author_id: int | None = None
     featured_deck_id: int | None = None
-    comments_id: int | None = None
     tags_ids: list[int] | None = None
 
 

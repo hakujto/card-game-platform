@@ -56,8 +56,6 @@ class Order(Base):
     shipped_at = Column(DateTime, nullable=True)
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
-    items_id = Column(Integer, ForeignKey("order_item.id"), nullable=False)
-    items = relationship("OrderItem", foreign_keys=[items_id])
     coupon_id = Column(Integer, ForeignKey("coupon.id"), nullable=True)
     coupon = relationship("Coupon", foreign_keys=[coupon_id])
 
@@ -129,8 +127,6 @@ class Tradelisting(Base):
     seller = relationship("Player", foreign_keys=[seller_id])
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
-    bids_id = Column(Integer, ForeignKey("trade_bid.id"), nullable=True)
-    bids = relationship("TradeBid", foreign_keys=[bids_id])
 
     def __repr__(self) -> str:
         return f"<Tradelisting id={{self.id}}>"

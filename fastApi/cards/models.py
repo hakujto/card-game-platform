@@ -58,10 +58,6 @@ class Card(Base):
     power_level = Column(Integer, default="1")
     set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
     set = relationship("CardSet", foreign_keys=[set_id])
-    rulings_id = Column(Integer, ForeignKey("card_ruling.id"), nullable=True)
-    rulings = relationship("CardRuling", foreign_keys=[rulings_id])
-    abilities_id = Column(Integer, ForeignKey("card_ability.id"), nullable=True)
-    abilities = relationship("CardAbility", foreign_keys=[abilities_id])
 
     def __repr__(self) -> str:
         return f"<Card id={{self.id}}>"

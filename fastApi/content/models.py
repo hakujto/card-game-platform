@@ -31,8 +31,6 @@ class DraftSession(Base):
     completed_at = Column(DateTime, nullable=True)
     card_set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
     card_set = relationship("CardSet", foreign_keys=[card_set_id])
-    participants_id = Column(Integer, ForeignKey("draft_participant.id"), nullable=False)
-    participants = relationship("DraftParticipant", foreign_keys=[participants_id])
 
     def __repr__(self) -> str:
         return f"<DraftSession id={{self.id}}>"
@@ -48,8 +46,6 @@ class DraftParticipant(Base):
     session = relationship("DraftSession", foreign_keys=[session_id])
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
-    drafted_cards_id = Column(Integer, ForeignKey("draft_pick.id"), nullable=True)
-    drafted_cards = relationship("DraftPick", foreign_keys=[drafted_cards_id])
 
     def __repr__(self) -> str:
         return f"<DraftParticipant id={{self.id}}>"
@@ -95,8 +91,6 @@ class Article(Base):
     author = relationship("Player", foreign_keys=[author_id])
     featured_deck_id = Column(Integer, ForeignKey("deck.id"), nullable=True)
     featured_deck = relationship("Deck", foreign_keys=[featured_deck_id])
-    comments_id = Column(Integer, ForeignKey("article_comment.id"), nullable=False)
-    comments = relationship("ArticleComment", foreign_keys=[comments_id])
     tags = relationship("ArticleTag", secondary=article_tags_assoc)
 
     def __repr__(self) -> str:

@@ -51,8 +51,6 @@ class Player(Base):
     last_active_at = Column(DateTime, nullable=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=True)
     user = relationship("User", foreign_keys=[user_id])
-    season_stats_id = Column(Integer, ForeignKey("player_season_stats.id"), nullable=False)
-    season_stats = relationship("PlayerSeasonStats", foreign_keys=[season_stats_id])
     achievements = relationship("Achievement", secondary=player_achievements_assoc)
     friends = relationship(
         "Player", secondary=player_friends_assoc,

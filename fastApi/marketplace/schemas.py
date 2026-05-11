@@ -55,7 +55,6 @@ class OrderBase(BaseModel):
     paid_at: datetime | None = None
     shipped_at: datetime | None = None
     player_id: int
-    items_id: int
     coupon_id: int | None = None
 
 
@@ -76,7 +75,6 @@ class OrderUpdate(BaseModel):
     paid_at: datetime | None = None
     shipped_at: datetime | None = None
     player_id: int | None = None
-    items_id: int | None = None
     coupon_id: int | None = None
 
 
@@ -158,7 +156,6 @@ class TradelistingBase(BaseModel):
     expires_at: datetime | None = None
     seller_id: int
     card_id: int
-    bids_id: int | None = None
 
 
 class TradelistingCreate(TradelistingBase):
@@ -180,7 +177,6 @@ class TradelistingUpdate(BaseModel):
     expires_at: datetime | None = None
     seller_id: int | None = None
     card_id: int | None = None
-    bids_id: int | None = None
 
 
 class TradelistingRead(TradelistingBase):

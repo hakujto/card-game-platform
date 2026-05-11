@@ -62,12 +62,6 @@ class Tournament(Base):
     season = relationship("Season", foreign_keys=[season_id])
     organizer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     organizer = relationship("Player", foreign_keys=[organizer_id])
-    registrations_id = Column(Integer, ForeignKey("tournament_registration.id"), nullable=True)
-    registrations = relationship("TournamentRegistration", foreign_keys=[registrations_id])
-    rounds_id = Column(Integer, ForeignKey("tournament_round.id"), nullable=True)
-    rounds = relationship("TournamentRound", foreign_keys=[rounds_id])
-    prizes_id = Column(Integer, ForeignKey("tournament_prize.id"), nullable=True)
-    prizes = relationship("TournamentPrize", foreign_keys=[prizes_id])
     judges = relationship("Player", secondary=tournament_judges_assoc)
 
     def __repr__(self) -> str:
@@ -131,8 +125,6 @@ class TournamentRound(Base):
     time_limit_minutes = Column(Integer, default="50")
     tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
     tournament = relationship("Tournament", foreign_keys=[tournament_id])
-    matches_id = Column(Integer, ForeignKey("match.id"), nullable=False)
-    matches = relationship("Match", foreign_keys=[matches_id])
 
     def __repr__(self) -> str:
         return f"<TournamentRound id={{self.id}}>"
@@ -159,8 +151,6 @@ class Match(Base):
     player1 = relationship("Player", foreign_keys=[player1_id])
     player2_id = Column(Integer, ForeignKey("player.id"), nullable=True)
     player2 = relationship("Player", foreign_keys=[player2_id])
-    games_id = Column(Integer, ForeignKey("game.id"), nullable=True)
-    games = relationship("Game", foreign_keys=[games_id])
 
     def __repr__(self) -> str:
         return f"<Match id={{self.id}}>"

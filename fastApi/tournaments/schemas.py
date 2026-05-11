@@ -49,9 +49,6 @@ class TournamentBase(BaseModel):
     created_at: datetime
     season_id: int
     organizer_id: int
-    registrations_id: int | None = None
-    rounds_id: int | None = None
-    prizes_id: int | None = None
     judges_ids: list[int] = []
 
 
@@ -76,9 +73,6 @@ class TournamentUpdate(BaseModel):
     created_at: datetime | None = None
     season_id: int | None = None
     organizer_id: int | None = None
-    registrations_id: int | None = None
-    rounds_id: int | None = None
-    prizes_id: int | None = None
     judges_ids: list[int] | None = None
 
 
@@ -146,7 +140,6 @@ class TournamentRoundBase(BaseModel):
     ended_at: datetime | None = None
     time_limit_minutes: int
     tournament_id: int
-    matches_id: int
 
 
 class TournamentRoundCreate(TournamentRoundBase):
@@ -160,7 +153,6 @@ class TournamentRoundUpdate(BaseModel):
     ended_at: datetime | None = None
     time_limit_minutes: int | None = None
     tournament_id: int | None = None
-    matches_id: int | None = None
 
 
 class TournamentRoundRead(TournamentRoundBase):
@@ -179,7 +171,6 @@ class MatchBase(BaseModel):
     round_id: int | None = None
     player1_id: int
     player2_id: int | None = None
-    games_id: int | None = None
 
 
 class MatchCreate(MatchBase):
@@ -197,7 +188,6 @@ class MatchUpdate(BaseModel):
     round_id: int | None = None
     player1_id: int | None = None
     player2_id: int | None = None
-    games_id: int | None = None
 
 
 class MatchRead(MatchBase):
