@@ -68,7 +68,7 @@ curl -s -X PUT "$BASE/seasons/$ID_Season" \
 echo && echo "=== PUT products/$ID_Product ==="
 curl -s -X PUT "$BASE/products/$ID_Product" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"productType\": \"SINGLECARD\", \"price\": \"1.00\", \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"card_id\": ${ID_Card:-null}, \"card_set_id\": ${ID_CardSet:-null}}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"productType\": \"SINGLECARD\", \"price\": \"1.00\", \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"cardId\": ${ID_Card:-null}, \"cardSetId\": ${ID_CardSet:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT coupons/$ID_Coupon ==="
 curl -s -X PUT "$BASE/coupons/$ID_Coupon" \
@@ -83,179 +83,179 @@ curl -s -X PUT "$BASE/article_tags/$ID_ArticleTag" \
 echo && echo "=== PUT cards/$ID_Card ==="
 curl -s -X PUT "$BASE/cards/$ID_Card" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"attack\": 1, \"defense\": 1, \"loyalty\": 1, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"set_id\": $ID_CardSet}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"attack\": 1, \"defense\": 1, \"loyalty\": 1, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"setId\": $ID_CardSet}" | python3 -m json.tool
 
 echo && echo "=== PUT player_season_statses/$ID_PlayerSeasonStats ==="
 curl -s -X PUT "$BASE/player_season_statses/$ID_PlayerSeasonStats" \
   -H "Content-Type: application/json" \
-  -d "{\"wins\": 1, \"losses\": 1, \"draws\": 1, \"tournamentWins\": 1, \"highestRank\": \"BRONZE\", \"seasonPoints\": 1, \"season_id\": $ID_Season}" | python3 -m json.tool
+  -d "{\"wins\": 1, \"losses\": 1, \"draws\": 1, \"tournamentWins\": 1, \"highestRank\": \"BRONZE\", \"seasonPoints\": 1, \"seasonId\": $ID_Season}" | python3 -m json.tool
 
 echo && echo "=== PUT order_items/$ID_OrderItem ==="
 curl -s -X PUT "$BASE/order_items/$ID_OrderItem" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"priceAtPurchase\": \"1.00\", \"foil\": true, \"product_id\": $ID_Product}" | python3 -m json.tool
+  -d "{\"quantity\": 1, \"priceAtPurchase\": \"1.00\", \"foil\": true, \"productId\": $ID_Product}" | python3 -m json.tool
 
 echo && echo "=== PUT card_rulings/$ID_CardRuling ==="
 curl -s -X PUT "$BASE/card_rulings/$ID_CardRuling" \
   -H "Content-Type: application/json" \
-  -d "{\"rulingText\": \"foo_ruling_text\", \"publishedAt\": \"2024-01-01\", \"source\": \"foo_source\", \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"rulingText\": \"foo_ruling_text\", \"publishedAt\": \"2024-01-01\", \"source\": \"foo_source\", \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT card_abilities/$ID_CardAbility ==="
 curl -s -X PUT "$BASE/card_abilities/$ID_CardAbility" \
   -H "Content-Type: application/json" \
-  -d "{\"abilityType\": \"KEYWORD\", \"keyword\": \"foo_keyword\", \"abilityText\": \"foo_ability_text\", \"timing\": \"ANY\", \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"abilityType\": \"KEYWORD\", \"keyword\": \"foo_keyword\", \"abilityText\": \"foo_ability_text\", \"timing\": \"ANY\", \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT crafting_recipes/$ID_CraftingRecipe ==="
 curl -s -X PUT "$BASE/crafting_recipes/$ID_CraftingRecipe" \
   -H "Content-Type: application/json" \
-  -d "{\"dustCost\": 1, \"isAvailable\": true, \"result_card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"dustCost\": 1, \"isAvailable\": true, \"resultCardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT card_price_histories/$ID_CardPriceHistory ==="
 curl -s -X PUT "$BASE/card_price_histories/$ID_CardPriceHistory" \
   -H "Content-Type: application/json" \
-  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"1.00\", \"minPrice\": \"1.00\", \"maxPrice\": \"1.00\", \"volume\": 1, \"foil\": true, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"1.00\", \"minPrice\": \"1.00\", \"maxPrice\": \"1.00\", \"volume\": 1, \"foil\": true, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT players/$ID_Player ==="
 curl -s -X PUT "$BASE/players/$ID_Player" \
   -H "Content-Type: application/json" \
-  -d "{\"displayName\": \"foo_display_name\", \"rank\": \"BRONZE\", \"rating\": 1, \"peakRating\": 1, \"bio\": \"foo_bio\", \"countryCode\": \"fo\", \"avatarUrl\": \"https://example.com/foo\", \"preferredFormat\": \"STANDARD\", \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\", \"season_stats_id\": $ID_PlayerSeasonStats}" | python3 -m json.tool
+  -d "{\"displayName\": \"foo_display_name\", \"rank\": \"BRONZE\", \"rating\": 1, \"peakRating\": 1, \"bio\": \"foo_bio\", \"countryCode\": \"fo\", \"avatarUrl\": \"https://example.com/foo\", \"preferredFormat\": \"STANDARD\", \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\", \"seasonStatsId\": $ID_PlayerSeasonStats}" | python3 -m json.tool
 
 echo && echo "=== PUT crafting_ingredients/$ID_CraftingIngredient ==="
 curl -s -X PUT "$BASE/crafting_ingredients/$ID_CraftingIngredient" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"recipe_id\": $ID_CraftingRecipe, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"quantity\": 1, \"recipeId\": $ID_CraftingRecipe, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT decks/$ID_Deck ==="
 curl -s -X PUT "$BASE/decks/$ID_Deck" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"STANDARD\", \"isPublic\": true, \"isTournamentLegal\": true, \"archetype\": \"AGGRO\", \"wins\": 1, \"losses\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"player_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"STANDARD\", \"isPublic\": true, \"isTournamentLegal\": true, \"archetype\": \"AGGRO\", \"wins\": 1, \"losses\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT player_collections/$ID_PlayerCollection ==="
 curl -s -X PUT "$BASE/player_collections/$ID_PlayerCollection" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"foil\": true, \"condition\": \"MINT\", \"acquiredAt\": \"2024-01-01T00:00:00Z\", \"acquiredVia\": \"PURCHASE\", \"player_id\": $ID_Player, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"quantity\": 1, \"foil\": true, \"condition\": \"MINT\", \"acquiredAt\": \"2024-01-01T00:00:00Z\", \"acquiredVia\": \"PURCHASE\", \"playerId\": $ID_Player, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT friendships/$ID_Friendship ==="
 curl -s -X PUT "$BASE/friendships/$ID_Friendship" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"PENDING\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"requester_id\": $ID_Player, \"receiver_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"status\": \"PENDING\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"requesterId\": $ID_Player, \"receiverId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT player_achievements/$ID_PlayerAchievement ==="
 curl -s -X PUT "$BASE/player_achievements/$ID_PlayerAchievement" \
   -H "Content-Type: application/json" \
-  -d "{\"earnedAt\": \"2024-01-01T00:00:00Z\", \"progress\": 1, \"isCompleted\": true, \"player_id\": $ID_Player, \"achievement_id\": $ID_Achievement}" | python3 -m json.tool
+  -d "{\"earnedAt\": \"2024-01-01T00:00:00Z\", \"progress\": 1, \"isCompleted\": true, \"playerId\": $ID_Player, \"achievementId\": $ID_Achievement}" | python3 -m json.tool
 
 echo && echo "=== PUT tournaments/$ID_Tournament ==="
 curl -s -X PUT "$BASE/tournaments/$ID_Tournament" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": \"1.00\", \"prizePool\": \"1.00\", \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": \"2024-01-01T00:00:00Z\", \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"season_id\": $ID_Season, \"organizer_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": \"1.00\", \"prizePool\": \"1.00\", \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": \"2024-01-01T00:00:00Z\", \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"seasonId\": $ID_Season, \"organizerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT matches/$ID_Match ==="
 curl -s -X PUT "$BASE/matches/$ID_Match" \
   -H "Content-Type: application/json" \
-  -d "{\"tableNumber\": 1, \"status\": \"PENDING\", \"player1Wins\": 1, \"player2Wins\": 1, \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"resultNotes\": \"foo_result_notes\", \"player1_id\": $ID_Player, \"player2_id\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"tableNumber\": 1, \"status\": \"PENDING\", \"player1Wins\": 1, \"player2Wins\": 1, \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"resultNotes\": \"foo_result_notes\", \"player1Id\": $ID_Player, \"player2Id\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT orders/$ID_Order ==="
 curl -s -X PUT "$BASE/orders/$ID_Order" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"PENDING\", \"total\": \"1.00\", \"discountApplied\": \"1.00\", \"currency\": \"foo\", \"paymentMethod\": \"CARD\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": \"2024-01-01T00:00:00Z\", \"player_id\": $ID_Player, \"items_id\": $ID_OrderItem, \"coupon_id\": ${ID_Coupon:-null}}" | python3 -m json.tool
+  -d "{\"status\": \"PENDING\", \"total\": \"1.00\", \"discountApplied\": \"1.00\", \"currency\": \"foo\", \"paymentMethod\": \"CARD\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": $ID_Player, \"itemsId\": $ID_OrderItem, \"couponId\": ${ID_Coupon:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT tradelistings/$ID_Tradelisting ==="
 curl -s -X PUT "$BASE/tradelistings/$ID_Tradelisting" \
   -H "Content-Type: application/json" \
-  -d "{\"listingType\": \"FIXEDPRICE\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"status\": \"ACTIVE\", \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"seller_id\": $ID_Player, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"listingType\": \"FIXEDPRICE\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"status\": \"ACTIVE\", \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": $ID_Player, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT draft_participants/$ID_DraftParticipant ==="
 curl -s -X PUT "$BASE/draft_participants/$ID_DraftParticipant" \
   -H "Content-Type: application/json" \
-  -d "{\"seatNumber\": 1, \"joinedAt\": \"2024-01-01T00:00:00Z\", \"player_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"seatNumber\": 1, \"joinedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT article_comments/$ID_ArticleComment ==="
 curl -s -X PUT "$BASE/article_comments/$ID_ArticleComment" \
   -H "Content-Type: application/json" \
-  -d "{\"body\": \"foo_body\", \"isHidden\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"author_id\": $ID_Player, \"parent_comment_id\": ${ID_ArticleComment:-null}}" | python3 -m json.tool
+  -d "{\"body\": \"foo_body\", \"isHidden\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"authorId\": $ID_Player, \"parentCommentId\": ${ID_ArticleComment:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT streams/$ID_Stream ==="
 curl -s -X PUT "$BASE/streams/$ID_Stream" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"platform\": \"TWITCH\", \"status\": \"SCHEDULED\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"vodUrl\": \"https://example.com/foo\", \"tournament_id\": ${ID_Tournament:-null}, \"streamer_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"platform\": \"TWITCH\", \"status\": \"SCHEDULED\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"vodUrl\": \"https://example.com/foo\", \"tournamentId\": ${ID_Tournament:-null}, \"streamerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT deck_cards/$ID_DeckCard ==="
 curl -s -X PUT "$BASE/deck_cards/$ID_DeckCard" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"isCommander\": true, \"deck_id\": $ID_Deck, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"quantity\": 1, \"isCommander\": true, \"deckId\": $ID_Deck, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT deck_sideboard_cards/$ID_DeckSideboardCard ==="
 curl -s -X PUT "$BASE/deck_sideboard_cards/$ID_DeckSideboardCard" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"deck_id\": $ID_Deck, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"quantity\": 1, \"deckId\": $ID_Deck, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT deck_tag_assignments/$ID_DeckTagAssignment ==="
 curl -s -X PUT "$BASE/deck_tag_assignments/$ID_DeckTagAssignment" \
   -H "Content-Type: application/json" \
-  -d "{\"deck_id\": $ID_Deck, \"tag_id\": $ID_DeckTag}" | python3 -m json.tool
+  -d "{\"deckId\": $ID_Deck, \"tagId\": $ID_DeckTag}" | python3 -m json.tool
 
 echo && echo "=== PUT tournament_judges/$ID_TournamentJudge ==="
 curl -s -X PUT "$BASE/tournament_judges/$ID_TournamentJudge" \
   -H "Content-Type: application/json" \
-  -d "{\"role\": \"HEADJUDGE\", \"tournament_id\": $ID_Tournament, \"player_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"role\": \"HEADJUDGE\", \"tournamentId\": $ID_Tournament, \"playerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT tournament_registrations/$ID_TournamentRegistration ==="
 curl -s -X PUT "$BASE/tournament_registrations/$ID_TournamentRegistration" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"REGISTERED\", \"seed\": 1, \"finalStanding\": 1, \"pointsEarned\": 1, \"registeredAt\": \"2024-01-01T00:00:00Z\", \"tournament_id\": $ID_Tournament, \"player_id\": $ID_Player, \"deck_id\": $ID_Deck}" | python3 -m json.tool
+  -d "{\"status\": \"REGISTERED\", \"seed\": 1, \"finalStanding\": 1, \"pointsEarned\": 1, \"registeredAt\": \"2024-01-01T00:00:00Z\", \"tournamentId\": $ID_Tournament, \"playerId\": $ID_Player, \"deckId\": $ID_Deck}" | python3 -m json.tool
 
 echo && echo "=== PUT tournament_prizes/$ID_TournamentPrize ==="
 curl -s -X PUT "$BASE/tournament_prizes/$ID_TournamentPrize" \
   -H "Content-Type: application/json" \
-  -d "{\"placementFrom\": 1, \"placementTo\": 1, \"prizeType\": \"CURRENCY\", \"amount\": \"1.00\", \"description\": \"foo_description\", \"packsCount\": 1, \"seasonPoints\": 1, \"tournament_id\": $ID_Tournament}" | python3 -m json.tool
+  -d "{\"placementFrom\": 1, \"placementTo\": 1, \"prizeType\": \"CURRENCY\", \"amount\": \"1.00\", \"description\": \"foo_description\", \"packsCount\": 1, \"seasonPoints\": 1, \"tournamentId\": $ID_Tournament}" | python3 -m json.tool
 
 echo && echo "=== PUT tournament_rounds/$ID_TournamentRound ==="
 curl -s -X PUT "$BASE/tournament_rounds/$ID_TournamentRound" \
   -H "Content-Type: application/json" \
-  -d "{\"roundNumber\": 1, \"status\": \"PENDING\", \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"timeLimitMinutes\": 1, \"tournament_id\": $ID_Tournament, \"matches_id\": $ID_Match}" | python3 -m json.tool
+  -d "{\"roundNumber\": 1, \"status\": \"PENDING\", \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"timeLimitMinutes\": 1, \"tournamentId\": $ID_Tournament, \"matchesId\": $ID_Match}" | python3 -m json.tool
 
 echo && echo "=== PUT games/$ID_Game ==="
 curl -s -X PUT "$BASE/games/$ID_Game" \
   -H "Content-Type: application/json" \
-  -d "{\"gameNumber\": 1, \"winnerSide\": \"PLAYER1\", \"turnsPlayed\": 1, \"durationSeconds\": 1, \"endedBy\": \"NORMAL\", \"replayUrl\": \"https://example.com/foo\", \"match_id\": $ID_Match, \"winner_id\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"gameNumber\": 1, \"winnerSide\": \"PLAYER1\", \"turnsPlayed\": 1, \"durationSeconds\": 1, \"endedBy\": \"NORMAL\", \"replayUrl\": \"https://example.com/foo\", \"matchId\": $ID_Match, \"winnerId\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT trade_bids/$ID_TradeBid ==="
 curl -s -X PUT "$BASE/trade_bids/$ID_TradeBid" \
   -H "Content-Type: application/json" \
-  -d "{\"amount\": \"1.00\", \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listing_id\": $ID_Tradelisting, \"bidder_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"amount\": \"1.00\", \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listingId\": $ID_Tradelisting, \"bidderId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT trade_transactions/$ID_TradeTransaction ==="
 curl -s -X PUT "$BASE/trade_transactions/$ID_TradeTransaction" \
   -H "Content-Type: application/json" \
-  -d "{\"finalPrice\": \"1.00\", \"platformFee\": \"1.00\", \"status\": \"PENDING\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"listing_id\": $ID_Tradelisting, \"buyer_id\": $ID_Player, \"seller_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"finalPrice\": \"1.00\", \"platformFee\": \"1.00\", \"status\": \"PENDING\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"listingId\": $ID_Tradelisting, \"buyerId\": $ID_Player, \"sellerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT draft_sessions/$ID_DraftSession ==="
 curl -s -X PUT "$BASE/draft_sessions/$ID_DraftSession" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"WAITINGFORPLAYERS\", \"draftType\": \"BOOSTER\", \"seats\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"card_set_id\": $ID_CardSet, \"participants_id\": $ID_DraftParticipant}" | python3 -m json.tool
+  -d "{\"status\": \"WAITINGFORPLAYERS\", \"draftType\": \"BOOSTER\", \"seats\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"cardSetId\": $ID_CardSet, \"participantsId\": $ID_DraftParticipant}" | python3 -m json.tool
 
 echo && echo "=== PUT draft_picks/$ID_DraftPick ==="
 curl -s -X PUT "$BASE/draft_picks/$ID_DraftPick" \
   -H "Content-Type: application/json" \
-  -d "{\"pickNumber\": 1, \"packNumber\": 1, \"pickedAt\": \"2024-01-01T00:00:00Z\", \"participant_id\": $ID_DraftParticipant, \"card_id\": $ID_Card}" | python3 -m json.tool
+  -d "{\"pickNumber\": 1, \"packNumber\": 1, \"pickedAt\": \"2024-01-01T00:00:00Z\", \"participantId\": $ID_DraftParticipant, \"cardId\": $ID_Card}" | python3 -m json.tool
 
 echo && echo "=== PUT articles/$ID_Article ==="
 curl -s -X PUT "$BASE/articles/$ID_Article" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"DRAFT\", \"articleType\": \"GUIDE\", \"viewCount\": 1, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author_id\": $ID_Player, \"featured_deck_id\": ${ID_Deck:-null}, \"comments_id\": $ID_ArticleComment}" | python3 -m json.tool
+  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"DRAFT\", \"articleType\": \"GUIDE\", \"viewCount\": 1, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"authorId\": $ID_Player, \"featuredDeckId\": ${ID_Deck:-null}, \"commentsId\": $ID_ArticleComment}" | python3 -m json.tool
 
 echo && echo "=== PUT awarded_prizes/$ID_AwardedPrize ==="
 curl -s -X PUT "$BASE/awarded_prizes/$ID_AwardedPrize" \
   -H "Content-Type: application/json" \
-  -d "{\"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00Z\", \"claimed\": true, \"claimedAt\": \"2024-01-01T00:00:00Z\", \"prize_id\": $ID_TournamentPrize, \"player_id\": $ID_Player}" | python3 -m json.tool
+  -d "{\"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00Z\", \"claimed\": true, \"claimedAt\": \"2024-01-01T00:00:00Z\", \"prizeId\": $ID_TournamentPrize, \"playerId\": $ID_Player}" | python3 -m json.tool
 
 echo && echo "=== PUT trade_disputes/$ID_TradeDispute ==="
 curl -s -X PUT "$BASE/trade_disputes/$ID_TradeDispute" \
   -H "Content-Type: application/json" \
-  -d "{\"reason\": \"ITEMNOTRECEIVED\", \"description\": \"foo_description\", \"status\": \"OPEN\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": \"2024-01-01T00:00:00Z\", \"transaction_id\": $ID_TradeTransaction, \"opened_by_id\": $ID_Player, \"resolved_by_id\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"reason\": \"ITEMNOTRECEIVED\", \"description\": \"foo_description\", \"status\": \"OPEN\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": \"2024-01-01T00:00:00Z\", \"transactionId\": $ID_TradeTransaction, \"openedById\": $ID_Player, \"resolvedById\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT article_tag_assignments/$ID_ArticleTagAssignment ==="
 curl -s -X PUT "$BASE/article_tag_assignments/$ID_ArticleTagAssignment" \
   -H "Content-Type: application/json" \
-  -d "{\"article_id\": $ID_Article, \"tag_id\": $ID_ArticleTag}" | python3 -m json.tool
+  -d "{\"articleId\": $ID_Article, \"tagId\": $ID_ArticleTag}" | python3 -m json.tool

@@ -245,3 +245,15 @@ DELETE /api/streams/:id  — delete
 ```bash
 npm test
 ```
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 3000:3000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+installs Node.js deps, generates Prisma client, pushes the DB schema, and runs Jest.
