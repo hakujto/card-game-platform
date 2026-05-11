@@ -115,6 +115,60 @@ Swagger: http://localhost:8000/api/doc
 - `GET/PUT/PATCH/DELETE` `/api/article_comments/{id}`
 - `GET/POST` `/api/streams`
 - `GET/PUT/PATCH/DELETE` `/api/streams/{id}`
+- `GET/POST` `/api/deck_reviews`
+- `GET/PUT/PATCH/DELETE` `/api/deck_reviews/{id}`
+- `GET/POST` `/api/content_likes`
+- `GET/PUT/PATCH/DELETE` `/api/content_likes/{id}`
+- `GET/POST` `/api/bookmarks`
+- `GET/PUT/PATCH/DELETE` `/api/bookmarks/{id}`
+
+### Notifications BC
+- `GET/POST` `/api/notifications`
+- `GET/PUT/PATCH/DELETE` `/api/notifications/{id}`
+- `GET/POST` `/api/notification_preferences`
+- `GET/PUT/PATCH/DELETE` `/api/notification_preferences/{id}`
+- `GET/POST` `/api/push_devices`
+- `GET/PUT/PATCH/DELETE` `/api/push_devices/{id}`
+
+### Messaging BC
+- `GET/POST` `/api/conversations`
+- `GET/PUT/PATCH/DELETE` `/api/conversations/{id}`
+- `GET/POST` `/api/messages`
+- `GET/PUT/PATCH/DELETE` `/api/messages/{id}`
+
+### Moderation BC
+- `GET/POST` `/api/player_reports`
+- `GET/PUT/PATCH/DELETE` `/api/player_reports/{id}`
+- `GET/POST` `/api/moderation_actions`
+- `GET/PUT/PATCH/DELETE` `/api/moderation_actions/{id}`
+- `GET/POST` `/api/content_reports`
+- `GET/PUT/PATCH/DELETE` `/api/content_reports/{id}`
+
+### Economy BC
+- `GET/POST` `/api/wallets`
+- `GET/PUT/PATCH/DELETE` `/api/wallets/{id}`
+- `GET/POST` `/api/wallet_transactions`
+- `GET/PUT/PATCH/DELETE` `/api/wallet_transactions/{id}`
+- `GET/POST` `/api/top_up_orders`
+- `GET/PUT/PATCH/DELETE` `/api/top_up_orders/{id}`
+- `GET/POST` `/api/top_up_packages`
+- `GET/PUT/PATCH/DELETE` `/api/top_up_packages/{id}`
+
+### Leaderboard BC
+- `GET/POST` `/api/leaderboard_entries`
+- `GET/PUT/PATCH/DELETE` `/api/leaderboard_entries/{id}`
+- `GET/POST` `/api/leaderboard_snapshots`
+- `GET/PUT/PATCH/DELETE` `/api/leaderboard_snapshots/{id}`
+
+### Administration BC
+- `GET/POST` `/api/feature_flags`
+- `GET/PUT/PATCH/DELETE` `/api/feature_flags/{id}`
+- `GET/POST` `/api/system_announcements`
+- `GET/PUT/PATCH/DELETE` `/api/system_announcements/{id}`
+- `GET/POST` `/api/audit_logs`
+- `GET/PUT/PATCH/DELETE` `/api/audit_logs/{id}`
+- `GET/POST` `/api/platform_configs`
+- `GET/PUT/PATCH/DELETE` `/api/platform_configs/{id}`
 
 ## Tests
 

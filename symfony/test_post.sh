@@ -12,6 +12,9 @@ ID_Season=""
 ID_Product=""
 ID_Coupon=""
 ID_ArticleTag=""
+ID_TopUpPackage=""
+ID_FeatureFlag=""
+ID_SystemAnnouncement=""
 ID_Card=""
 ID_PlayerSeasonStats=""
 ID_OrderItem=""
@@ -32,9 +35,24 @@ ID_Tradelisting=""
 ID_DraftParticipant=""
 ID_ArticleComment=""
 ID_Stream=""
+ID_ContentLike=""
+ID_Bookmark=""
+ID_Notification=""
+ID_NotificationPreference=""
+ID_PushDevice=""
+ID_Message=""
+ID_PlayerReport=""
+ID_ModerationAction=""
+ID_ContentReport=""
+ID_Wallet=""
+ID_TopUpOrder=""
+ID_LeaderboardEntry=""
+ID_AuditLog=""
+ID_PlatformConfig=""
 ID_DeckCard=""
 ID_DeckSideboardCard=""
 ID_DeckTagAssignment=""
+ID_DeckReview=""
 ID_TournamentJudge=""
 ID_TournamentRegistration=""
 ID_TournamentPrize=""
@@ -45,6 +63,9 @@ ID_TradeTransaction=""
 ID_DraftSession=""
 ID_DraftPick=""
 ID_Article=""
+ID_Conversation=""
+ID_WalletTransaction=""
+ID_LeaderboardSnapshot=""
 ID_AwardedPrize=""
 ID_TradeDispute=""
 ID_ArticleTagAssignment=""
@@ -83,6 +104,21 @@ ID_ArticleTag=$(curl -s -X POST "$BASE/article_tags" \
   -H "Content-Type: application/json" \
   -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug\"}" | extract_id)
 echo "ArticleTag id=$ID_ArticleTag"
+
+ID_TopUpPackage=$(curl -s -X POST "$BASE/top_up_packages" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"foo_name\", \"price\": \"1.00\", \"currency\": \"foo\", \"creditsAmount\": \"1.00\", \"gemsAmount\": 1, \"bonusPercent\": 1, \"isActive\": true, \"featured\": true}" | extract_id)
+echo "TopUpPackage id=$ID_TopUpPackage"
+
+ID_FeatureFlag=$(curl -s -X POST "$BASE/feature_flags" \
+  -H "Content-Type: application/json" \
+  -d "{\"key\": \"foo_key\", \"isEnabled\": true, \"rolloutPercent\": 1, \"description\": \"foo_description\", \"updatedAt\": \"2024-01-01T00:00:00Z\"}" | extract_id)
+echo "FeatureFlag id=$ID_FeatureFlag"
+
+ID_SystemAnnouncement=$(curl -s -X POST "$BASE/system_announcements" \
+  -H "Content-Type: application/json" \
+  -d "{\"title\": \"foo_title\", \"body\": \"foo_body\", \"announcementType\": \"Maintenance\", \"severity\": \"Info\", \"isActive\": true, \"showFrom\": \"2024-01-01T00:00:00Z\", \"showUntil\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\"}" | extract_id)
+echo "SystemAnnouncement id=$ID_SystemAnnouncement"
 
 ID_Card=$(curl -s -X POST "$BASE/cards" \
   -H "Content-Type: application/json" \
@@ -184,6 +220,76 @@ ID_Stream=$(curl -s -X POST "$BASE/streams" \
   -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"platform\": \"Twitch\", \"status\": \"Scheduled\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"vodUrl\": \"https://example.com/foo\", \"tournament\": ${ID_Tournament:-null}, \"streamer\": $ID_Player}" | extract_id)
 echo "Stream id=$ID_Stream"
 
+ID_ContentLike=$(curl -s -X POST "$BASE/content_likes" \
+  -H "Content-Type: application/json" \
+  -d "{\"targetType\": \"Article\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player, \"article\": ${ID_Article:-null}, \"deck\": ${ID_Deck:-null}}" | extract_id)
+echo "ContentLike id=$ID_ContentLike"
+
+ID_Bookmark=$(curl -s -X POST "$BASE/bookmarks" \
+  -H "Content-Type: application/json" \
+  -d "{\"targetType\": \"Article\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player, \"article\": ${ID_Article:-null}, \"deck\": ${ID_Deck:-null}}" | extract_id)
+echo "Bookmark id=$ID_Bookmark"
+
+ID_Notification=$(curl -s -X POST "$BASE/notifications" \
+  -H "Content-Type: application/json" \
+  -d "{\"notificationType\": \"TournamentStart\", \"title\": \"foo_title\", \"body\": \"foo_body\", \"isRead\": true, \"readAt\": \"2024-01-01T00:00:00Z\", \"actionUrl\": \"foo_action_url\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player}" | extract_id)
+echo "Notification id=$ID_Notification"
+
+ID_NotificationPreference=$(curl -s -X POST "$BASE/notification_preferences" \
+  -H "Content-Type: application/json" \
+  -d "{\"notificationType\": \"TournamentStart\", \"emailEnabled\": true, \"pushEnabled\": true, \"inAppEnabled\": true, \"player\": $ID_Player}" | extract_id)
+echo "NotificationPreference id=$ID_NotificationPreference"
+
+ID_PushDevice=$(curl -s -X POST "$BASE/push_devices" \
+  -H "Content-Type: application/json" \
+  -d "{\"deviceToken\": \"foo_device_token\", \"platform\": \"iOS\", \"deviceName\": \"foo_device_name\", \"isActive\": true, \"registeredAt\": \"2024-01-01T00:00:00Z\", \"lastUsedAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player}" | extract_id)
+echo "PushDevice id=$ID_PushDevice"
+
+ID_Message=$(curl -s -X POST "$BASE/messages" \
+  -H "Content-Type: application/json" \
+  -d "{\"body\": \"foo_body\", \"isRead\": true, \"readAt\": \"2024-01-01T00:00:00Z\", \"isDeletedBySender\": true, \"isDeletedByReceiver\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"sender\": $ID_Player}" | extract_id)
+echo "Message id=$ID_Message"
+
+ID_PlayerReport=$(curl -s -X POST "$BASE/player_reports" \
+  -H "Content-Type: application/json" \
+  -d "{\"reason\": \"Cheating\", \"description\": \"foo_description\", \"status\": \"Open\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"reviewedAt\": \"2024-01-01T00:00:00Z\", \"reportedPlayer\": $ID_Player, \"reporter\": $ID_Player, \"reviewedBy\": ${ID_Player:-null}, \"match\": ${ID_Match:-null}}" | extract_id)
+echo "PlayerReport id=$ID_PlayerReport"
+
+ID_ModerationAction=$(curl -s -X POST "$BASE/moderation_actions" \
+  -H "Content-Type: application/json" \
+  -d "{\"actionType\": \"Warning\", \"reason\": \"foo_reason\", \"durationDays\": 1, \"expiresAt\": \"2024-01-01T00:00:00Z\", \"isActive\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"revokedAt\": \"2024-01-01T00:00:00Z\", \"revokeReason\": \"foo_revoke_reason\", \"player\": $ID_Player, \"moderator\": $ID_Player, \"report\": ${ID_PlayerReport:-null}}" | extract_id)
+echo "ModerationAction id=$ID_ModerationAction"
+
+ID_ContentReport=$(curl -s -X POST "$BASE/content_reports" \
+  -H "Content-Type: application/json" \
+  -d "{\"targetType\": \"Article\", \"reason\": \"Spam\", \"description\": \"foo_description\", \"status\": \"Open\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"reviewedAt\": \"2024-01-01T00:00:00Z\", \"reporter\": $ID_Player, \"reviewedBy\": ${ID_Player:-null}, \"article\": ${ID_Article:-null}, \"articleComment\": ${ID_ArticleComment:-null}}" | extract_id)
+echo "ContentReport id=$ID_ContentReport"
+
+ID_Wallet=$(curl -s -X POST "$BASE/wallets" \
+  -H "Content-Type: application/json" \
+  -d "{\"creditsBalance\": \"1.00\", \"dustBalance\": 1, \"gemsBalance\": 1, \"updatedAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player}" | extract_id)
+echo "Wallet id=$ID_Wallet"
+
+ID_TopUpOrder=$(curl -s -X POST "$BASE/top_up_orders" \
+  -H "Content-Type: application/json" \
+  -d "{\"amountPaid\": \"1.00\", \"currencyPaid\": \"foo\", \"creditsGranted\": \"1.00\", \"gemsGranted\": 1, \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"status\": \"Pending\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player}" | extract_id)
+echo "TopUpOrder id=$ID_TopUpOrder"
+
+ID_LeaderboardEntry=$(curl -s -X POST "$BASE/leaderboard_entries" \
+  -H "Content-Type: application/json" \
+  -d "{\"position\": 1, \"rating\": 1, \"wins\": 1, \"losses\": 1, \"winRate\": \"1.00\", \"tournamentWins\": 1, \"seasonPoints\": 1, \"updatedAt\": \"2024-01-01T00:00:00Z\", \"player\": $ID_Player, \"season\": $ID_Season}" | extract_id)
+echo "LeaderboardEntry id=$ID_LeaderboardEntry"
+
+ID_AuditLog=$(curl -s -X POST "$BASE/audit_logs" \
+  -H "Content-Type: application/json" \
+  -d "{\"action\": \"foo_action\", \"targetType\": \"foo_target_type\", \"targetId\": \"foo_target_id\", \"oldValue\": \"foo_old_value\", \"newValue\": \"foo_new_value\", \"ipAddress\": \"foo_ip_address\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"admin\": $ID_Player}" | extract_id)
+echo "AuditLog id=$ID_AuditLog"
+
+ID_PlatformConfig=$(curl -s -X POST "$BASE/platform_configs" \
+  -H "Content-Type: application/json" \
+  -d "{\"configKey\": \"foo_config_key\", \"configValue\": \"foo_config_value\", \"valueType\": \"Int\", \"description\": \"foo_description\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"updatedBy\": $ID_Player}" | extract_id)
+echo "PlatformConfig id=$ID_PlatformConfig"
+
 ID_DeckCard=$(curl -s -X POST "$BASE/deck_cards" \
   -H "Content-Type: application/json" \
   -d "{\"quantity\": 1, \"isCommander\": true, \"deck\": $ID_Deck, \"card\": $ID_Card}" | extract_id)
@@ -198,6 +304,11 @@ ID_DeckTagAssignment=$(curl -s -X POST "$BASE/deck_tag_assignments" \
   -H "Content-Type: application/json" \
   -d "{\"deck\": $ID_Deck, \"tag\": $ID_DeckTag}" | extract_id)
 echo "DeckTagAssignment id=$ID_DeckTagAssignment"
+
+ID_DeckReview=$(curl -s -X POST "$BASE/deck_reviews" \
+  -H "Content-Type: application/json" \
+  -d "{\"rating\": 1, \"body\": \"foo_body\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"deck\": $ID_Deck, \"author\": $ID_Player}" | extract_id)
+echo "DeckReview id=$ID_DeckReview"
 
 ID_TournamentJudge=$(curl -s -X POST "$BASE/tournament_judges" \
   -H "Content-Type: application/json" \
@@ -248,6 +359,21 @@ ID_Article=$(curl -s -X POST "$BASE/articles" \
   -H "Content-Type: application/json" \
   -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"Draft\", \"articleType\": \"Guide\", \"viewCount\": 1, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": $ID_Player, \"featuredDeck\": ${ID_Deck:-null}, \"comments\": $ID_ArticleComment}" | extract_id)
 echo "Article id=$ID_Article"
+
+ID_Conversation=$(curl -s -X POST "$BASE/conversations" \
+  -H "Content-Type: application/json" \
+  -d "{\"createdAt\": \"2024-01-01T00:00:00Z\", \"lastMessageAt\": \"2024-01-01T00:00:00Z\", \"isArchivedByPlayer1\": true, \"isArchivedByPlayer2\": true, \"player1\": $ID_Player, \"player2\": $ID_Player, \"messages\": $ID_Message}" | extract_id)
+echo "Conversation id=$ID_Conversation"
+
+ID_WalletTransaction=$(curl -s -X POST "$BASE/wallet_transactions" \
+  -H "Content-Type: application/json" \
+  -d "{\"transactionType\": \"TopUp\", \"currency\": \"Credits\", \"amount\": \"1.00\", \"balanceAfter\": \"1.00\", \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"wallet\": $ID_Wallet, \"order\": ${ID_Order:-null}, \"tradeTransaction\": ${ID_TradeTransaction:-null}}" | extract_id)
+echo "WalletTransaction id=$ID_WalletTransaction"
+
+ID_LeaderboardSnapshot=$(curl -s -X POST "$BASE/leaderboard_snapshots" \
+  -H "Content-Type: application/json" \
+  -d "{\"snapshotDate\": \"2024-01-01\", \"position\": 1, \"rating\": 1, \"seasonPoints\": 1, \"entry\": $ID_LeaderboardEntry}" | extract_id)
+echo "LeaderboardSnapshot id=$ID_LeaderboardSnapshot"
 
 ID_AwardedPrize=$(curl -s -X POST "$BASE/awarded_prizes" \
   -H "Content-Type: application/json" \

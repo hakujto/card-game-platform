@@ -8,6 +8,9 @@ ID_Season=1
 ID_Product=1
 ID_Coupon=1
 ID_ArticleTag=1
+ID_TopUpPackage=1
+ID_FeatureFlag=1
+ID_SystemAnnouncement=1
 ID_Card=1
 ID_PlayerSeasonStats=1
 ID_OrderItem=1
@@ -28,9 +31,24 @@ ID_Tradelisting=1
 ID_DraftParticipant=1
 ID_ArticleComment=1
 ID_Stream=1
+ID_ContentLike=1
+ID_Bookmark=1
+ID_Notification=1
+ID_NotificationPreference=1
+ID_PushDevice=1
+ID_Message=1
+ID_PlayerReport=1
+ID_ModerationAction=1
+ID_ContentReport=1
+ID_Wallet=1
+ID_TopUpOrder=1
+ID_LeaderboardEntry=1
+ID_AuditLog=1
+ID_PlatformConfig=1
 ID_DeckCard=1
 ID_DeckSideboardCard=1
 ID_DeckTagAssignment=1
+ID_DeckReview=1
 ID_TournamentJudge=1
 ID_TournamentRegistration=1
 ID_TournamentPrize=1
@@ -41,6 +59,9 @@ ID_TradeTransaction=1
 ID_DraftSession=1
 ID_DraftPick=1
 ID_Article=1
+ID_Conversation=1
+ID_WalletTransaction=1
+ID_LeaderboardSnapshot=1
 ID_AwardedPrize=1
 ID_TradeDispute=1
 ID_ArticleTagAssignment=1
@@ -53,6 +74,15 @@ curl -s -X DELETE "$BASE/trade_disputes/$ID_TradeDispute" -o /dev/null -w "HTTP 
 
 echo && echo "=== DELETE awarded_prizes/$ID_AwardedPrize ==="
 curl -s -X DELETE "$BASE/awarded_prizes/$ID_AwardedPrize" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE leaderboard_snapshots/$ID_LeaderboardSnapshot ==="
+curl -s -X DELETE "$BASE/leaderboard_snapshots/$ID_LeaderboardSnapshot" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE wallet_transactions/$ID_WalletTransaction ==="
+curl -s -X DELETE "$BASE/wallet_transactions/$ID_WalletTransaction" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE conversations/$ID_Conversation ==="
+curl -s -X DELETE "$BASE/conversations/$ID_Conversation" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE articles/$ID_Article ==="
 curl -s -X DELETE "$BASE/articles/$ID_Article" -o /dev/null -w "HTTP %{http_code}\n"
@@ -84,6 +114,9 @@ curl -s -X DELETE "$BASE/tournament_registrations/$ID_TournamentRegistration" -o
 echo && echo "=== DELETE tournament_judges/$ID_TournamentJudge ==="
 curl -s -X DELETE "$BASE/tournament_judges/$ID_TournamentJudge" -o /dev/null -w "HTTP %{http_code}\n"
 
+echo && echo "=== DELETE deck_reviews/$ID_DeckReview ==="
+curl -s -X DELETE "$BASE/deck_reviews/$ID_DeckReview" -o /dev/null -w "HTTP %{http_code}\n"
+
 echo && echo "=== DELETE deck_tag_assignments/$ID_DeckTagAssignment ==="
 curl -s -X DELETE "$BASE/deck_tag_assignments/$ID_DeckTagAssignment" -o /dev/null -w "HTTP %{http_code}\n"
 
@@ -92,6 +125,48 @@ curl -s -X DELETE "$BASE/deck_sideboard_cards/$ID_DeckSideboardCard" -o /dev/nul
 
 echo && echo "=== DELETE deck_cards/$ID_DeckCard ==="
 curl -s -X DELETE "$BASE/deck_cards/$ID_DeckCard" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE platform_configs/$ID_PlatformConfig ==="
+curl -s -X DELETE "$BASE/platform_configs/$ID_PlatformConfig" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE audit_logs/$ID_AuditLog ==="
+curl -s -X DELETE "$BASE/audit_logs/$ID_AuditLog" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE leaderboard_entries/$ID_LeaderboardEntry ==="
+curl -s -X DELETE "$BASE/leaderboard_entries/$ID_LeaderboardEntry" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE top_up_orders/$ID_TopUpOrder ==="
+curl -s -X DELETE "$BASE/top_up_orders/$ID_TopUpOrder" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE wallets/$ID_Wallet ==="
+curl -s -X DELETE "$BASE/wallets/$ID_Wallet" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE content_reports/$ID_ContentReport ==="
+curl -s -X DELETE "$BASE/content_reports/$ID_ContentReport" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE moderation_actions/$ID_ModerationAction ==="
+curl -s -X DELETE "$BASE/moderation_actions/$ID_ModerationAction" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE player_reports/$ID_PlayerReport ==="
+curl -s -X DELETE "$BASE/player_reports/$ID_PlayerReport" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE messages/$ID_Message ==="
+curl -s -X DELETE "$BASE/messages/$ID_Message" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE push_devices/$ID_PushDevice ==="
+curl -s -X DELETE "$BASE/push_devices/$ID_PushDevice" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE notification_preferences/$ID_NotificationPreference ==="
+curl -s -X DELETE "$BASE/notification_preferences/$ID_NotificationPreference" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE notifications/$ID_Notification ==="
+curl -s -X DELETE "$BASE/notifications/$ID_Notification" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE bookmarks/$ID_Bookmark ==="
+curl -s -X DELETE "$BASE/bookmarks/$ID_Bookmark" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE content_likes/$ID_ContentLike ==="
+curl -s -X DELETE "$BASE/content_likes/$ID_ContentLike" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE streams/$ID_Stream ==="
 curl -s -X DELETE "$BASE/streams/$ID_Stream" -o /dev/null -w "HTTP %{http_code}\n"
@@ -152,6 +227,15 @@ curl -s -X DELETE "$BASE/player_season_statses/$ID_PlayerSeasonStats" -o /dev/nu
 
 echo && echo "=== DELETE cards/$ID_Card ==="
 curl -s -X DELETE "$BASE/cards/$ID_Card" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE system_announcements/$ID_SystemAnnouncement ==="
+curl -s -X DELETE "$BASE/system_announcements/$ID_SystemAnnouncement" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE feature_flags/$ID_FeatureFlag ==="
+curl -s -X DELETE "$BASE/feature_flags/$ID_FeatureFlag" -o /dev/null -w "HTTP %{http_code}\n"
+
+echo && echo "=== DELETE top_up_packages/$ID_TopUpPackage ==="
+curl -s -X DELETE "$BASE/top_up_packages/$ID_TopUpPackage" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE article_tags/$ID_ArticleTag ==="
 curl -s -X DELETE "$BASE/article_tags/$ID_ArticleTag" -o /dev/null -w "HTTP %{http_code}\n"
