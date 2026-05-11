@@ -14,6 +14,8 @@ Currently implemented:
 - Python — FastAPI
 - Java — Spring
 - PHP — Laravel
+- Haskell — Servant
+- Clojure — Luminus
 
 More implementations will be added regularly over time.
 
@@ -45,6 +47,8 @@ Aktualnie zaimplementowane:
 - Python — FastAPI
 - Java — Spring
 - PHP — Laravel
+- Haskell — Servant
+- Clojure — Luminus
 
 Projekt będzie regularnie rozwijany o kolejne implementacje.
 
