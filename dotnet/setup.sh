@@ -1,4 +1,6 @@
 #!/bin/bash
+# One-shot bootstrap for CardsProject
+
 set -e
 
 echo "→ Restoring packages..."

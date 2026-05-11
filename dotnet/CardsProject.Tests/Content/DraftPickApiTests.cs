@@ -1,15 +1,48 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using CardsProject.Infrastructure;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
 
-public class DraftPickApiTests : IClassFixture<WebApplicationFactory<Program>>
+public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
 {
+    public class TestFactory : WebApplicationFactory<Program>, IDisposable
+    {
+        private readonly SqliteConnection _connection;
+
+        public TestFactory()
+        {
+            _connection = new SqliteConnection("Data Source=:memory:");
+            _connection.Open();
+        }
+
+        protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+        {
+            builder.ConfigureServices(services =>
+            {
+                var descriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+                if (descriptor != null) services.Remove(descriptor);
+                services.AddDbContext<AppDbContext>(opt =>
+                    opt.UseSqlite(_connection));
+            });
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing) _connection.Dispose();
+        }
+    }
+
     private readonly HttpClient _client;
 
-    public DraftPickApiTests(WebApplicationFactory<Program> factory)
+    public DraftPickApiTests(TestFactory factory)
     {
         _client = factory.CreateClient();
     }

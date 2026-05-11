@@ -243,3 +243,18 @@ DELETE /api/streams/{id} — delete
 ```bash
 dotnet test
 ```
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8080:8080 app
+```
+
+API:     http://localhost:8080/api/
+Swagger: http://localhost:8080/swagger
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+restores packages, builds, and runs xUnit tests.
