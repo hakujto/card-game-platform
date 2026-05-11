@@ -27,7 +27,7 @@ public class OrderControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/orders")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"total\": new BigDecimal(\"0.00\"), \"discountApplied\": new BigDecimal(\"0.00\"), \"currency\": \"test\", \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"total\": 0.00, \"discountApplied\": 0.00, \"currency\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

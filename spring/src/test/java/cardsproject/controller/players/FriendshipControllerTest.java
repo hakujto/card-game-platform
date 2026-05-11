@@ -27,7 +27,7 @@ public class FriendshipControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/friendships")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

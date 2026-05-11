@@ -27,7 +27,7 @@ public class TradeDisputeControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_disputes")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"description\": \"test\", \"openedAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"description\": \"test\", \"openedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

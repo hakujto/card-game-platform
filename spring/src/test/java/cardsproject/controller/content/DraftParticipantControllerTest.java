@@ -27,7 +27,7 @@ public class DraftParticipantControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/draft_participants")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"seatNumber\": 1, \"joinedAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"seatNumber\": 1, \"joinedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

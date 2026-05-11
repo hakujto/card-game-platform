@@ -27,7 +27,7 @@ public class TradelistingControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tradelistings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"foil\": true, \"quantity\": 1, \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"foil\": true, \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

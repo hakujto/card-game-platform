@@ -27,7 +27,7 @@ public class StreamControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/streams")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"viewerCountPeak\": 1, \"scheduledStart\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

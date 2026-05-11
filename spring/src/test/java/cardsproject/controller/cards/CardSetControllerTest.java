@@ -27,7 +27,7 @@ public class CardSetControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_sets")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": LocalDate.of(2024, 1, 1), \"totalCards\": 1 }"))
+            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1 }"))
             .andExpect(status().isCreated());
     }
 

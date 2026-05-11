@@ -27,7 +27,7 @@ public class PlayerControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/players")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"displayName\": \"test\", \"rating\": 1, \"peakRating\": 1, \"isVerified\": true, \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"displayName\": \"test\", \"rating\": 1, \"peakRating\": 1, \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

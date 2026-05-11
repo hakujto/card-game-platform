@@ -27,7 +27,7 @@ public class AwardedPrizeControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/awarded_prizes")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"finalPlacement\": 1, \"awardedAt\": LocalDateTime.of(2024, 1, 1, 0, 0), \"claimed\": true }"))
+            .content("{ \"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00\", \"claimed\": true }"))
             .andExpect(status().isCreated());
     }
 

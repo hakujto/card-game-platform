@@ -27,7 +27,7 @@ public class TournamentControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"maxPlayers\": 1, \"entryFee\": new BigDecimal(\"0.00\"), \"prizePool\": new BigDecimal(\"0.00\"), \"startTime\": LocalDateTime.of(2024, 1, 1, 0, 0), \"isOnline\": true, \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"name\": \"test\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

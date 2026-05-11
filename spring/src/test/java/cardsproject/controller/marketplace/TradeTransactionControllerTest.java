@@ -27,7 +27,7 @@ public class TradeTransactionControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_transactions")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"finalPrice\": new BigDecimal(\"0.00\"), \"platformFee\": new BigDecimal(\"0.00\") }"))
+            .content("{ \"finalPrice\": 0.00, \"platformFee\": 0.00 }"))
             .andExpect(status().isCreated());
     }
 

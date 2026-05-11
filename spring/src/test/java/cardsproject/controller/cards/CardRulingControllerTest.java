@@ -27,7 +27,7 @@ public class CardRulingControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_rulings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"rulingText\": \"test\", \"publishedAt\": LocalDate.of(2024, 1, 1), \"source\": \"test\" }"))
+            .content("{ \"rulingText\": \"test\", \"publishedAt\": \"2024-01-01\", \"source\": \"test\" }"))
             .andExpect(status().isCreated());
     }
 

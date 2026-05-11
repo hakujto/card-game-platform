@@ -27,7 +27,7 @@ public class SeasonControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/seasons")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"startDate\": LocalDate.of(2024, 1, 1), \"endDate\": LocalDate.of(2024, 1, 1), \"isActive\": true }"))
+            .content("{ \"name\": \"test\", \"startDate\": \"2024-01-01\", \"endDate\": \"2024-01-01\", \"isActive\": true }"))
             .andExpect(status().isCreated());
     }
 

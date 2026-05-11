@@ -27,7 +27,7 @@ public class ArticleControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/articles")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"title\": \"test\", \"slug\": \"test\", \"body\": \"test\", \"viewCount\": 1, \"createdAt\": LocalDateTime.of(2024, 1, 1, 0, 0), \"updatedAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"title\": \"test\", \"slug\": \"test\", \"body\": \"test\", \"viewCount\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

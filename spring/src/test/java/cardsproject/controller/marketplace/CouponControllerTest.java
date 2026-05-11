@@ -27,7 +27,7 @@ public class CouponControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/coupons")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"code\": \"test\", \"discountValue\": new BigDecimal(\"0.00\"), \"minOrderValue\": new BigDecimal(\"0.00\"), \"usesCount\": 1, \"validFrom\": LocalDateTime.of(2024, 1, 1, 0, 0), \"validUntil\": LocalDateTime.of(2024, 1, 1, 0, 0), \"isActive\": true }"))
+            .content("{ \"code\": \"test\", \"discountValue\": 0.00, \"minOrderValue\": 0.00, \"usesCount\": 1, \"validFrom\": \"2024-01-01T00:00:00\", \"validUntil\": \"2024-01-01T00:00:00\", \"isActive\": true }"))
             .andExpect(status().isCreated());
     }
 

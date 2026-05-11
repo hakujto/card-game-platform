@@ -27,7 +27,7 @@ public class DraftPickControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/draft_picks")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"pickNumber\": 1, \"packNumber\": 1, \"pickedAt\": LocalDateTime.of(2024, 1, 1, 0, 0) }"))
+            .content("{ \"pickNumber\": 1, \"packNumber\": 1, \"pickedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

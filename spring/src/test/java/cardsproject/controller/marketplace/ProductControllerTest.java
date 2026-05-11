@@ -27,7 +27,7 @@ public class ProductControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/products")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"price\": new BigDecimal(\"0.00\"), \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"featured\": true }"))
+            .content("{ \"name\": \"test\", \"price\": 0.00, \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"featured\": true }"))
             .andExpect(status().isCreated());
     }
 

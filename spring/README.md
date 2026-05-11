@@ -248,3 +248,15 @@ GET    /api/streams/{id} — get by id
 PUT    /api/streams/{id} — update
 DELETE /api/streams/{id} — delete
 ```
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8080:8080 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up Java 21 (Temurin), builds with Maven, and runs JUnit tests.

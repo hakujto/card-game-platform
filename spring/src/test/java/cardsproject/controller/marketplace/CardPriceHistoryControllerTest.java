@@ -27,7 +27,7 @@ public class CardPriceHistoryControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_price_histories")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"priceDate\": LocalDate.of(2024, 1, 1), \"avgPrice\": new BigDecimal(\"0.00\"), \"minPrice\": new BigDecimal(\"0.00\"), \"maxPrice\": new BigDecimal(\"0.00\"), \"volume\": 1, \"foil\": true }"))
+            .content("{ \"priceDate\": \"2024-01-01\", \"avgPrice\": 0.00, \"minPrice\": 0.00, \"maxPrice\": 0.00, \"volume\": 1, \"foil\": true }"))
             .andExpect(status().isCreated());
     }
 
