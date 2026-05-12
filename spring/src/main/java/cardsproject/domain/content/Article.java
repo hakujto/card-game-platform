@@ -29,8 +29,6 @@ public class Article {
     private Long authorId;
     @Column(name = "featured_deck_id")
     private Long featuredDeckId;
-    @Column(name = "comments_id")
-    private Long commentsId;
 
     // M2M: tags managed via join table
 
@@ -62,6 +60,22 @@ public class Article {
     public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public Long getFeaturedDeckId() { return featuredDeckId; }
     public void setFeaturedDeckId(Long featuredDeckId) { this.featuredDeckId = featuredDeckId; }
-    public Long getCommentsId() { return commentsId; }
-    public void setCommentsId(Long commentsId) { this.commentsId = commentsId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void publish() {
+        throw new UnsupportedOperationException("publish not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void archive() {
+        throw new UnsupportedOperationException("archive not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void incrementView() {
+        throw new UnsupportedOperationException("incrementView not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Integer readingTimeMinutes() {
+        throw new UnsupportedOperationException("readingTimeMinutes not implemented");
+    }
 }

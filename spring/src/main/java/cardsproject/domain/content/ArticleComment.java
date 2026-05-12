@@ -36,4 +36,18 @@ public class ArticleComment {
     public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public Long getParentCommentId() { return parentCommentId; }
     public void setParentCommentId(Long parentCommentId) { this.parentCommentId = parentCommentId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void hide() {
+        throw new UnsupportedOperationException("hide not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void unhide() {
+        throw new UnsupportedOperationException("unhide not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isReply() {
+        throw new UnsupportedOperationException("isReply not implemented");
+    }
 }

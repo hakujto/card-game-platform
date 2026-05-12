@@ -30,4 +30,25 @@ public class SeasonService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void activate(Long id) {
+        Season entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Season not found: " + id));
+        entity.activate();
+        repository.save(entity);
+    }
+
+    public void deactivate(Long id) {
+        Season entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Season not found: " + id));
+        entity.deactivate();
+        repository.save(entity);
+    }
+
+    public void finalizeRewards(Long id) {
+        Season entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Season not found: " + id));
+        entity.finalizeRewards();
+        repository.save(entity);
+    }
 }

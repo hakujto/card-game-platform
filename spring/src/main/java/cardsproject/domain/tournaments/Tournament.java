@@ -34,12 +34,6 @@ public class Tournament {
     private Long seasonId;
     @Column(name = "organizer_id")
     private Long organizerId;
-    @Column(name = "registrations_id")
-    private Long registrationsId;
-    @Column(name = "rounds_id")
-    private Long roundsId;
-    @Column(name = "prizes_id")
-    private Long prizesId;
 
     // M2M: judges managed via join table
 
@@ -77,10 +71,30 @@ public class Tournament {
     public void setSeasonId(Long seasonId) { this.seasonId = seasonId; }
     public Long getOrganizerId() { return organizerId; }
     public void setOrganizerId(Long organizerId) { this.organizerId = organizerId; }
-    public Long getRegistrationsId() { return registrationsId; }
-    public void setRegistrationsId(Long registrationsId) { this.registrationsId = registrationsId; }
-    public Long getRoundsId() { return roundsId; }
-    public void setRoundsId(Long roundsId) { this.roundsId = roundsId; }
-    public Long getPrizesId() { return prizesId; }
-    public void setPrizesId(Long prizesId) { this.prizesId = prizesId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void start() {
+        throw new UnsupportedOperationException("start not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void cancel() {
+        throw new UnsupportedOperationException("cancel not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void complete() {
+        throw new UnsupportedOperationException("complete not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void generateRound() {
+        throw new UnsupportedOperationException("generateRound not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal calculatePrizeDistribution() {
+        throw new UnsupportedOperationException("calculatePrizeDistribution not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isFull() {
+        throw new UnsupportedOperationException("isFull not implemented");
+    }
 }

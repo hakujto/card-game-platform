@@ -33,4 +33,22 @@ public class Season {
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public String getRewardDescription() { return rewardDescription; }
     public void setRewardDescription(String rewardDescription) { this.rewardDescription = rewardDescription; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void activate() {
+        throw new UnsupportedOperationException("activate not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void deactivate() {
+        throw new UnsupportedOperationException("deactivate not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void finalizeRewards() {
+        throw new UnsupportedOperationException("finalizeRewards not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isOngoing() {
+        throw new UnsupportedOperationException("isOngoing not implemented");
+    }
 }

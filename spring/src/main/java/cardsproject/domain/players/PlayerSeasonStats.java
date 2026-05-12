@@ -41,4 +41,17 @@ public class PlayerSeasonStats {
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
     public Long getSeasonId() { return seasonId; }
     public void setSeasonId(Long seasonId) { this.seasonId = seasonId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal winRate() {
+        throw new UnsupportedOperationException("winRate not implemented");
+    }
+    public void addPoints(Integer points) {
+        throw new UnsupportedOperationException("addPoints not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void recordTournamentWin() {
+        throw new UnsupportedOperationException("recordTournamentWin not implemented");
+    }
 }

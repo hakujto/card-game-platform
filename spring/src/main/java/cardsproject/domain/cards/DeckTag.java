@@ -19,4 +19,12 @@ public class DeckTag {
     public void setName(String name) { this.name = name; }
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void rename(String newName) {
+        throw new UnsupportedOperationException("rename not implemented");
+    }
+    public void mergeInto(Integer targetTagId) {
+        throw new UnsupportedOperationException("mergeInto not implemented");
+    }
 }

@@ -53,4 +53,22 @@ public class TournamentRegistrationController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<Void> withdraw(@PathVariable Long id) {
+        service.withdraw(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/disqualify")
+    public ResponseEntity<Void> disqualify(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.disqualify(id, (String) body.get("reason"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/promote")
+    public ResponseEntity<Void> promoteFromWaitlist(@PathVariable Long id) {
+        service.promoteFromWaitlist(id);
+        return ResponseEntity.noContent().build();
+    }
 }

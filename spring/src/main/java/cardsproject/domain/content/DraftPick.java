@@ -32,4 +32,10 @@ public class DraftPick {
     public void setParticipantId(Long participantId) { this.participantId = participantId; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isFirstPick() {
+        throw new UnsupportedOperationException("isFirstPick not implemented");
+    }
 }

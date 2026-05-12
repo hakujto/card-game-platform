@@ -30,4 +30,11 @@ public class GameService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void recordWinner(Long id, String winnerSide) {
+        Game entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Game not found: " + id));
+        entity.recordWinner(winnerSide);
+        repository.save(entity);
+    }
 }

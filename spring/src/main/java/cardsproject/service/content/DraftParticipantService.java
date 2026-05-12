@@ -30,4 +30,11 @@ public class DraftParticipantService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void pickCard(Long id, Integer cardId, Integer packNumber) {
+        DraftParticipant entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftParticipant not found: " + id));
+        entity.pickCard(cardId, packNumber);
+        repository.save(entity);
+    }
 }

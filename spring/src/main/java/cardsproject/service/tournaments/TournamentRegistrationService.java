@@ -30,4 +30,25 @@ public class TournamentRegistrationService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void withdraw(Long id) {
+        TournamentRegistration entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRegistration not found: " + id));
+        entity.withdraw();
+        repository.save(entity);
+    }
+
+    public void disqualify(Long id, String reason) {
+        TournamentRegistration entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRegistration not found: " + id));
+        entity.disqualify(reason);
+        repository.save(entity);
+    }
+
+    public void promoteFromWaitlist(Long id) {
+        TournamentRegistration entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRegistration not found: " + id));
+        entity.promoteFromWaitlist();
+        repository.save(entity);
+    }
 }

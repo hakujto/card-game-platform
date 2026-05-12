@@ -26,8 +26,6 @@ public class Match {
     private Long player1Id;
     @Column(name = "player2_id")
     private Long player2Id;
-    @Column(name = "games_id")
-    private Long gamesId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -51,6 +49,14 @@ public class Match {
     public void setPlayer1Id(Long player1Id) { this.player1Id = player1Id; }
     public Long getPlayer2Id() { return player2Id; }
     public void setPlayer2Id(Long player2Id) { this.player2Id = player2Id; }
-    public Long getGamesId() { return gamesId; }
-    public void setGamesId(Long gamesId) { this.gamesId = gamesId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean determineWinner() {
+        throw new UnsupportedOperationException("determineWinner not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void draw() {
+        throw new UnsupportedOperationException("draw not implemented");
+    }
 }

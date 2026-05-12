@@ -30,4 +30,40 @@ public class TournamentService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void start(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.start();
+        repository.save(entity);
+    }
+
+    public void cancel(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.cancel();
+        repository.save(entity);
+    }
+
+    public void complete(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.complete();
+        repository.save(entity);
+    }
+
+    public void generateRound(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.generateRound();
+        repository.save(entity);
+    }
+
+    public java.math.BigDecimal calculatePrizeDistribution(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        java.math.BigDecimal result = entity.calculatePrizeDistribution();
+        repository.save(entity);
+        return result;
+    }
 }

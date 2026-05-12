@@ -53,4 +53,22 @@ public class TradeTransactionController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> complete(@PathVariable Long id) {
+        service.complete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<Void> refund(@PathVariable Long id) {
+        service.refund(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/dispute")
+    public ResponseEntity<Void> openDispute(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.openDispute(id, (String) body.get("reason"));
+        return ResponseEntity.noContent().build();
+    }
 }

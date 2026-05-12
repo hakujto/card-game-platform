@@ -30,4 +30,33 @@ public class ProductService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void activate(Long id) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        entity.activate();
+        repository.save(entity);
+    }
+
+    public void deactivate(Long id) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        entity.deactivate();
+        repository.save(entity);
+    }
+
+    public java.math.BigDecimal applyDiscount(Long id, Integer percent) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        java.math.BigDecimal result = entity.applyDiscount(percent);
+        repository.save(entity);
+        return result;
+    }
+
+    public void restock(Long id, Integer quantity) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        entity.restock(quantity);
+        repository.save(entity);
+    }
 }

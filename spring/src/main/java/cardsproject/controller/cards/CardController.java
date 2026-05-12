@@ -53,4 +53,33 @@ public class CardController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/ban")
+    public ResponseEntity<Void> ban(@PathVariable Long id) {
+        service.ban(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/unban")
+    public ResponseEntity<Void> unban(@PathVariable Long id) {
+        service.unban(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/restrict")
+    public ResponseEntity<Void> restrict(@PathVariable Long id) {
+        service.restrict(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/unrestrict")
+    public ResponseEntity<Void> unrestrict(@PathVariable Long id) {
+        service.unrestrict(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/value")
+    public ResponseEntity<java.math.BigDecimal> calculateValue(@PathVariable Long id) {
+        return ResponseEntity.ok(service.calculateValue(id));
+    }
 }

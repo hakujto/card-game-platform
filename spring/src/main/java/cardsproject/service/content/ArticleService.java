@@ -30,4 +30,25 @@ public class ArticleService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void publish(Long id) {
+        Article entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Article not found: " + id));
+        entity.publish();
+        repository.save(entity);
+    }
+
+    public void archive(Long id) {
+        Article entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Article not found: " + id));
+        entity.archive();
+        repository.save(entity);
+    }
+
+    public void incrementView(Long id) {
+        Article entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Article not found: " + id));
+        entity.incrementView();
+        repository.save(entity);
+    }
 }

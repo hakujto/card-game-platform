@@ -53,4 +53,10 @@ public class GameController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/winner")
+    public ResponseEntity<Void> recordWinner(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.recordWinner(id, (String) body.get("winner_side"));
+        return ResponseEntity.noContent().build();
+    }
 }

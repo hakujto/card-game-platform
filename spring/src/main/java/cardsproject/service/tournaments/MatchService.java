@@ -30,4 +30,19 @@ public class MatchService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean determineWinner(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        Boolean result = entity.determineWinner();
+        repository.save(entity);
+        return result;
+    }
+
+    public void draw(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.draw();
+        repository.save(entity);
+    }
 }

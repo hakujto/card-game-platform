@@ -30,4 +30,40 @@ public class CardService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void ban(Long id) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        entity.ban();
+        repository.save(entity);
+    }
+
+    public void unban(Long id) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        entity.unban();
+        repository.save(entity);
+    }
+
+    public void restrict(Long id) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        entity.restrict();
+        repository.save(entity);
+    }
+
+    public void unrestrict(Long id) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        entity.unrestrict();
+        repository.save(entity);
+    }
+
+    public java.math.BigDecimal calculateValue(Long id) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        java.math.BigDecimal result = entity.calculateValue();
+        repository.save(entity);
+        return result;
+    }
 }

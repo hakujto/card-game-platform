@@ -53,4 +53,22 @@ public class TradelistingController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/close")
+    public ResponseEntity<Void> close(@PathVariable Long id) {
+        service.close(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/extend")
+    public ResponseEntity<Void> extend(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.extend(id, (Integer) body.get("days"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable Long id) {
+        service.cancel(id);
+        return ResponseEntity.noContent().build();
+    }
 }

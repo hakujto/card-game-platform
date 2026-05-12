@@ -28,8 +28,6 @@ public class Order {
 
     @Column(name = "player_id")
     private Long playerId;
-    @Column(name = "items_id")
-    private Long itemsId;
     @Column(name = "coupon_id")
     private Long couponId;
 
@@ -59,8 +57,26 @@ public class Order {
     public void setShippedAt(LocalDateTime shippedAt) { this.shippedAt = shippedAt; }
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
-    public Long getItemsId() { return itemsId; }
-    public void setItemsId(Long itemsId) { this.itemsId = itemsId; }
     public Long getCouponId() { return couponId; }
     public void setCouponId(Long couponId) { this.couponId = couponId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void cancel() {
+        throw new UnsupportedOperationException("cancel not implemented");
+    }
+    public Boolean pay(String paymentRef) {
+        throw new UnsupportedOperationException("pay not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal calculateTotal() {
+        throw new UnsupportedOperationException("calculateTotal not implemented");
+    }
+    public java.math.BigDecimal applyDiscount(Integer percent) {
+        throw new UnsupportedOperationException("applyDiscount not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void refund() {
+        throw new UnsupportedOperationException("refund not implemented");
+    }
 }

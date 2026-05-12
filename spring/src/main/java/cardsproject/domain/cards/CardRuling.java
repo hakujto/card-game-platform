@@ -28,4 +28,14 @@ public class CardRuling {
     public void setSource(String source) { this.source = source; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isCurrent() {
+        throw new UnsupportedOperationException("isCurrent not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean supersedesPrevious() {
+        throw new UnsupportedOperationException("supersedesPrevious not implemented");
+    }
 }

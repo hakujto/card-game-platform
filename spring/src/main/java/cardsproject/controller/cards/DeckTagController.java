@@ -53,4 +53,10 @@ public class DeckTagController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/merge")
+    public ResponseEntity<Void> mergeInto(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.mergeInto(id, (Integer) body.get("target_tag_id"));
+        return ResponseEntity.noContent().build();
+    }
 }

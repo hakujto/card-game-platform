@@ -30,4 +30,18 @@ public class CouponService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void redeem(Long id) {
+        Coupon entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));
+        entity.redeem();
+        repository.save(entity);
+    }
+
+    public void deactivate(Long id) {
+        Coupon entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));
+        entity.deactivate();
+        repository.save(entity);
+    }
 }

@@ -32,8 +32,6 @@ public class Tradelisting {
     private Long sellerId;
     @Column(name = "card_id")
     private Long cardId;
-    @Column(name = "bids_id")
-    private Long bidsId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -65,6 +63,21 @@ public class Tradelisting {
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
-    public Long getBidsId() { return bidsId; }
-    public void setBidsId(Long bidsId) { this.bidsId = bidsId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void close() {
+        throw new UnsupportedOperationException("close not implemented");
+    }
+    public void extend(Integer days) {
+        throw new UnsupportedOperationException("extend not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void cancel() {
+        throw new UnsupportedOperationException("cancel not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isExpired() {
+        throw new UnsupportedOperationException("isExpired not implemented");
+    }
 }

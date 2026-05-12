@@ -53,4 +53,22 @@ public class SeasonController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<Void> activate(@PathVariable Long id) {
+        service.activate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        service.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/finalize")
+    public ResponseEntity<Void> finalizeRewards(@PathVariable Long id) {
+        service.finalizeRewards(id);
+        return ResponseEntity.noContent().build();
+    }
 }

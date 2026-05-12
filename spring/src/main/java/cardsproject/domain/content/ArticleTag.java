@@ -19,4 +19,13 @@ public class ArticleTag {
     public void setName(String name) { this.name = name; }
     public String getSlug() { return slug; }
     public void setSlug(String slug) { this.slug = slug; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void rename(String newName) {
+        throw new UnsupportedOperationException("rename not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Integer articleCount() {
+        throw new UnsupportedOperationException("articleCount not implemented");
+    }
 }

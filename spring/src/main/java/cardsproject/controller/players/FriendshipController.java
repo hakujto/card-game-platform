@@ -53,4 +53,22 @@ public class FriendshipController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<Void> accept(@PathVariable Long id) {
+        service.accept(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/decline")
+    public ResponseEntity<Void> decline(@PathVariable Long id) {
+        service.decline(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/block")
+    public ResponseEntity<Void> block(@PathVariable Long id) {
+        service.block(id);
+        return ResponseEntity.noContent().build();
+    }
 }

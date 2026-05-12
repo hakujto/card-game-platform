@@ -53,4 +53,15 @@ public class MatchController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/winner")
+    public ResponseEntity<Boolean> determineWinner(@PathVariable Long id) {
+        return ResponseEntity.ok(service.determineWinner(id));
+    }
+
+    @PostMapping("/{id}/draw")
+    public ResponseEntity<Void> draw(@PathVariable Long id) {
+        service.draw(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -30,4 +30,11 @@ public class DeckTagService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void mergeInto(Long id, Integer targetTagId) {
+        DeckTag entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DeckTag not found: " + id));
+        entity.mergeInto(targetTagId);
+        repository.save(entity);
+    }
 }

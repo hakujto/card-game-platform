@@ -30,4 +30,25 @@ public class TradeTransactionService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void complete(Long id) {
+        TradeTransaction entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeTransaction not found: " + id));
+        entity.complete();
+        repository.save(entity);
+    }
+
+    public void refund(Long id) {
+        TradeTransaction entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeTransaction not found: " + id));
+        entity.refund();
+        repository.save(entity);
+    }
+
+    public void openDispute(Long id, String reason) {
+        TradeTransaction entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeTransaction not found: " + id));
+        entity.openDispute(reason);
+        repository.save(entity);
+    }
 }

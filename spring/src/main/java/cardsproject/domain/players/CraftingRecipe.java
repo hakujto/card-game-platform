@@ -26,4 +26,14 @@ public class CraftingRecipe {
     public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
     public Long getResultCardId() { return resultCardId; }
     public void setResultCardId(Long resultCardId) { this.resultCardId = resultCardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void disable() {
+        throw new UnsupportedOperationException("disable not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void enable() {
+        throw new UnsupportedOperationException("enable not implemented");
+    }
 }

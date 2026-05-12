@@ -51,4 +51,28 @@ public class Product {
     public void setCardId(Long cardId) { this.cardId = cardId; }
     public Long getCardSetId() { return cardSetId; }
     public void setCardSetId(Long cardSetId) { this.cardSetId = cardSetId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void activate() {
+        throw new UnsupportedOperationException("activate not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void deactivate() {
+        throw new UnsupportedOperationException("deactivate not implemented");
+    }
+    public java.math.BigDecimal applyDiscount(Integer percent) {
+        throw new UnsupportedOperationException("applyDiscount not implemented");
+    }
+    public void restock(Integer quantity) {
+        throw new UnsupportedOperationException("restock not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal effectivePrice() {
+        throw new UnsupportedOperationException("effectivePrice not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isInStock() {
+        throw new UnsupportedOperationException("isInStock not implemented");
+    }
 }

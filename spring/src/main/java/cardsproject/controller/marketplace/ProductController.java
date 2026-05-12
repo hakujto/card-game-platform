@@ -53,4 +53,27 @@ public class ProductController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<Void> activate(@PathVariable Long id) {
+        service.activate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+        service.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/discount")
+    public ResponseEntity<java.math.BigDecimal> applyDiscount(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+    }
+
+    @PostMapping("/{id}/restock")
+    public ResponseEntity<Void> restock(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.restock(id, (Integer) body.get("quantity"));
+        return ResponseEntity.noContent().build();
+    }
 }

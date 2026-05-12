@@ -53,4 +53,31 @@ public class DeckController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/validate")
+    public ResponseEntity<Boolean> validateSize(@PathVariable Long id) {
+        return ResponseEntity.ok(service.validateSize(id));
+    }
+
+    @PostMapping("/{id}/clone")
+    public ResponseEntity<Deck> clone(@PathVariable Long id) {
+        return ResponseEntity.ok(service.clone(id));
+    }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<Void> publish(@PathVariable Long id) {
+        service.publish(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/unpublish")
+    public ResponseEntity<Void> unpublish(@PathVariable Long id) {
+        service.unpublish(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/certify")
+    public ResponseEntity<Boolean> certifyTournamentLegal(@PathVariable Long id) {
+        return ResponseEntity.ok(service.certifyTournamentLegal(id));
+    }
 }

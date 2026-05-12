@@ -30,4 +30,18 @@ public class ArticleCommentService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void hide(Long id) {
+        ArticleComment entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("ArticleComment not found: " + id));
+        entity.hide();
+        repository.save(entity);
+    }
+
+    public void unhide(Long id) {
+        ArticleComment entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("ArticleComment not found: " + id));
+        entity.unhide();
+        repository.save(entity);
+    }
 }

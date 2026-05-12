@@ -25,4 +25,12 @@ public class DeckSideboardCard {
     public void setDeckId(Long deckId) { this.deckId = deckId; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void increment(Integer amount) {
+        throw new UnsupportedOperationException("increment not implemented");
+    }
+    public void decrement(Integer amount) {
+        throw new UnsupportedOperationException("decrement not implemented");
+    }
 }

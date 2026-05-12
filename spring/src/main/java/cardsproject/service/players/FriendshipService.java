@@ -30,4 +30,25 @@ public class FriendshipService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void accept(Long id) {
+        Friendship entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Friendship not found: " + id));
+        entity.accept();
+        repository.save(entity);
+    }
+
+    public void decline(Long id) {
+        Friendship entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Friendship not found: " + id));
+        entity.decline();
+        repository.save(entity);
+    }
+
+    public void block(Long id) {
+        Friendship entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Friendship not found: " + id));
+        entity.block();
+        repository.save(entity);
+    }
 }

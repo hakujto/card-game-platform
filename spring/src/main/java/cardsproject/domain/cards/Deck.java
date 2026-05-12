@@ -55,4 +55,26 @@ public class Deck {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean validateSize() {
+        throw new UnsupportedOperationException("validateSize not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Deck clone() {
+        throw new UnsupportedOperationException("clone not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void publish() {
+        throw new UnsupportedOperationException("publish not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void unpublish() {
+        throw new UnsupportedOperationException("unpublish not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean certifyTournamentLegal() {
+        throw new UnsupportedOperationException("certifyTournamentLegal not implemented");
+    }
 }

@@ -30,4 +30,12 @@ public class PlayerCollectionService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public java.math.BigDecimal estimatedValue(Long id) {
+        PlayerCollection entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerCollection not found: " + id));
+        java.math.BigDecimal result = entity.estimatedValue();
+        repository.save(entity);
+        return result;
+    }
 }

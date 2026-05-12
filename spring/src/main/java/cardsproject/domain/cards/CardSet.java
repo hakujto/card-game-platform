@@ -36,4 +36,10 @@ public class CardSet {
     public void setDescription(String description) { this.description = description; }
     public String getLogoUrl() { return logoUrl; }
     public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isLegalInStandard() {
+        throw new UnsupportedOperationException("isLegalInStandard not implemented");
+    }
 }

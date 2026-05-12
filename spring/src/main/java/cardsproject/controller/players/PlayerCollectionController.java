@@ -53,4 +53,9 @@ public class PlayerCollectionController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/value")
+    public ResponseEntity<java.math.BigDecimal> estimatedValue(@PathVariable Long id) {
+        return ResponseEntity.ok(service.estimatedValue(id));
+    }
 }

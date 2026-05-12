@@ -30,4 +30,18 @@ public class Friendship {
     public void setRequesterId(Long requesterId) { this.requesterId = requesterId; }
     public Long getReceiverId() { return receiverId; }
     public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void accept() {
+        throw new UnsupportedOperationException("accept not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void decline() {
+        throw new UnsupportedOperationException("decline not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void block() {
+        throw new UnsupportedOperationException("block not implemented");
+    }
 }

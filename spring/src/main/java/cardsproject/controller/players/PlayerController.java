@@ -53,4 +53,43 @@ public class PlayerController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/promote")
+    public ResponseEntity<Boolean> promote(@PathVariable Long id) {
+        return ResponseEntity.ok(service.promote(id));
+    }
+
+    @PostMapping("/{id}/demote")
+    public ResponseEntity<Boolean> demote(@PathVariable Long id) {
+        return ResponseEntity.ok(service.demote(id));
+    }
+
+    @PostMapping("/{id}/win")
+    public ResponseEntity<Void> recordWin(@PathVariable Long id) {
+        service.recordWin(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/loss")
+    public ResponseEntity<Void> recordLoss(@PathVariable Long id) {
+        service.recordLoss(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/win-rate")
+    public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
+        return ResponseEntity.ok(service.winRate(id));
+    }
+
+    @PostMapping("/{id}/verify")
+    public ResponseEntity<Void> verify(@PathVariable Long id) {
+        service.verify(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/rating")
+    public ResponseEntity<Void> updateRating(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.updateRating(id, (Integer) body.get("delta"));
+        return ResponseEntity.noContent().build();
+    }
 }

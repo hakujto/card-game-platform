@@ -41,4 +41,9 @@ public class TournamentPrize {
     public void setSeasonPoints(Integer seasonPoints) { this.seasonPoints = seasonPoints; }
     public Long getTournamentId() { return tournamentId; }
     public void setTournamentId(Long tournamentId) { this.tournamentId = tournamentId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public Boolean appliesToPlacement(Integer placement) {
+        throw new UnsupportedOperationException("appliesToPlacement not implemented");
+    }
 }

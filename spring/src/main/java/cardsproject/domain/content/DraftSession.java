@@ -21,8 +21,6 @@ public class DraftSession {
 
     @Column(name = "card_set_id")
     private Long cardSetId;
-    @Column(name = "participants_id")
-    private Long participantsId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -38,6 +36,22 @@ public class DraftSession {
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
     public Long getCardSetId() { return cardSetId; }
     public void setCardSetId(Long cardSetId) { this.cardSetId = cardSetId; }
-    public Long getParticipantsId() { return participantsId; }
-    public void setParticipantsId(Long participantsId) { this.participantsId = participantsId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void start() {
+        throw new UnsupportedOperationException("start not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void abandon() {
+        throw new UnsupportedOperationException("abandon not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void complete() {
+        throw new UnsupportedOperationException("complete not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isFull() {
+        throw new UnsupportedOperationException("isFull not implemented");
+    }
 }

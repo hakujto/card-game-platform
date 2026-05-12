@@ -40,4 +40,16 @@ public class PlayerCollection {
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void add(Integer quantity) {
+        throw new UnsupportedOperationException("add not implemented");
+    }
+    public void remove(Integer quantity) {
+        throw new UnsupportedOperationException("remove not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal estimatedValue() {
+        throw new UnsupportedOperationException("estimatedValue not implemented");
+    }
 }

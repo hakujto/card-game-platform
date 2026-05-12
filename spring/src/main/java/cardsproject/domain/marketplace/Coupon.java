@@ -43,4 +43,21 @@ public class Coupon {
     public void setValidUntil(LocalDateTime validUntil) { this.validUntil = validUntil; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isValid() {
+        throw new UnsupportedOperationException("isValid not implemented");
+    }
+    public Boolean isApplicableToOrder(java.math.BigDecimal orderTotal) {
+        throw new UnsupportedOperationException("isApplicableToOrder not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void redeem() {
+        throw new UnsupportedOperationException("redeem not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void deactivate() {
+        throw new UnsupportedOperationException("deactivate not implemented");
+    }
 }

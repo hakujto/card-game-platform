@@ -53,4 +53,22 @@ public class DraftSessionController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/start")
+    public ResponseEntity<Void> start(@PathVariable Long id) {
+        service.start(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/abandon")
+    public ResponseEntity<Void> abandon(@PathVariable Long id) {
+        service.abandon(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> complete(@PathVariable Long id) {
+        service.complete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

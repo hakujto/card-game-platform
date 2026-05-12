@@ -30,4 +30,42 @@ public class DeckService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean validateSize(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        Boolean result = entity.validateSize();
+        repository.save(entity);
+        return result;
+    }
+
+    public Deck clone(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        Deck result = entity.clone();
+        repository.save(entity);
+        return result;
+    }
+
+    public void publish(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        entity.publish();
+        repository.save(entity);
+    }
+
+    public void unpublish(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        entity.unpublish();
+        repository.save(entity);
+    }
+
+    public Boolean certifyTournamentLegal(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        Boolean result = entity.certifyTournamentLegal();
+        repository.save(entity);
+        return result;
+    }
 }

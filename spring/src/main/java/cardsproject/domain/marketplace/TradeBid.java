@@ -33,4 +33,9 @@ public class TradeBid {
     public void setListingId(Long listingId) { this.listingId = listingId; }
     public Long getBidderId() { return bidderId; }
     public void setBidderId(Long bidderId) { this.bidderId = bidderId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public Boolean outbidBy(java.math.BigDecimal newAmount) {
+        throw new UnsupportedOperationException("outbidBy not implemented");
+    }
 }

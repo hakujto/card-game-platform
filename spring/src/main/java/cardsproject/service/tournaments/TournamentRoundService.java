@@ -30,4 +30,25 @@ public class TournamentRoundService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void start(Long id) {
+        TournamentRound entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRound not found: " + id));
+        entity.start();
+        repository.save(entity);
+    }
+
+    public void complete(Long id) {
+        TournamentRound entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRound not found: " + id));
+        entity.complete();
+        repository.save(entity);
+    }
+
+    public void generatePairings(Long id) {
+        TournamentRound entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRound not found: " + id));
+        entity.generatePairings();
+        repository.save(entity);
+    }
 }

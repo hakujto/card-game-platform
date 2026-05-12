@@ -53,4 +53,31 @@ public class OrderController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable Long id) {
+        service.cancel(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/pay")
+    public ResponseEntity<Boolean> pay(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        return ResponseEntity.ok(service.pay(id, (String) body.get("payment_ref")));
+    }
+
+    @GetMapping("/{id}/total")
+    public ResponseEntity<java.math.BigDecimal> calculateTotal(@PathVariable Long id) {
+        return ResponseEntity.ok(service.calculateTotal(id));
+    }
+
+    @PatchMapping("/{id}/discount")
+    public ResponseEntity<java.math.BigDecimal> applyDiscount(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+    }
+
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<Void> refund(@PathVariable Long id) {
+        service.refund(id);
+        return ResponseEntity.noContent().build();
+    }
 }

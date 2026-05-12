@@ -53,4 +53,10 @@ public class DraftParticipantController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/pick")
+    public ResponseEntity<Void> pickCard(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.pickCard(id, (Integer) body.get("card_id"), (Integer) body.get("pack_number"));
+        return ResponseEntity.noContent().build();
+    }
 }

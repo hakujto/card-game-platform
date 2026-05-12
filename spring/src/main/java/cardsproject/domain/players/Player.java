@@ -27,8 +27,6 @@ public class Player {
 
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "season_stats_id")
-    private Long seasonStatsId;
 
     // M2M: achievements managed via join table
     // M2M: friends managed via join table
@@ -59,6 +57,33 @@ public class Player {
     public void setLastActiveAt(LocalDateTime lastActiveAt) { this.lastActiveAt = lastActiveAt; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
-    public Long getSeasonStatsId() { return seasonStatsId; }
-    public void setSeasonStatsId(Long seasonStatsId) { this.seasonStatsId = seasonStatsId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean promote() {
+        throw new UnsupportedOperationException("promote not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean demote() {
+        throw new UnsupportedOperationException("demote not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void recordWin() {
+        throw new UnsupportedOperationException("recordWin not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void recordLoss() {
+        throw new UnsupportedOperationException("recordLoss not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal winRate() {
+        throw new UnsupportedOperationException("winRate not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void verify() {
+        throw new UnsupportedOperationException("verify not implemented");
+    }
+    public void updateRating(Integer delta) {
+        throw new UnsupportedOperationException("updateRating not implemented");
+    }
 }

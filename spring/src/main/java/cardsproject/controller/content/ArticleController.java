@@ -53,4 +53,22 @@ public class ArticleController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<Void> publish(@PathVariable Long id) {
+        service.publish(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/archive")
+    public ResponseEntity<Void> archive(@PathVariable Long id) {
+        service.archive(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> incrementView(@PathVariable Long id) {
+        service.incrementView(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -52,4 +52,21 @@ public class Stream {
     public void setTournamentId(Long tournamentId) { this.tournamentId = tournamentId; }
     public Long getStreamerId() { return streamerId; }
     public void setStreamerId(Long streamerId) { this.streamerId = streamerId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void goLive() {
+        throw new UnsupportedOperationException("goLive not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void end() {
+        throw new UnsupportedOperationException("end not implemented");
+    }
+    public void updateViewerPeak(Integer count) {
+        throw new UnsupportedOperationException("updateViewerPeak not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Integer durationMinutes() {
+        throw new UnsupportedOperationException("durationMinutes not implemented");
+    }
 }

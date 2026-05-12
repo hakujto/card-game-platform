@@ -41,4 +41,21 @@ public class TradeTransaction {
     public void setBuyerId(Long buyerId) { this.buyerId = buyerId; }
     public Long getSellerId() { return sellerId; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void complete() {
+        throw new UnsupportedOperationException("complete not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void refund() {
+        throw new UnsupportedOperationException("refund not implemented");
+    }
+    public void openDispute(String reason) {
+        throw new UnsupportedOperationException("openDispute not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal sellerNet() {
+        throw new UnsupportedOperationException("sellerNet not implemented");
+    }
 }

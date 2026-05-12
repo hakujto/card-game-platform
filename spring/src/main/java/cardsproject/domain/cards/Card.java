@@ -33,10 +33,6 @@ public class Card {
 
     @Column(name = "set_id")
     private Long setId;
-    @Column(name = "rulings_id")
-    private Long rulingsId;
-    @Column(name = "abilities_id")
-    private Long abilitiesId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -74,8 +70,26 @@ public class Card {
     public void setPowerLevel(Integer powerLevel) { this.powerLevel = powerLevel; }
     public Long getSetId() { return setId; }
     public void setSetId(Long setId) { this.setId = setId; }
-    public Long getRulingsId() { return rulingsId; }
-    public void setRulingsId(Long rulingsId) { this.rulingsId = rulingsId; }
-    public Long getAbilitiesId() { return abilitiesId; }
-    public void setAbilitiesId(Long abilitiesId) { this.abilitiesId = abilitiesId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void ban() {
+        throw new UnsupportedOperationException("ban not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void unban() {
+        throw new UnsupportedOperationException("unban not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void restrict() {
+        throw new UnsupportedOperationException("restrict not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void unrestrict() {
+        throw new UnsupportedOperationException("unrestrict not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal calculateValue() {
+        throw new UnsupportedOperationException("calculateValue not implemented");
+    }
 }

@@ -42,4 +42,13 @@ public class Game {
     public void setMatchId(Long matchId) { this.matchId = matchId; }
     public Long getWinnerId() { return winnerId; }
     public void setWinnerId(Long winnerId) { this.winnerId = winnerId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void recordWinner(String winnerSide) {
+        throw new UnsupportedOperationException("recordWinner not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal durationMinutes() {
+        throw new UnsupportedOperationException("durationMinutes not implemented");
+    }
 }

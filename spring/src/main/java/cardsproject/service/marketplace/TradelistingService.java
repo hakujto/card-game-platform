@@ -30,4 +30,25 @@ public class TradelistingService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void close(Long id) {
+        Tradelisting entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tradelisting not found: " + id));
+        entity.close();
+        repository.save(entity);
+    }
+
+    public void extend(Long id, Integer days) {
+        Tradelisting entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tradelisting not found: " + id));
+        entity.extend(days);
+        repository.save(entity);
+    }
+
+    public void cancel(Long id) {
+        Tradelisting entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tradelisting not found: " + id));
+        entity.cancel();
+        repository.save(entity);
+    }
 }

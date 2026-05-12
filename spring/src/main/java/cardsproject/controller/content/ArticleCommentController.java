@@ -53,4 +53,16 @@ public class ArticleCommentController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/hide")
+    public ResponseEntity<Void> hide(@PathVariable Long id) {
+        service.hide(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/unhide")
+    public ResponseEntity<Void> unhide(@PathVariable Long id) {
+        service.unhide(id);
+        return ResponseEntity.noContent().build();
+    }
 }

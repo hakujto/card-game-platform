@@ -32,4 +32,10 @@ public class OrderItem {
     public void setOrderId(Long orderId) { this.orderId = orderId; }
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal lineTotal() {
+        throw new UnsupportedOperationException("lineTotal not implemented");
+    }
 }

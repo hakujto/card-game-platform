@@ -53,4 +53,33 @@ public class TournamentController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/start")
+    public ResponseEntity<Void> start(@PathVariable Long id) {
+        service.start(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable Long id) {
+        service.cancel(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> complete(@PathVariable Long id) {
+        service.complete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/rounds")
+    public ResponseEntity<Void> generateRound(@PathVariable Long id) {
+        service.generateRound(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/prizes")
+    public ResponseEntity<java.math.BigDecimal> calculatePrizeDistribution(@PathVariable Long id) {
+        return ResponseEntity.ok(service.calculatePrizeDistribution(id));
+    }
 }

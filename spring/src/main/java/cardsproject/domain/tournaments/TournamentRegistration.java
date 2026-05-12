@@ -43,4 +43,17 @@ public class TournamentRegistration {
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
     public Long getDeckId() { return deckId; }
     public void setDeckId(Long deckId) { this.deckId = deckId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void withdraw() {
+        throw new UnsupportedOperationException("withdraw not implemented");
+    }
+    public void disqualify(String reason) {
+        throw new UnsupportedOperationException("disqualify not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void promoteFromWaitlist() {
+        throw new UnsupportedOperationException("promoteFromWaitlist not implemented");
+    }
 }

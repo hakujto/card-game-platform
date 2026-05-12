@@ -30,4 +30,25 @@ public class StreamService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void goLive(Long id) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        entity.goLive();
+        repository.save(entity);
+    }
+
+    public void end(Long id) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        entity.end();
+        repository.save(entity);
+    }
+
+    public void updateViewerPeak(Long id, Integer count) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        entity.updateViewerPeak(count);
+        repository.save(entity);
+    }
 }

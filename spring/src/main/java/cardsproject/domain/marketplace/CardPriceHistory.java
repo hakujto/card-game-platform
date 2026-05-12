@@ -38,4 +38,12 @@ public class CardPriceHistory {
     public void setFoil(Boolean foil) { this.foil = foil; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public java.math.BigDecimal priceChangePercent(java.math.BigDecimal previousAvg) {
+        throw new UnsupportedOperationException("priceChangePercent not implemented");
+    }
+    public Boolean isPriceSpike(Integer thresholdPercent) {
+        throw new UnsupportedOperationException("isPriceSpike not implemented");
+    }
 }

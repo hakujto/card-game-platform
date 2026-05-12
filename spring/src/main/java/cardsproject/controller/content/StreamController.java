@@ -53,4 +53,22 @@ public class StreamController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/live")
+    public ResponseEntity<Void> goLive(@PathVariable Long id) {
+        service.goLive(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/end")
+    public ResponseEntity<Void> end(@PathVariable Long id) {
+        service.end(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/viewers")
+    public ResponseEntity<Void> updateViewerPeak(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.updateViewerPeak(id, (Integer) body.get("count"));
+        return ResponseEntity.noContent().build();
+    }
 }

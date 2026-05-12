@@ -32,4 +32,13 @@ public class CardAbility {
     public void setTiming(CardAbilityTimingType timing) { this.timing = timing; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public Boolean isUsableAt(String timing) {
+        throw new UnsupportedOperationException("isUsableAt not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String describe() {
+        throw new UnsupportedOperationException("describe not implemented");
+    }
 }

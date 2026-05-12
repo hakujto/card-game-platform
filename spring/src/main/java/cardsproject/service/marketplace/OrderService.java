@@ -30,4 +30,42 @@ public class OrderService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void cancel(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.cancel();
+        repository.save(entity);
+    }
+
+    public Boolean pay(Long id, String paymentRef) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        Boolean result = entity.pay(paymentRef);
+        repository.save(entity);
+        return result;
+    }
+
+    public java.math.BigDecimal calculateTotal(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        java.math.BigDecimal result = entity.calculateTotal();
+        repository.save(entity);
+        return result;
+    }
+
+    public java.math.BigDecimal applyDiscount(Long id, Integer percent) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        java.math.BigDecimal result = entity.applyDiscount(percent);
+        repository.save(entity);
+        return result;
+    }
+
+    public void refund(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.refund();
+        repository.save(entity);
+    }
 }

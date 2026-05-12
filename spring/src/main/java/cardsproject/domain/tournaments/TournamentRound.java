@@ -20,8 +20,6 @@ public class TournamentRound {
 
     @Column(name = "tournament_id")
     private Long tournamentId;
-    @Column(name = "matches_id")
-    private Long matchesId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -37,6 +35,22 @@ public class TournamentRound {
     public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
     public Long getTournamentId() { return tournamentId; }
     public void setTournamentId(Long tournamentId) { this.tournamentId = tournamentId; }
-    public Long getMatchesId() { return matchesId; }
-    public void setMatchesId(Long matchesId) { this.matchesId = matchesId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void start() {
+        throw new UnsupportedOperationException("start not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void complete() {
+        throw new UnsupportedOperationException("complete not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void generatePairings() {
+        throw new UnsupportedOperationException("generatePairings not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean isTimeExpired() {
+        throw new UnsupportedOperationException("isTimeExpired not implemented");
+    }
 }
