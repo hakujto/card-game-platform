@@ -51,4 +51,16 @@ class DeckTag
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function rename($newName): void
+    {
+        throw new \RuntimeException('rename not implemented');
+    }
+
+    public function mergeInto($targetTagId): void
+    {
+        throw new \RuntimeException('merge_into not implemented');
+    }
+
 }

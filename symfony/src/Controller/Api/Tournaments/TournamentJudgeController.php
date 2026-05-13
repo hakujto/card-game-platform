@@ -93,4 +93,5 @@ class TournamentJudgeController extends AbstractController
         $this->repository->remove($tournamentJudge, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

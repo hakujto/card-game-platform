@@ -101,4 +101,20 @@ class ArticleCommentController extends AbstractController
         $this->repository->remove($articleComment, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/hide', name: 'hide', methods: ['POST'])]
+    public function hide(ArticleComment $articleComment): JsonResponse
+    {
+        $articleComment->hide();
+        $this->repository->save($articleComment, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/unhide', name: 'unhide', methods: ['POST'])]
+    public function unhide(ArticleComment $articleComment): JsonResponse
+    {
+        $articleComment->unhide();
+        $this->repository->save($articleComment, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

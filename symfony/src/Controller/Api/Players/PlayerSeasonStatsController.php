@@ -100,4 +100,5 @@ class PlayerSeasonStatsController extends AbstractController
         $this->repository->remove($playerSeasonStats, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

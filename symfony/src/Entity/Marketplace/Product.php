@@ -200,4 +200,36 @@ class Product
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function activate(): void
+    {
+        throw new \RuntimeException('activate not implemented');
+    }
+
+    public function deactivate(): void
+    {
+        throw new \RuntimeException('deactivate not implemented');
+    }
+
+    public function applyDiscount($percent): void
+    {
+        throw new \RuntimeException('apply_discount not implemented');
+    }
+
+    public function restock($quantity): void
+    {
+        throw new \RuntimeException('restock not implemented');
+    }
+
+    public function effectivePrice(): void
+    {
+        throw new \RuntimeException('effective_price not implemented');
+    }
+
+    public function isInStock(): void
+    {
+        throw new \RuntimeException('is_in_stock not implemented');
+    }
+
 }

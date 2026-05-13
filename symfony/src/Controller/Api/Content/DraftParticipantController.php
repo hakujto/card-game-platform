@@ -101,4 +101,13 @@ class DraftParticipantController extends AbstractController
         $this->repository->remove($draftParticipant, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/pick', name: 'pickCard', methods: ['POST'])]
+    public function pickCard(DraftParticipant $draftParticipant, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $draftParticipant->pickCard($data['cardId'] ?? null, $data['packNumber'] ?? null);
+        $this->repository->save($draftParticipant, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

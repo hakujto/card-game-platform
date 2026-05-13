@@ -103,4 +103,38 @@ class ProductController extends AbstractController
         $this->repository->remove($product, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
+    public function activate(Product $product): JsonResponse
+    {
+        $product->activate();
+        $this->repository->save($product, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/deactivate', name: 'deactivate', methods: ['POST'])]
+    public function deactivate(Product $product): JsonResponse
+    {
+        $product->deactivate();
+        $this->repository->save($product, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/discount', name: 'applyDiscount', methods: ['PATCH'])]
+    public function applyDiscount(Product $product, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $result = $product->applyDiscount($data['percent'] ?? null);
+        $this->repository->save($product, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/restock', name: 'restock', methods: ['POST'])]
+    public function restock(Product $product, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $product->restock($data['quantity'] ?? null);
+        $this->repository->save($product, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

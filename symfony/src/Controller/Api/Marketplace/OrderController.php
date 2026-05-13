@@ -122,4 +122,46 @@ class OrderController extends AbstractController
         $this->repository->remove($order, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/cancel', name: 'cancel', methods: ['DELETE'])]
+    public function cancel(Order $order): JsonResponse
+    {
+        $order->cancel();
+        $this->repository->save($order, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/pay', name: 'pay', methods: ['POST'])]
+    public function pay(Order $order, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $result = $order->pay($data['paymentRef'] ?? null);
+        $this->repository->save($order, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/total', name: 'calculateTotal', methods: ['GET'])]
+    public function calculateTotal(Order $order): JsonResponse
+    {
+        $result = $order->calculateTotal();
+        $this->repository->save($order, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/discount', name: 'applyDiscount', methods: ['PATCH'])]
+    public function applyDiscount(Order $order, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $result = $order->applyDiscount($data['percent'] ?? null);
+        $this->repository->save($order, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/refund', name: 'refund', methods: ['POST'])]
+    public function refund(Order $order): JsonResponse
+    {
+        $order->refund();
+        $this->repository->save($order, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

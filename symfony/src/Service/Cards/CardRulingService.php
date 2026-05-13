@@ -20,4 +20,5 @@ class CardRulingService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

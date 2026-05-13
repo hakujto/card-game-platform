@@ -271,4 +271,31 @@ class Deck
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function validateSize(): void
+    {
+        throw new \RuntimeException('validate_size not implemented');
+    }
+
+    public function clone(): void
+    {
+        throw new \RuntimeException('clone not implemented');
+    }
+
+    public function publish(): void
+    {
+        throw new \RuntimeException('publish not implemented');
+    }
+
+    public function unpublish(): void
+    {
+        throw new \RuntimeException('unpublish not implemented');
+    }
+
+    public function certifyTournamentLegal(): void
+    {
+        throw new \RuntimeException('certify_tournament_legal not implemented');
+    }
+
 }

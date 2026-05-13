@@ -20,4 +20,5 @@ class AwardedPrizeService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

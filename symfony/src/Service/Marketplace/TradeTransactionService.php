@@ -20,4 +20,28 @@ class TradeTransactionService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function complete(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeTransaction not found: ' . $id);
+        $entity->complete();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function refund(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeTransaction not found: ' . $id);
+        $entity->refund();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function openDispute(int $id, $reason): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeTransaction not found: ' . $id);
+        $entity->openDispute($reason);
+        $this->repository->save($entity, flush: true);
+    }
 }

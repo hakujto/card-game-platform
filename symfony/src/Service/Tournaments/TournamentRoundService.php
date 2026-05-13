@@ -20,4 +20,28 @@ class TournamentRoundService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function start(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentRound not found: ' . $id);
+        $entity->start();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function complete(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentRound not found: ' . $id);
+        $entity->complete();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function generatePairings(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentRound not found: ' . $id);
+        $entity->generatePairings();
+        $this->repository->save($entity, flush: true);
+    }
 }

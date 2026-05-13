@@ -124,4 +124,29 @@ class TradelistingController extends AbstractController
         $this->repository->remove($tradelisting, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/close', name: 'close', methods: ['POST'])]
+    public function close(Tradelisting $tradelisting): JsonResponse
+    {
+        $tradelisting->close();
+        $this->repository->save($tradelisting, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/extend', name: 'extend', methods: ['PATCH'])]
+    public function extend(Tradelisting $tradelisting, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tradelisting->extend($data['days'] ?? null);
+        $this->repository->save($tradelisting, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/cancel', name: 'cancel', methods: ['DELETE'])]
+    public function cancel(Tradelisting $tradelisting): JsonResponse
+    {
+        $tradelisting->cancel();
+        $this->repository->save($tradelisting, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

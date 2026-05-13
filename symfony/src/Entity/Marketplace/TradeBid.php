@@ -109,4 +109,11 @@ class TradeBid
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function outbidBy($newAmount): void
+    {
+        throw new \RuntimeException('outbid_by not implemented');
+    }
+
 }

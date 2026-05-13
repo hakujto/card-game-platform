@@ -281,4 +281,26 @@ class Article
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function publish(): void
+    {
+        throw new \RuntimeException('publish not implemented');
+    }
+
+    public function archive(): void
+    {
+        throw new \RuntimeException('archive not implemented');
+    }
+
+    public function incrementView(): void
+    {
+        throw new \RuntimeException('increment_view not implemented');
+    }
+
+    public function readingTimeMinutes(): void
+    {
+        throw new \RuntimeException('reading_time_minutes not implemented');
+    }
+
 }

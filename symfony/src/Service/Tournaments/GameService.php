@@ -20,4 +20,12 @@ class GameService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function recordWinner(int $id, $winnerSide): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Game not found: ' . $id);
+        $entity->recordWinner($winnerSide);
+        $this->repository->save($entity, flush: true);
+    }
 }

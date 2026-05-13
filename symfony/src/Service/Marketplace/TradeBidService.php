@@ -20,4 +20,5 @@ class TradeBidService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

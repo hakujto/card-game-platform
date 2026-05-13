@@ -133,4 +133,16 @@ class CardPriceHistory
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function priceChangePercent($previousAvg): void
+    {
+        throw new \RuntimeException('price_change_percent not implemented');
+    }
+
+    public function isPriceSpike($thresholdPercent): void
+    {
+        throw new \RuntimeException('is_price_spike not implemented');
+    }
+
 }

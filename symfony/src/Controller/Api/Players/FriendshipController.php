@@ -92,4 +92,28 @@ class FriendshipController extends AbstractController
         $this->repository->remove($friendship, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/accept', name: 'accept', methods: ['POST'])]
+    public function accept(Friendship $friendship): JsonResponse
+    {
+        $friendship->accept();
+        $this->repository->save($friendship, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/decline', name: 'decline', methods: ['POST'])]
+    public function decline(Friendship $friendship): JsonResponse
+    {
+        $friendship->decline();
+        $this->repository->save($friendship, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/block', name: 'block', methods: ['POST'])]
+    public function block(Friendship $friendship): JsonResponse
+    {
+        $friendship->block();
+        $this->repository->save($friendship, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

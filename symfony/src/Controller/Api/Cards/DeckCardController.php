@@ -95,4 +95,5 @@ class DeckCardController extends AbstractController
         $this->repository->remove($deckCard, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

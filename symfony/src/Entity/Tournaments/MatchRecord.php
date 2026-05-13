@@ -211,4 +211,21 @@ class MatchRecord
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function recordResult($p1Wins, $p2Wins): void
+    {
+        throw new \RuntimeException('record_result not implemented');
+    }
+
+    public function determineWinner(): void
+    {
+        throw new \RuntimeException('determine_winner not implemented');
+    }
+
+    public function draw(): void
+    {
+        throw new \RuntimeException('draw not implemented');
+    }
+
 }

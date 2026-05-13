@@ -99,4 +99,5 @@ class AwardedPrizeController extends AbstractController
         $this->repository->remove($awardedPrize, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

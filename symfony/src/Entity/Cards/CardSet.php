@@ -126,4 +126,11 @@ class CardSet
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isLegalInStandard(): void
+    {
+        throw new \RuntimeException('is_legal_in_standard not implemented');
+    }
+
 }

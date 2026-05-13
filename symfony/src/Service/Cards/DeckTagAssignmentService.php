@@ -20,4 +20,5 @@ class DeckTagAssignmentService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

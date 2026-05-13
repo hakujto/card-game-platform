@@ -20,4 +20,28 @@ class TradeDisputeService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function escalate(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeDispute not found: ' . $id);
+        $entity->escalate();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function resolve(int $id, $resolutionText): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeDispute not found: ' . $id);
+        $entity->resolve($resolutionText);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function review(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeDispute not found: ' . $id);
+        $entity->review();
+        $this->repository->save($entity, flush: true);
+    }
 }

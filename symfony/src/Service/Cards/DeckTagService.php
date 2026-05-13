@@ -20,4 +20,12 @@ class DeckTagService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function mergeInto(int $id, $targetTagId): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DeckTag not found: ' . $id);
+        $entity->mergeInto($targetTagId);
+        $this->repository->save($entity, flush: true);
+    }
 }

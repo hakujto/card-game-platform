@@ -20,4 +20,20 @@ class ArticleCommentService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function hide(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('ArticleComment not found: ' . $id);
+        $entity->hide();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function unhide(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('ArticleComment not found: ' . $id);
+        $entity->unhide();
+        $this->repository->save($entity, flush: true);
+    }
 }

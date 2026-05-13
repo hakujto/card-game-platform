@@ -115,4 +115,16 @@ class DraftParticipant
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function pickCard($cardId, $packNumber): void
+    {
+        throw new \RuntimeException('pick_card not implemented');
+    }
+
+    public function draftedCardCount(): void
+    {
+        throw new \RuntimeException('drafted_card_count not implemented');
+    }
+
 }

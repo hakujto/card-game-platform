@@ -145,4 +145,26 @@ class TradeTransaction
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
+    }
+
+    public function refund(): void
+    {
+        throw new \RuntimeException('refund not implemented');
+    }
+
+    public function openDispute($reason): void
+    {
+        throw new \RuntimeException('open_dispute not implemented');
+    }
+
+    public function sellerNet(): void
+    {
+        throw new \RuntimeException('seller_net not implemented');
+    }
+
 }

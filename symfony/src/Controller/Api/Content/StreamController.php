@@ -106,4 +106,29 @@ class StreamController extends AbstractController
         $this->repository->remove($stream, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/live', name: 'goLive', methods: ['POST'])]
+    public function goLive(Stream $stream): JsonResponse
+    {
+        $stream->goLive();
+        $this->repository->save($stream, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/end', name: 'end', methods: ['POST'])]
+    public function end(Stream $stream): JsonResponse
+    {
+        $stream->end();
+        $this->repository->save($stream, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/viewers', name: 'updateViewerPeak', methods: ['PATCH'])]
+    public function updateViewerPeak(Stream $stream, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $stream->updateViewerPeak($data['count'] ?? null);
+        $this->repository->save($stream, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

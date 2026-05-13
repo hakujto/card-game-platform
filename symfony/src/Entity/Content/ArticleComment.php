@@ -130,4 +130,21 @@ class ArticleComment
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function hide(): void
+    {
+        throw new \RuntimeException('hide not implemented');
+    }
+
+    public function unhide(): void
+    {
+        throw new \RuntimeException('unhide not implemented');
+    }
+
+    public function isReply(): void
+    {
+        throw new \RuntimeException('is_reply not implemented');
+    }
+
 }

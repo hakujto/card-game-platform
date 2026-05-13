@@ -147,4 +147,11 @@ class TournamentPrize
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function appliesToPlacement($placement): void
+    {
+        throw new \RuntimeException('applies_to_placement not implemented');
+    }
+
 }

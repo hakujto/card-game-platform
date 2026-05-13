@@ -367,4 +367,36 @@ class Tournament
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function start(): void
+    {
+        throw new \RuntimeException('start not implemented');
+    }
+
+    public function cancel(): void
+    {
+        throw new \RuntimeException('cancel not implemented');
+    }
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
+    }
+
+    public function generateRound(): void
+    {
+        throw new \RuntimeException('generate_round not implemented');
+    }
+
+    public function calculatePrizeDistribution(): void
+    {
+        throw new \RuntimeException('calculate_prize_distribution not implemented');
+    }
+
+    public function isFull(): void
+    {
+        throw new \RuntimeException('is_full not implemented');
+    }
+
 }

@@ -146,4 +146,44 @@ class TournamentController extends AbstractController
         $this->repository->remove($tournament, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/start', name: 'start', methods: ['POST'])]
+    public function start(Tournament $tournament): JsonResponse
+    {
+        $tournament->start();
+        $this->repository->save($tournament, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/cancel', name: 'cancel', methods: ['POST'])]
+    public function cancel(Tournament $tournament): JsonResponse
+    {
+        $tournament->cancel();
+        $this->repository->save($tournament, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['POST'])]
+    public function complete(Tournament $tournament): JsonResponse
+    {
+        $tournament->complete();
+        $this->repository->save($tournament, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/rounds', name: 'generateRound', methods: ['POST'])]
+    public function generateRound(Tournament $tournament): JsonResponse
+    {
+        $tournament->generateRound();
+        $this->repository->save($tournament, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/prizes', name: 'calculatePrizeDistribution', methods: ['GET'])]
+    public function calculatePrizeDistribution(Tournament $tournament): JsonResponse
+    {
+        $result = $tournament->calculatePrizeDistribution();
+        $this->repository->save($tournament, flush: true);
+        return $this->json($result);
+    }
 }

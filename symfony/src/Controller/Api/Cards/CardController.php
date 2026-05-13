@@ -129,4 +129,44 @@ class CardController extends AbstractController
         $this->repository->remove($card, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/ban', name: 'ban', methods: ['POST'])]
+    public function ban(Card $card): JsonResponse
+    {
+        $card->ban();
+        $this->repository->save($card, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/unban', name: 'unban', methods: ['POST'])]
+    public function unban(Card $card): JsonResponse
+    {
+        $card->unban();
+        $this->repository->save($card, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/restrict', name: 'restrict', methods: ['POST'])]
+    public function restrict(Card $card): JsonResponse
+    {
+        $card->restrict();
+        $this->repository->save($card, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/unrestrict', name: 'unrestrict', methods: ['POST'])]
+    public function unrestrict(Card $card): JsonResponse
+    {
+        $card->unrestrict();
+        $this->repository->save($card, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/value', name: 'calculateValue', methods: ['GET'])]
+    public function calculateValue(Card $card): JsonResponse
+    {
+        $result = $card->calculateValue();
+        $this->repository->save($card, flush: true);
+        return $this->json($result);
+    }
 }

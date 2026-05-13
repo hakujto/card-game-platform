@@ -109,4 +109,11 @@ class DraftPick
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isFirstPick(): void
+    {
+        throw new \RuntimeException('is_first_pick not implemented');
+    }
+
 }

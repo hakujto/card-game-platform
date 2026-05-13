@@ -102,4 +102,16 @@ class CardAbility
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isUsableAt($timing): void
+    {
+        throw new \RuntimeException('is_usable_at not implemented');
+    }
+
+    public function describe(): void
+    {
+        throw new \RuntimeException('describe not implemented');
+    }
+
 }

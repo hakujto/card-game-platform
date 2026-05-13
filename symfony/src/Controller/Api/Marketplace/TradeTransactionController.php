@@ -108,4 +108,29 @@ class TradeTransactionController extends AbstractController
         $this->repository->remove($tradeTransaction, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['POST'])]
+    public function complete(TradeTransaction $tradeTransaction): JsonResponse
+    {
+        $tradeTransaction->complete();
+        $this->repository->save($tradeTransaction, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/refund', name: 'refund', methods: ['POST'])]
+    public function refund(TradeTransaction $tradeTransaction): JsonResponse
+    {
+        $tradeTransaction->refund();
+        $this->repository->save($tradeTransaction, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/dispute', name: 'openDispute', methods: ['POST'])]
+    public function openDispute(TradeTransaction $tradeTransaction, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tradeTransaction->openDispute($data['reason'] ?? null);
+        $this->repository->save($tradeTransaction, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

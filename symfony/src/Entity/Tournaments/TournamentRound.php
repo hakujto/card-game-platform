@@ -138,4 +138,26 @@ class TournamentRound
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function start(): void
+    {
+        throw new \RuntimeException('start not implemented');
+    }
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
+    }
+
+    public function generatePairings(): void
+    {
+        throw new \RuntimeException('generate_pairings not implemented');
+    }
+
+    public function isTimeExpired(): void
+    {
+        throw new \RuntimeException('is_time_expired not implemented');
+    }
+
 }

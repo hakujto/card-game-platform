@@ -93,4 +93,5 @@ class ArticleTagAssignmentController extends AbstractController
         $this->repository->remove($articleTagAssignment, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

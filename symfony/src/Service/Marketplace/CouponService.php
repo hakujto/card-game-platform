@@ -20,4 +20,20 @@ class CouponService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function redeem(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Coupon not found: ' . $id);
+        $entity->redeem();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function deactivate(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Coupon not found: ' . $id);
+        $entity->deactivate();
+        $this->repository->save($entity, flush: true);
+    }
 }

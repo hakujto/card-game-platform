@@ -20,4 +20,5 @@ class ArticleTagAssignmentService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

@@ -20,4 +20,5 @@ class CraftingIngredientService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

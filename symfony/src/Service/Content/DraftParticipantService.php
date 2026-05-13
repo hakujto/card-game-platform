@@ -20,4 +20,12 @@ class DraftParticipantService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function pickCard(int $id, $cardId, $packNumber): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DraftParticipant not found: ' . $id);
+        $entity->pickCard($cardId, $packNumber);
+        $this->repository->save($entity, flush: true);
+    }
 }

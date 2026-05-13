@@ -20,4 +20,45 @@ class CardService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function ban(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $entity->ban();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function unban(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $entity->unban();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function restrict(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $entity->restrict();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function unrestrict(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $entity->unrestrict();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function calculateValue(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $result = $entity->calculateValue();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

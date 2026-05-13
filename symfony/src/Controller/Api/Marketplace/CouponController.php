@@ -88,4 +88,20 @@ class CouponController extends AbstractController
         $this->repository->remove($coupon, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/redeem', name: 'redeem', methods: ['POST'])]
+    public function redeem(Coupon $coupon): JsonResponse
+    {
+        $coupon->redeem();
+        $this->repository->save($coupon, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/deactivate', name: 'deactivate', methods: ['POST'])]
+    public function deactivate(Coupon $coupon): JsonResponse
+    {
+        $coupon->deactivate();
+        $this->repository->save($coupon, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

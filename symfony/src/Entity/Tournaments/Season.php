@@ -111,4 +111,26 @@ class Season
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function activate(): void
+    {
+        throw new \RuntimeException('activate not implemented');
+    }
+
+    public function deactivate(): void
+    {
+        throw new \RuntimeException('deactivate not implemented');
+    }
+
+    public function finalizeRewards(): void
+    {
+        throw new \RuntimeException('finalize_rewards not implemented');
+    }
+
+    public function isOngoing(): void
+    {
+        throw new \RuntimeException('is_ongoing not implemented');
+    }
+
 }

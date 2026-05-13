@@ -97,4 +97,5 @@ class PlayerAchievementController extends AbstractController
         $this->repository->remove($playerAchievement, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

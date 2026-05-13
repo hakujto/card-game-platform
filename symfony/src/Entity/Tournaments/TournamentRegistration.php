@@ -161,4 +161,21 @@ class TournamentRegistration
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function withdraw(): void
+    {
+        throw new \RuntimeException('withdraw not implemented');
+    }
+
+    public function disqualify($reason): void
+    {
+        throw new \RuntimeException('disqualify not implemented');
+    }
+
+    public function promoteFromWaitlist(): void
+    {
+        throw new \RuntimeException('promote_from_waitlist not implemented');
+    }
+
 }

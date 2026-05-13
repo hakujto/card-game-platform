@@ -117,4 +117,29 @@ class MatchRecordController extends AbstractController
         $this->repository->remove($matchRecord, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/record', name: 'recordResult', methods: ['POST'])]
+    public function recordResult(MatchRecord $matchRecord, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $matchRecord->recordResult($data['p1Wins'] ?? null, $data['p2Wins'] ?? null);
+        $this->repository->save($matchRecord, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/winner', name: 'determineWinner', methods: ['GET'])]
+    public function determineWinner(MatchRecord $matchRecord): JsonResponse
+    {
+        $result = $matchRecord->determineWinner();
+        $this->repository->save($matchRecord, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/draw', name: 'draw', methods: ['POST'])]
+    public function draw(MatchRecord $matchRecord): JsonResponse
+    {
+        $matchRecord->draw();
+        $this->repository->save($matchRecord, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

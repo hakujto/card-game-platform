@@ -20,4 +20,45 @@ class TournamentService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function start(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $entity->start();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function cancel(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $entity->cancel();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function complete(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $entity->complete();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function generateRound(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $entity->generateRound();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function calculatePrizeDistribution(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $result = $entity->calculatePrizeDistribution();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

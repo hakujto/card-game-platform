@@ -87,4 +87,16 @@ class CardRuling
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isCurrent(): void
+    {
+        throw new \RuntimeException('is_current not implemented');
+    }
+
+    public function supersedesPrevious(): void
+    {
+        throw new \RuntimeException('supersedes_previous not implemented');
+    }
+
 }

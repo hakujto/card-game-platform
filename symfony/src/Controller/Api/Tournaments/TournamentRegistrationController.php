@@ -113,4 +113,29 @@ class TournamentRegistrationController extends AbstractController
         $this->repository->remove($tournamentRegistration, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/withdraw', name: 'withdraw', methods: ['POST'])]
+    public function withdraw(TournamentRegistration $tournamentRegistration): JsonResponse
+    {
+        $tournamentRegistration->withdraw();
+        $this->repository->save($tournamentRegistration, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/disqualify', name: 'disqualify', methods: ['POST'])]
+    public function disqualify(TournamentRegistration $tournamentRegistration, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tournamentRegistration->disqualify($data['reason'] ?? null);
+        $this->repository->save($tournamentRegistration, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/promote', name: 'promoteFromWaitlist', methods: ['POST'])]
+    public function promoteFromWaitlist(TournamentRegistration $tournamentRegistration): JsonResponse
+    {
+        $tournamentRegistration->promoteFromWaitlist();
+        $this->repository->save($tournamentRegistration, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

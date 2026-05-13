@@ -93,4 +93,5 @@ class DeckSideboardCardController extends AbstractController
         $this->repository->remove($deckSideboardCard, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

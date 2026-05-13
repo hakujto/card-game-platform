@@ -101,4 +101,28 @@ class DraftSessionController extends AbstractController
         $this->repository->remove($draftSession, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/start', name: 'start', methods: ['POST'])]
+    public function start(DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->start();
+        $this->repository->save($draftSession, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/abandon', name: 'abandon', methods: ['POST'])]
+    public function abandon(DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->abandon();
+        $this->repository->save($draftSession, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['POST'])]
+    public function complete(DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->complete();
+        $this->repository->save($draftSession, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

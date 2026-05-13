@@ -20,4 +20,5 @@ class TournamentJudgeService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

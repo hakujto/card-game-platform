@@ -283,4 +283,41 @@ class Player
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function promote(): void
+    {
+        throw new \RuntimeException('promote not implemented');
+    }
+
+    public function demote(): void
+    {
+        throw new \RuntimeException('demote not implemented');
+    }
+
+    public function recordWin(): void
+    {
+        throw new \RuntimeException('record_win not implemented');
+    }
+
+    public function recordLoss(): void
+    {
+        throw new \RuntimeException('record_loss not implemented');
+    }
+
+    public function winRate(): void
+    {
+        throw new \RuntimeException('win_rate not implemented');
+    }
+
+    public function verify(): void
+    {
+        throw new \RuntimeException('verify not implemented');
+    }
+
+    public function updateRating($delta): void
+    {
+        throw new \RuntimeException('update_rating not implemented');
+    }
+
 }

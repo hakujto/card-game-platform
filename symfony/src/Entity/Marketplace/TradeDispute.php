@@ -175,4 +175,21 @@ class TradeDispute
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function escalate(): void
+    {
+        throw new \RuntimeException('escalate not implemented');
+    }
+
+    public function resolve($resolutionText): void
+    {
+        throw new \RuntimeException('resolve not implemented');
+    }
+
+    public function review(): void
+    {
+        throw new \RuntimeException('review not implemented');
+    }
+
 }

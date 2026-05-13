@@ -20,4 +20,5 @@ class CardAbilityService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

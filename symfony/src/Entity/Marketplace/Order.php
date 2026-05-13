@@ -250,4 +250,36 @@ class Order
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function cancel(): void
+    {
+        throw new \RuntimeException('cancel not implemented');
+    }
+
+    public function pay($paymentRef): void
+    {
+        throw new \RuntimeException('pay not implemented');
+    }
+
+    public function calculateTotal(): void
+    {
+        throw new \RuntimeException('calculate_total not implemented');
+    }
+
+    public function applyDiscount($percent): void
+    {
+        throw new \RuntimeException('apply_discount not implemented');
+    }
+
+    public function refund(): void
+    {
+        throw new \RuntimeException('refund not implemented');
+    }
+
+    public function notifyShipped(): void
+    {
+        throw new \RuntimeException('notify_shipped not implemented');
+    }
+
 }

@@ -99,4 +99,44 @@ class DeckController extends AbstractController
         $this->repository->remove($deck, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/validate', name: 'validateSize', methods: ['GET'])]
+    public function validateSize(Deck $deck): JsonResponse
+    {
+        $result = $deck->validateSize();
+        $this->repository->save($deck, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/clone', name: 'clone', methods: ['POST'])]
+    public function clone(Deck $deck): JsonResponse
+    {
+        $result = $deck->clone();
+        $this->repository->save($deck, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/publish', name: 'publish', methods: ['POST'])]
+    public function publish(Deck $deck): JsonResponse
+    {
+        $deck->publish();
+        $this->repository->save($deck, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/unpublish', name: 'unpublish', methods: ['POST'])]
+    public function unpublish(Deck $deck): JsonResponse
+    {
+        $deck->unpublish();
+        $this->repository->save($deck, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/certify', name: 'certifyTournamentLegal', methods: ['POST'])]
+    public function certifyTournamentLegal(Deck $deck): JsonResponse
+    {
+        $result = $deck->certifyTournamentLegal();
+        $this->repository->save($deck, flush: true);
+        return $this->json($result);
+    }
 }

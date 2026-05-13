@@ -20,4 +20,28 @@ class ArticleService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function publish(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Article not found: ' . $id);
+        $entity->publish();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function archive(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Article not found: ' . $id);
+        $entity->archive();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function incrementView(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Article not found: ' . $id);
+        $entity->incrementView();
+        $this->repository->save($entity, flush: true);
+    }
 }

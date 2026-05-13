@@ -108,4 +108,11 @@ class OrderItem
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function lineTotal(): void
+    {
+        throw new \RuntimeException('line_total not implemented');
+    }
+
 }

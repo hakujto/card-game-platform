@@ -103,4 +103,16 @@ class CraftingRecipe
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function disable(): void
+    {
+        throw new \RuntimeException('disable not implemented');
+    }
+
+    public function enable(): void
+    {
+        throw new \RuntimeException('enable not implemented');
+    }
+
 }

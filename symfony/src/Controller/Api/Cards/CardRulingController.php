@@ -85,4 +85,5 @@ class CardRulingController extends AbstractController
         $this->repository->remove($cardRuling, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

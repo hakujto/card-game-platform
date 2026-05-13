@@ -93,4 +93,21 @@ class Friendship
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function accept(): void
+    {
+        throw new \RuntimeException('accept not implemented');
+    }
+
+    public function decline(): void
+    {
+        throw new \RuntimeException('decline not implemented');
+    }
+
+    public function block(): void
+    {
+        throw new \RuntimeException('block not implemented');
+    }
+
 }

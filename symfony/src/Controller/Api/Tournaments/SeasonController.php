@@ -82,4 +82,28 @@ class SeasonController extends AbstractController
         $this->repository->remove($season, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
+    public function activate(Season $season): JsonResponse
+    {
+        $season->activate();
+        $this->repository->save($season, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/deactivate', name: 'deactivate', methods: ['POST'])]
+    public function deactivate(Season $season): JsonResponse
+    {
+        $season->deactivate();
+        $this->repository->save($season, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/finalize', name: 'finalizeRewards', methods: ['POST'])]
+    public function finalizeRewards(Season $season): JsonResponse
+    {
+        $season->finalizeRewards();
+        $this->repository->save($season, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

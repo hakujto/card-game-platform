@@ -139,4 +139,21 @@ class PlayerCollection
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function add($quantity): void
+    {
+        throw new \RuntimeException('add not implemented');
+    }
+
+    public function remove($quantity): void
+    {
+        throw new \RuntimeException('remove not implemented');
+    }
+
+    public function estimatedValue(): void
+    {
+        throw new \RuntimeException('estimated_value not implemented');
+    }
+
 }

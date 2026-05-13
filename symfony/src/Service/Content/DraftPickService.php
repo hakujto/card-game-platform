@@ -20,4 +20,5 @@ class DraftPickService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

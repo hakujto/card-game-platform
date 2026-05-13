@@ -20,4 +20,5 @@ class CraftingRecipeService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

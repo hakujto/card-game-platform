@@ -51,4 +51,16 @@ class ArticleTag
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function rename($newName): void
+    {
+        throw new \RuntimeException('rename not implemented');
+    }
+
+    public function articleCount(): void
+    {
+        throw new \RuntimeException('article_count not implemented');
+    }
+
 }

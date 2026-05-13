@@ -20,4 +20,28 @@ class SeasonService
     {
         throw new \LogicException('Not implemented');
     }
+
+    public function activate(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Season not found: ' . $id);
+        $entity->activate();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function deactivate(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Season not found: ' . $id);
+        $entity->deactivate();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function finalizeRewards(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Season not found: ' . $id);
+        $entity->finalizeRewards();
+        $this->repository->save($entity, flush: true);
+    }
 }

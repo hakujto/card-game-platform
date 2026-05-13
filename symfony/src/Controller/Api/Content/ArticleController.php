@@ -122,4 +122,28 @@ class ArticleController extends AbstractController
         $this->repository->remove($article, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/publish', name: 'publish', methods: ['POST'])]
+    public function publish(Article $article): JsonResponse
+    {
+        $article->publish();
+        $this->repository->save($article, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/archive', name: 'archive', methods: ['POST'])]
+    public function archive(Article $article): JsonResponse
+    {
+        $article->archive();
+        $this->repository->save($article, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/view', name: 'incrementView', methods: ['POST'])]
+    public function incrementView(Article $article): JsonResponse
+    {
+        $article->incrementView();
+        $this->repository->save($article, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

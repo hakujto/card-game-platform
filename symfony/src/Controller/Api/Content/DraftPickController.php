@@ -97,4 +97,5 @@ class DraftPickController extends AbstractController
         $this->repository->remove($draftPick, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

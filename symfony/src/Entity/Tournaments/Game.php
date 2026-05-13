@@ -154,4 +154,16 @@ class Game
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function recordWinner($winnerSide): void
+    {
+        throw new \RuntimeException('record_winner not implemented');
+    }
+
+    public function durationMinutes(): void
+    {
+        throw new \RuntimeException('duration_minutes not implemented');
+    }
+
 }

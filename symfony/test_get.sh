@@ -8,9 +8,6 @@ ID_Season=1
 ID_Product=1
 ID_Coupon=1
 ID_ArticleTag=1
-ID_TopUpPackage=1
-ID_FeatureFlag=1
-ID_SystemAnnouncement=1
 ID_Card=1
 ID_PlayerSeasonStats=1
 ID_OrderItem=1
@@ -31,24 +28,9 @@ ID_Tradelisting=1
 ID_DraftParticipant=1
 ID_ArticleComment=1
 ID_Stream=1
-ID_ContentLike=1
-ID_Bookmark=1
-ID_Notification=1
-ID_NotificationPreference=1
-ID_PushDevice=1
-ID_Message=1
-ID_PlayerReport=1
-ID_ModerationAction=1
-ID_ContentReport=1
-ID_Wallet=1
-ID_TopUpOrder=1
-ID_LeaderboardEntry=1
-ID_AuditLog=1
-ID_PlatformConfig=1
 ID_DeckCard=1
 ID_DeckSideboardCard=1
 ID_DeckTagAssignment=1
-ID_DeckReview=1
 ID_TournamentJudge=1
 ID_TournamentRegistration=1
 ID_TournamentPrize=1
@@ -59,9 +41,6 @@ ID_TradeTransaction=1
 ID_DraftSession=1
 ID_DraftPick=1
 ID_Article=1
-ID_Conversation=1
-ID_WalletTransaction=1
-ID_LeaderboardSnapshot=1
 ID_AwardedPrize=1
 ID_TradeDispute=1
 ID_ArticleTagAssignment=1
@@ -100,21 +79,6 @@ echo && echo "=== GET article_tags ==="
 curl -s "$BASE/article_tags" | python3 -m json.tool
 echo && echo "=== GET article_tags/$ID_ArticleTag ==="
 curl -s "$BASE/article_tags/$ID_ArticleTag" | python3 -m json.tool
-
-echo && echo "=== GET top_up_packages ==="
-curl -s "$BASE/top_up_packages" | python3 -m json.tool
-echo && echo "=== GET top_up_packages/$ID_TopUpPackage ==="
-curl -s "$BASE/top_up_packages/$ID_TopUpPackage" | python3 -m json.tool
-
-echo && echo "=== GET feature_flags ==="
-curl -s "$BASE/feature_flags" | python3 -m json.tool
-echo && echo "=== GET feature_flags/$ID_FeatureFlag ==="
-curl -s "$BASE/feature_flags/$ID_FeatureFlag" | python3 -m json.tool
-
-echo && echo "=== GET system_announcements ==="
-curl -s "$BASE/system_announcements" | python3 -m json.tool
-echo && echo "=== GET system_announcements/$ID_SystemAnnouncement ==="
-curl -s "$BASE/system_announcements/$ID_SystemAnnouncement" | python3 -m json.tool
 
 echo && echo "=== GET cards ==="
 curl -s "$BASE/cards" | python3 -m json.tool
@@ -216,76 +180,6 @@ curl -s "$BASE/streams" | python3 -m json.tool
 echo && echo "=== GET streams/$ID_Stream ==="
 curl -s "$BASE/streams/$ID_Stream" | python3 -m json.tool
 
-echo && echo "=== GET content_likes ==="
-curl -s "$BASE/content_likes" | python3 -m json.tool
-echo && echo "=== GET content_likes/$ID_ContentLike ==="
-curl -s "$BASE/content_likes/$ID_ContentLike" | python3 -m json.tool
-
-echo && echo "=== GET bookmarks ==="
-curl -s "$BASE/bookmarks" | python3 -m json.tool
-echo && echo "=== GET bookmarks/$ID_Bookmark ==="
-curl -s "$BASE/bookmarks/$ID_Bookmark" | python3 -m json.tool
-
-echo && echo "=== GET notifications ==="
-curl -s "$BASE/notifications" | python3 -m json.tool
-echo && echo "=== GET notifications/$ID_Notification ==="
-curl -s "$BASE/notifications/$ID_Notification" | python3 -m json.tool
-
-echo && echo "=== GET notification_preferences ==="
-curl -s "$BASE/notification_preferences" | python3 -m json.tool
-echo && echo "=== GET notification_preferences/$ID_NotificationPreference ==="
-curl -s "$BASE/notification_preferences/$ID_NotificationPreference" | python3 -m json.tool
-
-echo && echo "=== GET push_devices ==="
-curl -s "$BASE/push_devices" | python3 -m json.tool
-echo && echo "=== GET push_devices/$ID_PushDevice ==="
-curl -s "$BASE/push_devices/$ID_PushDevice" | python3 -m json.tool
-
-echo && echo "=== GET messages ==="
-curl -s "$BASE/messages" | python3 -m json.tool
-echo && echo "=== GET messages/$ID_Message ==="
-curl -s "$BASE/messages/$ID_Message" | python3 -m json.tool
-
-echo && echo "=== GET player_reports ==="
-curl -s "$BASE/player_reports" | python3 -m json.tool
-echo && echo "=== GET player_reports/$ID_PlayerReport ==="
-curl -s "$BASE/player_reports/$ID_PlayerReport" | python3 -m json.tool
-
-echo && echo "=== GET moderation_actions ==="
-curl -s "$BASE/moderation_actions" | python3 -m json.tool
-echo && echo "=== GET moderation_actions/$ID_ModerationAction ==="
-curl -s "$BASE/moderation_actions/$ID_ModerationAction" | python3 -m json.tool
-
-echo && echo "=== GET content_reports ==="
-curl -s "$BASE/content_reports" | python3 -m json.tool
-echo && echo "=== GET content_reports/$ID_ContentReport ==="
-curl -s "$BASE/content_reports/$ID_ContentReport" | python3 -m json.tool
-
-echo && echo "=== GET wallets ==="
-curl -s "$BASE/wallets" | python3 -m json.tool
-echo && echo "=== GET wallets/$ID_Wallet ==="
-curl -s "$BASE/wallets/$ID_Wallet" | python3 -m json.tool
-
-echo && echo "=== GET top_up_orders ==="
-curl -s "$BASE/top_up_orders" | python3 -m json.tool
-echo && echo "=== GET top_up_orders/$ID_TopUpOrder ==="
-curl -s "$BASE/top_up_orders/$ID_TopUpOrder" | python3 -m json.tool
-
-echo && echo "=== GET leaderboard_entries ==="
-curl -s "$BASE/leaderboard_entries" | python3 -m json.tool
-echo && echo "=== GET leaderboard_entries/$ID_LeaderboardEntry ==="
-curl -s "$BASE/leaderboard_entries/$ID_LeaderboardEntry" | python3 -m json.tool
-
-echo && echo "=== GET audit_logs ==="
-curl -s "$BASE/audit_logs" | python3 -m json.tool
-echo && echo "=== GET audit_logs/$ID_AuditLog ==="
-curl -s "$BASE/audit_logs/$ID_AuditLog" | python3 -m json.tool
-
-echo && echo "=== GET platform_configs ==="
-curl -s "$BASE/platform_configs" | python3 -m json.tool
-echo && echo "=== GET platform_configs/$ID_PlatformConfig ==="
-curl -s "$BASE/platform_configs/$ID_PlatformConfig" | python3 -m json.tool
-
 echo && echo "=== GET deck_cards ==="
 curl -s "$BASE/deck_cards" | python3 -m json.tool
 echo && echo "=== GET deck_cards/$ID_DeckCard ==="
@@ -300,11 +194,6 @@ echo && echo "=== GET deck_tag_assignments ==="
 curl -s "$BASE/deck_tag_assignments" | python3 -m json.tool
 echo && echo "=== GET deck_tag_assignments/$ID_DeckTagAssignment ==="
 curl -s "$BASE/deck_tag_assignments/$ID_DeckTagAssignment" | python3 -m json.tool
-
-echo && echo "=== GET deck_reviews ==="
-curl -s "$BASE/deck_reviews" | python3 -m json.tool
-echo && echo "=== GET deck_reviews/$ID_DeckReview ==="
-curl -s "$BASE/deck_reviews/$ID_DeckReview" | python3 -m json.tool
 
 echo && echo "=== GET tournament_judges ==="
 curl -s "$BASE/tournament_judges" | python3 -m json.tool
@@ -355,21 +244,6 @@ echo && echo "=== GET articles ==="
 curl -s "$BASE/articles" | python3 -m json.tool
 echo && echo "=== GET articles/$ID_Article ==="
 curl -s "$BASE/articles/$ID_Article" | python3 -m json.tool
-
-echo && echo "=== GET conversations ==="
-curl -s "$BASE/conversations" | python3 -m json.tool
-echo && echo "=== GET conversations/$ID_Conversation ==="
-curl -s "$BASE/conversations/$ID_Conversation" | python3 -m json.tool
-
-echo && echo "=== GET wallet_transactions ==="
-curl -s "$BASE/wallet_transactions" | python3 -m json.tool
-echo && echo "=== GET wallet_transactions/$ID_WalletTransaction ==="
-curl -s "$BASE/wallet_transactions/$ID_WalletTransaction" | python3 -m json.tool
-
-echo && echo "=== GET leaderboard_snapshots ==="
-curl -s "$BASE/leaderboard_snapshots" | python3 -m json.tool
-echo && echo "=== GET leaderboard_snapshots/$ID_LeaderboardSnapshot ==="
-curl -s "$BASE/leaderboard_snapshots/$ID_LeaderboardSnapshot" | python3 -m json.tool
 
 echo && echo "=== GET awarded_prizes ==="
 curl -s "$BASE/awarded_prizes" | python3 -m json.tool

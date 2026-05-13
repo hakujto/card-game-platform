@@ -101,4 +101,12 @@ class PlayerCollectionController extends AbstractController
         $this->repository->remove($playerCollection, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/value', name: 'estimatedValue', methods: ['GET'])]
+    public function estimatedValue(PlayerCollection $playerCollection): JsonResponse
+    {
+        $result = $playerCollection->estimatedValue();
+        $this->repository->save($playerCollection, flush: true);
+        return $this->json($result);
+    }
 }

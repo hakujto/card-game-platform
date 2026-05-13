@@ -78,4 +78,16 @@ class DeckSideboardCard
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function increment($amount): void
+    {
+        throw new \RuntimeException('increment not implemented');
+    }
+
+    public function decrement($amount): void
+    {
+        throw new \RuntimeException('decrement not implemented');
+    }
+
 }

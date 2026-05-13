@@ -324,4 +324,31 @@ class Card
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function ban(): void
+    {
+        throw new \RuntimeException('ban not implemented');
+    }
+
+    public function unban(): void
+    {
+        throw new \RuntimeException('unban not implemented');
+    }
+
+    public function restrict(): void
+    {
+        throw new \RuntimeException('restrict not implemented');
+    }
+
+    public function unrestrict(): void
+    {
+        throw new \RuntimeException('unrestrict not implemented');
+    }
+
+    public function calculateValue(): void
+    {
+        throw new \RuntimeException('calculate_value not implemented');
+    }
+
 }

@@ -83,4 +83,5 @@ class CraftingRecipeController extends AbstractController
         $this->repository->remove($craftingRecipe, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

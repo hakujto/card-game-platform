@@ -200,4 +200,26 @@ class Stream
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function goLive(): void
+    {
+        throw new \RuntimeException('go_live not implemented');
+    }
+
+    public function end(): void
+    {
+        throw new \RuntimeException('end not implemented');
+    }
+
+    public function updateViewerPeak($count): void
+    {
+        throw new \RuntimeException('update_viewer_peak not implemented');
+    }
+
+    public function durationMinutes(): void
+    {
+        throw new \RuntimeException('duration_minutes not implemented');
+    }
+
 }

@@ -20,4 +20,5 @@ class DeckSideboardCardService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

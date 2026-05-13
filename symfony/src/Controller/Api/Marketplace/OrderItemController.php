@@ -94,4 +94,5 @@ class OrderItemController extends AbstractController
         $this->repository->remove($orderItem, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
 }

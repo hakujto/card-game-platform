@@ -20,4 +20,5 @@ class CardPriceHistoryService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

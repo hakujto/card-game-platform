@@ -20,4 +20,5 @@ class PlayerSeasonStatsService
     {
         throw new \LogicException('Not implemented');
     }
+
 }

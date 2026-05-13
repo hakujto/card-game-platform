@@ -266,4 +266,31 @@ class Tradelisting
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function close(): void
+    {
+        throw new \RuntimeException('close not implemented');
+    }
+
+    public function extend($days): void
+    {
+        throw new \RuntimeException('extend not implemented');
+    }
+
+    public function cancel(): void
+    {
+        throw new \RuntimeException('cancel not implemented');
+    }
+
+    public function isExpired(): void
+    {
+        throw new \RuntimeException('is_expired not implemented');
+    }
+
+    public function finalizeAuction(): void
+    {
+        throw new \RuntimeException('finalize_auction not implemented');
+    }
+
 }

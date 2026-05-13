@@ -109,4 +109,29 @@ class TradeDisputeController extends AbstractController
         $this->repository->remove($tradeDispute, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/escalate', name: 'escalate', methods: ['POST'])]
+    public function escalate(TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->escalate();
+        $this->repository->save($tradeDispute, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/resolve', name: 'resolve', methods: ['POST'])]
+    public function resolve(TradeDispute $tradeDispute, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tradeDispute->resolve($data['resolutionText'] ?? null);
+        $this->repository->save($tradeDispute, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/review', name: 'review', methods: ['POST'])]
+    public function review(TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->review();
+        $this->repository->save($tradeDispute, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

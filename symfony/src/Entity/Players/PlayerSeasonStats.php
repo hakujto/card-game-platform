@@ -154,4 +154,21 @@ class PlayerSeasonStats
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function winRate(): void
+    {
+        throw new \RuntimeException('win_rate not implemented');
+    }
+
+    public function addPoints($points): void
+    {
+        throw new \RuntimeException('add_points not implemented');
+    }
+
+    public function recordTournamentWin(): void
+    {
+        throw new \RuntimeException('record_tournament_win not implemented');
+    }
+
 }

@@ -101,4 +101,28 @@ class TournamentRoundController extends AbstractController
         $this->repository->remove($tournamentRound, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/start', name: 'start', methods: ['POST'])]
+    public function start(TournamentRound $tournamentRound): JsonResponse
+    {
+        $tournamentRound->start();
+        $this->repository->save($tournamentRound, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['POST'])]
+    public function complete(TournamentRound $tournamentRound): JsonResponse
+    {
+        $tournamentRound->complete();
+        $this->repository->save($tournamentRound, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/pairings', name: 'generatePairings', methods: ['POST'])]
+    public function generatePairings(TournamentRound $tournamentRound): JsonResponse
+    {
+        $tournamentRound->generatePairings();
+        $this->repository->save($tournamentRound, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

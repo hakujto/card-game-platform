@@ -100,4 +100,13 @@ class GameController extends AbstractController
         $this->repository->remove($game, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/winner', name: 'recordWinner', methods: ['POST'])]
+    public function recordWinner(Game $game, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $game->recordWinner($data['winnerSide'] ?? null);
+        $this->repository->save($game, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

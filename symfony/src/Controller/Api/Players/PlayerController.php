@@ -110,4 +110,61 @@ class PlayerController extends AbstractController
         $this->repository->remove($player, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/promote', name: 'promote', methods: ['POST'])]
+    public function promote(Player $player): JsonResponse
+    {
+        $result = $player->promote();
+        $this->repository->save($player, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/demote', name: 'demote', methods: ['POST'])]
+    public function demote(Player $player): JsonResponse
+    {
+        $result = $player->demote();
+        $this->repository->save($player, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/win', name: 'recordWin', methods: ['POST'])]
+    public function recordWin(Player $player): JsonResponse
+    {
+        $player->recordWin();
+        $this->repository->save($player, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/loss', name: 'recordLoss', methods: ['POST'])]
+    public function recordLoss(Player $player): JsonResponse
+    {
+        $player->recordLoss();
+        $this->repository->save($player, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/win-rate', name: 'winRate', methods: ['GET'])]
+    public function winRate(Player $player): JsonResponse
+    {
+        $result = $player->winRate();
+        $this->repository->save($player, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/verify', name: 'verify', methods: ['POST'])]
+    public function verify(Player $player): JsonResponse
+    {
+        $player->verify();
+        $this->repository->save($player, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/rating', name: 'updateRating', methods: ['PATCH'])]
+    public function updateRating(Player $player, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $player->updateRating($data['delta'] ?? null);
+        $this->repository->save($player, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }
