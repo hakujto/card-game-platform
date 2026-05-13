@@ -5,6 +5,7 @@ import cardsproject.repository.marketplace.TradelistingRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.marketplace.TradelistingStatusType;
 
 @Service
 public class TradelistingService {
@@ -49,6 +50,17 @@ public class TradelistingService {
         Tradelisting entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Tradelisting not found: " + id));
         entity.cancel();
+        repository.save(entity);
+    }
+
+    // triggered by @on(status = Sold)
+    public void setStatus(Long id, TradelistingStatusType status) {
+        Tradelisting entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tradelisting not found: " + id));
+        entity.setStatus(status);
+        if (status == TradelistingStatusType.SOLD) {
+            entity.finalizeAuction();
+        }
         repository.save(entity);
     }
 }

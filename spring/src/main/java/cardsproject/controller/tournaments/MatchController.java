@@ -54,6 +54,12 @@ public class MatchController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/record")
+    public ResponseEntity<Void> recordResult(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.recordResult(id, (Integer) body.get("p1_wins"), (Integer) body.get("p2_wins"));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/winner")
     public ResponseEntity<Boolean> determineWinner(@PathVariable Long id) {
         return ResponseEntity.ok(service.determineWinner(id));

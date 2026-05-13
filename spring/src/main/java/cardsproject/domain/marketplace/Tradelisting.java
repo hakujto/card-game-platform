@@ -80,4 +80,8 @@ public class Tradelisting {
     public Boolean isExpired() {
         throw new UnsupportedOperationException("isExpired not implemented");
     }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void finalizeAuction() {
+        throw new UnsupportedOperationException("finalizeAuction not implemented");
+    }
 }

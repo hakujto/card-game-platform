@@ -5,6 +5,7 @@ import cardsproject.repository.marketplace.OrderRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.marketplace.OrderStatusType;
 
 @Service
 public class OrderService {
@@ -66,6 +67,17 @@ public class OrderService {
         Order entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Order not found: " + id));
         entity.refund();
+        repository.save(entity);
+    }
+
+    // triggered by @on(status = Shipped)
+    public void setStatus(Long id, OrderStatusType status) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.setStatus(status);
+        if (status == OrderStatusType.SHIPPED) {
+            entity.notifyShipped();
+        }
         repository.save(entity);
     }
 }

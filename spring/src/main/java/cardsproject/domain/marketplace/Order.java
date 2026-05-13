@@ -79,4 +79,8 @@ public class Order {
     public void refund() {
         throw new UnsupportedOperationException("refund not implemented");
     }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void notifyShipped() {
+        throw new UnsupportedOperationException("notifyShipped not implemented");
+    }
 }

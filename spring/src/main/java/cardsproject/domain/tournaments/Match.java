@@ -51,6 +51,9 @@ public class Match {
     public void setPlayer2Id(Long player2Id) { this.player2Id = player2Id; }
 
     // ── Business operations ──────────────────────────────────────────
+    public void recordResult(Integer p1Wins, Integer p2Wins) {
+        throw new UnsupportedOperationException("recordResult not implemented");
+    }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean determineWinner() {
         throw new UnsupportedOperationException("determineWinner not implemented");
