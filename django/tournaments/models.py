@@ -27,6 +27,20 @@ class Season(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def activate(self):
+        raise NotImplementedError("activate not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
+
+    def finalize_rewards(self):
+        raise NotImplementedError("finalize_rewards not implemented")
+
+    def is_ongoing(self):
+        raise NotImplementedError("is_ongoing not implemented")
+
 
 class FormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
@@ -79,6 +93,26 @@ class Tournament(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def generate_round(self):
+        raise NotImplementedError("generate_round not implemented")
+
+    def calculate_prize_distribution(self):
+        raise NotImplementedError("calculate_prize_distribution not implemented")
+
+    def is_full(self):
+        raise NotImplementedError("is_full not implemented")
+
 
 class RoleChoices(models.TextChoices):
     HEADJUDGE = "HeadJudge", "Headjudge"
@@ -125,6 +159,17 @@ class TournamentRegistration(models.Model):
     def __str__(self):
         return str(self.status)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def withdraw(self):
+        raise NotImplementedError("withdraw not implemented")
+
+    def disqualify(self, reason):
+        raise NotImplementedError("disqualify not implemented")
+
+    def promote_from_waitlist(self):
+        raise NotImplementedError("promote_from_waitlist not implemented")
+
 
 class StatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -147,6 +192,20 @@ class TournamentRound(models.Model):
 
     def __str__(self):
         return str(self.round_number)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def generate_pairings(self):
+        raise NotImplementedError("generate_pairings not implemented")
+
+    def is_time_expired(self):
+        raise NotImplementedError("is_time_expired not implemented")
 
 
 class StatusChoices(models.TextChoices):
@@ -176,6 +235,17 @@ class Match(models.Model):
 
     def __str__(self):
         return str(self.table_number)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def record_result(self, p1_wins, p2_wins):
+        raise NotImplementedError("record_result not implemented")
+
+    def determine_winner(self):
+        raise NotImplementedError("determine_winner not implemented")
+
+    def draw(self):
+        raise NotImplementedError("draw not implemented")
 
 
 class WinnerSideChoices(models.TextChoices):
@@ -209,6 +279,14 @@ class Game(models.Model):
     def __str__(self):
         return str(self.game_number)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def record_winner(self, winner_side):
+        raise NotImplementedError("record_winner not implemented")
+
+    def duration_minutes(self):
+        raise NotImplementedError("duration_minutes not implemented")
+
 
 class PrizeTypeChoices(models.TextChoices):
     CURRENCY = "Currency", "Currency"
@@ -236,6 +314,11 @@ class TournamentPrize(models.Model):
 
     def __str__(self):
         return str(self.placement_from)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def applies_to_placement(self, placement):
+        raise NotImplementedError("applies_to_placement not implemented")
 
 
 class AwardedPrize(models.Model):

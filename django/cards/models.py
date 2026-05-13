@@ -64,6 +64,23 @@ class Card(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def ban(self):
+        raise NotImplementedError("ban not implemented")
+
+    def unban(self):
+        raise NotImplementedError("unban not implemented")
+
+    def restrict(self):
+        raise NotImplementedError("restrict not implemented")
+
+    def unrestrict(self):
+        raise NotImplementedError("unrestrict not implemented")
+
+    def calculate_value(self):
+        raise NotImplementedError("calculate_value not implemented")
+
 
 class SetTypeChoices(models.TextChoices):
     CORE = "Core", "Core"
@@ -90,6 +107,11 @@ class CardSet(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def is_legal_in_standard(self):
+        raise NotImplementedError("is_legal_in_standard not implemented")
+
 
 class CardRuling(models.Model):
     ruling_text = models.TextField()
@@ -104,6 +126,14 @@ class CardRuling(models.Model):
 
     def __str__(self):
         return str(self.ruling_text)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def is_current(self):
+        raise NotImplementedError("is_current not implemented")
+
+    def supersedes_previous(self):
+        raise NotImplementedError("supersedes_previous not implemented")
 
 
 class AbilityTypeChoices(models.TextChoices):
@@ -134,6 +164,14 @@ class CardAbility(models.Model):
 
     def __str__(self):
         return str(self.ability_type)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def is_usable_at(self, timing):
+        raise NotImplementedError("is_usable_at not implemented")
+
+    def describe(self):
+        raise NotImplementedError("describe not implemented")
 
 
 class FormatChoices(models.TextChoices):
@@ -178,6 +216,23 @@ class Deck(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def validate_size(self):
+        raise NotImplementedError("validate_size not implemented")
+
+    def clone(self):
+        raise NotImplementedError("clone not implemented")
+
+    def publish(self):
+        raise NotImplementedError("publish not implemented")
+
+    def unpublish(self):
+        raise NotImplementedError("unpublish not implemented")
+
+    def certify_tournament_legal(self):
+        raise NotImplementedError("certify_tournament_legal not implemented")
+
 
 class DeckCard(models.Model):
     quantity = models.IntegerField(default=1)
@@ -207,6 +262,14 @@ class DeckSideboardCard(models.Model):
     def __str__(self):
         return str(self.quantity)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def increment(self, amount):
+        raise NotImplementedError("increment not implemented")
+
+    def decrement(self, amount):
+        raise NotImplementedError("decrement not implemented")
+
 
 class DeckTag(models.Model):
     name = models.CharField(max_length=50)
@@ -219,6 +282,14 @@ class DeckTag(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def rename(self, new_name):
+        raise NotImplementedError("rename not implemented")
+
+    def merge_into(self, target_tag_id):
+        raise NotImplementedError("merge_into not implemented")
 
 
 class DeckTagAssignment(models.Model):

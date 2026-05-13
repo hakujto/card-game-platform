@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
 from .serializers import PlayerSerializer, PlayerSeasonStatsSerializer, PlayerCollectionSerializer, FriendshipSerializer, AchievementSerializer, PlayerAchievementSerializer, CraftingRecipeSerializer, CraftingIngredientSerializer
@@ -11,6 +12,56 @@ class PlayerViewSet(viewsets.ModelViewSet):
     search_fields = ["display_name", "rank", "bio"]
     filterset_fields = ["rank", "preferred_format", "user"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["post"], url_path="promote")
+    def promote(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.promote()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="demote")
+    def demote(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.demote()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="win")
+    def record_win(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.record_win()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="loss")
+    def record_loss(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.record_loss()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="win-rate")
+    def win_rate(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.win_rate()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="verify")
+    def verify(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.verify()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["patch"], url_path="rating")
+    def update_rating(self, request, pk=None):
+        instance = self.get_object()
+        delta = request.data.get("delta")
+        result = instance.update_rating(delta)
+        from rest_framework.response import Response
+        return Response(status=204)
 
 
 class PlayerSeasonStatsViewSet(viewsets.ModelViewSet):
@@ -30,6 +81,13 @@ class PlayerCollectionViewSet(viewsets.ModelViewSet):
     filterset_fields = ["condition", "acquired_via", "player", "card"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["get"], url_path="value")
+    def estimated_value(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.estimated_value()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
 
 class FriendshipViewSet(viewsets.ModelViewSet):
     queryset = Friendship.objects.select_related().all()
@@ -38,6 +96,27 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     search_fields = ["status"]
     filterset_fields = ["status", "requester", "receiver"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["post"], url_path="accept")
+    def accept(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.accept()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="decline")
+    def decline(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.decline()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="block")
+    def block(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.block()
+        from rest_framework.response import Response
+        return Response(status=204)
 
 
 class AchievementViewSet(viewsets.ModelViewSet):

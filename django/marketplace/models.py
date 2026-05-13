@@ -31,6 +31,26 @@ class Product(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def activate(self):
+        raise NotImplementedError("activate not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
+
+    def apply_discount(self, percent):
+        raise NotImplementedError("apply_discount not implemented")
+
+    def restock(self, quantity):
+        raise NotImplementedError("restock not implemented")
+
+    def effective_price(self):
+        raise NotImplementedError("effective_price not implemented")
+
+    def is_in_stock(self):
+        raise NotImplementedError("is_in_stock not implemented")
+
 
 class StatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -72,6 +92,26 @@ class Order(models.Model):
     def __str__(self):
         return str(self.status)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def pay(self, payment_ref):
+        raise NotImplementedError("pay not implemented")
+
+    def calculate_total(self):
+        raise NotImplementedError("calculate_total not implemented")
+
+    def apply_discount(self, percent):
+        raise NotImplementedError("apply_discount not implemented")
+
+    def refund(self):
+        raise NotImplementedError("refund not implemented")
+
+    def notify_shipped(self):
+        raise NotImplementedError("notify_shipped not implemented")
+
 
 class OrderItem(models.Model):
     quantity = models.IntegerField()
@@ -87,6 +127,11 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return str(self.quantity)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def line_total(self):
+        raise NotImplementedError("line_total not implemented")
 
 
 class DiscountTypeChoices(models.TextChoices):
@@ -112,6 +157,20 @@ class Coupon(models.Model):
 
     def __str__(self):
         return str(self.code)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def is_valid(self):
+        raise NotImplementedError("is_valid not implemented")
+
+    def is_applicable_to_order(self, order_total):
+        raise NotImplementedError("is_applicable_to_order not implemented")
+
+    def redeem(self):
+        raise NotImplementedError("redeem not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
 
 
 class ListingTypeChoices(models.TextChoices):
@@ -160,6 +219,23 @@ class Tradelisting(models.Model):
     def __str__(self):
         return str(self.listing_type)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def close(self):
+        raise NotImplementedError("close not implemented")
+
+    def extend(self, days):
+        raise NotImplementedError("extend not implemented")
+
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def is_expired(self):
+        raise NotImplementedError("is_expired not implemented")
+
+    def finalize_auction(self):
+        raise NotImplementedError("finalize_auction not implemented")
+
 
 class TradeBid(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -175,6 +251,11 @@ class TradeBid(models.Model):
 
     def __str__(self):
         return str(self.amount)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def outbid_by(self, new_amount):
+        raise NotImplementedError("outbid_by not implemented")
 
 
 class StatusChoices(models.TextChoices):
@@ -201,6 +282,20 @@ class TradeTransaction(models.Model):
     def __str__(self):
         return str(self.final_price)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def refund(self):
+        raise NotImplementedError("refund not implemented")
+
+    def open_dispute(self, reason):
+        raise NotImplementedError("open_dispute not implemented")
+
+    def seller_net(self):
+        raise NotImplementedError("seller_net not implemented")
+
 
 class CardPriceHistory(models.Model):
     price_date = models.DateField()
@@ -218,6 +313,14 @@ class CardPriceHistory(models.Model):
 
     def __str__(self):
         return str(self.price_date)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def price_change_percent(self, previous_avg):
+        raise NotImplementedError("price_change_percent not implemented")
+
+    def is_price_spike(self, threshold_percent):
+        raise NotImplementedError("is_price_spike not implemented")
 
 
 class ReasonChoices(models.TextChoices):
@@ -252,3 +355,14 @@ class TradeDispute(models.Model):
 
     def __str__(self):
         return str(self.reason)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def escalate(self):
+        raise NotImplementedError("escalate not implemented")
+
+    def resolve(self, resolution_text):
+        raise NotImplementedError("resolve not implemented")
+
+    def review(self):
+        raise NotImplementedError("review not implemented")

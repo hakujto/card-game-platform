@@ -31,6 +31,20 @@ class DraftSession(models.Model):
     def __str__(self):
         return str(self.status)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def abandon(self):
+        raise NotImplementedError("abandon not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def is_full(self):
+        raise NotImplementedError("is_full not implemented")
+
 
 class DraftParticipant(models.Model):
     seat_number = models.IntegerField()
@@ -45,6 +59,14 @@ class DraftParticipant(models.Model):
 
     def __str__(self):
         return str(self.seat_number)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def pick_card(self, card_id, pack_number):
+        raise NotImplementedError("pick_card not implemented")
+
+    def drafted_card_count(self):
+        raise NotImplementedError("drafted_card_count not implemented")
 
 
 class DraftPick(models.Model):
@@ -61,6 +83,11 @@ class DraftPick(models.Model):
 
     def __str__(self):
         return str(self.pick_number)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def is_first_pick(self):
+        raise NotImplementedError("is_first_pick not implemented")
 
 
 class StatusChoices(models.TextChoices):
@@ -102,6 +129,20 @@ class Article(models.Model):
     def __str__(self):
         return str(self.title)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def publish(self):
+        raise NotImplementedError("publish not implemented")
+
+    def archive(self):
+        raise NotImplementedError("archive not implemented")
+
+    def increment_view(self):
+        raise NotImplementedError("increment_view not implemented")
+
+    def reading_time_minutes(self):
+        raise NotImplementedError("reading_time_minutes not implemented")
+
 
 class ArticleTag(models.Model):
     name = models.CharField(max_length=100)
@@ -114,6 +155,14 @@ class ArticleTag(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def rename(self, new_name):
+        raise NotImplementedError("rename not implemented")
+
+    def article_count(self):
+        raise NotImplementedError("article_count not implemented")
 
 
 class ArticleTagAssignment(models.Model):
@@ -144,6 +193,17 @@ class ArticleComment(models.Model):
 
     def __str__(self):
         return str(self.body)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def hide(self):
+        raise NotImplementedError("hide not implemented")
+
+    def unhide(self):
+        raise NotImplementedError("unhide not implemented")
+
+    def is_reply(self):
+        raise NotImplementedError("is_reply not implemented")
 
 
 class PlatformChoices(models.TextChoices):
@@ -179,3 +239,17 @@ class Stream(models.Model):
 
     def __str__(self):
         return str(self.title)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def go_live(self):
+        raise NotImplementedError("go_live not implemented")
+
+    def end(self):
+        raise NotImplementedError("end not implemented")
+
+    def update_viewer_peak(self, count):
+        raise NotImplementedError("update_viewer_peak not implemented")
+
+    def duration_minutes(self):
+        raise NotImplementedError("duration_minutes not implemented")

@@ -45,6 +45,29 @@ class Player(models.Model):
     def __str__(self):
         return str(self.display_name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def promote(self):
+        raise NotImplementedError("promote not implemented")
+
+    def demote(self):
+        raise NotImplementedError("demote not implemented")
+
+    def record_win(self):
+        raise NotImplementedError("record_win not implemented")
+
+    def record_loss(self):
+        raise NotImplementedError("record_loss not implemented")
+
+    def win_rate(self):
+        raise NotImplementedError("win_rate not implemented")
+
+    def verify(self):
+        raise NotImplementedError("verify not implemented")
+
+    def update_rating(self, delta):
+        raise NotImplementedError("update_rating not implemented")
+
 
 class HighestRankChoices(models.TextChoices):
     BRONZE = "Bronze", "Bronze"
@@ -73,6 +96,17 @@ class PlayerSeasonStats(models.Model):
 
     def __str__(self):
         return str(self.wins)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def win_rate(self):
+        raise NotImplementedError("win_rate not implemented")
+
+    def add_points(self, points):
+        raise NotImplementedError("add_points not implemented")
+
+    def record_tournament_win(self):
+        raise NotImplementedError("record_tournament_win not implemented")
 
 
 class ConditionChoices(models.TextChoices):
@@ -108,6 +142,17 @@ class PlayerCollection(models.Model):
     def __str__(self):
         return str(self.quantity)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def add(self, quantity):
+        raise NotImplementedError("add not implemented")
+
+    def remove(self, quantity):
+        raise NotImplementedError("remove not implemented")
+
+    def estimated_value(self):
+        raise NotImplementedError("estimated_value not implemented")
+
 
 class StatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -128,6 +173,17 @@ class Friendship(models.Model):
 
     def __str__(self):
         return str(self.status)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def accept(self):
+        raise NotImplementedError("accept not implemented")
+
+    def decline(self):
+        raise NotImplementedError("decline not implemented")
+
+    def block(self):
+        raise NotImplementedError("block not implemented")
 
 
 class RarityChoices(models.TextChoices):
@@ -184,6 +240,14 @@ class CraftingRecipe(models.Model):
 
     def __str__(self):
         return str(self.dust_cost)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def disable(self):
+        raise NotImplementedError("disable not implemented")
+
+    def enable(self):
+        raise NotImplementedError("enable not implemented")
 
 
 class CraftingIngredient(models.Model):
