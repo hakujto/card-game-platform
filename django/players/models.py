@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class RankChoices(models.TextChoices):
+class PlayerRankChoices(models.TextChoices):
     BRONZE = "Bronze", "Bronze"
     SILVER = "Silver", "Silver"
     GOLD = "Gold", "Gold"
@@ -12,7 +12,7 @@ class RankChoices(models.TextChoices):
     GRANDMASTER = "Grandmaster", "Grandmaster"
 
 
-class PreferredFormatChoices(models.TextChoices):
+class PlayerPreferredFormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
     EXTENDED = "Extended", "Extended"
     LEGACY = "Legacy", "Legacy"
@@ -23,13 +23,13 @@ class PreferredFormatChoices(models.TextChoices):
 
 class Player(models.Model):
     display_name = models.CharField(max_length=50)
-    rank = models.CharField(max_length=20, choices=RankChoices.choices, default=RankChoices.BRONZE)
+    rank = models.CharField(max_length=20, choices=PlayerRankChoices.choices, default=PlayerRankChoices.BRONZE)
     rating = models.IntegerField(default=1000)
     peak_rating = models.IntegerField(default=1000)
     bio = models.TextField(null=True, blank=True)
     country_code = models.CharField(max_length=2, null=True, blank=True)
     avatar_url = models.URLField(max_length=200, null=True, blank=True)
-    preferred_format = models.CharField(max_length=20, choices=PreferredFormatChoices.choices, null=True, blank=True)
+    preferred_format = models.CharField(max_length=20, choices=PlayerPreferredFormatChoices.choices, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField()
     last_active_at = models.DateTimeField(null=True, blank=True)
@@ -68,8 +68,20 @@ class Player(models.Model):
     def update_rating(self, delta):
         raise NotImplementedError("update_rating not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.rating is None or (self.rating >= 0 and self.rating <= 9999))):
+            errors["rating_range"] = "Rating must be between 0 and 9999"
+        if not ((self.peak_rating is None or self.peak_rating >= self.rating)):
+            errors["peak_rating_gte_rating"] = "Peak rating must be greater than or equal to current rating"
+        if not (self.display_name is not None):
+            errors["display_name_not_empty"] = "Display name must not be empty"
+        if errors:
+            raise ValidationError(errors)
 
-class HighestRankChoices(models.TextChoices):
+
+class PlayerSeasonStatsHighestRankChoices(models.TextChoices):
     BRONZE = "Bronze", "Bronze"
     SILVER = "Silver", "Silver"
     GOLD = "Gold", "Gold"
@@ -84,7 +96,7 @@ class PlayerSeasonStats(models.Model):
     losses = models.IntegerField(default=0)
     draws = models.IntegerField(default=0)
     tournament_wins = models.IntegerField(default=0)
-    highest_rank = models.CharField(max_length=20, choices=HighestRankChoices.choices, null=True, blank=True)
+    highest_rank = models.CharField(max_length=20, choices=PlayerSeasonStatsHighestRankChoices.choices, null=True, blank=True)
     season_points = models.IntegerField(default=0)
     player = models.ForeignKey("Player", on_delete=models.CASCADE, null=True, blank=True)
     season = models.ForeignKey("tournaments.Season", on_delete=models.CASCADE, related_name="player_stats")
@@ -109,7 +121,7 @@ class PlayerSeasonStats(models.Model):
         raise NotImplementedError("record_tournament_win not implemented")
 
 
-class ConditionChoices(models.TextChoices):
+class PlayerCollectionConditionChoices(models.TextChoices):
     MINT = "Mint", "Mint"
     NEARMINT = "NearMint", "Nearmint"
     EXCELLENT = "Excellent", "Excellent"
@@ -117,7 +129,7 @@ class ConditionChoices(models.TextChoices):
     PLAYED = "Played", "Played"
 
 
-class AcquiredViaChoices(models.TextChoices):
+class PlayerCollectionAcquiredViaChoices(models.TextChoices):
     PURCHASE = "Purchase", "Purchase"
     TRADE = "Trade", "Trade"
     TOURNAMENTREWARD = "TournamentReward", "Tournamentreward"
@@ -128,9 +140,9 @@ class AcquiredViaChoices(models.TextChoices):
 class PlayerCollection(models.Model):
     quantity = models.IntegerField(default=1)
     foil = models.BooleanField(default=False)
-    condition = models.CharField(max_length=20, choices=ConditionChoices.choices, default=ConditionChoices.MINT)
+    condition = models.CharField(max_length=20, choices=PlayerCollectionConditionChoices.choices, default=PlayerCollectionConditionChoices.MINT)
     acquired_at = models.DateTimeField()
-    acquired_via = models.CharField(max_length=20, choices=AcquiredViaChoices.choices, default=AcquiredViaChoices.PURCHASE)
+    acquired_via = models.CharField(max_length=20, choices=PlayerCollectionAcquiredViaChoices.choices, default=PlayerCollectionAcquiredViaChoices.PURCHASE)
     player = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="collection")
     card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="player_collections")
 
@@ -154,14 +166,14 @@ class PlayerCollection(models.Model):
         raise NotImplementedError("estimated_value not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class FriendshipStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
     ACCEPTED = "Accepted", "Accepted"
     BLOCKED = "Blocked", "Blocked"
 
 
 class Friendship(models.Model):
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=20, choices=FriendshipStatusChoices.choices, default=FriendshipStatusChoices.PENDING)
     created_at = models.DateTimeField()
     requester = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="sent_friend_requests")
     receiver = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="received_friend_requests")
@@ -186,7 +198,7 @@ class Friendship(models.Model):
         raise NotImplementedError("block not implemented")
 
 
-class RarityChoices(models.TextChoices):
+class AchievementRarityChoices(models.TextChoices):
     COMMON = "Common", "Common"
     UNCOMMON = "Uncommon", "Uncommon"
     RARE = "Rare", "Rare"
@@ -199,7 +211,7 @@ class Achievement(models.Model):
     description = models.TextField()
     icon_url = models.URLField(max_length=200, null=True, blank=True)
     points = models.IntegerField(default=10)
-    rarity = models.CharField(max_length=20, choices=RarityChoices.choices, default=RarityChoices.COMMON)
+    rarity = models.CharField(max_length=20, choices=AchievementRarityChoices.choices, default=AchievementRarityChoices.COMMON)
     is_hidden = models.BooleanField(default=False)
 
     class Meta:

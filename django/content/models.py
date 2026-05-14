@@ -2,22 +2,22 @@ from django.conf import settings
 from django.db import models
 
 
-class StatusChoices(models.TextChoices):
+class DraftSessionStatusChoices(models.TextChoices):
     WAITINGFORPLAYERS = "WaitingForPlayers", "Waitingforplayers"
     DRAFTING = "Drafting", "Drafting"
     COMPLETED = "Completed", "Completed"
     ABANDONED = "Abandoned", "Abandoned"
 
 
-class DraftTypeChoices(models.TextChoices):
+class DraftSessionDraftTypeChoices(models.TextChoices):
     BOOSTER = "Booster", "Booster"
     CUBE = "Cube", "Cube"
     ROCHESTER = "Rochester", "Rochester"
 
 
 class DraftSession(models.Model):
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.WAITINGFORPLAYERS)
-    draft_type = models.CharField(max_length=20, choices=DraftTypeChoices.choices, default=DraftTypeChoices.BOOSTER)
+    status = models.CharField(max_length=20, choices=DraftSessionStatusChoices.choices, default=DraftSessionStatusChoices.WAITINGFORPLAYERS)
+    draft_type = models.CharField(max_length=20, choices=DraftSessionDraftTypeChoices.choices, default=DraftSessionDraftTypeChoices.BOOSTER)
     seats = models.IntegerField(default=8)
     created_at = models.DateTimeField()
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -90,13 +90,13 @@ class DraftPick(models.Model):
         raise NotImplementedError("is_first_pick not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class ArticleStatusChoices(models.TextChoices):
     DRAFT = "Draft", "Draft"
     PUBLISHED = "Published", "Published"
     ARCHIVED = "Archived", "Archived"
 
 
-class ArticleTypeChoices(models.TextChoices):
+class ArticleArticleTypeChoices(models.TextChoices):
     GUIDE = "Guide", "Guide"
     TIERLIST = "Tierlist", "Tierlist"
     MATCHUP = "Matchup", "Matchup"
@@ -111,8 +111,8 @@ class Article(models.Model):
     body = models.TextField()
     excerpt = models.TextField(null=True, blank=True)
     cover_image_url = models.URLField(max_length=200, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.DRAFT)
-    article_type = models.CharField(max_length=20, choices=ArticleTypeChoices.choices, default=ArticleTypeChoices.GUIDE)
+    status = models.CharField(max_length=20, choices=ArticleStatusChoices.choices, default=ArticleStatusChoices.DRAFT)
+    article_type = models.CharField(max_length=20, choices=ArticleArticleTypeChoices.choices, default=ArticleArticleTypeChoices.GUIDE)
     view_count = models.IntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField()
@@ -206,14 +206,14 @@ class ArticleComment(models.Model):
         raise NotImplementedError("is_reply not implemented")
 
 
-class PlatformChoices(models.TextChoices):
+class StreamPlatformChoices(models.TextChoices):
     TWITCH = "Twitch", "Twitch"
     YOUTUBE = "YouTube", "Youtube"
     KICKSTREAM = "KickStream", "Kickstream"
     PLATFORM = "Platform", "Platform"
 
 
-class StatusChoices(models.TextChoices):
+class StreamStatusChoices(models.TextChoices):
     SCHEDULED = "Scheduled", "Scheduled"
     LIVE = "Live", "Live"
     ENDED = "Ended", "Ended"
@@ -222,8 +222,8 @@ class StatusChoices(models.TextChoices):
 class Stream(models.Model):
     title = models.CharField(max_length=300)
     stream_url = models.URLField(max_length=200)
-    platform = models.CharField(max_length=20, choices=PlatformChoices.choices, default=PlatformChoices.TWITCH)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.SCHEDULED)
+    platform = models.CharField(max_length=20, choices=StreamPlatformChoices.choices, default=StreamPlatformChoices.TWITCH)
+    status = models.CharField(max_length=20, choices=StreamStatusChoices.choices, default=StreamStatusChoices.SCHEDULED)
     viewer_count_peak = models.IntegerField(default=0)
     scheduled_start = models.DateTimeField()
     actual_start = models.DateTimeField(null=True, blank=True)

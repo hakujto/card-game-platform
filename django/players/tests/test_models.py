@@ -4,7 +4,7 @@ from ..models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Ac
 
 class PlayerModelTest(TestCase):
     def setUp(self):
-        self.obj = Player.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        self.obj = Player.objects.create(display_name="test", peak_rating=1000, created_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -16,7 +16,7 @@ class PlayerModelTest(TestCase):
 class PlayerSeasonStatsModelTest(TestCase):
     def setUp(self):
         from tournaments.models import Season as _SeasonCls
-        _dep_season = _SeasonCls.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = _SeasonCls.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         self.obj = PlayerSeasonStats.objects.create(season=_dep_season)
 
     def test_str(self):

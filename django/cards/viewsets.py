@@ -48,6 +48,27 @@ class CardViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response({"result": result})
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class CardSetViewSet(viewsets.ModelViewSet):
     queryset = CardSet.objects.select_related().all()

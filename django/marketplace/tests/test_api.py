@@ -17,12 +17,7 @@ class ProductAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "product_type": "SingleCard",
-            "price": "0.00",
-            "stock": 0,
-            "active": False,
-            "discount_percent": 0,
-            "featured": False
+            "price": "0.00"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -45,7 +40,7 @@ class OrderAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         self.player = _dep_player
-        self.obj = Order.objects.create(player=_dep_player, created_at="2024-01-01T00:00:00Z")
+        self.obj = Order.objects.create(player=_dep_player, total=0, discount_applied="0.00", tracking_number="test", created_at="2024-01-01T00:00:00Z", paid_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("order-list")
         self.detail_url = reverse("order-detail", args=[self.obj.pk])
 
@@ -55,11 +50,11 @@ class OrderAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "status": "Pending",
-            "total": "0.00",
+            "total": 0,
             "discount_applied": "0.00",
-            "currency": "xxx",
+            "tracking_number": "test",
             "created_at": "2024-01-01T00:00:00Z",
+            "paid_at": "2024-01-01T00:00:00Z",
             "player": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -70,12 +65,30 @@ class OrderAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"total": "0.00"}, format="json")
+        res = self.client.patch(self.detail_url, {"total": 0}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_paid_requires_paid_at_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "status": "Paid", "paid_at": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_shipped_requires_tracking_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "status": "Shipped", "tracking_number": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_total_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "status": "Shipped", "paid_at": "2024-01-01T00:00:00Z", "tracking_number": "test", "total": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class OrderItemAPITest(APITestCase):
@@ -94,7 +107,6 @@ class OrderItemAPITest(APITestCase):
         data = {
             "quantity": 0,
             "price_at_purchase": "0.00",
-            "foil": False,
             "product": self.product.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -115,7 +127,7 @@ class OrderItemAPITest(APITestCase):
 
 class CouponAPITest(APITestCase):
     def setUp(self):
-        self.obj = Coupon.objects.create(code="test", discount_value="0.00", valid_from="2024-01-01T00:00:00Z", valid_until="2024-01-01T00:00:00Z")
+        self.obj = Coupon.objects.create(code="test", discount_value=1, uses_count=0, valid_from="2024-01-01T00:00:00Z", valid_until="2024-01-01T00:00:01Z")
         self.list_url = reverse("coupon-list")
         self.detail_url = reverse("coupon-detail", args=[self.obj.pk])
 
@@ -126,13 +138,10 @@ class CouponAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "code": "test",
-            "discount_type": "Percent",
-            "discount_value": "0.00",
-            "min_order_value": "0.00",
+            "discount_value": 1,
             "uses_count": 0,
             "valid_from": "2024-01-01T00:00:00Z",
-            "valid_until": "2024-01-01T00:00:00Z",
-            "is_active": False
+            "valid_until": "2024-01-01T00:00:01Z"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -149,6 +158,24 @@ class CouponAPITest(APITestCase):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_create_fails_when_discount_value_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"code": "test", "discount_value": 0, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:00Z", "discount_type": "Percent", "max_uses": 0}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_percent_discount_range_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"code": "test", "discount_value": 101, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:00Z", "discount_type": "Percent"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_uses_not_exceed_max_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"code": "test", "discount_value": "0.00", "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:00Z", "max_uses": 0}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class TradelistingAPITest(APITestCase):
     def setUp(self):
@@ -161,7 +188,7 @@ class TradelistingAPITest(APITestCase):
         self.player = _dep_player
         self.cardset = _dep_card_set
         self.card = _dep_card
-        self.obj = Tradelisting.objects.create(seller=_dep_player, card=_dep_card, created_at="2024-01-01T00:00:00Z")
+        self.obj = Tradelisting.objects.create(seller=_dep_player, card=_dep_card, asking_price="0.00", auction_start_price="0.00", auction_end_time="2024-01-01T00:00:00Z", quantity=1, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("tradelisting-list")
         self.detail_url = reverse("tradelisting-detail", args=[self.obj.pk])
 
@@ -171,11 +198,10 @@ class TradelistingAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "listing_type": "FixedPrice",
-            "foil": False,
-            "condition": "Mint",
-            "quantity": 0,
-            "status": "Active",
+            "asking_price": "0.00",
+            "auction_start_price": "0.00",
+            "auction_end_time": "2024-01-01T00:00:00Z",
+            "quantity": 1,
             "created_at": "2024-01-01T00:00:00Z",
             "seller": self.player.pk,
             "card": self.card.pk
@@ -194,6 +220,24 @@ class TradelistingAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_fixed_price_requires_asking_price_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "listing_type": "FixedPrice", "asking_price": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_auction_requires_start_price_and_end_time_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "listing_type": "Auction", "auction_start_price": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_quantity_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "listing_type": "Auction", "asking_price": "0.00", "auction_start_price": "0.00", "auction_end_time": "2024-01-01T00:00:00Z", "quantity": 10000}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TradeBidAPITest(APITestCase):
@@ -221,7 +265,6 @@ class TradeBidAPITest(APITestCase):
         data = {
             "amount": "0.00",
             "placed_at": "2024-01-01T00:00:00Z",
-            "is_winning": False,
             "listing": self.tradelisting.pk,
             "bidder": self.player.pk
         }
@@ -269,11 +312,10 @@ class TradeTransactionAPITest(APITestCase):
         _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
-        _fresh_tradelisting = Tradelisting.objects.create(seller=_dep_player, card=_dep_card, created_at="2024-01-01T00:00:00Z")
+        _fresh_tradelisting = Tradelisting.objects.create(seller=_dep_player, card=_dep_card, asking_price="0.00", auction_start_price="0.00", auction_end_time="2024-01-01T00:00:00Z", quantity=1, created_at="2024-01-01T00:00:00Z")
         data = {
             "final_price": "0.00",
             "platform_fee": "0.00",
-            "status": "Pending",
             "listing": _fresh_tradelisting.pk,
             "buyer": self.player.pk,
             "seller": self.player.pk
@@ -317,7 +359,6 @@ class CardPriceHistoryAPITest(APITestCase):
             "min_price": "0.00",
             "max_price": "0.00",
             "volume": 0,
-            "foil": False,
             "card": self.card.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -371,7 +412,6 @@ class TradeDisputeAPITest(APITestCase):
         data = {
             "reason": "ItemNotReceived",
             "description": "test",
-            "status": "Open",
             "opened_at": "2024-01-01T00:00:00Z",
             "transaction": _fresh_trade_transaction.pk,
             "opened_by": self.player.pk

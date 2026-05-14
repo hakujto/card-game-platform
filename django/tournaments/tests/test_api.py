@@ -6,7 +6,7 @@ from ..models import Season, Tournament, TournamentJudge, TournamentRegistration
 
 class SeasonAPITest(APITestCase):
     def setUp(self):
-        self.obj = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        self.obj = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         self.list_url = reverse("season-list")
         self.detail_url = reverse("season-detail", args=[self.obj.pk])
 
@@ -18,9 +18,7 @@ class SeasonAPITest(APITestCase):
         data = {
             "name": "test",
             "start_date": "2024-01-01",
-            "end_date": "2024-01-01",
-            "format": "Standard",
-            "is_active": False
+            "end_date": "2024-01-02"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -40,12 +38,12 @@ class SeasonAPITest(APITestCase):
 
 class TournamentAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         self.season = _dep_season
         self.player = _dep_player
-        self.obj = Tournament.objects.create(season=_dep_season, organizer=_dep_player, name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z")
+        self.obj = Tournament.objects.create(season=_dep_season, organizer=_dep_player, name="test", max_players=2, entry_fee=0, prize_pool=0, start_time="2024-01-01T00:00:00Z", end_time=None, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("tournament-list")
         self.detail_url = reverse("tournament-detail", args=[self.obj.pk])
 
@@ -56,14 +54,11 @@ class TournamentAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "format": "Standard",
-            "tournament_type": "Swiss",
-            "status": "Draft",
-            "max_players": 0,
-            "entry_fee": "0.00",
-            "prize_pool": "0.00",
+            "max_players": 2,
+            "entry_fee": 0,
+            "prize_pool": 0,
             "start_time": "2024-01-01T00:00:00Z",
-            "is_online": False,
+            "end_time": None,
             "created_at": "2024-01-01T00:00:00Z",
             "season": self.season.pk,
             "organizer": self.player.pk
@@ -83,13 +78,37 @@ class TournamentAPITest(APITestCase):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_create_fails_when_max_players_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"name": "test", "max_players": 513, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_entry_fee_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:00Z", "entry_fee": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_prize_pool_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:00Z", "prize_pool": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_end_time_after_start_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class TournamentJudgeAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        _dep_tournament = Tournament.objects.create(name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
+        _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         self.season = _dep_season
         self.player = _dep_player
         self.tournament = _dep_tournament
@@ -103,7 +122,6 @@ class TournamentJudgeAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "role": "HeadJudge",
             "tournament": self.tournament.pk,
             "player": self.player.pk
         }
@@ -125,10 +143,10 @@ class TournamentJudgeAPITest(APITestCase):
 
 class TournamentRegistrationAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        _dep_tournament = Tournament.objects.create(name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
+        _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         from cards.models import Deck as _DeckCls
         _dep_deck = _DeckCls.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
         self.season = _dep_season
@@ -145,8 +163,6 @@ class TournamentRegistrationAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "status": "Registered",
-            "points_earned": 0,
             "registered_at": "2024-01-01T00:00:00Z",
             "tournament": self.tournament.pk,
             "player": self.player.pk,
@@ -170,10 +186,10 @@ class TournamentRegistrationAPITest(APITestCase):
 
 class TournamentRoundAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        _dep_tournament = Tournament.objects.create(name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
+        _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         self.season = _dep_season
         self.player = _dep_player
         self.tournament = _dep_tournament
@@ -188,8 +204,6 @@ class TournamentRoundAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "round_number": 0,
-            "status": "Pending",
-            "time_limit_minutes": 0,
             "tournament": self.tournament.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -213,7 +227,7 @@ class MatchAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         self.player = _dep_player
-        self.obj = Match.objects.create(player1=_dep_player)
+        self.obj = Match.objects.create(player1=_dep_player, player1_wins=0, player2_wins=0)
         self.list_url = reverse("match-list")
         self.detail_url = reverse("match-detail", args=[self.obj.pk])
 
@@ -223,7 +237,6 @@ class MatchAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "status": "Pending",
             "player1_wins": 0,
             "player2_wins": 0,
             "player1": self.player.pk
@@ -242,6 +255,24 @@ class MatchAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_wins_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"status": "BYE", "player2": None, "player1_wins": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_max_three_games_violated(self):
+        # Simple rule violated → 400
+        data = {"status": "BYE", "player2": None, "player1_wins": 3}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_bye_has_no_player2_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"status": "BYE", "player2": 0}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class GameAPITest(APITestCase):
@@ -282,10 +313,10 @@ class GameAPITest(APITestCase):
 
 class TournamentPrizeAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        _dep_tournament = Tournament.objects.create(name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
+        _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         self.season = _dep_season
         self.player = _dep_player
         self.tournament = _dep_tournament
@@ -302,8 +333,6 @@ class TournamentPrizeAPITest(APITestCase):
             "placement_from": 0,
             "placement_to": 0,
             "prize_type": "Currency",
-            "amount": "0.00",
-            "season_points": 0,
             "tournament": self.tournament.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -324,10 +353,10 @@ class TournamentPrizeAPITest(APITestCase):
 
 class AwardedPrizeAPITest(APITestCase):
     def setUp(self):
-        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = Season.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        _dep_tournament = Tournament.objects.create(name="test", max_players=0, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
+        _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         _dep_tournament_prize = TournamentPrize.objects.create(placement_from=0, placement_to=0, prize_type="Currency", tournament=_dep_tournament)
         self.season = _dep_season
         self.player = _dep_player
@@ -345,7 +374,6 @@ class AwardedPrizeAPITest(APITestCase):
         data = {
             "final_placement": 0,
             "awarded_at": "2024-01-01T00:00:00Z",
-            "claimed": False,
             "prize": self.tournamentprize.pk,
             "player": self.player.pk
         }

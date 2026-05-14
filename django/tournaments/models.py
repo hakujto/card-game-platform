@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class FormatChoices(models.TextChoices):
+class SeasonFormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
     EXTENDED = "Extended", "Extended"
     LEGACY = "Legacy", "Legacy"
@@ -15,7 +15,7 @@ class Season(models.Model):
     name = models.CharField(max_length=200)
     start_date = models.DateField()
     end_date = models.DateField()
-    format = models.CharField(max_length=20, choices=FormatChoices.choices, default=FormatChoices.STANDARD)
+    format = models.CharField(max_length=20, choices=SeasonFormatChoices.choices, default=SeasonFormatChoices.STANDARD)
     is_active = models.BooleanField(default=False)
     reward_description = models.TextField(null=True, blank=True)
 
@@ -41,8 +41,16 @@ class Season(models.Model):
     def is_ongoing(self):
         raise NotImplementedError("is_ongoing not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.end_date is None or self.end_date > self.start_date)):
+            errors["end_date_after_start_date"] = "Season end date must be after start date"
+        if errors:
+            raise ValidationError(errors)
 
-class FormatChoices(models.TextChoices):
+
+class TournamentFormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
     EXTENDED = "Extended", "Extended"
     LEGACY = "Legacy", "Legacy"
@@ -51,14 +59,14 @@ class FormatChoices(models.TextChoices):
     DRAFT = "Draft", "Draft"
 
 
-class TournamentTypeChoices(models.TextChoices):
+class TournamentTournamentTypeChoices(models.TextChoices):
     SWISS = "Swiss", "Swiss"
     SINGLEELIMINATION = "SingleElimination", "Singleelimination"
     DOUBLEELIMINATION = "DoubleElimination", "Doubleelimination"
     ROUNDROBIN = "RoundRobin", "Roundrobin"
 
 
-class StatusChoices(models.TextChoices):
+class TournamentStatusChoices(models.TextChoices):
     DRAFT = "Draft", "Draft"
     REGISTRATION = "Registration", "Registration"
     ONGOING = "Ongoing", "Ongoing"
@@ -69,9 +77,9 @@ class StatusChoices(models.TextChoices):
 class Tournament(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
-    format = models.CharField(max_length=20, choices=FormatChoices.choices, default=FormatChoices.STANDARD)
-    tournament_type = models.CharField(max_length=20, choices=TournamentTypeChoices.choices, default=TournamentTypeChoices.SWISS)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.DRAFT)
+    format = models.CharField(max_length=20, choices=TournamentFormatChoices.choices, default=TournamentFormatChoices.STANDARD)
+    tournament_type = models.CharField(max_length=20, choices=TournamentTournamentTypeChoices.choices, default=TournamentTournamentTypeChoices.SWISS)
+    status = models.CharField(max_length=20, choices=TournamentStatusChoices.choices, default=TournamentStatusChoices.DRAFT)
     max_players = models.IntegerField()
     entry_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     prize_pool = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -113,15 +121,32 @@ class Tournament(models.Model):
     def is_full(self):
         raise NotImplementedError("is_full not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.max_players is None or (self.max_players >= 2 and self.max_players <= 512))):
+            errors["max_players_positive"] = "Tournament must allow between 2 and 512 players"
+        if not ((self.entry_fee is None or self.entry_fee >= 0)):
+            errors["entry_fee_not_negative"] = "Entry fee must not be negative"
+        if not ((self.prize_pool is None or self.prize_pool >= 0)):
+            errors["prize_pool_not_negative"] = "Prize pool must not be negative"
+        if errors:
+            raise ValidationError(errors)
 
-class RoleChoices(models.TextChoices):
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.end_time is not None) and (not ((self.end_time is None or self.end_time > self.start_time))):
+            raise ValidationError({"end_time_after_start": "End time must be after start time"})
+
+
+class TournamentJudgeRoleChoices(models.TextChoices):
     HEADJUDGE = "HeadJudge", "Headjudge"
     JUDGE = "Judge", "Judge"
     SCOREKEEPERJUDGE = "ScorekeeperJudge", "Scorekeeperjudge"
 
 
 class TournamentJudge(models.Model):
-    role = models.CharField(max_length=20, choices=RoleChoices.choices, default=RoleChoices.JUDGE)
+    role = models.CharField(max_length=20, choices=TournamentJudgeRoleChoices.choices, default=TournamentJudgeRoleChoices.JUDGE)
     tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE, related_name="judge_assignments")
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="judge_roles")
 
@@ -134,7 +159,7 @@ class TournamentJudge(models.Model):
         return str(self.role)
 
 
-class StatusChoices(models.TextChoices):
+class TournamentRegistrationStatusChoices(models.TextChoices):
     REGISTERED = "Registered", "Registered"
     WAITLISTED = "Waitlisted", "Waitlisted"
     WITHDRAWN = "Withdrawn", "Withdrawn"
@@ -142,7 +167,7 @@ class StatusChoices(models.TextChoices):
 
 
 class TournamentRegistration(models.Model):
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.REGISTERED)
+    status = models.CharField(max_length=20, choices=TournamentRegistrationStatusChoices.choices, default=TournamentRegistrationStatusChoices.REGISTERED)
     seed = models.IntegerField(null=True, blank=True)
     final_standing = models.IntegerField(null=True, blank=True)
     points_earned = models.IntegerField(default=0)
@@ -171,7 +196,7 @@ class TournamentRegistration(models.Model):
         raise NotImplementedError("promote_from_waitlist not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class TournamentRoundStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
     ACTIVE = "Active", "Active"
     COMPLETED = "Completed", "Completed"
@@ -179,7 +204,7 @@ class StatusChoices(models.TextChoices):
 
 class TournamentRound(models.Model):
     round_number = models.IntegerField()
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=20, choices=TournamentRoundStatusChoices.choices, default=TournamentRoundStatusChoices.PENDING)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     time_limit_minutes = models.IntegerField(default=50)
@@ -208,7 +233,7 @@ class TournamentRound(models.Model):
         raise NotImplementedError("is_time_expired not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class MatchStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
     ACTIVE = "Active", "Active"
     COMPLETED = "Completed", "Completed"
@@ -218,7 +243,7 @@ class StatusChoices(models.TextChoices):
 
 class Match(models.Model):
     table_number = models.IntegerField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=20, choices=MatchStatusChoices.choices, default=MatchStatusChoices.PENDING)
     player1_wins = models.IntegerField(default=0)
     player2_wins = models.IntegerField(default=0)
     started_at = models.DateTimeField(null=True, blank=True)
@@ -247,14 +272,29 @@ class Match(models.Model):
     def draw(self):
         raise NotImplementedError("draw not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not (((self.player1_wins is None or self.player1_wins >= 0) and (self.player2_wins is None or self.player2_wins >= 0))):
+            errors["wins_not_negative"] = "Win counts must not be negative"
+        if not (((self.player1_wins is None or (self.player1_wins >= 0 and self.player1_wins <= 2)) and (self.player2_wins is None or (self.player2_wins >= 0 and self.player2_wins <= 2)))):
+            errors["max_three_games"] = "Win counts cannot exceed 2 in a best-of-3 match"
+        if errors:
+            raise ValidationError(errors)
 
-class WinnerSideChoices(models.TextChoices):
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.status == MatchStatusChoices.BYE) and (self.player2 is not None):
+            raise ValidationError({"bye_has_no_player2": "BYE match must not have a second player"})
+
+
+class GameWinnerSideChoices(models.TextChoices):
     PLAYER1 = "Player1", "Player1"
     PLAYER2 = "Player2", "Player2"
     DRAW = "Draw", "Draw"
 
 
-class EndedByChoices(models.TextChoices):
+class GameEndedByChoices(models.TextChoices):
     NORMAL = "Normal", "Normal"
     TIMEOUT = "Timeout", "Timeout"
     CONCESSION = "Concession", "Concession"
@@ -263,10 +303,10 @@ class EndedByChoices(models.TextChoices):
 
 class Game(models.Model):
     game_number = models.IntegerField()
-    winner_side = models.CharField(max_length=20, choices=WinnerSideChoices.choices, null=True, blank=True)
+    winner_side = models.CharField(max_length=20, choices=GameWinnerSideChoices.choices, null=True, blank=True)
     turns_played = models.IntegerField(null=True, blank=True)
     duration_seconds = models.IntegerField(null=True, blank=True)
-    ended_by = models.CharField(max_length=20, choices=EndedByChoices.choices, null=True, blank=True)
+    ended_by = models.CharField(max_length=20, choices=GameEndedByChoices.choices, null=True, blank=True)
     replay_url = models.URLField(max_length=200, null=True, blank=True)
     match = models.ForeignKey("Match", on_delete=models.CASCADE)
     winner = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="won_games", null=True, blank=True)
@@ -288,7 +328,7 @@ class Game(models.Model):
         raise NotImplementedError("duration_minutes not implemented")
 
 
-class PrizeTypeChoices(models.TextChoices):
+class TournamentPrizePrizeTypeChoices(models.TextChoices):
     CURRENCY = "Currency", "Currency"
     CARDS = "Cards", "Cards"
     BOOSTERPACKS = "BoosterPacks", "Boosterpacks"
@@ -300,7 +340,7 @@ class PrizeTypeChoices(models.TextChoices):
 class TournamentPrize(models.Model):
     placement_from = models.IntegerField()
     placement_to = models.IntegerField()
-    prize_type = models.CharField(max_length=20, choices=PrizeTypeChoices.choices)
+    prize_type = models.CharField(max_length=20, choices=TournamentPrizePrizeTypeChoices.choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     description = models.TextField(null=True, blank=True)
     packs_count = models.IntegerField(null=True, blank=True)

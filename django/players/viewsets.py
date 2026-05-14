@@ -63,6 +63,26 @@ class PlayerViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class PlayerSeasonStatsViewSet(viewsets.ModelViewSet):
     queryset = PlayerSeasonStats.objects.select_related().all()

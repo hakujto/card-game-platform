@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class CardTypeChoices(models.TextChoices):
+class CardCardTypeChoices(models.TextChoices):
     CREATURE = "Creature", "Creature"
     SPELL = "Spell", "Spell"
     LAND = "Land", "Land"
@@ -11,7 +11,7 @@ class CardTypeChoices(models.TextChoices):
     PLANESWALKER = "Planeswalker", "Planeswalker"
 
 
-class RarityChoices(models.TextChoices):
+class CardRarityChoices(models.TextChoices):
     COMMON = "Common", "Common"
     UNCOMMON = "Uncommon", "Uncommon"
     RARE = "Rare", "Rare"
@@ -19,7 +19,7 @@ class RarityChoices(models.TextChoices):
     LEGENDARY = "Legendary", "Legendary"
 
 
-class ManaColorsChoices(models.TextChoices):
+class CardManaColorsChoices(models.TextChoices):
     WHITE = "White", "White"
     BLUE = "Blue", "Blue"
     BLACK = "Black", "Black"
@@ -28,7 +28,7 @@ class ManaColorsChoices(models.TextChoices):
     COLORLESS = "Colorless", "Colorless"
 
 
-class LegalFormatsChoices(models.TextChoices):
+class CardLegalFormatsChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
     EXTENDED = "Extended", "Extended"
     LEGACY = "Legacy", "Legacy"
@@ -39,10 +39,10 @@ class LegalFormatsChoices(models.TextChoices):
 
 class Card(models.Model):
     name = models.CharField(max_length=200)
-    card_type = models.CharField(max_length=20, choices=CardTypeChoices.choices, default=CardTypeChoices.CREATURE)
-    rarity = models.CharField(max_length=20, choices=RarityChoices.choices, default=RarityChoices.COMMON)
+    card_type = models.CharField(max_length=20, choices=CardCardTypeChoices.choices, default=CardCardTypeChoices.CREATURE)
+    rarity = models.CharField(max_length=20, choices=CardRarityChoices.choices, default=CardRarityChoices.COMMON)
     mana_cost = models.IntegerField(default=0)
-    mana_colors = models.CharField(max_length=20, choices=ManaColorsChoices.choices)
+    mana_colors = models.CharField(max_length=20, choices=CardManaColorsChoices.choices)
     attack = models.IntegerField(null=True, blank=True)
     defense = models.IntegerField(null=True, blank=True)
     loyalty = models.IntegerField(null=True, blank=True)
@@ -50,7 +50,7 @@ class Card(models.Model):
     flavor_text = models.TextField(null=True, blank=True)
     image_url = models.URLField(max_length=200, null=True, blank=True)
     artist_name = models.CharField(max_length=100, null=True, blank=True)
-    legal_formats = models.CharField(max_length=20, choices=LegalFormatsChoices.choices)
+    legal_formats = models.CharField(max_length=20, choices=CardLegalFormatsChoices.choices)
     is_banned = models.BooleanField(default=False)
     is_restricted = models.BooleanField(default=False)
     power_level = models.IntegerField(default=1)
@@ -81,8 +81,27 @@ class Card(models.Model):
     def calculate_value(self):
         raise NotImplementedError("calculate_value not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.mana_cost is None or (self.mana_cost >= 0 and self.mana_cost <= 20))):
+            errors["mana_cost_range"] = "mana_cost must be between 0 and 20"
+        if not ((self.power_level is None or (self.power_level >= 1 and self.power_level <= 10))):
+            errors["power_level_range"] = "power_level must be between 1 and 10"
+        if not (not ((self.is_banned is True and self.is_restricted is True))):
+            errors["not_banned_and_restricted"] = "Card cannot be both banned and restricted at the same time"
+        if errors:
+            raise ValidationError(errors)
 
-class SetTypeChoices(models.TextChoices):
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.card_type == CardCardTypeChoices.CREATURE) and (not ((self.attack is not None and self.defense is not None))):
+            raise ValidationError({"creature_requires_stats": "Creature card must have attack and defense"})
+        if (self.card_type == CardCardTypeChoices.PLANESWALKER) and (self.loyalty is None):
+            raise ValidationError({"planeswalker_requires_loyalty": "Planeswalker card must have loyalty"})
+
+
+class CardSetSetTypeChoices(models.TextChoices):
     CORE = "Core", "Core"
     EXPANSION = "Expansion", "Expansion"
     SUPPLEMENTAL = "Supplemental", "Supplemental"
@@ -94,7 +113,7 @@ class CardSet(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=10)
     release_date = models.DateField()
-    set_type = models.CharField(max_length=20, choices=SetTypeChoices.choices, default=SetTypeChoices.EXPANSION)
+    set_type = models.CharField(max_length=20, choices=CardSetSetTypeChoices.choices, default=CardSetSetTypeChoices.EXPANSION)
     total_cards = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     logo_url = models.URLField(max_length=200, null=True, blank=True)
@@ -136,14 +155,14 @@ class CardRuling(models.Model):
         raise NotImplementedError("supersedes_previous not implemented")
 
 
-class AbilityTypeChoices(models.TextChoices):
+class CardAbilityAbilityTypeChoices(models.TextChoices):
     KEYWORD = "Keyword", "Keyword"
     ACTIVATED = "Activated", "Activated"
     TRIGGERED = "Triggered", "Triggered"
     STATIC = "Static", "Static"
 
 
-class TimingChoices(models.TextChoices):
+class CardAbilityTimingChoices(models.TextChoices):
     ANY = "Any", "Any"
     SORCERY = "Sorcery", "Sorcery"
     INSTANT = "Instant", "Instant"
@@ -151,10 +170,10 @@ class TimingChoices(models.TextChoices):
 
 
 class CardAbility(models.Model):
-    ability_type = models.CharField(max_length=20, choices=AbilityTypeChoices.choices, default=AbilityTypeChoices.KEYWORD)
+    ability_type = models.CharField(max_length=20, choices=CardAbilityAbilityTypeChoices.choices, default=CardAbilityAbilityTypeChoices.KEYWORD)
     keyword = models.CharField(max_length=100, null=True, blank=True)
     ability_text = models.TextField()
-    timing = models.CharField(max_length=20, choices=TimingChoices.choices, null=True, blank=True)
+    timing = models.CharField(max_length=20, choices=CardAbilityTimingChoices.choices, null=True, blank=True)
     card = models.ForeignKey("Card", on_delete=models.CASCADE)
 
     class Meta:
@@ -174,7 +193,7 @@ class CardAbility(models.Model):
         raise NotImplementedError("describe not implemented")
 
 
-class FormatChoices(models.TextChoices):
+class DeckFormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
     EXTENDED = "Extended", "Extended"
     LEGACY = "Legacy", "Legacy"
@@ -183,7 +202,7 @@ class FormatChoices(models.TextChoices):
     DRAFT = "Draft", "Draft"
 
 
-class ArchetypeChoices(models.TextChoices):
+class DeckArchetypeChoices(models.TextChoices):
     AGGRO = "Aggro", "Aggro"
     CONTROL = "Control", "Control"
     MIDRANGE = "Midrange", "Midrange"
@@ -195,10 +214,10 @@ class ArchetypeChoices(models.TextChoices):
 class Deck(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
-    format = models.CharField(max_length=20, choices=FormatChoices.choices, default=FormatChoices.STANDARD)
+    format = models.CharField(max_length=20, choices=DeckFormatChoices.choices, default=DeckFormatChoices.STANDARD)
     is_public = models.BooleanField(default=False)
     is_tournament_legal = models.BooleanField(default=False)
-    archetype = models.CharField(max_length=20, choices=ArchetypeChoices.choices, null=True, blank=True)
+    archetype = models.CharField(max_length=20, choices=DeckArchetypeChoices.choices, null=True, blank=True)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
     created_at = models.DateTimeField()

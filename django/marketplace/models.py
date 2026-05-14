@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class ProductTypeChoices(models.TextChoices):
+class ProductProductTypeChoices(models.TextChoices):
     SINGLECARD = "SingleCard", "Singlecard"
     BOOSTERPACK = "BoosterPack", "Boosterpack"
     BUNDLE = "Bundle", "Bundle"
@@ -12,7 +12,7 @@ class ProductTypeChoices(models.TextChoices):
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
-    product_type = models.CharField(max_length=20, choices=ProductTypeChoices.choices, default=ProductTypeChoices.SINGLECARD)
+    product_type = models.CharField(max_length=20, choices=ProductProductTypeChoices.choices, default=ProductProductTypeChoices.SINGLECARD)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
     active = models.BooleanField(default=True)
@@ -52,7 +52,7 @@ class Product(models.Model):
         raise NotImplementedError("is_in_stock not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class OrderStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
     PAID = "Paid", "Paid"
     PROCESSING = "Processing", "Processing"
@@ -62,7 +62,7 @@ class StatusChoices(models.TextChoices):
     REFUNDED = "Refunded", "Refunded"
 
 
-class PaymentMethodChoices(models.TextChoices):
+class OrderPaymentMethodChoices(models.TextChoices):
     CARD = "Card", "Card"
     PAYPAL = "PayPal", "Paypal"
     CRYPTO = "Crypto", "Crypto"
@@ -70,11 +70,11 @@ class PaymentMethodChoices(models.TextChoices):
 
 
 class Order(models.Model):
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=20, choices=OrderStatusChoices.choices, default=OrderStatusChoices.PENDING)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="USD")
-    payment_method = models.CharField(max_length=20, choices=PaymentMethodChoices.choices, null=True, blank=True)
+    payment_method = models.CharField(max_length=20, choices=OrderPaymentMethodChoices.choices, null=True, blank=True)
     payment_reference = models.CharField(max_length=200, null=True, blank=True)
     shipping_address = models.TextField(null=True, blank=True)
     tracking_number = models.CharField(max_length=100, null=True, blank=True)
@@ -112,6 +112,23 @@ class Order(models.Model):
     def notify_shipped(self):
         raise NotImplementedError("notify_shipped not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.total is None or self.total >= 0)):
+            errors["total_not_negative"] = "Order total must not be negative"
+        if not ((self.discount_applied is None or self.discount_applied <= self.total)):
+            errors["discount_not_exceed_total"] = "Discount applied cannot exceed order total"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.status == OrderStatusChoices.PAID) and (self.paid_at is None):
+            raise ValidationError({"paid_requires_paid_at": "Paid order must have paid_at set"})
+        if (self.status == OrderStatusChoices.SHIPPED) and (self.tracking_number is None):
+            raise ValidationError({"shipped_requires_tracking": "Shipped order must have a tracking number"})
+
 
 class OrderItem(models.Model):
     quantity = models.IntegerField()
@@ -134,14 +151,14 @@ class OrderItem(models.Model):
         raise NotImplementedError("line_total not implemented")
 
 
-class DiscountTypeChoices(models.TextChoices):
+class CouponDiscountTypeChoices(models.TextChoices):
     PERCENT = "Percent", "Percent"
     FIXED = "Fixed", "Fixed"
 
 
 class Coupon(models.Model):
     code = models.CharField(max_length=50)
-    discount_type = models.CharField(max_length=20, choices=DiscountTypeChoices.choices, default=DiscountTypeChoices.PERCENT)
+    discount_type = models.CharField(max_length=20, choices=CouponDiscountTypeChoices.choices, default=CouponDiscountTypeChoices.PERCENT)
     discount_value = models.DecimalField(max_digits=10, decimal_places=2)
     min_order_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     max_uses = models.IntegerField(null=True, blank=True)
@@ -172,14 +189,31 @@ class Coupon(models.Model):
     def deactivate(self):
         raise NotImplementedError("deactivate not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.valid_until is None or self.valid_until > self.valid_from)):
+            errors["valid_until_after_valid_from"] = "Coupon expiry must be after its start date"
+        if not ((self.discount_value is None or self.discount_value > 0)):
+            errors["discount_value_positive"] = "Discount value must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
 
-class ListingTypeChoices(models.TextChoices):
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.discount_type == CouponDiscountTypeChoices.PERCENT) and (not ((self.discount_value is None or (self.discount_value >= 1 and self.discount_value <= 100)))):
+            raise ValidationError({"percent_discount_range": "Percent discount must be between 1 and 100"})
+        if (self.max_uses is not None) and (not ((self.uses_count is None or self.uses_count <= self.max_uses))):
+            raise ValidationError({"uses_not_exceed_max": "Coupon uses count cannot exceed max_uses"})
+
+
+class TradelistingListingTypeChoices(models.TextChoices):
     FIXEDPRICE = "FixedPrice", "Fixedprice"
     AUCTION = "Auction", "Auction"
     TRADEOFFER = "TradeOffer", "Tradeoffer"
 
 
-class ConditionChoices(models.TextChoices):
+class TradelistingConditionChoices(models.TextChoices):
     MINT = "Mint", "Mint"
     NEARMINT = "NearMint", "Nearmint"
     EXCELLENT = "Excellent", "Excellent"
@@ -187,7 +221,7 @@ class ConditionChoices(models.TextChoices):
     PLAYED = "Played", "Played"
 
 
-class StatusChoices(models.TextChoices):
+class TradelistingStatusChoices(models.TextChoices):
     ACTIVE = "Active", "Active"
     SOLD = "Sold", "Sold"
     EXPIRED = "Expired", "Expired"
@@ -196,15 +230,15 @@ class StatusChoices(models.TextChoices):
 
 
 class Tradelisting(models.Model):
-    listing_type = models.CharField(max_length=20, choices=ListingTypeChoices.choices, default=ListingTypeChoices.FIXEDPRICE)
+    listing_type = models.CharField(max_length=20, choices=TradelistingListingTypeChoices.choices, default=TradelistingListingTypeChoices.FIXEDPRICE)
     asking_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_start_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_current_bid = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_end_time = models.DateTimeField(null=True, blank=True)
     foil = models.BooleanField(default=False)
-    condition = models.CharField(max_length=20, choices=ConditionChoices.choices, default=ConditionChoices.MINT)
+    condition = models.CharField(max_length=20, choices=TradelistingConditionChoices.choices, default=TradelistingConditionChoices.MINT)
     quantity = models.IntegerField(default=1)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
+    status = models.CharField(max_length=20, choices=TradelistingStatusChoices.choices, default=TradelistingStatusChoices.ACTIVE)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField(null=True, blank=True)
@@ -236,6 +270,21 @@ class Tradelisting(models.Model):
     def finalize_auction(self):
         raise NotImplementedError("finalize_auction not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 9999))):
+            errors["quantity_positive"] = "Listing quantity must be between 1 and 9999"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.listing_type == TradelistingListingTypeChoices.FIXEDPRICE) and (self.asking_price is None):
+            raise ValidationError({"fixed_price_requires_asking_price": "Fixed price listing must have an asking price"})
+        if (self.listing_type == TradelistingListingTypeChoices.AUCTION) and (not ((self.auction_start_price is not None and self.auction_end_time is not None))):
+            raise ValidationError({"auction_requires_start_price_and_end_time": "Auction listing must have a start price and end time"})
+
 
 class TradeBid(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -258,7 +307,7 @@ class TradeBid(models.Model):
         raise NotImplementedError("outbid_by not implemented")
 
 
-class StatusChoices(models.TextChoices):
+class TradeTransactionStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
     COMPLETED = "Completed", "Completed"
     DISPUTED = "Disputed", "Disputed"
@@ -268,7 +317,7 @@ class StatusChoices(models.TextChoices):
 class TradeTransaction(models.Model):
     final_price = models.DecimalField(max_digits=10, decimal_places=2)
     platform_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=20, choices=TradeTransactionStatusChoices.choices, default=TradeTransactionStatusChoices.PENDING)
     completed_at = models.DateTimeField(null=True, blank=True)
     listing = models.OneToOneField("TradeListing", on_delete=models.CASCADE, related_name="transaction")
     buyer = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="purchases")
@@ -323,14 +372,14 @@ class CardPriceHistory(models.Model):
         raise NotImplementedError("is_price_spike not implemented")
 
 
-class ReasonChoices(models.TextChoices):
+class TradeDisputeReasonChoices(models.TextChoices):
     ITEMNOTRECEIVED = "ItemNotReceived", "Itemnotreceived"
     ITEMNOTASDESCRIBED = "ItemNotAsDescribed", "Itemnotasdescribed"
     FRAUDSUSPECTED = "FraudSuspected", "Fraudsuspected"
     OTHER = "Other", "Other"
 
 
-class StatusChoices(models.TextChoices):
+class TradeDisputeStatusChoices(models.TextChoices):
     OPEN = "Open", "Open"
     UNDERREVIEW = "UnderReview", "Underreview"
     RESOLVED = "Resolved", "Resolved"
@@ -338,9 +387,9 @@ class StatusChoices(models.TextChoices):
 
 
 class TradeDispute(models.Model):
-    reason = models.CharField(max_length=20, choices=ReasonChoices.choices)
+    reason = models.CharField(max_length=20, choices=TradeDisputeReasonChoices.choices)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.OPEN)
+    status = models.CharField(max_length=20, choices=TradeDisputeStatusChoices.choices, default=TradeDisputeStatusChoices.OPEN)
     resolution = models.TextField(null=True, blank=True)
     opened_at = models.DateTimeField()
     resolved_at = models.DateTimeField(null=True, blank=True)

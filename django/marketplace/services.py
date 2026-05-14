@@ -101,10 +101,10 @@ class OrderService:
     # triggered by @on(status = Shipped)
     @staticmethod
     def set_status(pk, value):
-        from .models import Order
+        from .models import Order, OrderStatusChoices
         instance = Order.objects.get(pk=pk)
         instance.status = value
-        if value == Order.StatusChoices.SHIPPED:
+        if value == OrderStatusChoices.SHIPPED:
             instance.notify_shipped()
         instance.save()
 
@@ -188,10 +188,10 @@ class TradelistingService:
     # triggered by @on(status = Sold)
     @staticmethod
     def set_status(pk, value):
-        from .models import Tradelisting
+        from .models import Tradelisting, TradelistingStatusChoices
         instance = Tradelisting.objects.get(pk=pk)
         instance.status = value
-        if value == Tradelisting.StatusChoices.SOLD:
+        if value == TradelistingStatusChoices.SOLD:
             instance.finalize_auction()
         instance.save()
 

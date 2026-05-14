@@ -89,6 +89,27 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.select_related().all()
@@ -120,6 +141,27 @@ class CouponViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class TradelistingViewSet(viewsets.ModelViewSet):
     queryset = Tradelisting.objects.select_related().all()
@@ -150,6 +192,27 @@ class TradelistingViewSet(viewsets.ModelViewSet):
         result = instance.cancel()
         from rest_framework.response import Response
         return Response(status=204)
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
 
 
 class TradeBidViewSet(viewsets.ModelViewSet):

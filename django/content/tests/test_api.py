@@ -19,9 +19,6 @@ class DraftSessionAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "status": "WaitingForPlayers",
-            "draft_type": "Booster",
-            "seats": 0,
             "created_at": "2024-01-01T00:00:00Z",
             "card_set": self.cardset.pk
         }
@@ -139,9 +136,6 @@ class ArticleAPITest(APITestCase):
             "title": "test",
             "slug": "test",
             "body": "test",
-            "status": "Draft",
-            "article_type": "Guide",
-            "view_count": 0,
             "created_at": "2024-01-01T00:00:00Z",
             "updated_at": "2024-01-01T00:00:00Z",
             "author": self.player.pk
@@ -247,7 +241,6 @@ class ArticleCommentAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "body": "test",
-            "is_hidden": False,
             "created_at": "2024-01-01T00:00:00Z",
             "author": self.player.pk
         }
@@ -284,9 +277,6 @@ class StreamAPITest(APITestCase):
         data = {
             "title": "test",
             "stream_url": "https://example.com",
-            "platform": "Twitch",
-            "status": "Scheduled",
-            "viewer_count_peak": 0,
             "scheduled_start": "2024-01-01T00:00:00Z",
             "streamer": self.player.pk
         }

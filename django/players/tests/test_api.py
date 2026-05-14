@@ -6,7 +6,7 @@ from ..models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Ac
 
 class PlayerAPITest(APITestCase):
     def setUp(self):
-        self.obj = Player.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
+        self.obj = Player.objects.create(display_name="test", peak_rating=1000, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("player-list")
         self.detail_url = reverse("player-detail", args=[self.obj.pk])
 
@@ -17,10 +17,7 @@ class PlayerAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "display_name": "test",
-            "rank": "Bronze",
-            "rating": 0,
-            "peak_rating": 0,
-            "is_verified": False,
+            "peak_rating": 1000,
             "created_at": "2024-01-01T00:00:00Z"
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -38,11 +35,23 @@ class PlayerAPITest(APITestCase):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_create_fails_when_rating_range_violated(self):
+        # Simple rule violated → 400
+        data = {"display_name": "test", "created_at": "2024-01-01T00:00:00Z", "rating": 10000}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_display_name_not_empty_violated(self):
+        # Simple rule violated → 400
+        data = {"display_name": None, "created_at": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class PlayerSeasonStatsAPITest(APITestCase):
     def setUp(self):
         from tournaments.models import Season as _SeasonCls
-        _dep_season = _SeasonCls.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-01")
+        _dep_season = _SeasonCls.objects.create(name="test", start_date="2024-01-01", end_date="2024-01-02")
         self.season = _dep_season
         self.obj = PlayerSeasonStats.objects.create(season=_dep_season)
         self.list_url = reverse("player_season_stats-list")
@@ -54,11 +63,6 @@ class PlayerSeasonStatsAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "tournament_wins": 0,
-            "season_points": 0,
             "season": self.season.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -97,11 +101,7 @@ class PlayerCollectionAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "quantity": 0,
-            "foil": False,
-            "condition": "Mint",
             "acquired_at": "2024-01-01T00:00:00Z",
-            "acquired_via": "Purchase",
             "player": self.player.pk,
             "card": self.card.pk
         }
@@ -135,7 +135,6 @@ class FriendshipAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "status": "Pending",
             "created_at": "2024-01-01T00:00:00Z",
             "requester": self.player.pk,
             "receiver": self.player.pk
@@ -169,10 +168,7 @@ class AchievementAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "description": "test",
-            "points": 0,
-            "rarity": "Common",
-            "is_hidden": False
+            "description": "test"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -207,8 +203,6 @@ class PlayerAchievementAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "earned_at": "2024-01-01T00:00:00Z",
-            "progress": 0,
-            "is_completed": False,
             "player": self.player.pk,
             "achievement": self.achievement.pk
         }
@@ -247,7 +241,6 @@ class CraftingRecipeAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "dust_cost": 0,
-            "is_available": False,
             "result_card": self.card.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -286,7 +279,6 @@ class CraftingIngredientAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "quantity": 0,
             "recipe": self.craftingrecipe.pk,
             "card": self.card.pk
         }
