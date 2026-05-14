@@ -40,10 +40,11 @@ class TournamentApiTest extends TestCase
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
             'status' => 'Draft',
-            'max_players' => 1,
+            'max_players' => 2,
             'entry_fee' => '0.00',
             'prize_pool' => '0.00',
             'start_time' => '2024-01-01 00:00:00',
+            'end_time' => null,
             'is_online' => true,
             'created_at' => '2024-01-01 00:00:00',
             'season_id' => $this->depSeason->id,
@@ -65,10 +66,11 @@ class TournamentApiTest extends TestCase
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
             'status' => 'Draft',
-            'max_players' => 1,
+            'max_players' => 2,
             'entry_fee' => '0.00',
             'prize_pool' => '0.00',
             'start_time' => '2024-01-01 00:00:00',
+            'end_time' => null,
             'is_online' => true,
             'created_at' => '2024-01-01 00:00:00',
             'season_id' => $this->depSeason->id,
@@ -95,5 +97,33 @@ class TournamentApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/tournaments/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_max_players_positive_violated(): void
+    {
+        // Tournament must allow between 2 and 512 players
+        $response = $this->postJson('/api/tournaments', ['name' => 'test', 'start_time' => '2024-01-01 00:00:00', 'created_at' => '2024-01-01 00:00:00', 'season_id' => 1, 'organizer_id' => 1, 'end_time' => '2024-01-01 00:00:00', 'max_players' => 513]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_entry_fee_not_negative_violated(): void
+    {
+        // Entry fee must not be negative
+        $response = $this->postJson('/api/tournaments', ['name' => 'test', 'max_players' => 1, 'start_time' => '2024-01-01 00:00:00', 'created_at' => '2024-01-01 00:00:00', 'season_id' => 1, 'organizer_id' => 1, 'end_time' => '2024-01-01 00:00:00', 'entry_fee' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_prize_pool_not_negative_violated(): void
+    {
+        // Prize pool must not be negative
+        $response = $this->postJson('/api/tournaments', ['name' => 'test', 'max_players' => 1, 'start_time' => '2024-01-01 00:00:00', 'created_at' => '2024-01-01 00:00:00', 'season_id' => 1, 'organizer_id' => 1, 'end_time' => '2024-01-01 00:00:00', 'prize_pool' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_end_time_after_start_violated(): void
+    {
+        // End time must be after start time
+        $response = $this->postJson('/api/tournaments', ['name' => 'test', 'max_players' => 1, 'start_time' => '2024-01-01 00:00:00', 'created_at' => '2024-01-01 00:00:00', 'season_id' => 1, 'organizer_id' => 1, 'end_time' => '2024-01-01 00:00:00', 'end_time' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
     }
 }

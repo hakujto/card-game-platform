@@ -18,7 +18,7 @@ class SeasonApiTest extends TestCase
         $entity = Season::create([
             'name' => 'test',
             'start_date' => '2024-01-01',
-            'end_date' => '2024-01-01',
+            'end_date' => '2024-01-02',
             'format' => 'Standard',
             'is_active' => true,
         ]);
@@ -36,7 +36,7 @@ class SeasonApiTest extends TestCase
         $response = $this->postJson('/api/seasons', [
             'name' => 'test',
             'start_date' => '2024-01-01',
-            'end_date' => '2024-01-01',
+            'end_date' => '2024-01-02',
             'format' => 'Standard',
             'is_active' => true,
         ]);
@@ -61,5 +61,12 @@ class SeasonApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/seasons/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_end_date_after_start_date_violated(): void
+    {
+        // Season end date must be after start date
+        $response = $this->postJson('/api/seasons', ['name' => 'test', 'start_date' => '2024-01-01', 'end_date' => '2024-01-01']);
+        $response->assertStatus(422);
     }
 }

@@ -42,6 +42,7 @@ class CardAbilityApiTest extends TestCase
         ]);
         $entity = CardAbility::create([
             'ability_type' => 'Keyword',
+            'keyword' => 'test',
             'ability_text' => 'test',
             'card_id' => $this->depCard->id,
         ]);
@@ -58,6 +59,7 @@ class CardAbilityApiTest extends TestCase
     {
         $response = $this->postJson('/api/card_abilities', [
             'ability_type' => 'Keyword',
+            'keyword' => 'test',
             'ability_text' => 'test',
             'card_id' => $this->depCard->id,
         ]);
@@ -73,7 +75,7 @@ class CardAbilityApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/card_abilities/{$this->entityId}", [
-            'ability_type' => 'test',
+            'keyword' => 'test',
         ]);
         $response->assertStatus(200);
     }
@@ -82,5 +84,12 @@ class CardAbilityApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/card_abilities/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_keyword_ability_requires_keyword_violated(): void
+    {
+        // Keyword ability must have a keyword name
+        $response = $this->postJson('/api/card_abilities', ['ability_text' => 'test', 'card_id' => 1, 'ability_type' => 'Keyword', 'keyword' => null]);
+        $response->assertStatus(422);
     }
 }

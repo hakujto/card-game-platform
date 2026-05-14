@@ -15,4 +15,41 @@ class DeckService
     {
         throw new \LogicException('Not implemented');
     }
+    public function validateSize(int $id): bool
+    {
+        $deck = Deck::findOrFail($id);
+        $result = $deck->validateSize();
+        $deck->save();
+        return $result;
+    }
+
+    public function clone(int $id): mixed
+    {
+        $deck = Deck::findOrFail($id);
+        $result = $deck->clone();
+        $deck->save();
+        return $result;
+    }
+
+    public function publish(int $id): void
+    {
+        $deck = Deck::findOrFail($id);
+        $deck->publish();
+        $deck->save();
+    }
+
+    public function unpublish(int $id): void
+    {
+        $deck = Deck::findOrFail($id);
+        $deck->unpublish();
+        $deck->save();
+    }
+
+    public function certifyTournamentLegal(int $id): bool
+    {
+        $deck = Deck::findOrFail($id);
+        $result = $deck->certifyTournamentLegal();
+        $deck->save();
+        return $result;
+    }
 }

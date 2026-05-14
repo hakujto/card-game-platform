@@ -30,4 +30,26 @@ class TradeBid extends Model
         return $this->belongsTo(Player::class, 'bidder_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->amount === null || (float)$this->amount > (float)0))) {
+            $errors['amount_positive'] = 'Bid amount must be greater than zero';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function outbidBy($new_amount): bool
+    {
+        throw new \RuntimeException('outbid_by not implemented');
+    }
+
 }

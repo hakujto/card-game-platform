@@ -19,9 +19,9 @@ class CardSetController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:200',
             'code' => 'required|string|max:10',
-            'release_date' => 'required|date|max:200',
+            'release_date' => 'required|date',
             'set_type' => 'required|string|in:Core,Expansion,Supplemental,Masters,Draft|max:20',
-            'total_cards' => 'required|integer|max:200',
+            'total_cards' => 'required|integer',
             'description' => 'nullable|string|max:200',
             'logo_url' => 'nullable|string|url|max:200',
         ]);
@@ -39,9 +39,9 @@ class CardSetController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|nullable|string|max:200',
             'code' => 'sometimes|nullable|string|max:10',
-            'release_date' => 'sometimes|nullable|date|max:200',
+            'release_date' => 'sometimes|nullable|date',
             'set_type' => 'sometimes|nullable|string|max:20',
-            'total_cards' => 'sometimes|nullable|integer|max:200',
+            'total_cards' => 'sometimes|nullable|integer',
             'description' => 'sometimes|nullable|string|max:200',
             'logo_url' => 'sometimes|nullable|string|url|max:200',
         ]);

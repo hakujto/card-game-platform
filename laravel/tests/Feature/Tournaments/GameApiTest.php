@@ -70,6 +70,8 @@ class GameApiTest extends TestCase
         ]);
         $entity = Game::create([
             'game_number' => 1,
+            'turns_played' => null,
+            'duration_seconds' => null,
             'match_id' => $this->depMatch->id,
         ]);
         $this->entityId = $entity->id;
@@ -85,6 +87,8 @@ class GameApiTest extends TestCase
     {
         $response = $this->postJson('/api/games', [
             'game_number' => 1,
+            'turns_played' => null,
+            'duration_seconds' => null,
             'match_id' => $this->depMatch->id,
         ]);
         $response->assertStatus(201);
@@ -108,5 +112,26 @@ class GameApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/games/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_game_number_range_violated(): void
+    {
+        // Game number must be between 1 and 3 (best-of-3)
+        $response = $this->postJson('/api/games', ['match_id' => 1, 'turns_played' => 1, 'turns_played' => 1, 'duration_seconds' => 1, 'duration_seconds' => 1, 'game_number' => 4]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_turns_played_positive_violated(): void
+    {
+        // Turns played must be greater than zero
+        $response = $this->postJson('/api/games', ['game_number' => 1, 'match_id' => 1, 'turns_played' => 1, 'turns_played' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_duration_positive_violated(): void
+    {
+        // Game duration must be greater than zero
+        $response = $this->postJson('/api/games', ['game_number' => 1, 'match_id' => 1, 'duration_seconds' => 1, 'duration_seconds' => 0]);
+        $response->assertStatus(422);
     }
 }

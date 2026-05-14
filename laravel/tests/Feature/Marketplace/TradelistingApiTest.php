@@ -52,6 +52,9 @@ class TradelistingApiTest extends TestCase
         ]);
         $entity = Tradelisting::create([
             'listing_type' => 'FixedPrice',
+            'asking_price' => '0.00',
+            'auction_start_price' => '0.00',
+            'auction_end_time' => '2024-01-01 00:00:00',
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
@@ -73,6 +76,9 @@ class TradelistingApiTest extends TestCase
     {
         $response = $this->postJson('/api/tradelistings', [
             'listing_type' => 'FixedPrice',
+            'asking_price' => '0.00',
+            'auction_start_price' => '0.00',
+            'auction_end_time' => '2024-01-01 00:00:00',
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
@@ -93,7 +99,7 @@ class TradelistingApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/tradelistings/{$this->entityId}", [
-            'listing_type' => 'test',
+            'asking_price' => '0.00',
         ]);
         $response->assertStatus(200);
     }
@@ -102,5 +108,26 @@ class TradelistingApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/tradelistings/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_fixed_price_requires_asking_price_violated(): void
+    {
+        // Fixed price listing must have an asking price
+        $response = $this->postJson('/api/tradelistings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => null]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_auction_requires_start_price_and_end_time_violated(): void
+    {
+        // Auction listing must have a start price and end time
+        $response = $this->postJson('/api/tradelistings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'Auction', 'auction_start_price' => null]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_quantity_positive_violated(): void
+    {
+        // Listing quantity must be between 1 and 9999
+        $response = $this->postJson('/api/tradelistings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => '0.00', 'listing_type' => 'Auction', 'auction_start_price' => '0.00', 'auction_end_time' => '2024-01-01 00:00:00', 'quantity' => 10000]);
+        $response->assertStatus(422);
     }
 }

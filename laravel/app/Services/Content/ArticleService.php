@@ -15,4 +15,24 @@ class ArticleService
     {
         throw new \LogicException('Not implemented');
     }
+    public function publish(int $id): void
+    {
+        $article = Article::findOrFail($id);
+        $article->publish();
+        $article->save();
+    }
+
+    public function archive(int $id): void
+    {
+        $article = Article::findOrFail($id);
+        $article->archive();
+        $article->save();
+    }
+
+    public function incrementView(int $id): void
+    {
+        $article = Article::findOrFail($id);
+        $article->incrementView();
+        $article->save();
+    }
 }

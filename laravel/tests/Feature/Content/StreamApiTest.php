@@ -30,9 +30,10 @@ class StreamApiTest extends TestCase
             'title' => 'test',
             'stream_url' => 'https://example.com',
             'platform' => 'Twitch',
-            'status' => 'Scheduled',
+            'status' => 'Live',
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
+            'actual_start' => null,
             'streamer_id' => $this->depStreamer->id,
         ]);
         $this->entityId = $entity->id;
@@ -50,9 +51,10 @@ class StreamApiTest extends TestCase
             'title' => 'test',
             'stream_url' => 'https://example.com',
             'platform' => 'Twitch',
-            'status' => 'Scheduled',
+            'status' => 'Live',
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
+            'actual_start' => null,
             'streamer_id' => $this->depStreamer->id,
         ]);
         $response->assertStatus(201);
@@ -76,5 +78,12 @@ class StreamApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/streams/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_actual_start_requires_live_or_ended_violated(): void
+    {
+        // actual_start_requires_live_or_ended
+        $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'actual_start' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
     }
 }

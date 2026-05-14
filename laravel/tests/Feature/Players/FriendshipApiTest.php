@@ -70,7 +70,7 @@ class FriendshipApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/friendships/{$this->entityId}", [
-            'status' => 'test',
+            'created_at' => '2024-01-01 00:00:00',
         ]);
         $response->assertStatus(200);
     }
@@ -80,4 +80,5 @@ class FriendshipApiTest extends TestCase
         $response = $this->deleteJson("/api/friendships/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

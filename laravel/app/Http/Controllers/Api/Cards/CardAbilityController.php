@@ -25,6 +25,12 @@ class CardAbilityController extends Controller
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = CardAbility::create($validated);
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -43,6 +49,12 @@ class CardAbilityController extends Controller
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $cardAbility->update($validated);
+        try {
+            $cardAbility->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($cardAbility);
     }
 

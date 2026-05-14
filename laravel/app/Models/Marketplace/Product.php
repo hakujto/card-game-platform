@@ -33,4 +33,36 @@ class Product extends Model
         return $this->belongsTo(CardSet::class, 'card_set_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function activate(): void
+    {
+        throw new \RuntimeException('activate not implemented');
+    }
+
+    public function deactivate(): void
+    {
+        throw new \RuntimeException('deactivate not implemented');
+    }
+
+    public function applyDiscount($percent): string
+    {
+        throw new \RuntimeException('apply_discount not implemented');
+    }
+
+    public function restock($quantity): void
+    {
+        throw new \RuntimeException('restock not implemented');
+    }
+
+    public function effectivePrice(): string
+    {
+        throw new \RuntimeException('effective_price not implemented');
+    }
+
+    public function isInStock(): bool
+    {
+        throw new \RuntimeException('is_in_stock not implemented');
+    }
+
 }

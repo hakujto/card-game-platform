@@ -62,4 +62,5 @@ class AchievementApiTest extends TestCase
         $response = $this->deleteJson("/api/achievements/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

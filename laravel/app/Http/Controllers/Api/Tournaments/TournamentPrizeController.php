@@ -18,16 +18,18 @@ class TournamentPrizeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'placement_from' => 'required|integer|max:200',
-            'placement_to' => 'required|integer|max:200',
+            'placement_from' => 'required|integer',
+            'placement_to' => 'required|integer',
             'prize_type' => 'required|string|in:Currency,Cards,BoosterPacks,Trophy,SeasonPoints,Mixed|max:20',
-            'amount' => 'required|max:200',
+            'amount' => 'required',
             'description' => 'nullable|string|max:200',
-            'packs_count' => 'nullable|integer|max:200',
-            'season_points' => 'required|integer|max:200',
+            'packs_count' => 'nullable|integer',
+            'season_points' => 'required|integer',
             'tournament_id' => 'required|exists:tournaments,id',
         ]);
         $item = TournamentPrize::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -39,16 +41,18 @@ class TournamentPrizeController extends Controller
     public function update(Request $request, TournamentPrize $tournamentPrize): JsonResponse
     {
         $validated = $request->validate([
-            'placement_from' => 'sometimes|nullable|integer|max:200',
-            'placement_to' => 'sometimes|nullable|integer|max:200',
+            'placement_from' => 'sometimes|nullable|integer',
+            'placement_to' => 'sometimes|nullable|integer',
             'prize_type' => 'sometimes|nullable|string|max:20',
-            'amount' => 'sometimes|nullable|max:200',
+            'amount' => 'sometimes|nullable',
             'description' => 'sometimes|nullable|string|max:200',
-            'packs_count' => 'sometimes|nullable|integer|max:200',
-            'season_points' => 'sometimes|nullable|integer|max:200',
+            'packs_count' => 'sometimes|nullable|integer',
+            'season_points' => 'sometimes|nullable|integer',
             'tournament_id' => 'sometimes|nullable|exists:tournaments,id',
         ]);
         $tournamentPrize->update($validated);
+        $tournamentPrize->validateRules();
+
         return response()->json($tournamentPrize);
     }
 

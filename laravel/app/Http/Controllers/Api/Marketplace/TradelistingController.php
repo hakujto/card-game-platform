@@ -20,21 +20,28 @@ class TradelistingController extends Controller
     {
         $validated = $request->validate([
             'listing_type' => 'required|string|in:FixedPrice,Auction,TradeOffer|max:20',
-            'asking_price' => 'nullable|max:200',
-            'auction_start_price' => 'nullable|max:200',
-            'auction_current_bid' => 'nullable|max:200',
-            'auction_end_time' => 'nullable|date|max:200',
-            'foil' => 'required|boolean|max:200',
+            'asking_price' => 'nullable',
+            'auction_start_price' => 'nullable',
+            'auction_current_bid' => 'nullable',
+            'auction_end_time' => 'nullable|date',
+            'foil' => 'required|boolean',
             'condition' => 'required|string|in:Mint,NearMint,Excellent,Good,Played|max:20',
-            'quantity' => 'required|integer|max:200',
+            'quantity' => 'required|integer',
             'status' => 'required|string|in:Active,Sold,Expired,Cancelled,Pending|max:20',
             'description' => 'nullable|string|max:200',
-            'created_at' => 'required|date|max:200',
-            'expires_at' => 'nullable|date|max:200',
+            'created_at' => 'required|date',
+            'expires_at' => 'nullable|date',
             'seller_id' => 'required|exists:players,id',
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = Tradelisting::create($validated);
+        $item->validateRules();
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -47,27 +54,55 @@ class TradelistingController extends Controller
     {
         $validated = $request->validate([
             'listing_type' => 'sometimes|nullable|string|max:20',
-            'asking_price' => 'sometimes|nullable|max:200',
-            'auction_start_price' => 'sometimes|nullable|max:200',
-            'auction_current_bid' => 'sometimes|nullable|max:200',
-            'auction_end_time' => 'sometimes|nullable|date|max:200',
-            'foil' => 'sometimes|nullable|boolean|max:200',
+            'asking_price' => 'sometimes|nullable',
+            'auction_start_price' => 'sometimes|nullable',
+            'auction_current_bid' => 'sometimes|nullable',
+            'auction_end_time' => 'sometimes|nullable|date',
+            'foil' => 'sometimes|nullable|boolean',
             'condition' => 'sometimes|nullable|string|max:20',
-            'quantity' => 'sometimes|nullable|integer|max:200',
+            'quantity' => 'sometimes|nullable|integer',
             'status' => 'sometimes|nullable|string|max:20',
             'description' => 'sometimes|nullable|string|max:200',
-            'created_at' => 'sometimes|nullable|date|max:200',
-            'expires_at' => 'sometimes|nullable|date|max:200',
+            'created_at' => 'sometimes|nullable|date',
+            'expires_at' => 'sometimes|nullable|date',
             'seller_id' => 'sometimes|nullable|exists:players,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $tradelisting->update($validated);
+        $tradelisting->validateRules();
+        try {
+            $tradelisting->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($tradelisting);
     }
 
     public function destroy(Tradelisting $tradelisting): JsonResponse
     {
         $tradelisting->delete();
+        return response()->json(null, 204);
+    }
+    public function close(Request $request, Tradelisting $tradelisting): JsonResponse
+    {
+        $tradelisting->close();
+        $tradelisting->save();
+        return response()->json(null, 204);
+    }
+
+    public function extend(Request $request, Tradelisting $tradelisting): JsonResponse
+    {
+        $days = $request->input('days');
+        $tradelisting->extend($days);
+        $tradelisting->save();
+        return response()->json(null, 204);
+    }
+
+    public function cancel(Request $request, Tradelisting $tradelisting): JsonResponse
+    {
+        $tradelisting->cancel();
+        $tradelisting->save();
         return response()->json(null, 204);
     }
 }

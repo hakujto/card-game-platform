@@ -19,4 +19,11 @@ class CardSet extends Model
 
     const SET_TYPE_VALUES = ['Core', 'Expansion', 'Supplemental', 'Masters', 'Draft'];
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isLegalInStandard(): bool
+    {
+        throw new \RuntimeException('is_legal_in_standard not implemented');
+    }
+
 }

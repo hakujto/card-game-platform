@@ -19,9 +19,9 @@ class DraftParticipantController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'seat_number' => 'required|integer|max:200',
-            'joined_at' => 'required|date|max:200',
-            'session_id' => 'required|exists:draft_sessions,id',
+            'seat_number' => 'required|integer',
+            'joined_at' => 'required|date',
+            'session_id' => 'nullable|exists:draft_sessions,id',
             'player_id' => 'required|exists:players,id',
         ]);
         $item = DraftParticipant::create($validated);
@@ -36,8 +36,8 @@ class DraftParticipantController extends Controller
     public function update(Request $request, DraftParticipant $draftParticipant): JsonResponse
     {
         $validated = $request->validate([
-            'seat_number' => 'sometimes|nullable|integer|max:200',
-            'joined_at' => 'sometimes|nullable|date|max:200',
+            'seat_number' => 'sometimes|nullable|integer',
+            'joined_at' => 'sometimes|nullable|date',
             'session_id' => 'sometimes|nullable|exists:draft_sessions,id',
             'player_id' => 'sometimes|nullable|exists:players,id',
         ]);
@@ -48,6 +48,14 @@ class DraftParticipantController extends Controller
     public function destroy(DraftParticipant $draftParticipant): JsonResponse
     {
         $draftParticipant->delete();
+        return response()->json(null, 204);
+    }
+    public function pickCard(Request $request, DraftParticipant $draftParticipant): JsonResponse
+    {
+        $card_id = $request->input('card_id');
+        $pack_number = $request->input('pack_number');
+        $draftParticipant->pickCard($card_id, $pack_number);
+        $draftParticipant->save();
         return response()->json(null, 204);
     }
 }

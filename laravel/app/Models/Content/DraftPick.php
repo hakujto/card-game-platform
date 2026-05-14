@@ -28,4 +28,11 @@ class DraftPick extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isFirstPick(): bool
+    {
+        throw new \RuntimeException('is_first_pick not implemented');
+    }
+
 }

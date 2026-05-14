@@ -56,4 +56,5 @@ class ArticleTagApiTest extends TestCase
         $response = $this->deleteJson("/api/article_tags/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

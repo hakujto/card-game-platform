@@ -101,4 +101,5 @@ class PlayerCollectionApiTest extends TestCase
         $response = $this->deleteJson("/api/player_collections/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

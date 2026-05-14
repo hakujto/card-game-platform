@@ -13,4 +13,16 @@ class DeckTag extends Model
 
     protected $fillable = ['name', 'color'];
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function rename($new_name): void
+    {
+        throw new \RuntimeException('rename not implemented');
+    }
+
+    public function mergeInto($target_tag_id): void
+    {
+        throw new \RuntimeException('merge_into not implemented');
+    }
+
 }

@@ -66,4 +66,5 @@ class ProductApiTest extends TestCase
         $response = $this->deleteJson("/api/products/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

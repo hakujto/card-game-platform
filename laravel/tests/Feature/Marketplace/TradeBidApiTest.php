@@ -72,7 +72,7 @@ class TradeBidApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $entity = TradeBid::create([
-            'amount' => '0.00',
+            'amount' => '0.01',
             'placed_at' => '2024-01-01 00:00:00',
             'is_winning' => true,
             'listing_id' => $this->depListing->id,
@@ -90,7 +90,7 @@ class TradeBidApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/trade_bids', [
-            'amount' => '0.00',
+            'amount' => '0.01',
             'placed_at' => '2024-01-01 00:00:00',
             'is_winning' => true,
             'listing_id' => $this->depListing->id,
@@ -108,7 +108,7 @@ class TradeBidApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/trade_bids/{$this->entityId}", [
-            'amount' => '0.00',
+            'amount' => '0.01',
         ]);
         $response->assertStatus(200);
     }
@@ -117,5 +117,12 @@ class TradeBidApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/trade_bids/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_amount_positive_violated(): void
+    {
+        // Bid amount must be greater than zero
+        $response = $this->postJson('/api/trade_bids', ['placed_at' => '2024-01-01 00:00:00', 'listing_id' => 1, 'bidder_id' => 1, 'amount' => 0]);
+        $response->assertStatus(422);
     }
 }

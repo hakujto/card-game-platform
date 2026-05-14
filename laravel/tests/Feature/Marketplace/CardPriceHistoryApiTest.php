@@ -91,4 +91,5 @@ class CardPriceHistoryApiTest extends TestCase
         $response = $this->deleteJson("/api/card_price_histories/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

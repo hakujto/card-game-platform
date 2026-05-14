@@ -114,4 +114,5 @@ class DraftPickApiTest extends TestCase
         $response = $this->deleteJson("/api/draft_picks/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

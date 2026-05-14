@@ -19,9 +19,9 @@ class DraftPickController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'pick_number' => 'required|integer|max:200',
-            'pack_number' => 'required|integer|max:200',
-            'picked_at' => 'required|date|max:200',
+            'pick_number' => 'required|integer',
+            'pack_number' => 'required|integer',
+            'picked_at' => 'required|date',
             'participant_id' => 'required|exists:draft_participants,id',
             'card_id' => 'required|exists:cards,id',
         ]);
@@ -37,9 +37,9 @@ class DraftPickController extends Controller
     public function update(Request $request, DraftPick $draftPick): JsonResponse
     {
         $validated = $request->validate([
-            'pick_number' => 'sometimes|nullable|integer|max:200',
-            'pack_number' => 'sometimes|nullable|integer|max:200',
-            'picked_at' => 'sometimes|nullable|date|max:200',
+            'pick_number' => 'sometimes|nullable|integer',
+            'pack_number' => 'sometimes|nullable|integer',
+            'picked_at' => 'sometimes|nullable|date',
             'participant_id' => 'sometimes|nullable|exists:draft_participants,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);

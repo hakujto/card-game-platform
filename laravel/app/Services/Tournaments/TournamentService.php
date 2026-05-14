@@ -15,4 +15,39 @@ class TournamentService
     {
         throw new \LogicException('Not implemented');
     }
+    public function start(int $id): void
+    {
+        $tournament = Tournament::findOrFail($id);
+        $tournament->start();
+        $tournament->save();
+    }
+
+    public function cancel(int $id): void
+    {
+        $tournament = Tournament::findOrFail($id);
+        $tournament->cancel();
+        $tournament->save();
+    }
+
+    public function complete(int $id): void
+    {
+        $tournament = Tournament::findOrFail($id);
+        $tournament->complete();
+        $tournament->save();
+    }
+
+    public function generateRound(int $id): void
+    {
+        $tournament = Tournament::findOrFail($id);
+        $tournament->generateRound();
+        $tournament->save();
+    }
+
+    public function calculatePrizeDistribution(int $id): string
+    {
+        $tournament = Tournament::findOrFail($id);
+        $result = $tournament->calculatePrizeDistribution();
+        $tournament->save();
+        return $result;
+    }
 }

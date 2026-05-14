@@ -19,10 +19,10 @@ class PlayerCollectionController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|max:200',
-            'foil' => 'required|boolean|max:200',
+            'quantity' => 'required|integer',
+            'foil' => 'required|boolean',
             'condition' => 'required|string|in:Mint,NearMint,Excellent,Good,Played|max:20',
-            'acquired_at' => 'required|date|max:200',
+            'acquired_at' => 'required|date',
             'acquired_via' => 'required|string|in:Purchase,Trade,TournamentReward,Pack,Craft|max:20',
             'player_id' => 'required|exists:players,id',
             'card_id' => 'required|exists:cards,id',
@@ -39,10 +39,10 @@ class PlayerCollectionController extends Controller
     public function update(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer|max:200',
-            'foil' => 'sometimes|nullable|boolean|max:200',
+            'quantity' => 'sometimes|nullable|integer',
+            'foil' => 'sometimes|nullable|boolean',
             'condition' => 'sometimes|nullable|string|max:20',
-            'acquired_at' => 'sometimes|nullable|date|max:200',
+            'acquired_at' => 'sometimes|nullable|date',
             'acquired_via' => 'sometimes|nullable|string|max:20',
             'player_id' => 'sometimes|nullable|exists:players,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
@@ -55,5 +55,11 @@ class PlayerCollectionController extends Controller
     {
         $playerCollection->delete();
         return response()->json(null, 204);
+    }
+    public function estimatedValue(Request $request, PlayerCollection $playerCollection): JsonResponse
+    {
+        $result = $playerCollection->estimatedValue();
+        $playerCollection->save();
+        return response()->json(['result' => $result]);
     }
 }

@@ -26,4 +26,26 @@ class DraftSession extends Model
         return $this->belongsTo(CardSet::class, 'card_set_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function start(): void
+    {
+        throw new \RuntimeException('start not implemented');
+    }
+
+    public function abandon(): void
+    {
+        throw new \RuntimeException('abandon not implemented');
+    }
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
+    }
+
+    public function isFull(): bool
+    {
+        throw new \RuntimeException('is_full not implemented');
+    }
+
 }

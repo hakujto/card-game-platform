@@ -108,4 +108,11 @@ class DeckCardApiTest extends TestCase
         $response = $this->deleteJson("/api/deck_cards/{$this->entityId}");
         $response->assertStatus(204);
     }
+
+    public function test_create_fails_when_quantity_range_violated(): void
+    {
+        // A deck can contain between 1 and 4 copies of a card
+        $response = $this->postJson('/api/deck_cards', ['deck_id' => 1, 'card_id' => 1, 'quantity' => 5]);
+        $response->assertStatus(422);
+    }
 }

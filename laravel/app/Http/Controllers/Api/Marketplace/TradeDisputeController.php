@@ -23,13 +23,19 @@ class TradeDisputeController extends Controller
             'description' => 'required|string|max:200',
             'status' => 'required|string|in:Open,UnderReview,Resolved,Escalated|max:20',
             'resolution' => 'nullable|string|max:200',
-            'opened_at' => 'required|date|max:200',
-            'resolved_at' => 'nullable|date|max:200',
+            'opened_at' => 'required|date',
+            'resolved_at' => 'nullable|date',
             'transaction_id' => 'required|exists:trade_transactions,id',
             'opened_by_id' => 'required|exists:players,id',
             'resolved_by_id' => 'nullable|exists:players,id',
         ]);
         $item = TradeDispute::create($validated);
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -45,19 +51,46 @@ class TradeDisputeController extends Controller
             'description' => 'sometimes|nullable|string|max:200',
             'status' => 'sometimes|nullable|string|max:20',
             'resolution' => 'sometimes|nullable|string|max:200',
-            'opened_at' => 'sometimes|nullable|date|max:200',
-            'resolved_at' => 'sometimes|nullable|date|max:200',
+            'opened_at' => 'sometimes|nullable|date',
+            'resolved_at' => 'sometimes|nullable|date',
             'transaction_id' => 'sometimes|nullable|exists:trade_transactions,id',
             'opened_by_id' => 'sometimes|nullable|exists:players,id',
             'resolved_by_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $tradeDispute->update($validated);
+        try {
+            $tradeDispute->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($tradeDispute);
     }
 
     public function destroy(TradeDispute $tradeDispute): JsonResponse
     {
         $tradeDispute->delete();
+        return response()->json(null, 204);
+    }
+    public function escalate(Request $request, TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->escalate();
+        $tradeDispute->save();
+        return response()->json(null, 204);
+    }
+
+    public function resolve(Request $request, TradeDispute $tradeDispute): JsonResponse
+    {
+        $resolution_text = $request->input('resolution_text');
+        $tradeDispute->resolve($resolution_text);
+        $tradeDispute->save();
+        return response()->json(null, 204);
+    }
+
+    public function review(Request $request, TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->review();
+        $tradeDispute->save();
         return response()->json(null, 204);
     }
 }

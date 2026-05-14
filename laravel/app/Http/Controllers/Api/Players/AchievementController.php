@@ -20,9 +20,9 @@ class AchievementController extends Controller
             'name' => 'required|string|max:200',
             'description' => 'required|string|max:200',
             'icon_url' => 'nullable|string|url|max:200',
-            'points' => 'required|integer|max:200',
+            'points' => 'required|integer',
             'rarity' => 'required|string|in:Common,Uncommon,Rare,Epic,Legendary|max:20',
-            'is_hidden' => 'required|boolean|max:200',
+            'is_hidden' => 'required|boolean',
         ]);
         $item = Achievement::create($validated);
         return response()->json($item, 201);
@@ -39,9 +39,9 @@ class AchievementController extends Controller
             'name' => 'sometimes|nullable|string|max:200',
             'description' => 'sometimes|nullable|string|max:200',
             'icon_url' => 'sometimes|nullable|string|url|max:200',
-            'points' => 'sometimes|nullable|integer|max:200',
+            'points' => 'sometimes|nullable|integer',
             'rarity' => 'sometimes|nullable|string|max:20',
-            'is_hidden' => 'sometimes|nullable|boolean|max:200',
+            'is_hidden' => 'sometimes|nullable|boolean',
         ]);
         $achievement->update($validated);
         return response()->json($achievement);

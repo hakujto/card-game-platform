@@ -19,13 +19,15 @@ class TradeBidController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount' => 'required|max:200',
-            'placed_at' => 'required|date|max:200',
-            'is_winning' => 'required|boolean|max:200',
+            'amount' => 'required',
+            'placed_at' => 'required|date',
+            'is_winning' => 'required|boolean',
             'listing_id' => 'required|exists:tradelistings,id',
             'bidder_id' => 'required|exists:players,id',
         ]);
         $item = TradeBid::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -37,13 +39,15 @@ class TradeBidController extends Controller
     public function update(Request $request, TradeBid $tradeBid): JsonResponse
     {
         $validated = $request->validate([
-            'amount' => 'sometimes|nullable|max:200',
-            'placed_at' => 'sometimes|nullable|date|max:200',
-            'is_winning' => 'sometimes|nullable|boolean|max:200',
+            'amount' => 'sometimes|nullable',
+            'placed_at' => 'sometimes|nullable|date',
+            'is_winning' => 'sometimes|nullable|boolean',
             'listing_id' => 'sometimes|nullable|exists:tradelistings,id',
             'bidder_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $tradeBid->update($validated);
+        $tradeBid->validateRules();
+
         return response()->json($tradeBid);
     }
 

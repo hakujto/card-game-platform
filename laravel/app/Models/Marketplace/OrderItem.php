@@ -28,4 +28,29 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->quantity === null || $this->quantity > 0))) {
+            $errors['quantity_positive'] = 'Order item quantity must be greater than zero';
+        }
+        if (!(($this->price_at_purchase === null || (float)$this->price_at_purchase >= (float)0))) {
+            $errors['price_not_negative'] = 'Price at purchase must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function lineTotal(): string
+    {
+        throw new \RuntimeException('line_total not implemented');
+    }
+
 }

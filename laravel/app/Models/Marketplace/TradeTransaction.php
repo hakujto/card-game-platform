@@ -37,4 +37,52 @@ class TradeTransaction extends Model
         return $this->belongsTo(Player::class, 'seller_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->platform_fee === null || ($this->final_price !== null && (float)$this->platform_fee <= (float)$this->final_price)))) {
+            $errors['fee_not_exceed_price'] = 'Platform fee cannot exceed the final price';
+        }
+        if (!(($this->platform_fee === null || (float)$this->platform_fee >= (float)0))) {
+            $errors['fee_not_negative'] = 'Platform fee must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->status === 'Completed' && $this->completed_at === null) {
+            throw new \RuntimeException('Completed transaction must have a completed_at timestamp');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
+    }
+
+    public function refund(): void
+    {
+        throw new \RuntimeException('refund not implemented');
+    }
+
+    public function openDispute($reason): void
+    {
+        throw new \RuntimeException('open_dispute not implemented');
+    }
+
+    public function sellerNet(): string
+    {
+        throw new \RuntimeException('seller_net not implemented');
+    }
+
 }

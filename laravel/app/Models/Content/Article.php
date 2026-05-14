@@ -37,4 +37,34 @@ class Article extends Model
         return $this->belongsToMany(ArticleTag::class, 'article_tags_pivot', 'article_id', 'article_tag_id');
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->status === 'Published' && $this->published_at === null) {
+            throw new \RuntimeException('Published article must have a published_at timestamp');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function publish(): void
+    {
+        throw new \RuntimeException('publish not implemented');
+    }
+
+    public function archive(): void
+    {
+        throw new \RuntimeException('archive not implemented');
+    }
+
+    public function incrementView(): void
+    {
+        throw new \RuntimeException('increment_view not implemented');
+    }
+
+    public function readingTimeMinutes(): int
+    {
+        throw new \RuntimeException('reading_time_minutes not implemented');
+    }
+
 }

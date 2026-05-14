@@ -15,4 +15,24 @@ class SeasonService
     {
         throw new \LogicException('Not implemented');
     }
+    public function activate(int $id): void
+    {
+        $season = Season::findOrFail($id);
+        $season->activate();
+        $season->save();
+    }
+
+    public function deactivate(int $id): void
+    {
+        $season = Season::findOrFail($id);
+        $season->deactivate();
+        $season->save();
+    }
+
+    public function finalizeRewards(int $id): void
+    {
+        $season = Season::findOrFail($id);
+        $season->finalizeRewards();
+        $season->save();
+    }
 }

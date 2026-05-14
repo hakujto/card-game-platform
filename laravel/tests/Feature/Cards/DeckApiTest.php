@@ -81,4 +81,5 @@ class DeckApiTest extends TestCase
         $response = $this->deleteJson("/api/decks/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

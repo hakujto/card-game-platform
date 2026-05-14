@@ -19,12 +19,14 @@ class DeckCardController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|max:200',
-            'is_commander' => 'required|boolean|max:200',
+            'quantity' => 'required|integer',
+            'is_commander' => 'required|boolean',
             'deck_id' => 'required|exists:decks,id',
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = DeckCard::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -36,12 +38,14 @@ class DeckCardController extends Controller
     public function update(Request $request, DeckCard $deckCard): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer|max:200',
-            'is_commander' => 'sometimes|nullable|boolean|max:200',
+            'quantity' => 'sometimes|nullable|integer',
+            'is_commander' => 'sometimes|nullable|boolean',
             'deck_id' => 'sometimes|nullable|exists:decks,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $deckCard->update($validated);
+        $deckCard->validateRules();
+
         return response()->json($deckCard);
     }
 

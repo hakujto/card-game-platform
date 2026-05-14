@@ -15,4 +15,17 @@ class ArticleCommentService
     {
         throw new \LogicException('Not implemented');
     }
+    public function hide(int $id): void
+    {
+        $articleComment = ArticleComment::findOrFail($id);
+        $articleComment->hide();
+        $articleComment->save();
+    }
+
+    public function unhide(int $id): void
+    {
+        $articleComment = ArticleComment::findOrFail($id);
+        $articleComment->unhide();
+        $articleComment->save();
+    }
 }

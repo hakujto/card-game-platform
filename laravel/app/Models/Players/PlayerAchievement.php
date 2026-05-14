@@ -28,4 +28,12 @@ class PlayerAchievement extends Model
         return $this->belongsTo(Achievement::class, 'achievement_id');
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->is_completed === true && !(($this->progress === null || $this->progress > 0))) {
+            throw new \RuntimeException('Completed achievement must have progress greater than zero');
+        }
+    }
+
 }

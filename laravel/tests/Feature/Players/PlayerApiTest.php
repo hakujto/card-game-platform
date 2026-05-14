@@ -19,7 +19,7 @@ class PlayerApiTest extends TestCase
             'display_name' => 'test',
             'rank' => 'Bronze',
             'rating' => 1,
-            'peak_rating' => 1,
+            'peak_rating' => 1000,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
         ]);
@@ -38,7 +38,7 @@ class PlayerApiTest extends TestCase
             'display_name' => 'test',
             'rank' => 'Bronze',
             'rating' => 1,
-            'peak_rating' => 1,
+            'peak_rating' => 1000,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
         ]);
@@ -63,5 +63,12 @@ class PlayerApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/players/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_rating_range_violated(): void
+    {
+        // Rating must be between 0 and 9999
+        $response = $this->postJson('/api/players', ['display_name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'rating' => 10000]);
+        $response->assertStatus(422);
     }
 }

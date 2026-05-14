@@ -18,11 +18,13 @@ class CraftingRecipeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'dust_cost' => 'required|integer|max:200',
-            'is_available' => 'required|boolean|max:200',
+            'dust_cost' => 'required|integer',
+            'is_available' => 'required|boolean',
             'result_card_id' => 'required|exists:cards,id',
         ]);
         $item = CraftingRecipe::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -34,11 +36,13 @@ class CraftingRecipeController extends Controller
     public function update(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
     {
         $validated = $request->validate([
-            'dust_cost' => 'sometimes|nullable|integer|max:200',
-            'is_available' => 'sometimes|nullable|boolean|max:200',
+            'dust_cost' => 'sometimes|nullable|integer',
+            'is_available' => 'sometimes|nullable|boolean',
             'result_card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $craftingRecipe->update($validated);
+        $craftingRecipe->validateRules();
+
         return response()->json($craftingRecipe);
     }
 

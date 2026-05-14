@@ -85,4 +85,5 @@ class CardRulingApiTest extends TestCase
         $response = $this->deleteJson("/api/card_rulings/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

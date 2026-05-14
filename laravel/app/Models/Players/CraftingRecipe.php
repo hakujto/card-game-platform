@@ -28,4 +28,31 @@ class CraftingRecipe extends Model
         return $this->belongsToMany(Card::class, 'crafting_recipe_required_cards_pivot', 'crafting_recipe_id', 'card_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->dust_cost === null || $this->dust_cost > 0))) {
+            $errors['dust_cost_positive'] = 'Crafting recipe must have a dust cost greater than zero';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function disable(): void
+    {
+        throw new \RuntimeException('disable not implemented');
+    }
+
+    public function enable(): void
+    {
+        throw new \RuntimeException('enable not implemented');
+    }
+
 }

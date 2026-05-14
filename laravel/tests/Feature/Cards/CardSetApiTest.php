@@ -62,4 +62,5 @@ class CardSetApiTest extends TestCase
         $response = $this->deleteJson("/api/card_sets/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

@@ -15,4 +15,10 @@ class DraftParticipantService
     {
         throw new \LogicException('Not implemented');
     }
+    public function pickCard(int $id, $card_id, $pack_number): void
+    {
+        $draftParticipant = DraftParticipant::findOrFail($id);
+        $draftParticipant->pickCard($card_id, $pack_number);
+        $draftParticipant->save();
+    }
 }

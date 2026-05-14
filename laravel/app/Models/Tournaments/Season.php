@@ -21,4 +21,41 @@ class Season extends Model
 
     const FORMAT_VALUES = ['Standard', 'Extended', 'Legacy', 'Vintage', 'Commander', 'Draft'];
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->end_date === null || ($this->start_date !== null && $this->end_date > $this->start_date)))) {
+            $errors['end_date_after_start_date'] = 'Season end date must be after start date';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function activate(): void
+    {
+        throw new \RuntimeException('activate not implemented');
+    }
+
+    public function deactivate(): void
+    {
+        throw new \RuntimeException('deactivate not implemented');
+    }
+
+    public function finalizeRewards(): void
+    {
+        throw new \RuntimeException('finalize_rewards not implemented');
+    }
+
+    public function isOngoing(): bool
+    {
+        throw new \RuntimeException('is_ongoing not implemented');
+    }
+
 }

@@ -15,4 +15,24 @@ class DraftSessionService
     {
         throw new \LogicException('Not implemented');
     }
+    public function start(int $id): void
+    {
+        $draftSession = DraftSession::findOrFail($id);
+        $draftSession->start();
+        $draftSession->save();
+    }
+
+    public function abandon(int $id): void
+    {
+        $draftSession = DraftSession::findOrFail($id);
+        $draftSession->abandon();
+        $draftSession->save();
+    }
+
+    public function complete(int $id): void
+    {
+        $draftSession = DraftSession::findOrFail($id);
+        $draftSession->complete();
+        $draftSession->save();
+    }
 }

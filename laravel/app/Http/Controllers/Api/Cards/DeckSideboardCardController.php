@@ -19,7 +19,7 @@ class DeckSideboardCardController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|max:200',
+            'quantity' => 'required|integer',
             'deck_id' => 'required|exists:decks,id',
             'card_id' => 'required|exists:cards,id',
         ]);
@@ -35,7 +35,7 @@ class DeckSideboardCardController extends Controller
     public function update(Request $request, DeckSideboardCard $deckSideboardCard): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer|max:200',
+            'quantity' => 'sometimes|nullable|integer',
             'deck_id' => 'sometimes|nullable|exists:decks,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);

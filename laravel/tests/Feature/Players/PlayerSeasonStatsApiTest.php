@@ -5,7 +5,6 @@ namespace Tests\Feature\Players;
 use App\Models\Players\PlayerSeasonStats;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Players\Player;
 use App\Models\Tournaments\Season;
 
 class PlayerSeasonStatsApiTest extends TestCase
@@ -14,20 +13,11 @@ class PlayerSeasonStatsApiTest extends TestCase
 
     private int $entityId;
 
-    private Player $depPlayer;
     private Season $depSeason;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->depPlayer = Player::create([
-            'display_name' => 'test',
-            'rank' => 'Bronze',
-            'rating' => 1,
-            'peak_rating' => 1,
-            'is_verified' => true,
-            'created_at' => '2024-01-01 00:00:00',
-        ]);
         $this->depSeason = Season::create([
             'name' => 'test',
             'start_date' => '2024-01-01',
@@ -41,7 +31,6 @@ class PlayerSeasonStatsApiTest extends TestCase
             'draws' => 1,
             'tournament_wins' => 1,
             'season_points' => 1,
-            'player_id' => $this->depPlayer->id,
             'season_id' => $this->depSeason->id,
         ]);
         $this->entityId = $entity->id;
@@ -61,7 +50,6 @@ class PlayerSeasonStatsApiTest extends TestCase
             'draws' => 1,
             'tournament_wins' => 1,
             'season_points' => 1,
-            'player_id' => $this->depPlayer->id,
             'season_id' => $this->depSeason->id,
         ]);
         $response->assertStatus(201);
@@ -86,4 +74,5 @@ class PlayerSeasonStatsApiTest extends TestCase
         $response = $this->deleteJson("/api/player_season_statses/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

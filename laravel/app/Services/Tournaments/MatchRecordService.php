@@ -15,4 +15,26 @@ class MatchRecordService
     {
         throw new \LogicException('Not implemented');
     }
+    public function recordResult(int $id, $p1_wins, $p2_wins): void
+    {
+        $matchRecord = MatchRecord::findOrFail($id);
+        $matchRecord->recordResult($p1_wins, $p2_wins);
+        $matchRecord->determineWinner(); // @after
+        $matchRecord->save();
+    }
+
+    public function determineWinner(int $id): bool
+    {
+        $matchRecord = MatchRecord::findOrFail($id);
+        $result = $matchRecord->determineWinner();
+        $matchRecord->save();
+        return $result;
+    }
+
+    public function draw(int $id): void
+    {
+        $matchRecord = MatchRecord::findOrFail($id);
+        $matchRecord->draw();
+        $matchRecord->save();
+    }
 }

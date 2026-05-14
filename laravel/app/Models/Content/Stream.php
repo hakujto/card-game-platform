@@ -34,4 +34,34 @@ class Stream extends Model
         return $this->belongsTo(Player::class, 'streamer_id');
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->actual_start !== null && !($this->status === 'Live')) {
+            throw new \RuntimeException('actual_start_requires_live_or_ended');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function goLive(): void
+    {
+        throw new \RuntimeException('go_live not implemented');
+    }
+
+    public function end(): void
+    {
+        throw new \RuntimeException('end not implemented');
+    }
+
+    public function updateViewerPeak($count): void
+    {
+        throw new \RuntimeException('update_viewer_peak not implemented');
+    }
+
+    public function durationMinutes(): int
+    {
+        throw new \RuntimeException('duration_minutes not implemented');
+    }
+
 }

@@ -100,4 +100,18 @@ class TournamentPrizeApiTest extends TestCase
         $response = $this->deleteJson("/api/tournament_prizes/{$this->entityId}");
         $response->assertStatus(204);
     }
+
+    public function test_create_fails_when_placement_from_positive_violated(): void
+    {
+        // placement_from must be greater than zero
+        $response = $this->postJson('/api/tournament_prizes', ['placement_to' => 1, 'prize_type' => 'Currency', 'tournament_id' => 1, 'placement_from' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_amount_not_negative_violated(): void
+    {
+        // Prize amount must not be negative
+        $response = $this->postJson('/api/tournament_prizes', ['placement_from' => 1, 'placement_to' => 1, 'prize_type' => 'Currency', 'tournament_id' => 1, 'amount' => -1]);
+        $response->assertStatus(422);
+    }
 }

@@ -31,10 +31,13 @@ class CardApiTest extends TestCase
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
+            'attack' => 1,
+            'defense' => 1,
+            'loyalty' => 1,
             'description' => 'test',
             'legal_formats' => 'Standard',
-            'is_banned' => true,
-            'is_restricted' => true,
+            'is_banned' => false,
+            'is_restricted' => false,
             'power_level' => 1,
             'set_id' => $this->depSet->id,
         ]);
@@ -55,10 +58,13 @@ class CardApiTest extends TestCase
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
+            'attack' => 1,
+            'defense' => 1,
+            'loyalty' => 1,
             'description' => 'test',
             'legal_formats' => 'Standard',
-            'is_banned' => true,
-            'is_restricted' => true,
+            'is_banned' => false,
+            'is_restricted' => false,
             'power_level' => 1,
             'set_id' => $this->depSet->id,
         ]);
@@ -83,5 +89,40 @@ class CardApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/cards/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_creature_requires_stats_violated(): void
+    {
+        // Creature card must have attack and defense
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => null]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_planeswalker_requires_loyalty_violated(): void
+    {
+        // Planeswalker card must have loyalty
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Planeswalker', 'loyalty' => null]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_mana_cost_range_violated(): void
+    {
+        // mana_cost must be between 0 and 20
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'mana_cost' => 21]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_power_level_range_violated(): void
+    {
+        // power_level must be between 1 and 10
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'power_level' => 11]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_not_banned_and_restricted_violated(): void
+    {
+        // Card cannot be both banned and restricted at the same time
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'is_banned' => true, 'is_restricted' => true]);
+        $response->assertStatus(422);
     }
 }

@@ -82,4 +82,11 @@ class PlayerAchievementApiTest extends TestCase
         $response = $this->deleteJson("/api/player_achievements/{$this->entityId}");
         $response->assertStatus(204);
     }
+
+    public function test_create_fails_when_completed_requires_progress_violated(): void
+    {
+        // Completed achievement must have progress greater than zero
+        $response = $this->postJson('/api/player_achievements', ['earned_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'achievement_id' => 1, 'is_completed' => true, 'progress' => 0]);
+        $response->assertStatus(422);
+    }
 }

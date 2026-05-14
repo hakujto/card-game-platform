@@ -44,4 +44,11 @@ class DeckTagController extends Controller
         $deckTag->delete();
         return response()->json(null, 204);
     }
+    public function mergeInto(Request $request, DeckTag $deckTag): JsonResponse
+    {
+        $target_tag_id = $request->input('target_tag_id');
+        $deckTag->mergeInto($target_tag_id);
+        $deckTag->save();
+        return response()->json(null, 204);
+    }
 }

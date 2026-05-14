@@ -32,4 +32,21 @@ class PlayerCollection extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function add($quantity): void
+    {
+        throw new \RuntimeException('add not implemented');
+    }
+
+    public function remove($quantity): void
+    {
+        throw new \RuntimeException('remove not implemented');
+    }
+
+    public function estimatedValue(): string
+    {
+        throw new \RuntimeException('estimated_value not implemented');
+    }
+
 }

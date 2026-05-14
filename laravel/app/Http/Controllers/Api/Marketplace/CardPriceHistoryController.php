@@ -18,15 +18,17 @@ class CardPriceHistoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'price_date' => 'required|date|max:200',
-            'avg_price' => 'required|max:200',
-            'min_price' => 'required|max:200',
-            'max_price' => 'required|max:200',
-            'volume' => 'required|integer|max:200',
-            'foil' => 'required|boolean|max:200',
+            'price_date' => 'required|date',
+            'avg_price' => 'required',
+            'min_price' => 'required',
+            'max_price' => 'required',
+            'volume' => 'required|integer',
+            'foil' => 'required|boolean',
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = CardPriceHistory::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -38,15 +40,17 @@ class CardPriceHistoryController extends Controller
     public function update(Request $request, CardPriceHistory $cardPriceHistory): JsonResponse
     {
         $validated = $request->validate([
-            'price_date' => 'sometimes|nullable|date|max:200',
-            'avg_price' => 'sometimes|nullable|max:200',
-            'min_price' => 'sometimes|nullable|max:200',
-            'max_price' => 'sometimes|nullable|max:200',
-            'volume' => 'sometimes|nullable|integer|max:200',
-            'foil' => 'sometimes|nullable|boolean|max:200',
+            'price_date' => 'sometimes|nullable|date',
+            'avg_price' => 'sometimes|nullable',
+            'min_price' => 'sometimes|nullable',
+            'max_price' => 'sometimes|nullable',
+            'volume' => 'sometimes|nullable|integer',
+            'foil' => 'sometimes|nullable|boolean',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $cardPriceHistory->update($validated);
+        $cardPriceHistory->validateRules();
+
         return response()->json($cardPriceHistory);
     }
 

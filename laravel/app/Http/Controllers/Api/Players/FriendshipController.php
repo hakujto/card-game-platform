@@ -19,7 +19,7 @@ class FriendshipController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|string|in:Pending,Accepted,Blocked|max:20',
-            'created_at' => 'required|date|max:200',
+            'created_at' => 'required|date',
             'requester_id' => 'required|exists:players,id',
             'receiver_id' => 'required|exists:players,id',
         ]);
@@ -36,7 +36,7 @@ class FriendshipController extends Controller
     {
         $validated = $request->validate([
             'status' => 'sometimes|nullable|string|max:20',
-            'created_at' => 'sometimes|nullable|date|max:200',
+            'created_at' => 'sometimes|nullable|date',
             'requester_id' => 'sometimes|nullable|exists:players,id',
             'receiver_id' => 'sometimes|nullable|exists:players,id',
         ]);
@@ -47,6 +47,26 @@ class FriendshipController extends Controller
     public function destroy(Friendship $friendship): JsonResponse
     {
         $friendship->delete();
+        return response()->json(null, 204);
+    }
+    public function accept(Request $request, Friendship $friendship): JsonResponse
+    {
+        $friendship->accept();
+        $friendship->save();
+        return response()->json(null, 204);
+    }
+
+    public function decline(Request $request, Friendship $friendship): JsonResponse
+    {
+        $friendship->decline();
+        $friendship->save();
+        return response()->json(null, 204);
+    }
+
+    public function block(Request $request, Friendship $friendship): JsonResponse
+    {
+        $friendship->block();
+        $friendship->save();
         return response()->json(null, 204);
     }
 }

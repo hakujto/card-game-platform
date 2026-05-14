@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->integer('seat_number');
             $table->dateTime('joined_at');
-            $table->unsignedBigInteger('session_id');
-            $table->foreign('session_id')->references('id')->on('draft_sessions')->cascadeOnDelete();
+            $table->unsignedBigInteger('session_id')->nullable();
+            $table->foreign('session_id')->references('id')->on('draft_sessions')->nullOnDelete();
             $table->unsignedBigInteger('player_id');
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->timestamps();

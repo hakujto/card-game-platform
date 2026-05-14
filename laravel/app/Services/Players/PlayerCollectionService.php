@@ -15,4 +15,11 @@ class PlayerCollectionService
     {
         throw new \LogicException('Not implemented');
     }
+    public function estimatedValue(int $id): string
+    {
+        $playerCollection = PlayerCollection::findOrFail($id);
+        $result = $playerCollection->estimatedValue();
+        $playerCollection->save();
+        return $result;
+    }
 }

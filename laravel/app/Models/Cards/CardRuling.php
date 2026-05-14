@@ -22,4 +22,16 @@ class CardRuling extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isCurrent(): bool
+    {
+        throw new \RuntimeException('is_current not implemented');
+    }
+
+    public function supersedesPrevious(): bool
+    {
+        throw new \RuntimeException('supersedes_previous not implemented');
+    }
+
 }

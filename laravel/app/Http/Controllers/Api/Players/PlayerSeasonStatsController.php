@@ -19,13 +19,13 @@ class PlayerSeasonStatsController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'wins' => 'required|integer|max:200',
-            'losses' => 'required|integer|max:200',
-            'draws' => 'required|integer|max:200',
-            'tournament_wins' => 'required|integer|max:200',
+            'wins' => 'required|integer',
+            'losses' => 'required|integer',
+            'draws' => 'required|integer',
+            'tournament_wins' => 'required|integer',
             'highest_rank' => 'nullable|string|in:Bronze,Silver,Gold,Platinum,Diamond,Master,Grandmaster|max:20',
-            'season_points' => 'required|integer|max:200',
-            'player_id' => 'required|exists:players,id',
+            'season_points' => 'required|integer',
+            'player_id' => 'nullable|exists:players,id',
             'season_id' => 'required|exists:seasons,id',
         ]);
         $item = PlayerSeasonStats::create($validated);
@@ -40,12 +40,12 @@ class PlayerSeasonStatsController extends Controller
     public function update(Request $request, PlayerSeasonStats $playerSeasonStats): JsonResponse
     {
         $validated = $request->validate([
-            'wins' => 'sometimes|nullable|integer|max:200',
-            'losses' => 'sometimes|nullable|integer|max:200',
-            'draws' => 'sometimes|nullable|integer|max:200',
-            'tournament_wins' => 'sometimes|nullable|integer|max:200',
+            'wins' => 'sometimes|nullable|integer',
+            'losses' => 'sometimes|nullable|integer',
+            'draws' => 'sometimes|nullable|integer',
+            'tournament_wins' => 'sometimes|nullable|integer',
             'highest_rank' => 'sometimes|nullable|string|max:20',
-            'season_points' => 'sometimes|nullable|integer|max:200',
+            'season_points' => 'sometimes|nullable|integer',
             'player_id' => 'sometimes|nullable|exists:players,id',
             'season_id' => 'sometimes|nullable|exists:seasons,id',
         ]);

@@ -37,4 +37,29 @@ class TradeDispute extends Model
         return $this->belongsTo(Player::class, 'resolved_by_id');
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->resolved_at !== null && !($this->status === 'Resolved')) {
+            throw new \RuntimeException('resolved_at_requires_terminal_status');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function escalate(): void
+    {
+        throw new \RuntimeException('escalate not implemented');
+    }
+
+    public function resolve($resolution_text): void
+    {
+        throw new \RuntimeException('resolve not implemented');
+    }
+
+    public function review(): void
+    {
+        throw new \RuntimeException('review not implemented');
+    }
+
 }

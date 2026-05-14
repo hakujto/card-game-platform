@@ -84,8 +84,9 @@ class TradeDisputeApiTest extends TestCase
         $entity = TradeDispute::create([
             'reason' => 'ItemNotReceived',
             'description' => 'test',
-            'status' => 'Open',
+            'status' => 'Resolved',
             'opened_at' => '2024-01-01 00:00:00',
+            'resolved_at' => null,
             'transaction_id' => $this->depTransaction->id,
             'opened_by_id' => $this->depOpenedBy->id,
         ]);
@@ -105,8 +106,9 @@ class TradeDisputeApiTest extends TestCase
         $response = $this->postJson('/api/trade_disputes', [
             'reason' => 'ItemNotReceived',
             'description' => 'test',
-            'status' => 'Open',
+            'status' => 'Resolved',
             'opened_at' => '2024-01-01 00:00:00',
+            'resolved_at' => null,
             'transaction_id' => $freshTransaction->id,
             'opened_by_id' => $this->depOpenedBy->id,
         ]);
@@ -122,7 +124,7 @@ class TradeDisputeApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}", [
-            'reason' => 'test',
+            'description' => 'test',
         ]);
         $response->assertStatus(200);
     }
@@ -131,5 +133,12 @@ class TradeDisputeApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/trade_disputes/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_resolved_at_requires_terminal_status_violated(): void
+    {
+        // resolved_at_requires_terminal_status
+        $response = $this->postJson('/api/trade_disputes', ['reason' => 'ItemNotReceived', 'description' => 'test', 'opened_at' => '2024-01-01 00:00:00', 'transaction_id' => 1, 'opened_by_id' => 1, 'resolved_at' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
     }
 }

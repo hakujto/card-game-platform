@@ -33,6 +33,7 @@ class ArticleApiTest extends TestCase
             'status' => 'Draft',
             'article_type' => 'Guide',
             'view_count' => 1,
+            'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'author_id' => $this->depAuthor->id,
@@ -55,6 +56,7 @@ class ArticleApiTest extends TestCase
             'status' => 'Draft',
             'article_type' => 'Guide',
             'view_count' => 1,
+            'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'author_id' => $this->depAuthor->id,
@@ -80,5 +82,12 @@ class ArticleApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/articles/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_published_requires_published_at_violated(): void
+    {
+        // Published article must have a published_at timestamp
+        $response = $this->postJson('/api/articles', ['title' => 'test', 'slug' => 'test', 'body' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'author_id' => 1, 'status' => 'Published', 'published_at' => null]);
+        $response->assertStatus(422);
     }
 }

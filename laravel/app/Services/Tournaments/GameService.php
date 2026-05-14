@@ -15,4 +15,10 @@ class GameService
     {
         throw new \LogicException('Not implemented');
     }
+    public function recordWinner(int $id, $winner_side): void
+    {
+        $game = Game::findOrFail($id);
+        $game->recordWinner($winner_side);
+        $game->save();
+    }
 }

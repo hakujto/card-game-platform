@@ -21,13 +21,13 @@ class DeckController extends Controller
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:200',
             'format' => 'required|string|in:Standard,Extended,Legacy,Vintage,Commander,Draft|max:20',
-            'is_public' => 'required|boolean|max:200',
-            'is_tournament_legal' => 'required|boolean|max:200',
+            'is_public' => 'required|boolean',
+            'is_tournament_legal' => 'required|boolean',
             'archetype' => 'nullable|string|in:Aggro,Control,Midrange,Combo,Prison,Tempo|max:20',
-            'wins' => 'required|integer|max:200',
-            'losses' => 'required|integer|max:200',
-            'created_at' => 'required|date|max:200',
-            'updated_at' => 'required|date|max:200',
+            'wins' => 'required|integer',
+            'losses' => 'required|integer',
+            'created_at' => 'required|date',
+            'updated_at' => 'required|date',
             'player_id' => 'required|exists:players,id',
         ]);
         $item = Deck::create($validated);
@@ -45,13 +45,13 @@ class DeckController extends Controller
             'name' => 'sometimes|nullable|string|max:100',
             'description' => 'sometimes|nullable|string|max:200',
             'format' => 'sometimes|nullable|string|max:20',
-            'is_public' => 'sometimes|nullable|boolean|max:200',
-            'is_tournament_legal' => 'sometimes|nullable|boolean|max:200',
+            'is_public' => 'sometimes|nullable|boolean',
+            'is_tournament_legal' => 'sometimes|nullable|boolean',
             'archetype' => 'sometimes|nullable|string|max:20',
-            'wins' => 'sometimes|nullable|integer|max:200',
-            'losses' => 'sometimes|nullable|integer|max:200',
-            'created_at' => 'sometimes|nullable|date|max:200',
-            'updated_at' => 'sometimes|nullable|date|max:200',
+            'wins' => 'sometimes|nullable|integer',
+            'losses' => 'sometimes|nullable|integer',
+            'created_at' => 'sometimes|nullable|date',
+            'updated_at' => 'sometimes|nullable|date',
             'player_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $deck->update($validated);
@@ -62,5 +62,39 @@ class DeckController extends Controller
     {
         $deck->delete();
         return response()->json(null, 204);
+    }
+    public function validateSize(Request $request, Deck $deck): JsonResponse
+    {
+        $result = $deck->validateSize();
+        $deck->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function clone(Request $request, Deck $deck): JsonResponse
+    {
+        $result = $deck->clone();
+        $deck->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function publish(Request $request, Deck $deck): JsonResponse
+    {
+        $deck->publish();
+        $deck->save();
+        return response()->json(null, 204);
+    }
+
+    public function unpublish(Request $request, Deck $deck): JsonResponse
+    {
+        $deck->unpublish();
+        $deck->save();
+        return response()->json(null, 204);
+    }
+
+    public function certifyTournamentLegal(Request $request, Deck $deck): JsonResponse
+    {
+        $result = $deck->certifyTournamentLegal();
+        $deck->save();
+        return response()->json(['result' => $result]);
     }
 }

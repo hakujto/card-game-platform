@@ -21,4 +21,24 @@ class CardAbility extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->ability_type === 'Keyword' && $this->keyword === null) {
+            throw new \RuntimeException('Keyword ability must have a keyword name');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function isUsableAt($timing): bool
+    {
+        throw new \RuntimeException('is_usable_at not implemented');
+    }
+
+    public function describe(): string
+    {
+        throw new \RuntimeException('describe not implemented');
+    }
+
 }

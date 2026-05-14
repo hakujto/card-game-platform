@@ -19,7 +19,7 @@ class CardRulingController extends Controller
     {
         $validated = $request->validate([
             'ruling_text' => 'required|string|max:200',
-            'published_at' => 'required|date|max:200',
+            'published_at' => 'required|date',
             'source' => 'required|string|max:200',
             'card_id' => 'required|exists:cards,id',
         ]);
@@ -36,7 +36,7 @@ class CardRulingController extends Controller
     {
         $validated = $request->validate([
             'ruling_text' => 'sometimes|nullable|string|max:200',
-            'published_at' => 'sometimes|nullable|date|max:200',
+            'published_at' => 'sometimes|nullable|date',
             'source' => 'sometimes|nullable|string|max:200',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);

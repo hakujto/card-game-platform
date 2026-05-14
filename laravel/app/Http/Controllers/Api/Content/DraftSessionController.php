@@ -20,9 +20,9 @@ class DraftSessionController extends Controller
         $validated = $request->validate([
             'status' => 'required|string|in:WaitingForPlayers,Drafting,Completed,Abandoned|max:20',
             'draft_type' => 'required|string|in:Booster,Cube,Rochester|max:20',
-            'seats' => 'required|integer|max:200',
-            'created_at' => 'required|date|max:200',
-            'completed_at' => 'nullable|date|max:200',
+            'seats' => 'required|integer',
+            'created_at' => 'required|date',
+            'completed_at' => 'nullable|date',
             'card_set_id' => 'required|exists:card_sets,id',
         ]);
         $item = DraftSession::create($validated);
@@ -39,9 +39,9 @@ class DraftSessionController extends Controller
         $validated = $request->validate([
             'status' => 'sometimes|nullable|string|max:20',
             'draft_type' => 'sometimes|nullable|string|max:20',
-            'seats' => 'sometimes|nullable|integer|max:200',
-            'created_at' => 'sometimes|nullable|date|max:200',
-            'completed_at' => 'sometimes|nullable|date|max:200',
+            'seats' => 'sometimes|nullable|integer',
+            'created_at' => 'sometimes|nullable|date',
+            'completed_at' => 'sometimes|nullable|date',
             'card_set_id' => 'sometimes|nullable|exists:card_sets,id',
         ]);
         $draftSession->update($validated);
@@ -51,6 +51,26 @@ class DraftSessionController extends Controller
     public function destroy(DraftSession $draftSession): JsonResponse
     {
         $draftSession->delete();
+        return response()->json(null, 204);
+    }
+    public function start(Request $request, DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->start();
+        $draftSession->save();
+        return response()->json(null, 204);
+    }
+
+    public function abandon(Request $request, DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->abandon();
+        $draftSession->save();
+        return response()->json(null, 204);
+    }
+
+    public function complete(Request $request, DraftSession $draftSession): JsonResponse
+    {
+        $draftSession->complete();
+        $draftSession->save();
         return response()->json(null, 204);
     }
 }

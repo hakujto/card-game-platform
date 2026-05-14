@@ -42,4 +42,31 @@ class Deck extends Model
         return $this->belongsToMany(DeckTag::class, 'deck_tags_pivot', 'deck_id', 'deck_tag_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function validateSize(): bool
+    {
+        throw new \RuntimeException('validate_size not implemented');
+    }
+
+    public function clone(): mixed
+    {
+        throw new \RuntimeException('clone not implemented');
+    }
+
+    public function publish(): void
+    {
+        throw new \RuntimeException('publish not implemented');
+    }
+
+    public function unpublish(): void
+    {
+        throw new \RuntimeException('unpublish not implemented');
+    }
+
+    public function certifyTournamentLegal(): bool
+    {
+        throw new \RuntimeException('certify_tournament_legal not implemented');
+    }
+
 }

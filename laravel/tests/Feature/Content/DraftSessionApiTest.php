@@ -62,7 +62,7 @@ class DraftSessionApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/draft_sessions/{$this->entityId}", [
-            'status' => 'test',
+            'seats' => 1,
         ]);
         $response->assertStatus(200);
     }
@@ -72,4 +72,5 @@ class DraftSessionApiTest extends TestCase
         $response = $this->deleteJson("/api/draft_sessions/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

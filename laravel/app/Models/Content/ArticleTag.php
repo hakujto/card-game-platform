@@ -13,4 +13,16 @@ class ArticleTag extends Model
 
     protected $fillable = ['name', 'slug'];
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function rename($new_name): void
+    {
+        throw new \RuntimeException('rename not implemented');
+    }
+
+    public function articleCount(): int
+    {
+        throw new \RuntimeException('article_count not implemented');
+    }
+
 }

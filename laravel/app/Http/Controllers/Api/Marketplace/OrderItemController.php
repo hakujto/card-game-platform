@@ -19,13 +19,15 @@ class OrderItemController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|max:200',
-            'price_at_purchase' => 'required|max:200',
-            'foil' => 'required|boolean|max:200',
-            'order_id' => 'required|exists:orders,id',
+            'quantity' => 'required|integer',
+            'price_at_purchase' => 'required',
+            'foil' => 'required|boolean',
+            'order_id' => 'nullable|exists:orders,id',
             'product_id' => 'required|exists:products,id',
         ]);
         $item = OrderItem::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -37,13 +39,15 @@ class OrderItemController extends Controller
     public function update(Request $request, OrderItem $orderItem): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer|max:200',
-            'price_at_purchase' => 'sometimes|nullable|max:200',
-            'foil' => 'sometimes|nullable|boolean|max:200',
+            'quantity' => 'sometimes|nullable|integer',
+            'price_at_purchase' => 'sometimes|nullable',
+            'foil' => 'sometimes|nullable|boolean',
             'order_id' => 'sometimes|nullable|exists:orders,id',
             'product_id' => 'sometimes|nullable|exists:products,id',
         ]);
         $orderItem->update($validated);
+        $orderItem->validateRules();
+
         return response()->json($orderItem);
     }
 

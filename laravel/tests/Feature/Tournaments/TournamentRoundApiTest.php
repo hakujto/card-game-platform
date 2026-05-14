@@ -54,6 +54,7 @@ class TournamentRoundApiTest extends TestCase
         $entity = TournamentRound::create([
             'round_number' => 1,
             'status' => 'Pending',
+            'ended_at' => null,
             'time_limit_minutes' => 1,
             'tournament_id' => $this->depTournament->id,
         ]);
@@ -71,6 +72,7 @@ class TournamentRoundApiTest extends TestCase
         $response = $this->postJson('/api/tournament_rounds', [
             'round_number' => 1,
             'status' => 'Pending',
+            'ended_at' => null,
             'time_limit_minutes' => 1,
             'tournament_id' => $this->depTournament->id,
         ]);
@@ -95,5 +97,12 @@ class TournamentRoundApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/tournament_rounds/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_ended_after_started_violated(): void
+    {
+        // Round end time must be after start time
+        $response = $this->postJson('/api/tournament_rounds', ['round_number' => 1, 'tournament_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'ended_at' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
     }
 }

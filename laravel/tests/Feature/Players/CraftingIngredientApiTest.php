@@ -104,4 +104,5 @@ class CraftingIngredientApiTest extends TestCase
         $response = $this->deleteJson("/api/crafting_ingredients/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

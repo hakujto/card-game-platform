@@ -86,4 +86,5 @@ class ArticleTagAssignmentApiTest extends TestCase
         $response = $this->deleteJson("/api/article_tag_assignments/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

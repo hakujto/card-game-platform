@@ -19,13 +19,19 @@ class PlayerAchievementController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'earned_at' => 'required|date|max:200',
-            'progress' => 'required|integer|max:200',
-            'is_completed' => 'required|boolean|max:200',
+            'earned_at' => 'required|date',
+            'progress' => 'required|integer',
+            'is_completed' => 'required|boolean',
             'player_id' => 'required|exists:players,id',
             'achievement_id' => 'required|exists:achievements,id',
         ]);
         $item = PlayerAchievement::create($validated);
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -37,13 +43,19 @@ class PlayerAchievementController extends Controller
     public function update(Request $request, PlayerAchievement $playerAchievement): JsonResponse
     {
         $validated = $request->validate([
-            'earned_at' => 'sometimes|nullable|date|max:200',
-            'progress' => 'sometimes|nullable|integer|max:200',
-            'is_completed' => 'sometimes|nullable|boolean|max:200',
+            'earned_at' => 'sometimes|nullable|date',
+            'progress' => 'sometimes|nullable|integer',
+            'is_completed' => 'sometimes|nullable|boolean',
             'player_id' => 'sometimes|nullable|exists:players,id',
             'achievement_id' => 'sometimes|nullable|exists:achievements,id',
         ]);
         $playerAchievement->update($validated);
+        try {
+            $playerAchievement->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($playerAchievement);
     }
 

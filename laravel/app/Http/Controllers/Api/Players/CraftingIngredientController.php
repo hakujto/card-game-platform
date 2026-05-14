@@ -19,7 +19,7 @@ class CraftingIngredientController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|max:200',
+            'quantity' => 'required|integer',
             'recipe_id' => 'required|exists:crafting_recipes,id',
             'card_id' => 'required|exists:cards,id',
         ]);
@@ -35,7 +35,7 @@ class CraftingIngredientController extends Controller
     public function update(Request $request, CraftingIngredient $craftingIngredient): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer|max:200',
+            'quantity' => 'sometimes|nullable|integer',
             'recipe_id' => 'sometimes|nullable|exists:crafting_recipes,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);

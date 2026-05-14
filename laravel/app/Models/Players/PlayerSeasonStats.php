@@ -26,4 +26,21 @@ class PlayerSeasonStats extends Model
         return $this->belongsTo(Season::class, 'season_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function winRate(): string
+    {
+        throw new \RuntimeException('win_rate not implemented');
+    }
+
+    public function addPoints($points): void
+    {
+        throw new \RuntimeException('add_points not implemented');
+    }
+
+    public function recordTournamentWin(): void
+    {
+        throw new \RuntimeException('record_tournament_win not implemented');
+    }
+
 }

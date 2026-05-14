@@ -38,4 +38,57 @@ class Tradelisting extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->quantity === null || ($this->quantity >= 1 && $this->quantity <= 9999)))) {
+            $errors['quantity_positive'] = 'Listing quantity must be between 1 and 9999';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->listing_type === 'FixedPrice' && $this->asking_price === null) {
+            throw new \RuntimeException('Fixed price listing must have an asking price');
+        }
+        if ($this->listing_type === 'Auction' && !($this->auction_start_price !== null && $this->auction_end_time !== null)) {
+            throw new \RuntimeException('Auction listing must have a start price and end time');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function close(): void
+    {
+        throw new \RuntimeException('close not implemented');
+    }
+
+    public function extend($days): void
+    {
+        throw new \RuntimeException('extend not implemented');
+    }
+
+    public function cancel(): void
+    {
+        throw new \RuntimeException('cancel not implemented');
+    }
+
+    public function isExpired(): bool
+    {
+        throw new \RuntimeException('is_expired not implemented');
+    }
+
+    public function finalizeAuction(): void
+    {
+        throw new \RuntimeException('finalize_auction not implemented');
+    }
+
 }

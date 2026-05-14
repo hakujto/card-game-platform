@@ -112,7 +112,7 @@ class TournamentRegistrationApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/tournament_registrations/{$this->entityId}", [
-            'status' => 'test',
+            'seed' => 1,
         ]);
         $response->assertStatus(200);
     }
@@ -122,4 +122,5 @@ class TournamentRegistrationApiTest extends TestCase
         $response = $this->deleteJson("/api/tournament_registrations/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

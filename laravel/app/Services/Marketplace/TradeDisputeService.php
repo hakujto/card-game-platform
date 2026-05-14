@@ -15,4 +15,24 @@ class TradeDisputeService
     {
         throw new \LogicException('Not implemented');
     }
+    public function escalate(int $id): void
+    {
+        $tradeDispute = TradeDispute::findOrFail($id);
+        $tradeDispute->escalate();
+        $tradeDispute->save();
+    }
+
+    public function resolve(int $id, $resolution_text): void
+    {
+        $tradeDispute = TradeDispute::findOrFail($id);
+        $tradeDispute->resolve($resolution_text);
+        $tradeDispute->save();
+    }
+
+    public function review(int $id): void
+    {
+        $tradeDispute = TradeDispute::findOrFail($id);
+        $tradeDispute->review();
+        $tradeDispute->save();
+    }
 }

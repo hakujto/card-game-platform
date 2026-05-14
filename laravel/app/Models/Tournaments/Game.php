@@ -27,4 +27,42 @@ class Game extends Model
         return $this->belongsTo(Player::class, 'winner_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->game_number === null || ($this->game_number >= 1 && $this->game_number <= 3)))) {
+            $errors['game_number_range'] = 'Game number must be between 1 and 3 (best-of-3)';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->turns_played !== null && !(($this->turns_played === null || $this->turns_played > 0))) {
+            throw new \RuntimeException('Turns played must be greater than zero');
+        }
+        if ($this->duration_seconds !== null && !(($this->duration_seconds === null || $this->duration_seconds > 0))) {
+            throw new \RuntimeException('Game duration must be greater than zero');
+        }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function recordWinner($winner_side): void
+    {
+        throw new \RuntimeException('record_winner not implemented');
+    }
+
+    public function durationMinutes(): string
+    {
+        throw new \RuntimeException('duration_minutes not implemented');
+    }
+
 }

@@ -30,4 +30,27 @@ class AwardedPrize extends Model
         return $this->belongsTo(Player::class, 'player_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->final_placement === null || $this->final_placement > 0))) {
+            $errors['final_placement_positive'] = 'Final placement must be greater than zero';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->claimed === true && $this->claimed_at === null) {
+            throw new \RuntimeException('Claimed prize must have a claimed_at timestamp');
+        }
+    }
+
 }

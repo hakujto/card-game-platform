@@ -106,4 +106,5 @@ class DeckSideboardCardApiTest extends TestCase
         $response = $this->deleteJson("/api/deck_sideboard_cards/{$this->entityId}");
         $response->assertStatus(204);
     }
+
 }

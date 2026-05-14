@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->text('body');
             $table->boolean('is_hidden')->default(false);
-            $table->unsignedBigInteger('article_id');
-            $table->foreign('article_id')->references('id')->on('articles')->cascadeOnDelete();
+            $table->unsignedBigInteger('article_id')->nullable();
+            $table->foreign('article_id')->references('id')->on('articles')->nullOnDelete();
             $table->unsignedBigInteger('author_id');
             $table->foreign('author_id')->references('id')->on('players')->cascadeOnDelete();
             $table->unsignedBigInteger('parent_comment_id')->nullable();

@@ -15,4 +15,10 @@ class DeckTagService
     {
         throw new \LogicException('Not implemented');
     }
+    public function mergeInto(int $id, $target_tag_id): void
+    {
+        $deckTag = DeckTag::findOrFail($id);
+        $deckTag->mergeInto($target_tag_id);
+        $deckTag->save();
+    }
 }

@@ -28,4 +28,16 @@ class DraftParticipant extends Model
         return $this->belongsTo(Player::class, 'player_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function pickCard($card_id, $pack_number): void
+    {
+        throw new \RuntimeException('pick_card not implemented');
+    }
+
+    public function draftedCardCount(): int
+    {
+        throw new \RuntimeException('drafted_card_count not implemented');
+    }
+
 }

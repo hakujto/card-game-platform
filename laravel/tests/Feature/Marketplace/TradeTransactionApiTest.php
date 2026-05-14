@@ -84,6 +84,7 @@ class TradeTransactionApiTest extends TestCase
             'final_price' => '0.00',
             'platform_fee' => '0.00',
             'status' => 'Pending',
+            'completed_at' => '2024-01-01 00:00:00',
             'listing_id' => $this->depListing->id,
             'buyer_id' => $this->depBuyer->id,
             'seller_id' => $this->depSeller->id,
@@ -104,6 +105,7 @@ class TradeTransactionApiTest extends TestCase
             'final_price' => '0.00',
             'platform_fee' => '0.00',
             'status' => 'Pending',
+            'completed_at' => '2024-01-01 00:00:00',
             'listing_id' => $freshListing->id,
             'buyer_id' => $this->depBuyer->id,
             'seller_id' => $this->depSeller->id,
@@ -129,5 +131,19 @@ class TradeTransactionApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/trade_transactions/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_fee_not_negative_violated(): void
+    {
+        // Platform fee must not be negative
+        $response = $this->postJson('/api/trade_transactions', ['final_price' => '0.00', 'listing_id' => 1, 'buyer_id' => 1, 'seller_id' => 1, 'status' => 'Completed', 'completed_at' => '2024-01-01 00:00:00', 'platform_fee' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_completed_requires_completed_at_violated(): void
+    {
+        // Completed transaction must have a completed_at timestamp
+        $response = $this->postJson('/api/trade_transactions', ['final_price' => '0.00', 'platform_fee' => '0.00', 'listing_id' => 1, 'buyer_id' => 1, 'seller_id' => 1, 'status' => 'Completed', 'completed_at' => null]);
+        $response->assertStatus(422);
     }
 }

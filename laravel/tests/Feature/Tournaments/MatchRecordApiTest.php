@@ -5,10 +5,7 @@ namespace Tests\Feature\Tournaments;
 use App\Models\Tournaments\MatchRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Tournaments\Season;
 use App\Models\Players\Player;
-use App\Models\Tournaments\Tournament;
-use App\Models\Tournaments\TournamentRound;
 
 class MatchRecordApiTest extends TestCase
 {
@@ -16,50 +13,11 @@ class MatchRecordApiTest extends TestCase
 
     private int $entityId;
 
-    private Season $auxSeason;
-    private Player $auxPlayer;
-    private Tournament $auxTournament;
-    private TournamentRound $depRound;
     private Player $depPlayer1;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->auxSeason = Season::create([
-            'name' => 'test',
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-01-01',
-            'format' => 'Standard',
-            'is_active' => true,
-        ]);
-        $this->auxPlayer = Player::create([
-            'display_name' => 'test',
-            'rank' => 'Bronze',
-            'rating' => 1,
-            'peak_rating' => 1,
-            'is_verified' => true,
-            'created_at' => '2024-01-01 00:00:00',
-        ]);
-        $this->auxTournament = Tournament::create([
-            'name' => 'test',
-            'format' => 'Standard',
-            'tournament_type' => 'Swiss',
-            'status' => 'Draft',
-            'max_players' => 1,
-            'entry_fee' => '0.00',
-            'prize_pool' => '0.00',
-            'start_time' => '2024-01-01 00:00:00',
-            'is_online' => true,
-            'created_at' => '2024-01-01 00:00:00',
-            'season_id' => $this->auxSeason->id,
-            'organizer_id' => $this->auxPlayer->id,
-        ]);
-        $this->depRound = TournamentRound::create([
-            'round_number' => 1,
-            'status' => 'Pending',
-            'time_limit_minutes' => 1,
-            'tournament_id' => $this->auxTournament->id,
-        ]);
         $this->depPlayer1 = Player::create([
             'display_name' => 'test',
             'rank' => 'Bronze',
@@ -72,7 +30,6 @@ class MatchRecordApiTest extends TestCase
             'status' => 'Pending',
             'player1_wins' => 1,
             'player2_wins' => 1,
-            'round_id' => $this->depRound->id,
             'player1_id' => $this->depPlayer1->id,
         ]);
         $this->entityId = $entity->id;
@@ -90,7 +47,6 @@ class MatchRecordApiTest extends TestCase
             'status' => 'Pending',
             'player1_wins' => 1,
             'player2_wins' => 1,
-            'round_id' => $this->depRound->id,
             'player1_id' => $this->depPlayer1->id,
         ]);
         $response->assertStatus(201);
@@ -114,5 +70,26 @@ class MatchRecordApiTest extends TestCase
     {
         $response = $this->deleteJson("/api/matches/{$this->entityId}");
         $response->assertStatus(204);
+    }
+
+    public function test_create_fails_when_wins_not_negative_violated(): void
+    {
+        // Win counts must not be negative
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'player1_wins' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_max_three_games_violated(): void
+    {
+        // Win counts cannot exceed 2 in a best-of-3 match
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'player1_wins' => 3]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_bye_has_no_player2_violated(): void
+    {
+        // BYE match must not have a second player
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => 'test']);
+        $response->assertStatus(422);
     }
 }

@@ -33,4 +33,21 @@ class ArticleComment extends Model
         return $this->belongsTo(ArticleComment::class, 'parent_comment_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function hide(): void
+    {
+        throw new \RuntimeException('hide not implemented');
+    }
+
+    public function unhide(): void
+    {
+        throw new \RuntimeException('unhide not implemented');
+    }
+
+    public function isReply(): bool
+    {
+        throw new \RuntimeException('is_reply not implemented');
+    }
+
 }
