@@ -2,6 +2,7 @@ package cardsproject.controller.marketplace;
 
 import cardsproject.domain.marketplace.Product;
 import cardsproject.service.marketplace.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> create(@RequestBody Product entity) {
+    public ResponseEntity<Product> create(@Valid @RequestBody Product entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product entity) {
+    public ResponseEntity<Product> update(@PathVariable Long id, @Valid @RequestBody Product entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Product> patch(@PathVariable Long id, @RequestBody Product entity) {
+    public ResponseEntity<Product> patch(@PathVariable Long id, @Valid @RequestBody Product entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

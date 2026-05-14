@@ -27,7 +27,7 @@ public class ArticleCommentControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/article_comments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"body\": \"test\", \"isHidden\": true, \"createdAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"body\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

@@ -2,6 +2,7 @@ package cardsproject.controller.cards;
 
 import cardsproject.domain.cards.DeckSideboardCard;
 import cardsproject.service.cards.DeckSideboardCardService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class DeckSideboardCardController {
     }
 
     @PostMapping
-    public ResponseEntity<DeckSideboardCard> create(@RequestBody DeckSideboardCard entity) {
+    public ResponseEntity<DeckSideboardCard> create(@Valid @RequestBody DeckSideboardCard entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class DeckSideboardCardController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DeckSideboardCard> update(@PathVariable Long id, @RequestBody DeckSideboardCard entity) {
+    public ResponseEntity<DeckSideboardCard> update(@PathVariable Long id, @Valid @RequestBody DeckSideboardCard entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DeckSideboardCard> patch(@PathVariable Long id, @RequestBody DeckSideboardCard entity) {
+    public ResponseEntity<DeckSideboardCard> patch(@PathVariable Long id, @Valid @RequestBody DeckSideboardCard entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

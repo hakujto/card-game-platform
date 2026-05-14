@@ -2,6 +2,7 @@ package cardsproject.controller.tournaments;
 
 import cardsproject.domain.tournaments.TournamentRound;
 import cardsproject.service.tournaments.TournamentRoundService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class TournamentRoundController {
     }
 
     @PostMapping
-    public ResponseEntity<TournamentRound> create(@RequestBody TournamentRound entity) {
+    public ResponseEntity<TournamentRound> create(@Valid @RequestBody TournamentRound entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class TournamentRoundController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TournamentRound> update(@PathVariable Long id, @RequestBody TournamentRound entity) {
+    public ResponseEntity<TournamentRound> update(@PathVariable Long id, @Valid @RequestBody TournamentRound entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TournamentRound> patch(@PathVariable Long id, @RequestBody TournamentRound entity) {
+    public ResponseEntity<TournamentRound> patch(@PathVariable Long id, @Valid @RequestBody TournamentRound entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

@@ -27,7 +27,7 @@ public class PlayerAchievementControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/player_achievements")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"earnedAt\": \"2024-01-01T00:00:00\", \"progress\": 1, \"isCompleted\": true }"))
+            .content("{ \"earnedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

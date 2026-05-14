@@ -2,6 +2,7 @@ package cardsproject.controller.cards;
 
 import cardsproject.domain.cards.CardSet;
 import cardsproject.service.cards.CardSetService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class CardSetController {
     }
 
     @PostMapping
-    public ResponseEntity<CardSet> create(@RequestBody CardSet entity) {
+    public ResponseEntity<CardSet> create(@Valid @RequestBody CardSet entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class CardSetController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CardSet> update(@PathVariable Long id, @RequestBody CardSet entity) {
+    public ResponseEntity<CardSet> update(@PathVariable Long id, @Valid @RequestBody CardSet entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CardSet> patch(@PathVariable Long id, @RequestBody CardSet entity) {
+    public ResponseEntity<CardSet> patch(@PathVariable Long id, @Valid @RequestBody CardSet entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

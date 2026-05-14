@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.marketplace.TradelistingStatusType;
+import cardsproject.domain.marketplace.TradelistingListingTypeType;
 
 @Service
 public class TradelistingService {
@@ -25,11 +26,16 @@ public class TradelistingService {
     }
 
     public Tradelisting save(Tradelisting entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Tradelisting entity) {
+        if (TradelistingListingTypeType.FIXEDPRICE.equals(entity.getListingType()) && entity.getAskingPrice() == null) throw new IllegalStateException("Fixed price listing must have an asking price");
+        if (TradelistingListingTypeType.AUCTION.equals(entity.getListingType()) && !(entity.getAuctionStartPrice() != null && entity.getAuctionEndTime() != null)) throw new IllegalStateException("Auction listing must have a start price and end time");
     }
 
     public void close(Long id) {

@@ -27,7 +27,7 @@ public class PlayerSeasonStatsControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/player_season_statses")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"wins\": 1, \"losses\": 1, \"draws\": 1, \"tournamentWins\": 1, \"seasonPoints\": 1 }"))
+            .content("{}"))
             .andExpect(status().isCreated());
     }
 

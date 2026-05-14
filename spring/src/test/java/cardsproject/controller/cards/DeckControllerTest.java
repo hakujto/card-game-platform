@@ -27,7 +27,7 @@ public class DeckControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/decks")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"isPublic\": true, \"isTournamentLegal\": true, \"wins\": 1, \"losses\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"name\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

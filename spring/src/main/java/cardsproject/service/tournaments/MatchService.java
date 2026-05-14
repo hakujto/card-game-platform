@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.MatchRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.MatchStatusType;
 
 @Service
 public class MatchService {
@@ -24,11 +25,15 @@ public class MatchService {
     }
 
     public Match save(Match entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Match entity) {
+        if (MatchStatusType.BYE.equals(entity.getStatus()) && entity.getPlayer2Id() != null) throw new IllegalStateException("BYE match must not have a second player");
     }
 
     public void recordResult(Long id, Integer p1Wins, Integer p2Wins) {

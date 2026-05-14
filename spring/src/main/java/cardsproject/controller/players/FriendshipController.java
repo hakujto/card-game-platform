@@ -2,6 +2,7 @@ package cardsproject.controller.players;
 
 import cardsproject.domain.players.Friendship;
 import cardsproject.service.players.FriendshipService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class FriendshipController {
     }
 
     @PostMapping
-    public ResponseEntity<Friendship> create(@RequestBody Friendship entity) {
+    public ResponseEntity<Friendship> create(@Valid @RequestBody Friendship entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class FriendshipController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Friendship> update(@PathVariable Long id, @RequestBody Friendship entity) {
+    public ResponseEntity<Friendship> update(@PathVariable Long id, @Valid @RequestBody Friendship entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Friendship> patch(@PathVariable Long id, @RequestBody Friendship entity) {
+    public ResponseEntity<Friendship> patch(@PathVariable Long id, @Valid @RequestBody Friendship entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

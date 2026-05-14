@@ -27,7 +27,7 @@ public class TournamentPrizeControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournament_prizes")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"placementFrom\": 1, \"placementTo\": 1, \"amount\": 0.00, \"seasonPoints\": 1 }"))
+            .content("{ \"placementFrom\": 1, \"placementTo\": 1, \"prizeType\": \"CURRENCY\" }"))
             .andExpect(status().isCreated());
     }
 

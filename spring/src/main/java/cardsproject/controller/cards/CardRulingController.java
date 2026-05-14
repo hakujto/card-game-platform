@@ -2,6 +2,7 @@ package cardsproject.controller.cards;
 
 import cardsproject.domain.cards.CardRuling;
 import cardsproject.service.cards.CardRulingService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class CardRulingController {
     }
 
     @PostMapping
-    public ResponseEntity<CardRuling> create(@RequestBody CardRuling entity) {
+    public ResponseEntity<CardRuling> create(@Valid @RequestBody CardRuling entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class CardRulingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CardRuling> update(@PathVariable Long id, @RequestBody CardRuling entity) {
+    public ResponseEntity<CardRuling> update(@PathVariable Long id, @Valid @RequestBody CardRuling entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CardRuling> patch(@PathVariable Long id, @RequestBody CardRuling entity) {
+    public ResponseEntity<CardRuling> patch(@PathVariable Long id, @Valid @RequestBody CardRuling entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

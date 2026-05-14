@@ -2,6 +2,7 @@ package cardsproject.controller.marketplace;
 
 import cardsproject.domain.marketplace.OrderItem;
 import cardsproject.service.marketplace.OrderItemService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class OrderItemController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderItem> create(@RequestBody OrderItem entity) {
+    public ResponseEntity<OrderItem> create(@Valid @RequestBody OrderItem entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class OrderItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderItem> update(@PathVariable Long id, @RequestBody OrderItem entity) {
+    public ResponseEntity<OrderItem> update(@PathVariable Long id, @Valid @RequestBody OrderItem entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<OrderItem> patch(@PathVariable Long id, @RequestBody OrderItem entity) {
+    public ResponseEntity<OrderItem> patch(@PathVariable Long id, @Valid @RequestBody OrderItem entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

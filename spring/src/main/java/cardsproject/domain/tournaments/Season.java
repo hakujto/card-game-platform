@@ -51,4 +51,11 @@ public class Season {
     public Boolean isOngoing() {
         throw new UnsupportedOperationException("isOngoing not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Season end date must be after start date")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isEndDateAfterStartDateValid() {
+        return (getEndDate() == null || getEndDate().isAfter(getStartDate()));
+    }
 }

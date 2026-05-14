@@ -86,4 +86,21 @@ public class Player {
     public void updateRating(Integer delta) {
         throw new UnsupportedOperationException("updateRating not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Rating must be between 0 and 9999")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isRatingRangeValid() {
+        return (getRating() == null || (getRating() >= 0 && getRating() <= 9999));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Peak rating must be greater than or equal to current rating")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPeakRatingGteRatingValid() {
+        return (getPeakRating() == null || getPeakRating() >= getRating());
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Display name must not be empty")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDisplayNameNotEmptyValid() {
+        return getDisplayName() != null;
+    }
 }

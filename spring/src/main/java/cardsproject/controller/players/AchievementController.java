@@ -2,6 +2,7 @@ package cardsproject.controller.players;
 
 import cardsproject.domain.players.Achievement;
 import cardsproject.service.players.AchievementService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class AchievementController {
     }
 
     @PostMapping
-    public ResponseEntity<Achievement> create(@RequestBody Achievement entity) {
+    public ResponseEntity<Achievement> create(@Valid @RequestBody Achievement entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class AchievementController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Achievement> update(@PathVariable Long id, @RequestBody Achievement entity) {
+    public ResponseEntity<Achievement> update(@PathVariable Long id, @Valid @RequestBody Achievement entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Achievement> patch(@PathVariable Long id, @RequestBody Achievement entity) {
+    public ResponseEntity<Achievement> patch(@PathVariable Long id, @Valid @RequestBody Achievement entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

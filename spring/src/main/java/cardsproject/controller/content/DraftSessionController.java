@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.DraftSession;
 import cardsproject.service.content.DraftSessionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class DraftSessionController {
     }
 
     @PostMapping
-    public ResponseEntity<DraftSession> create(@RequestBody DraftSession entity) {
+    public ResponseEntity<DraftSession> create(@Valid @RequestBody DraftSession entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class DraftSessionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DraftSession> update(@PathVariable Long id, @RequestBody DraftSession entity) {
+    public ResponseEntity<DraftSession> update(@PathVariable Long id, @Valid @RequestBody DraftSession entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DraftSession> patch(@PathVariable Long id, @RequestBody DraftSession entity) {
+    public ResponseEntity<DraftSession> patch(@PathVariable Long id, @Valid @RequestBody DraftSession entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

@@ -27,7 +27,7 @@ public class CraftingIngredientControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/crafting_ingredients")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"quantity\": 1 }"))
+            .content("{}"))
             .andExpect(status().isCreated());
     }
 

@@ -2,6 +2,7 @@ package cardsproject.controller.players;
 
 import cardsproject.domain.players.CraftingIngredient;
 import cardsproject.service.players.CraftingIngredientService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class CraftingIngredientController {
     }
 
     @PostMapping
-    public ResponseEntity<CraftingIngredient> create(@RequestBody CraftingIngredient entity) {
+    public ResponseEntity<CraftingIngredient> create(@Valid @RequestBody CraftingIngredient entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class CraftingIngredientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CraftingIngredient> update(@PathVariable Long id, @RequestBody CraftingIngredient entity) {
+    public ResponseEntity<CraftingIngredient> update(@PathVariable Long id, @Valid @RequestBody CraftingIngredient entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CraftingIngredient> patch(@PathVariable Long id, @RequestBody CraftingIngredient entity) {
+    public ResponseEntity<CraftingIngredient> patch(@PathVariable Long id, @Valid @RequestBody CraftingIngredient entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

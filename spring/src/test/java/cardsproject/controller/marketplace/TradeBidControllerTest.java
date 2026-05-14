@@ -27,7 +27,7 @@ public class TradeBidControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_bids")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"amount\": 0.00, \"placedAt\": \"2024-01-01T00:00:00\", \"isWinning\": true }"))
+            .content("{ \"amount\": 0.00, \"placedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

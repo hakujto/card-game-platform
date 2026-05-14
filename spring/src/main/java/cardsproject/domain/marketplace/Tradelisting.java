@@ -84,4 +84,11 @@ public class Tradelisting {
     public void finalizeAuction() {
         throw new UnsupportedOperationException("finalizeAuction not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Listing quantity must be between 1 and 9999")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isQuantityPositiveValid() {
+        return (getQuantity() == null || (getQuantity() >= 1 && getQuantity() <= 9999));
+    }
 }

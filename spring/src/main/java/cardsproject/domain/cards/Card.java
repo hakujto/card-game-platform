@@ -92,4 +92,21 @@ public class Card {
     public java.math.BigDecimal calculateValue() {
         throw new UnsupportedOperationException("calculateValue not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "mana_cost must be between 0 and 20")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isManaCostRangeValid() {
+        return (getManaCost() == null || (getManaCost() >= 0 && getManaCost() <= 20));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "power_level must be between 1 and 10")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPowerLevelRangeValid() {
+        return (getPowerLevel() == null || (getPowerLevel() >= 1 && getPowerLevel() <= 10));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Card cannot be both banned and restricted at the same time")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isNotBannedAndRestrictedValid() {
+        return !((Boolean.TRUE.equals(getIsBanned()) && Boolean.TRUE.equals(getIsRestricted())));
+    }
 }

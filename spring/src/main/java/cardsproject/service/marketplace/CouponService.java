@@ -5,6 +5,7 @@ import cardsproject.repository.marketplace.CouponRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.marketplace.CouponDiscountTypeType;
 
 @Service
 public class CouponService {
@@ -24,11 +25,16 @@ public class CouponService {
     }
 
     public Coupon save(Coupon entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Coupon entity) {
+        if (CouponDiscountTypeType.PERCENT.equals(entity.getDiscountType()) && !((entity.getDiscountValue() == null || (entity.getDiscountValue().compareTo(new java.math.BigDecimal("1")) >= 0 && entity.getDiscountValue().compareTo(new java.math.BigDecimal("100")) <= 0)))) throw new IllegalStateException("Percent discount must be between 1 and 100");
+        if (entity.getMaxUses() != null && !((entity.getUsesCount() == null || entity.getUsesCount() <= entity.getMaxUses()))) throw new IllegalStateException("Coupon uses count cannot exceed max_uses");
     }
 
     public void redeem(Long id) {

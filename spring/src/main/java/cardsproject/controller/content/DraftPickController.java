@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.DraftPick;
 import cardsproject.service.content.DraftPickService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class DraftPickController {
     }
 
     @PostMapping
-    public ResponseEntity<DraftPick> create(@RequestBody DraftPick entity) {
+    public ResponseEntity<DraftPick> create(@Valid @RequestBody DraftPick entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class DraftPickController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DraftPick> update(@PathVariable Long id, @RequestBody DraftPick entity) {
+    public ResponseEntity<DraftPick> update(@PathVariable Long id, @Valid @RequestBody DraftPick entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DraftPick> patch(@PathVariable Long id, @RequestBody DraftPick entity) {
+    public ResponseEntity<DraftPick> patch(@PathVariable Long id, @Valid @RequestBody DraftPick entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

@@ -83,4 +83,16 @@ public class Order {
     public void notifyShipped() {
         throw new UnsupportedOperationException("notifyShipped not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Order total must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isTotalNotNegativeValid() {
+        return (getTotal() == null || getTotal().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Discount applied cannot exceed order total")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDiscountNotExceedTotalValid() {
+        return (getDiscountApplied() == null || getDiscountApplied().compareTo(getTotal()) <= 0);
+    }
 }

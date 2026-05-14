@@ -2,6 +2,7 @@ package cardsproject.controller.marketplace;
 
 import cardsproject.domain.marketplace.Coupon;
 import cardsproject.service.marketplace.CouponService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class CouponController {
     }
 
     @PostMapping
-    public ResponseEntity<Coupon> create(@RequestBody Coupon entity) {
+    public ResponseEntity<Coupon> create(@Valid @RequestBody Coupon entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class CouponController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Coupon> update(@PathVariable Long id, @RequestBody Coupon entity) {
+    public ResponseEntity<Coupon> update(@PathVariable Long id, @Valid @RequestBody Coupon entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Coupon> patch(@PathVariable Long id, @RequestBody Coupon entity) {
+    public ResponseEntity<Coupon> patch(@PathVariable Long id, @Valid @RequestBody Coupon entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

@@ -2,6 +2,7 @@ package cardsproject.controller.marketplace;
 
 import cardsproject.domain.marketplace.CardPriceHistory;
 import cardsproject.service.marketplace.CardPriceHistoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class CardPriceHistoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CardPriceHistory> create(@RequestBody CardPriceHistory entity) {
+    public ResponseEntity<CardPriceHistory> create(@Valid @RequestBody CardPriceHistory entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class CardPriceHistoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CardPriceHistory> update(@PathVariable Long id, @RequestBody CardPriceHistory entity) {
+    public ResponseEntity<CardPriceHistory> update(@PathVariable Long id, @Valid @RequestBody CardPriceHistory entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CardPriceHistory> patch(@PathVariable Long id, @RequestBody CardPriceHistory entity) {
+    public ResponseEntity<CardPriceHistory> patch(@PathVariable Long id, @Valid @RequestBody CardPriceHistory entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

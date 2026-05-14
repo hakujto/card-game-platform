@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.Stream;
 import cardsproject.service.content.StreamService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class StreamController {
     }
 
     @PostMapping
-    public ResponseEntity<Stream> create(@RequestBody Stream entity) {
+    public ResponseEntity<Stream> create(@Valid @RequestBody Stream entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class StreamController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Stream> update(@PathVariable Long id, @RequestBody Stream entity) {
+    public ResponseEntity<Stream> update(@PathVariable Long id, @Valid @RequestBody Stream entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Stream> patch(@PathVariable Long id, @RequestBody Stream entity) {
+    public ResponseEntity<Stream> patch(@PathVariable Long id, @Valid @RequestBody Stream entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

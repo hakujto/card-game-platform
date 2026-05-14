@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.DraftParticipant;
 import cardsproject.service.content.DraftParticipantService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class DraftParticipantController {
     }
 
     @PostMapping
-    public ResponseEntity<DraftParticipant> create(@RequestBody DraftParticipant entity) {
+    public ResponseEntity<DraftParticipant> create(@Valid @RequestBody DraftParticipant entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class DraftParticipantController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DraftParticipant> update(@PathVariable Long id, @RequestBody DraftParticipant entity) {
+    public ResponseEntity<DraftParticipant> update(@PathVariable Long id, @Valid @RequestBody DraftParticipant entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DraftParticipant> patch(@PathVariable Long id, @RequestBody DraftParticipant entity) {
+    public ResponseEntity<DraftParticipant> patch(@PathVariable Long id, @Valid @RequestBody DraftParticipant entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

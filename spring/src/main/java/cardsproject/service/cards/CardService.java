@@ -5,6 +5,7 @@ import cardsproject.repository.cards.CardRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.cards.CardCardTypeType;
 
 @Service
 public class CardService {
@@ -24,11 +25,16 @@ public class CardService {
     }
 
     public Card save(Card entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Card entity) {
+        if (CardCardTypeType.CREATURE.equals(entity.getCardType()) && !(entity.getAttack() != null && entity.getDefense() != null)) throw new IllegalStateException("Creature card must have attack and defense");
+        if (CardCardTypeType.PLANESWALKER.equals(entity.getCardType()) && entity.getLoyalty() == null) throw new IllegalStateException("Planeswalker card must have loyalty");
     }
 
     public void ban(Long id) {

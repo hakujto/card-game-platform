@@ -27,7 +27,7 @@ public class DraftSessionControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/draft_sessions")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"seats\": 1, \"createdAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 

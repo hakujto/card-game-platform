@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.Article;
 import cardsproject.service.content.ArticleService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class ArticleController {
     }
 
     @PostMapping
-    public ResponseEntity<Article> create(@RequestBody Article entity) {
+    public ResponseEntity<Article> create(@Valid @RequestBody Article entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Article> update(@PathVariable Long id, @RequestBody Article entity) {
+    public ResponseEntity<Article> update(@PathVariable Long id, @Valid @RequestBody Article entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Article> patch(@PathVariable Long id, @RequestBody Article entity) {
+    public ResponseEntity<Article> patch(@PathVariable Long id, @Valid @RequestBody Article entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

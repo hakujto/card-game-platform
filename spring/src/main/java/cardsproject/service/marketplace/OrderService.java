@@ -25,11 +25,16 @@ public class OrderService {
     }
 
     public Order save(Order entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Order entity) {
+        if (OrderStatusType.PAID.equals(entity.getStatus()) && entity.getPaidAt() == null) throw new IllegalStateException("Paid order must have paid_at set");
+        if (OrderStatusType.SHIPPED.equals(entity.getStatus()) && entity.getTrackingNumber() == null) throw new IllegalStateException("Shipped order must have a tracking number");
     }
 
     public void cancel(Long id) {

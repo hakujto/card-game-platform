@@ -62,4 +62,16 @@ public class Match {
     public void draw() {
         throw new UnsupportedOperationException("draw not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Win counts must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isWinsNotNegativeValid() {
+        return ((getPlayer1Wins() == null || getPlayer1Wins() >= 0) && (getPlayer2Wins() == null || getPlayer2Wins() >= 0));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Win counts cannot exceed 2 in a best-of-3 match")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isMaxThreeGamesValid() {
+        return ((getPlayer1Wins() == null || (getPlayer1Wins() >= 0 && getPlayer1Wins() <= 2)) && (getPlayer2Wins() == null || (getPlayer2Wins() >= 0 && getPlayer2Wins() <= 2)));
+    }
 }

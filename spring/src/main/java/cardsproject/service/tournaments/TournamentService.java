@@ -24,11 +24,15 @@ public class TournamentService {
     }
 
     public Tournament save(Tournament entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Tournament entity) {
+        if (entity.getEndTime() != null && !((entity.getEndTime() == null || entity.getEndTime().isAfter(entity.getStartTime())))) throw new IllegalStateException("End time must be after start time");
     }
 
     public void start(Long id) {

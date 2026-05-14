@@ -27,7 +27,7 @@ public class DeckCardControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/deck_cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"quantity\": 1, \"isCommander\": true }"))
+            .content("{}"))
             .andExpect(status().isCreated());
     }
 

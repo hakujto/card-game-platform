@@ -2,6 +2,7 @@ package cardsproject.controller.players;
 
 import cardsproject.domain.players.PlayerAchievement;
 import cardsproject.service.players.PlayerAchievementService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class PlayerAchievementController {
     }
 
     @PostMapping
-    public ResponseEntity<PlayerAchievement> create(@RequestBody PlayerAchievement entity) {
+    public ResponseEntity<PlayerAchievement> create(@Valid @RequestBody PlayerAchievement entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class PlayerAchievementController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlayerAchievement> update(@PathVariable Long id, @RequestBody PlayerAchievement entity) {
+    public ResponseEntity<PlayerAchievement> update(@PathVariable Long id, @Valid @RequestBody PlayerAchievement entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PlayerAchievement> patch(@PathVariable Long id, @RequestBody PlayerAchievement entity) {
+    public ResponseEntity<PlayerAchievement> patch(@PathVariable Long id, @Valid @RequestBody PlayerAchievement entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

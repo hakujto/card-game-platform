@@ -60,4 +60,16 @@ public class Coupon {
     public void deactivate() {
         throw new UnsupportedOperationException("deactivate not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Coupon expiry must be after its start date")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isValidUntilAfterValidFromValid() {
+        return (getValidUntil() == null || getValidUntil().isAfter(getValidFrom()));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Discount value must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDiscountValuePositiveValid() {
+        return (getDiscountValue() == null || getDiscountValue().compareTo(new java.math.BigDecimal("0")) > 0);
+    }
 }

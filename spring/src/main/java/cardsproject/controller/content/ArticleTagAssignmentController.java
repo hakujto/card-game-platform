@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.ArticleTagAssignment;
 import cardsproject.service.content.ArticleTagAssignmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class ArticleTagAssignmentController {
     }
 
     @PostMapping
-    public ResponseEntity<ArticleTagAssignment> create(@RequestBody ArticleTagAssignment entity) {
+    public ResponseEntity<ArticleTagAssignment> create(@Valid @RequestBody ArticleTagAssignment entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class ArticleTagAssignmentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ArticleTagAssignment> update(@PathVariable Long id, @RequestBody ArticleTagAssignment entity) {
+    public ResponseEntity<ArticleTagAssignment> update(@PathVariable Long id, @Valid @RequestBody ArticleTagAssignment entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ArticleTagAssignment> patch(@PathVariable Long id, @RequestBody ArticleTagAssignment entity) {
+    public ResponseEntity<ArticleTagAssignment> patch(@PathVariable Long id, @Valid @RequestBody ArticleTagAssignment entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

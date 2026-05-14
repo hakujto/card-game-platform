@@ -27,7 +27,7 @@ public class OrderItemControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/order_items")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"quantity\": 1, \"priceAtPurchase\": 0.00, \"foil\": true }"))
+            .content("{ \"quantity\": 1, \"priceAtPurchase\": 0.00 }"))
             .andExpect(status().isCreated());
     }
 

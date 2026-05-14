@@ -27,7 +27,7 @@ public class AchievementControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/achievements")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"description\": \"test\", \"points\": 1, \"isHidden\": true }"))
+            .content("{ \"name\": \"test\", \"description\": \"test\" }"))
             .andExpect(status().isCreated());
     }
 

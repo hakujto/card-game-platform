@@ -97,4 +97,21 @@ public class Tournament {
     public Boolean isFull() {
         throw new UnsupportedOperationException("isFull not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Tournament must allow between 2 and 512 players")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isMaxPlayersPositiveValid() {
+        return (getMaxPlayers() == null || (getMaxPlayers() >= 2 && getMaxPlayers() <= 512));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Entry fee must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isEntryFeeNotNegativeValid() {
+        return (getEntryFee() == null || getEntryFee().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Prize pool must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPrizePoolNotNegativeValid() {
+        return (getPrizePool() == null || getPrizePool().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
 }

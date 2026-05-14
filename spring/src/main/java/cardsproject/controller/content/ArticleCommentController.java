@@ -2,6 +2,7 @@ package cardsproject.controller.content;
 
 import cardsproject.domain.content.ArticleComment;
 import cardsproject.service.content.ArticleCommentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class ArticleCommentController {
     }
 
     @PostMapping
-    public ResponseEntity<ArticleComment> create(@RequestBody ArticleComment entity) {
+    public ResponseEntity<ArticleComment> create(@Valid @RequestBody ArticleComment entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class ArticleCommentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ArticleComment> update(@PathVariable Long id, @RequestBody ArticleComment entity) {
+    public ResponseEntity<ArticleComment> update(@PathVariable Long id, @Valid @RequestBody ArticleComment entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ArticleComment> patch(@PathVariable Long id, @RequestBody ArticleComment entity) {
+    public ResponseEntity<ArticleComment> patch(@PathVariable Long id, @Valid @RequestBody ArticleComment entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

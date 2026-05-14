@@ -2,6 +2,7 @@ package cardsproject.controller.tournaments;
 
 import cardsproject.domain.tournaments.Season;
 import cardsproject.service.tournaments.SeasonService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class SeasonController {
     }
 
     @PostMapping
-    public ResponseEntity<Season> create(@RequestBody Season entity) {
+    public ResponseEntity<Season> create(@Valid @RequestBody Season entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class SeasonController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Season> update(@PathVariable Long id, @RequestBody Season entity) {
+    public ResponseEntity<Season> update(@PathVariable Long id, @Valid @RequestBody Season entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Season> patch(@PathVariable Long id, @RequestBody Season entity) {
+    public ResponseEntity<Season> patch(@PathVariable Long id, @Valid @RequestBody Season entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));

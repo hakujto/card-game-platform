@@ -27,7 +27,7 @@ public class TournamentRoundControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournament_rounds")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"roundNumber\": 1, \"timeLimitMinutes\": 1 }"))
+            .content("{ \"roundNumber\": 1 }"))
             .andExpect(status().isCreated());
     }
 

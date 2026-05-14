@@ -2,6 +2,7 @@ package cardsproject.controller.marketplace;
 
 import cardsproject.domain.marketplace.TradeDispute;
 import cardsproject.service.marketplace.TradeDisputeService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -22,7 +23,7 @@ public class TradeDisputeController {
     }
 
     @PostMapping
-    public ResponseEntity<TradeDispute> create(@RequestBody TradeDispute entity) {
+    public ResponseEntity<TradeDispute> create(@Valid @RequestBody TradeDispute entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
@@ -34,14 +35,14 @@ public class TradeDisputeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TradeDispute> update(@PathVariable Long id, @RequestBody TradeDispute entity) {
+    public ResponseEntity<TradeDispute> update(@PathVariable Long id, @Valid @RequestBody TradeDispute entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TradeDispute> patch(@PathVariable Long id, @RequestBody TradeDispute entity) {
+    public ResponseEntity<TradeDispute> patch(@PathVariable Long id, @Valid @RequestBody TradeDispute entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
