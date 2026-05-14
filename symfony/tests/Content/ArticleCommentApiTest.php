@@ -83,4 +83,5 @@ class ArticleCommentApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/article_comments/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

@@ -67,4 +67,5 @@ class AchievementApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/achievements/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

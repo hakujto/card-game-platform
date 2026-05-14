@@ -73,4 +73,5 @@ class PlayerSeasonStatsApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/player_season_statses/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

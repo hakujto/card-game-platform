@@ -84,14 +84,6 @@ class Card
     #[ORM\JoinColumn(nullable: false)]
     private ?CardSet $set = null;
 
-    #[ORM\ManyToOne(targetEntity: CardRuling::class, inversedBy: 'card')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?CardRuling $rulings = null;
-
-    #[ORM\ManyToOne(targetEntity: CardAbility::class, inversedBy: 'card')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?CardAbility $abilities = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -290,38 +282,34 @@ class Card
         return $this;
     }
 
-    #[Groups(['card:read'])]
-    public function getRulingsId(): ?int
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "mana_cost must be between 0 and 20")]
+    public function isManaCostRangeValid(): bool
     {
-        return $this->rulings?->getId();
+        return ($this->getManaCost() === null || ($this->getManaCost() >= 0 && $this->getManaCost() <= 20));
     }
 
-    public function getRulings(): ?CardRuling
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "power_level must be between 1 and 10")]
+    public function isPowerLevelRangeValid(): bool
     {
-        return $this->rulings;
+        return ($this->getPowerLevel() === null || ($this->getPowerLevel() >= 1 && $this->getPowerLevel() <= 10));
     }
 
-    public function setRulings(?CardRuling $rulings): static
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Card cannot be both banned and restricted at the same time")]
+    public function isNotBannedAndRestrictedValid(): bool
     {
-        $this->rulings = $rulings;
-        return $this;
+        return !(($this->getIsBanned() === true && $this->getIsRestricted() === true));
     }
 
-    #[Groups(['card:read'])]
-    public function getAbilitiesId(): ?int
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
     {
-        return $this->abilities?->getId();
-    }
-
-    public function getAbilities(): ?CardAbility
-    {
-        return $this->abilities;
-    }
-
-    public function setAbilities(?CardAbility $abilities): static
-    {
-        $this->abilities = $abilities;
-        return $this;
+        if ($this->getCardType() === 'CREATURE' && !($this->getAttack() !== null && $this->getDefense() !== null)) {
+            throw new \DomainException('Creature card must have attack and defense');
+        }
+        if ($this->getCardType() === 'PLANESWALKER' && $this->getLoyalty() === null) {
+            throw new \DomainException('Planeswalker card must have loyalty');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

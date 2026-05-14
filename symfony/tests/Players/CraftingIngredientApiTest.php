@@ -85,4 +85,5 @@ class CraftingIngredientApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/crafting_ingredients/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

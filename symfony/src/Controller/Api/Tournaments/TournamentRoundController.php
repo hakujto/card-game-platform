@@ -12,8 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Tournaments\Tournament;
 use App\Repository\Tournaments\TournamentRepository;
-use App\Entity\Tournaments\MatchRecord;
-use App\Repository\Tournaments\MatchRecordRepository;
 
 #[Route('/api/tournament_rounds', name: 'tournamentRound_')]
 class TournamentRoundController extends AbstractController
@@ -22,7 +20,6 @@ class TournamentRoundController extends AbstractController
         private TournamentRoundRepository $repository,
         private ValidatorInterface $validator,
         private TournamentRepository $tournamentRepository,
-        private MatchRecordRepository $matchRecordRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -46,10 +43,6 @@ class TournamentRoundController extends AbstractController
         $rel_tournament = $this->tournamentRepository->find($data['tournament']);
         if (!$rel_tournament) return $this->json(['error' => 'Tournament not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $tournamentRound->setTournament($rel_tournament);
-        if (!isset($data['matches'])) return $this->json(['error' => 'matches is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_matches = $this->matchRecordRepository->find($data['matches']);
-        if (!$rel_matches) return $this->json(['error' => 'Match not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $tournamentRound->setMatches($rel_matches);
 
         $errors = $this->validator->validate($tournamentRound);
         if (count($errors) > 0) {
@@ -79,11 +72,6 @@ class TournamentRoundController extends AbstractController
             $rel_tournament = $this->tournamentRepository->find($data['tournament']);
             if (!$rel_tournament) return $this->json(['error' => 'Tournament not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $tournamentRound->setTournament($rel_tournament);
-        }
-        if (isset($data['matches'])) {
-            $rel_matches = $this->matchRecordRepository->find($data['matches']);
-            if (!$rel_matches) return $this->json(['error' => 'Match not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tournamentRound->setMatches($rel_matches);
         }
 
         $errors = $this->validator->validate($tournamentRound);

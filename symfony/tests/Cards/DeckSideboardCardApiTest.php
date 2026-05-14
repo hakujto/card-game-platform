@@ -95,4 +95,5 @@ class DeckSideboardCardApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/deck_sideboard_cards/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

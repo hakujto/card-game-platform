@@ -73,4 +73,5 @@ class OrderItemApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/order_items/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

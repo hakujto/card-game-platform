@@ -83,18 +83,6 @@ class Tournament
     #[ORM\JoinColumn(nullable: false)]
     private ?Player $organizer = null;
 
-    #[ORM\ManyToOne(targetEntity: TournamentRegistration::class, inversedBy: 'tournament')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?TournamentRegistration $registrations = null;
-
-    #[ORM\ManyToOne(targetEntity: TournamentRound::class, inversedBy: 'tournament')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?TournamentRound $rounds = null;
-
-    #[ORM\ManyToOne(targetEntity: TournamentPrize::class, inversedBy: 'tournament')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?TournamentPrize $prizes = null;
-
     #[ORM\ManyToMany(targetEntity: Player::class)]
     #[ORM\JoinTable(name: 'tournament_judges_m2m')]
     private Collection $judges;
@@ -297,57 +285,6 @@ class Tournament
         return $this;
     }
 
-    #[Groups(['tournament:read'])]
-    public function getRegistrationsId(): ?int
-    {
-        return $this->registrations?->getId();
-    }
-
-    public function getRegistrations(): ?TournamentRegistration
-    {
-        return $this->registrations;
-    }
-
-    public function setRegistrations(?TournamentRegistration $registrations): static
-    {
-        $this->registrations = $registrations;
-        return $this;
-    }
-
-    #[Groups(['tournament:read'])]
-    public function getRoundsId(): ?int
-    {
-        return $this->rounds?->getId();
-    }
-
-    public function getRounds(): ?TournamentRound
-    {
-        return $this->rounds;
-    }
-
-    public function setRounds(?TournamentRound $rounds): static
-    {
-        $this->rounds = $rounds;
-        return $this;
-    }
-
-    #[Groups(['tournament:read'])]
-    public function getPrizesId(): ?int
-    {
-        return $this->prizes?->getId();
-    }
-
-    public function getPrizes(): ?TournamentPrize
-    {
-        return $this->prizes;
-    }
-
-    public function setPrizes(?TournamentPrize $prizes): static
-    {
-        $this->prizes = $prizes;
-        return $this;
-    }
-
     public function getJudges(): Collection
     {
         return $this->judges;
@@ -365,6 +302,33 @@ class Tournament
     {
         $this->judges->removeElement($item);
         return $this;
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Tournament must allow between 2 and 512 players")]
+    public function isMaxPlayersPositiveValid(): bool
+    {
+        return ($this->getMaxPlayers() === null || ($this->getMaxPlayers() >= 2 && $this->getMaxPlayers() <= 512));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Entry fee must not be negative")]
+    public function isEntryFeeNotNegativeValid(): bool
+    {
+        return ($this->getEntryFee() === null || (float)$this->getEntryFee() >= (float)0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Prize pool must not be negative")]
+    public function isPrizePoolNotNegativeValid(): bool
+    {
+        return ($this->getPrizePool() === null || (float)$this->getPrizePool() >= (float)0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getEndTime() !== null && !(($this->getEndTime() === null || $this->getEndTime() > $this->getStartTime()))) {
+            throw new \DomainException('End time must be after start time');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

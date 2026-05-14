@@ -93,4 +93,31 @@ class TradelistingApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tradelistings/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
+    public function testCreateFailsWhenFixedPriceRequiresAskingPriceViolated(): void
+    {
+        // Fixed price listing must have an asking price
+        $this->client->request('POST', '/api/tradelistings', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'listingType' => 'FIXEDPRICE', 'askingPrice' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenAuctionRequiresStartPriceAndEndTimeViolated(): void
+    {
+        // Auction listing must have a start price and end time
+        $this->client->request('POST', '/api/tradelistings', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'listingType' => 'AUCTION', 'auctionStartPrice' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenQuantityPositiveViolated(): void
+    {
+        // Listing quantity must be between 1 and 9999
+        $this->client->request('POST', '/api/tradelistings', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['foil' => true, 'condition' => 'MINT', 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'listingType' => 'FIXEDPRICE', 'askingPrice' => '0.00', 'listingType' => 'AUCTION', 'auctionStartPrice' => '0.00', 'auctionEndTime' => '2024-01-01T00:00:00+00:00', 'quantity' => 10000])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

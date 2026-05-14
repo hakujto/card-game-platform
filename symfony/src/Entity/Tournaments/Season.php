@@ -111,6 +111,13 @@ class Season
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Season end date must be after start date")]
+    public function isEndDateAfterStartDateValid(): bool
+    {
+        return ($this->getEndDate() === null || $this->getEndDate() > $this->getStartDate());
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function activate(): void

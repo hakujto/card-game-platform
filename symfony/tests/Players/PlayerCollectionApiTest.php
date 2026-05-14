@@ -93,4 +93,5 @@ class PlayerCollectionApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/player_collections/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

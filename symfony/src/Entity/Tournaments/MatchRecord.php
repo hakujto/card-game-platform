@@ -57,10 +57,6 @@ class MatchRecord
     #[ORM\JoinColumn(nullable: true)]
     private ?Player $player2 = null;
 
-    #[ORM\ManyToOne(targetEntity: Game::class, inversedBy: 'match')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Game $games = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -194,21 +190,25 @@ class MatchRecord
         return $this;
     }
 
-    #[Groups(['matchRecord:read'])]
-    public function getGamesId(): ?int
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Win counts must not be negative")]
+    public function isWinsNotNegativeValid(): bool
     {
-        return $this->games?->getId();
+        return (($this->getPlayer1Wins() === null || $this->getPlayer1Wins() >= 0) && ($this->getPlayer2Wins() === null || $this->getPlayer2Wins() >= 0));
     }
 
-    public function getGames(): ?Game
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Win counts cannot exceed 2 in a best-of-3 match")]
+    public function isMaxThreeGamesValid(): bool
     {
-        return $this->games;
+        return (($this->getPlayer1Wins() === null || ($this->getPlayer1Wins() >= 0 && $this->getPlayer1Wins() <= 2)) && ($this->getPlayer2Wins() === null || ($this->getPlayer2Wins() >= 0 && $this->getPlayer2Wins() <= 2)));
     }
 
-    public function setGames(?Game $games): static
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
     {
-        $this->games = $games;
-        return $this;
+        if ($this->getStatus() === 'BYE' && $this->getPlayer2() !== null) {
+            throw new \DomainException('BYE match must not have a second player');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

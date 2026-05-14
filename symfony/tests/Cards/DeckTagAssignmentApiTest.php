@@ -89,4 +89,5 @@ class DeckTagAssignmentApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/deck_tag_assignments/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

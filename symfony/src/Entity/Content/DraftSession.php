@@ -41,10 +41,6 @@ class DraftSession
     #[ORM\JoinColumn(nullable: false)]
     private ?CardSet $cardSet = null;
 
-    #[ORM\ManyToOne(targetEntity: DraftParticipant::class, inversedBy: 'session')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?DraftParticipant $participants = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -119,23 +115,6 @@ class DraftSession
     public function setCardSet(?CardSet $cardSet): static
     {
         $this->cardSet = $cardSet;
-        return $this;
-    }
-
-    #[Groups(['draftSession:read'])]
-    public function getParticipantsId(): ?int
-    {
-        return $this->participants?->getId();
-    }
-
-    public function getParticipants(): ?DraftParticipant
-    {
-        return $this->participants;
-    }
-
-    public function setParticipants(?DraftParticipant $participants): static
-    {
-        $this->participants = $participants;
         return $this;
     }
 

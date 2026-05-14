@@ -85,4 +85,5 @@ class StreamApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/streams/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

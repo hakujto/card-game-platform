@@ -5,32 +5,21 @@ namespace App\Tests\Players;
 use App\Entity\Players\Player;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 
 class PlayerApiTest extends WebTestCase
 {
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $depSeasonStats;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->depSeasonStats = new PlayerSeasonStats();
-        $this->depSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->depSeasonStats);
-
         $entity = new Player();
         $entity->setDisplayName('test');
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
-        $entity->setSeasonStats($this->depSeasonStats);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -53,7 +42,6 @@ class PlayerApiTest extends WebTestCase
             'peakRating' => 1,
             'isVerified' => true,
             'createdAt' => '2024-01-01T00:00:00+00:00',
-            'seasonStats' => (int) $this->depSeasonStats->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -79,5 +67,32 @@ class PlayerApiTest extends WebTestCase
     {
         $this->client->request('DELETE', '/api/players/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
+    }
+
+    public function testCreateFailsWhenRatingRangeViolated(): void
+    {
+        // Rating must be between 0 and 9999
+        $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['displayName' => 'test', 'rank' => 'BRONZE', 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'rating' => 10000])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenPeakRatingGteRatingViolated(): void
+    {
+        // Peak rating must be greater than or equal to current rating
+        $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['displayName' => 'test', 'rank' => 'BRONZE', 'rating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'peakRating' => NaN])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenDisplayNameNotEmptyViolated(): void
+    {
+        // Display name must not be empty
+        $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['rank' => 'BRONZE', 'rating' => 1, 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'displayName' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
     }
 }

@@ -33,10 +33,6 @@ class DraftParticipant
     #[ORM\JoinColumn(nullable: false)]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: DraftPick::class, inversedBy: 'participant')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?DraftPick $draftedCards = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -95,23 +91,6 @@ class DraftParticipant
     public function setPlayer(?Player $player): static
     {
         $this->player = $player;
-        return $this;
-    }
-
-    #[Groups(['draftParticipant:read'])]
-    public function getDraftedCardsId(): ?int
-    {
-        return $this->draftedCards?->getId();
-    }
-
-    public function getDraftedCards(): ?DraftPick
-    {
-        return $this->draftedCards;
-    }
-
-    public function setDraftedCards(?DraftPick $draftedCards): static
-    {
-        $this->draftedCards = $draftedCards;
         return $this;
     }
 

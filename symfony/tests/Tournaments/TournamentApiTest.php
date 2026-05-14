@@ -94,4 +94,40 @@ class TournamentApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tournaments/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
+    public function testCreateFailsWhenMaxPlayersPositiveViolated(): void
+    {
+        // Tournament must allow between 2 and 512 players
+        $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => NaN, 'maxPlayers' => 513])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenEntryFeeNotNegativeViolated(): void
+    {
+        // Entry fee must not be negative
+        $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => NaN, 'entryFee' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenPrizePoolNotNegativeViolated(): void
+    {
+        // Prize pool must not be negative
+        $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => NaN, 'prizePool' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenEndTimeAfterStartViolated(): void
+    {
+        // End time must be after start time
+        $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => start_time])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

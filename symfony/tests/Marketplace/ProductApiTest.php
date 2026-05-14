@@ -69,4 +69,5 @@ class ProductApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/products/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

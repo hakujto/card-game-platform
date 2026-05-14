@@ -6,10 +6,6 @@ use App\Entity\Content\DraftSession;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Cards\CardSet;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
-use App\Entity\Players\Player;
-use App\Entity\Content\DraftParticipant;
 
 class DraftSessionApiTest extends WebTestCase
 {
@@ -17,10 +13,6 @@ class DraftSessionApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private CardSet $depCardSet;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
-    private Player $auxPlayer;
-    private DraftParticipant $depParticipants;
 
     protected function setUp(): void
     {
@@ -29,22 +21,10 @@ class DraftSessionApiTest extends WebTestCase
 
         $this->depCardSet = new CardSet();
         $this->em->persist($this->depCardSet);
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
-        $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
-        $this->em->persist($this->auxPlayer);
-        $this->depParticipants = new DraftParticipant();
-        $this->depParticipants->setPlayer($this->auxPlayer);
-        $this->em->persist($this->depParticipants);
 
         $entity = new DraftSession();
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
         $entity->setCardSet($this->depCardSet);
-        $entity->setParticipants($this->depParticipants);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -65,7 +45,6 @@ class DraftSessionApiTest extends WebTestCase
             'seats' => 1,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'cardSet' => (int) $this->depCardSet->getId(),
-            'participants' => (int) $this->depParticipants->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -92,4 +71,5 @@ class DraftSessionApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/draft_sessions/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

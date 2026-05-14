@@ -14,12 +14,6 @@ use App\Entity\Tournaments\Season;
 use App\Repository\Tournaments\SeasonRepository;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
-use App\Entity\Tournaments\TournamentRegistration;
-use App\Repository\Tournaments\TournamentRegistrationRepository;
-use App\Entity\Tournaments\TournamentRound;
-use App\Repository\Tournaments\TournamentRoundRepository;
-use App\Entity\Tournaments\TournamentPrize;
-use App\Repository\Tournaments\TournamentPrizeRepository;
 
 #[Route('/api/tournaments', name: 'tournament_')]
 class TournamentController extends AbstractController
@@ -29,9 +23,6 @@ class TournamentController extends AbstractController
         private ValidatorInterface $validator,
         private SeasonRepository $seasonRepository,
         private PlayerRepository $playerRepository,
-        private TournamentRegistrationRepository $tournamentRegistrationRepository,
-        private TournamentRoundRepository $tournamentRoundRepository,
-        private TournamentPrizeRepository $tournamentPrizeRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -68,19 +59,16 @@ class TournamentController extends AbstractController
         $rel_organizer = $this->playerRepository->find($data['organizer']);
         if (!$rel_organizer) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $tournament->setOrganizer($rel_organizer);
-        if (array_key_exists('registrations', $data)) {
-            $tournament->setRegistrations($data['registrations'] !== null ? $this->tournamentRegistrationRepository->find($data['registrations']) : null);
-        }
-        if (array_key_exists('rounds', $data)) {
-            $tournament->setRounds($data['rounds'] !== null ? $this->tournamentRoundRepository->find($data['rounds']) : null);
-        }
-        if (array_key_exists('prizes', $data)) {
-            $tournament->setPrizes($data['prizes'] !== null ? $this->tournamentPrizeRepository->find($data['prizes']) : null);
-        }
 
         $errors = $this->validator->validate($tournament);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tournament->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tournament, flush: true);
@@ -121,19 +109,16 @@ class TournamentController extends AbstractController
             if (!$rel_organizer) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $tournament->setOrganizer($rel_organizer);
         }
-        if (array_key_exists('registrations', $data)) {
-            $tournament->setRegistrations($data['registrations'] !== null ? $this->tournamentRegistrationRepository->find($data['registrations']) : null);
-        }
-        if (array_key_exists('rounds', $data)) {
-            $tournament->setRounds($data['rounds'] !== null ? $this->tournamentRoundRepository->find($data['rounds']) : null);
-        }
-        if (array_key_exists('prizes', $data)) {
-            $tournament->setPrizes($data['prizes'] !== null ? $this->tournamentPrizeRepository->find($data['prizes']) : null);
-        }
 
         $errors = $this->validator->validate($tournament);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tournament->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tournament, flush: true);

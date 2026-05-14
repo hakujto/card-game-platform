@@ -95,4 +95,5 @@ class ArticleTagAssignmentApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/article_tag_assignments/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

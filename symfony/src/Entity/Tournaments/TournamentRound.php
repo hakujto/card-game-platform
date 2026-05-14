@@ -40,10 +40,6 @@ class TournamentRound
     #[ORM\JoinColumn(nullable: false)]
     private ?Tournament $tournament = null;
 
-    #[ORM\ManyToOne(targetEntity: MatchRecord::class, inversedBy: 'round')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?MatchRecord $matches = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -118,23 +114,6 @@ class TournamentRound
     public function setTournament(?Tournament $tournament): static
     {
         $this->tournament = $tournament;
-        return $this;
-    }
-
-    #[Groups(['tournamentRound:read'])]
-    public function getMatchesId(): ?int
-    {
-        return $this->matches?->getId();
-    }
-
-    public function getMatches(): ?MatchRecord
-    {
-        return $this->matches;
-    }
-
-    public function setMatches(?MatchRecord $matches): static
-    {
-        $this->matches = $matches;
         return $this;
     }
 

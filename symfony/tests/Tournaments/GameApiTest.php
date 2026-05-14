@@ -85,4 +85,5 @@ class GameApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/games/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

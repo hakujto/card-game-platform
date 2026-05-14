@@ -48,6 +48,12 @@ class CouponController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $coupon->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($coupon, flush: true);
         return $this->json($coupon, Response::HTTP_CREATED, context: ['groups' => ['coupon:read']]);
     }
@@ -76,6 +82,12 @@ class CouponController extends AbstractController
         $errors = $this->validator->validate($coupon);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $coupon->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($coupon, flush: true);

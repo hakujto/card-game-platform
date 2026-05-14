@@ -72,10 +72,6 @@ class Article
     #[ORM\JoinColumn(nullable: true)]
     private ?Deck $featuredDeck = null;
 
-    #[ORM\ManyToOne(targetEntity: ArticleComment::class, inversedBy: 'article')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?ArticleComment $comments = null;
-
     #[ORM\ManyToMany(targetEntity: ArticleTag::class)]
     #[ORM\JoinTable(name: 'article_tags_m2m')]
     private Collection $tags;
@@ -242,23 +238,6 @@ class Article
     public function setFeaturedDeck(?Deck $featuredDeck): static
     {
         $this->featuredDeck = $featuredDeck;
-        return $this;
-    }
-
-    #[Groups(['article:read'])]
-    public function getCommentsId(): ?int
-    {
-        return $this->comments?->getId();
-    }
-
-    public function getComments(): ?ArticleComment
-    {
-        return $this->comments;
-    }
-
-    public function setComments(?ArticleComment $comments): static
-    {
-        $this->comments = $comments;
         return $this;
     }
 

@@ -69,4 +69,5 @@ class CardSetApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/card_sets/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

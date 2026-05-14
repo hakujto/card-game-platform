@@ -86,4 +86,5 @@ class FriendshipApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/friendships/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

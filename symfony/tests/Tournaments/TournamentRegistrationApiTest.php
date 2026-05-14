@@ -100,4 +100,5 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tournament_registrations/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

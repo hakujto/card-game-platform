@@ -100,4 +100,5 @@ class DraftPickApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/draft_picks/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

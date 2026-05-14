@@ -12,8 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
-use App\Entity\Marketplace\OrderItem;
-use App\Repository\Marketplace\OrderItemRepository;
 use App\Entity\Marketplace\Coupon;
 use App\Repository\Marketplace\CouponRepository;
 
@@ -24,7 +22,6 @@ class OrderController extends AbstractController
         private OrderRepository $repository,
         private ValidatorInterface $validator,
         private PlayerRepository $playerRepository,
-        private OrderItemRepository $orderItemRepository,
         private CouponRepository $couponRepository,
     ) {}
 
@@ -55,10 +52,6 @@ class OrderController extends AbstractController
         $rel_player = $this->playerRepository->find($data['player']);
         if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $order->setPlayer($rel_player);
-        if (!isset($data['items'])) return $this->json(['error' => 'items is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_items = $this->orderItemRepository->find($data['items']);
-        if (!$rel_items) return $this->json(['error' => 'OrderItem not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $order->setItems($rel_items);
         if (array_key_exists('coupon', $data)) {
             $order->setCoupon($data['coupon'] !== null ? $this->couponRepository->find($data['coupon']) : null);
         }
@@ -66,6 +59,12 @@ class OrderController extends AbstractController
         $errors = $this->validator->validate($order);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $order->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($order, flush: true);
@@ -98,11 +97,6 @@ class OrderController extends AbstractController
             if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $order->setPlayer($rel_player);
         }
-        if (isset($data['items'])) {
-            $rel_items = $this->orderItemRepository->find($data['items']);
-            if (!$rel_items) return $this->json(['error' => 'OrderItem not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $order->setItems($rel_items);
-        }
         if (array_key_exists('coupon', $data)) {
             $order->setCoupon($data['coupon'] !== null ? $this->couponRepository->find($data['coupon']) : null);
         }
@@ -110,6 +104,12 @@ class OrderController extends AbstractController
         $errors = $this->validator->validate($order);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $order->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($order, flush: true);

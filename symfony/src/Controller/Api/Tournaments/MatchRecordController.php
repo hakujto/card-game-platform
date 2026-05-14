@@ -14,8 +14,6 @@ use App\Entity\Tournaments\TournamentRound;
 use App\Repository\Tournaments\TournamentRoundRepository;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
-use App\Entity\Tournaments\Game;
-use App\Repository\Tournaments\GameRepository;
 
 #[Route('/api/matches', name: 'matchRecord_')]
 class MatchRecordController extends AbstractController
@@ -25,7 +23,6 @@ class MatchRecordController extends AbstractController
         private ValidatorInterface $validator,
         private TournamentRoundRepository $tournamentRoundRepository,
         private PlayerRepository $playerRepository,
-        private GameRepository $gameRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -57,13 +54,16 @@ class MatchRecordController extends AbstractController
         if (array_key_exists('player2', $data)) {
             $matchRecord->setPlayer2($data['player2'] !== null ? $this->playerRepository->find($data['player2']) : null);
         }
-        if (array_key_exists('games', $data)) {
-            $matchRecord->setGames($data['games'] !== null ? $this->gameRepository->find($data['games']) : null);
-        }
 
         $errors = $this->validator->validate($matchRecord);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $matchRecord->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($matchRecord, flush: true);
@@ -98,13 +98,16 @@ class MatchRecordController extends AbstractController
         if (array_key_exists('player2', $data)) {
             $matchRecord->setPlayer2($data['player2'] !== null ? $this->playerRepository->find($data['player2']) : null);
         }
-        if (array_key_exists('games', $data)) {
-            $matchRecord->setGames($data['games'] !== null ? $this->gameRepository->find($data['games']) : null);
-        }
 
         $errors = $this->validator->validate($matchRecord);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $matchRecord->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($matchRecord, flush: true);

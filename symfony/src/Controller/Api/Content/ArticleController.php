@@ -14,8 +14,6 @@ use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 use App\Entity\Cards\Deck;
 use App\Repository\Cards\DeckRepository;
-use App\Entity\Content\ArticleComment;
-use App\Repository\Content\ArticleCommentRepository;
 
 #[Route('/api/articles', name: 'article_')]
 class ArticleController extends AbstractController
@@ -25,7 +23,6 @@ class ArticleController extends AbstractController
         private ValidatorInterface $validator,
         private PlayerRepository $playerRepository,
         private DeckRepository $deckRepository,
-        private ArticleCommentRepository $articleCommentRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -58,10 +55,6 @@ class ArticleController extends AbstractController
         if (array_key_exists('featuredDeck', $data)) {
             $article->setFeaturedDeck($data['featuredDeck'] !== null ? $this->deckRepository->find($data['featuredDeck']) : null);
         }
-        if (!isset($data['comments'])) return $this->json(['error' => 'comments is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_comments = $this->articleCommentRepository->find($data['comments']);
-        if (!$rel_comments) return $this->json(['error' => 'ArticleComment not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $article->setComments($rel_comments);
 
         $errors = $this->validator->validate($article);
         if (count($errors) > 0) {
@@ -100,11 +93,6 @@ class ArticleController extends AbstractController
         }
         if (array_key_exists('featuredDeck', $data)) {
             $article->setFeaturedDeck($data['featuredDeck'] !== null ? $this->deckRepository->find($data['featuredDeck']) : null);
-        }
-        if (isset($data['comments'])) {
-            $rel_comments = $this->articleCommentRepository->find($data['comments']);
-            if (!$rel_comments) return $this->json(['error' => 'ArticleComment not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $article->setComments($rel_comments);
         }
 
         $errors = $this->validator->validate($article);

@@ -65,4 +65,5 @@ class ArticleTagApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/article_tags/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

@@ -9,7 +9,6 @@ use App\Entity\Tournaments\Season;
 use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
-use App\Entity\Tournaments\MatchRecord;
 
 class TournamentRoundApiTest extends WebTestCase
 {
@@ -20,7 +19,6 @@ class TournamentRoundApiTest extends WebTestCase
     private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $depTournament;
-    private MatchRecord $depMatches;
 
     protected function setUp(): void
     {
@@ -39,14 +37,10 @@ class TournamentRoundApiTest extends WebTestCase
         $this->depTournament->setSeason($this->auxSeason);
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
-        $this->depMatches = new MatchRecord();
-        $this->depMatches->setPlayer1($this->auxPlayer);
-        $this->em->persist($this->depMatches);
 
         $entity = new TournamentRound();
         $entity->setRoundNumber(1);
         $entity->setTournament($this->depTournament);
-        $entity->setMatches($this->depMatches);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -67,7 +61,6 @@ class TournamentRoundApiTest extends WebTestCase
             'roundNumber' => 1,
             'timeLimitMinutes' => 1,
             'tournament' => (int) $this->depTournament->getId(),
-            'matches' => (int) $this->depMatches->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -94,4 +87,5 @@ class TournamentRoundApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tournament_rounds/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

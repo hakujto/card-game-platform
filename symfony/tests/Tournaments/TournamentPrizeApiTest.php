@@ -91,4 +91,5 @@ class TournamentPrizeApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tournament_prizes/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

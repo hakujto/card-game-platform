@@ -82,4 +82,5 @@ class DraftParticipantApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/draft_participants/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
 use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
-use App\Entity\Content\ArticleComment;
 
 class ArticleApiTest extends WebTestCase
 {
@@ -18,8 +17,6 @@ class ArticleApiTest extends WebTestCase
     private Season $auxSeason;
     private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depAuthor;
-    private Player $auxPlayer;
-    private ArticleComment $depComments;
 
     protected function setUp(): void
     {
@@ -34,12 +31,6 @@ class ArticleApiTest extends WebTestCase
         $this->depAuthor = new Player();
         $this->depAuthor->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depAuthor);
-        $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
-        $this->em->persist($this->auxPlayer);
-        $this->depComments = new ArticleComment();
-        $this->depComments->setAuthor($this->auxPlayer);
-        $this->em->persist($this->depComments);
 
         $entity = new Article();
         $entity->setTitle('test');
@@ -48,7 +39,6 @@ class ArticleApiTest extends WebTestCase
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
         $entity->setUpdatedAt(new \DateTime('2024-01-01'));
         $entity->setAuthor($this->depAuthor);
-        $entity->setComments($this->depComments);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -73,7 +63,6 @@ class ArticleApiTest extends WebTestCase
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'updatedAt' => '2024-01-01T00:00:00+00:00',
             'author' => (int) $this->depAuthor->getId(),
-            'comments' => (int) $this->depComments->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -100,4 +89,5 @@ class ArticleApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/articles/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

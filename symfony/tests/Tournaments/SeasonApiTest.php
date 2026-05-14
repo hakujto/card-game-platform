@@ -68,4 +68,13 @@ class SeasonApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/seasons/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
+    public function testCreateFailsWhenEndDateAfterStartDateViolated(): void
+    {
+        // Season end date must be after start date
+        $this->client->request('POST', '/api/seasons', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'startDate' => '2024-01-01', 'format' => 'STANDARD', 'isActive' => true, 'endDate' => start_date])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

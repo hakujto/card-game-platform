@@ -8,8 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
 use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
-use App\Entity\Marketplace\Product;
-use App\Entity\Marketplace\OrderItem;
 
 class OrderApiTest extends WebTestCase
 {
@@ -19,8 +17,6 @@ class OrderApiTest extends WebTestCase
     private Season $auxSeason;
     private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depPlayer;
-    private Product $auxProduct;
-    private OrderItem $depItems;
 
     protected function setUp(): void
     {
@@ -35,16 +31,10 @@ class OrderApiTest extends WebTestCase
         $this->depPlayer = new Player();
         $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
-        $this->auxProduct = new Product();
-        $this->em->persist($this->auxProduct);
-        $this->depItems = new OrderItem();
-        $this->depItems->setProduct($this->auxProduct);
-        $this->em->persist($this->depItems);
 
         $entity = new Order();
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
         $entity->setPlayer($this->depPlayer);
-        $entity->setItems($this->depItems);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -67,7 +57,6 @@ class OrderApiTest extends WebTestCase
             'currency' => 'test',
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'player' => (int) $this->depPlayer->getId(),
-            'items' => (int) $this->depItems->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -93,5 +82,41 @@ class OrderApiTest extends WebTestCase
     {
         $this->client->request('DELETE', '/api/orders/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
+    }
+
+    public function testCreateFailsWhenPaidRequiresPaidAtViolated(): void
+    {
+        // Paid order must have paid_at set
+        $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PAID', 'paidAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenShippedRequiresTrackingViolated(): void
+    {
+        // Shipped order must have a tracking number
+        $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenTotalNotNegativeViolated(): void
+    {
+        // Order total must not be negative
+        $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PAID', 'paidAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => 'test', 'total' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenDiscountNotExceedTotalViolated(): void
+    {
+        // Discount applied cannot exceed order total
+        $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['total' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PAID', 'paidAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => 'test', 'discountApplied' => NaN])
+        );
+        $this->assertResponseStatusCodeSame(422);
     }
 }

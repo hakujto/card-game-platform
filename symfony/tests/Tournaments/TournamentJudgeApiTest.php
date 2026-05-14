@@ -90,4 +90,5 @@ class TournamentJudgeApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/tournament_judges/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

@@ -12,10 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Cards\CardSet;
 use App\Repository\Cards\CardSetRepository;
-use App\Entity\Cards\CardRuling;
-use App\Repository\Cards\CardRulingRepository;
-use App\Entity\Cards\CardAbility;
-use App\Repository\Cards\CardAbilityRepository;
 
 #[Route('/api/cards', name: 'card_')]
 class CardController extends AbstractController
@@ -24,8 +20,6 @@ class CardController extends AbstractController
         private CardRepository $repository,
         private ValidatorInterface $validator,
         private CardSetRepository $cardSetRepository,
-        private CardRulingRepository $cardRulingRepository,
-        private CardAbilityRepository $cardAbilityRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -60,16 +54,16 @@ class CardController extends AbstractController
         $rel_set = $this->cardSetRepository->find($data['set']);
         if (!$rel_set) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $card->setSet($rel_set);
-        if (array_key_exists('rulings', $data)) {
-            $card->setRulings($data['rulings'] !== null ? $this->cardRulingRepository->find($data['rulings']) : null);
-        }
-        if (array_key_exists('abilities', $data)) {
-            $card->setAbilities($data['abilities'] !== null ? $this->cardAbilityRepository->find($data['abilities']) : null);
-        }
 
         $errors = $this->validator->validate($card);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $card->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($card, flush: true);
@@ -107,16 +101,16 @@ class CardController extends AbstractController
             if (!$rel_set) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $card->setSet($rel_set);
         }
-        if (array_key_exists('rulings', $data)) {
-            $card->setRulings($data['rulings'] !== null ? $this->cardRulingRepository->find($data['rulings']) : null);
-        }
-        if (array_key_exists('abilities', $data)) {
-            $card->setAbilities($data['abilities'] !== null ? $this->cardAbilityRepository->find($data['abilities']) : null);
-        }
 
         $errors = $this->validator->validate($card);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $card->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($card, flush: true);

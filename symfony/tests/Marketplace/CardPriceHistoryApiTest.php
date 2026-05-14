@@ -84,4 +84,5 @@ class CardPriceHistoryApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/card_price_histories/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

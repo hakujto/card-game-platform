@@ -88,4 +88,5 @@ class DeckApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/decks/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

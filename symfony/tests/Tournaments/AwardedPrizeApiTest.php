@@ -100,4 +100,5 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/awarded_prizes/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

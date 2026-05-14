@@ -156,6 +156,30 @@ class Coupon
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Coupon expiry must be after its start date")]
+    public function isValidUntilAfterValidFromValid(): bool
+    {
+        return ($this->getValidUntil() === null || $this->getValidUntil() > $this->getValidFrom());
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Discount value must be greater than zero")]
+    public function isDiscountValuePositiveValid(): bool
+    {
+        return ($this->getDiscountValue() === null || (float)$this->getDiscountValue() > (float)0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getDiscountType() === 'PERCENT' && !(($this->getDiscountValue() === null || ($this->getDiscountValue() >= 1 && $this->getDiscountValue() <= 100)))) {
+            throw new \DomainException('Percent discount must be between 1 and 100');
+        }
+        if ($this->getMaxUses() !== null && !(($this->getUsesCount() === null || $this->getUsesCount() <= $this->getMaxUses()))) {
+            throw new \DomainException('Coupon uses count cannot exceed max_uses');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function isValid(): void

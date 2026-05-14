@@ -14,8 +14,6 @@ use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 use App\Entity\Cards\Card;
 use App\Repository\Cards\CardRepository;
-use App\Entity\Marketplace\TradeBid;
-use App\Repository\Marketplace\TradeBidRepository;
 
 #[Route('/api/tradelistings', name: 'tradelisting_')]
 class TradelistingController extends AbstractController
@@ -25,7 +23,6 @@ class TradelistingController extends AbstractController
         private ValidatorInterface $validator,
         private PlayerRepository $playerRepository,
         private CardRepository $cardRepository,
-        private TradeBidRepository $tradeBidRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -60,13 +57,16 @@ class TradelistingController extends AbstractController
         $rel_card = $this->cardRepository->find($data['card']);
         if (!$rel_card) return $this->json(['error' => 'Card not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $tradelisting->setCard($rel_card);
-        if (array_key_exists('bids', $data)) {
-            $tradelisting->setBids($data['bids'] !== null ? $this->tradeBidRepository->find($data['bids']) : null);
-        }
 
         $errors = $this->validator->validate($tradelisting);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tradelisting->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tradelisting, flush: true);
@@ -105,13 +105,16 @@ class TradelistingController extends AbstractController
             if (!$rel_card) return $this->json(['error' => 'Card not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $tradelisting->setCard($rel_card);
         }
-        if (array_key_exists('bids', $data)) {
-            $tradelisting->setBids($data['bids'] !== null ? $this->tradeBidRepository->find($data['bids']) : null);
-        }
 
         $errors = $this->validator->validate($tradelisting);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tradelisting->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tradelisting, flush: true);

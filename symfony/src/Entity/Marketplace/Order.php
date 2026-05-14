@@ -65,10 +65,6 @@ class Order
     #[ORM\JoinColumn(nullable: false)]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: OrderItem::class, inversedBy: 'order')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?OrderItem $items = null;
-
     #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Coupon $coupon = null;
@@ -217,23 +213,6 @@ class Order
     }
 
     #[Groups(['order:read'])]
-    public function getItemsId(): ?int
-    {
-        return $this->items?->getId();
-    }
-
-    public function getItems(): ?OrderItem
-    {
-        return $this->items;
-    }
-
-    public function setItems(?OrderItem $items): static
-    {
-        $this->items = $items;
-        return $this;
-    }
-
-    #[Groups(['order:read'])]
     public function getCouponId(): ?int
     {
         return $this->coupon?->getId();
@@ -248,6 +227,30 @@ class Order
     {
         $this->coupon = $coupon;
         return $this;
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Order total must not be negative")]
+    public function isTotalNotNegativeValid(): bool
+    {
+        return ($this->getTotal() === null || (float)$this->getTotal() >= (float)0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Discount applied cannot exceed order total")]
+    public function isDiscountNotExceedTotalValid(): bool
+    {
+        return ($this->getDiscountApplied() === null || (float)$this->getDiscountApplied() <= (float)$this->getTotal());
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getStatus() === 'PAID' && $this->getPaidAt() === null) {
+            throw new \DomainException('Paid order must have paid_at set');
+        }
+        if ($this->getStatus() === 'SHIPPED' && $this->getTrackingNumber() === null) {
+            throw new \DomainException('Shipped order must have a tracking number');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

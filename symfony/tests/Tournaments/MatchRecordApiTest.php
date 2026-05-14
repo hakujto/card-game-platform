@@ -80,4 +80,31 @@ class MatchRecordApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/matches/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
+    public function testCreateFailsWhenWinsNotNegativeViolated(): void
+    {
+        // Win counts must not be negative
+        $this->client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['player2Wins' => 1, 'status' => 'BYE', 'player2' => null, 'player1Wins' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenMaxThreeGamesViolated(): void
+    {
+        // Win counts cannot exceed 2 in a best-of-3 match
+        $this->client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['player2Wins' => 1, 'status' => 'BYE', 'player2' => null, 'player1Wins' => 3])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenByeHasNoPlayer2Violated(): void
+    {
+        // BYE match must not have a second player
+        $this->client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['player1Wins' => 1, 'player2Wins' => 1, 'status' => 'BYE', 'player2' => 'test'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

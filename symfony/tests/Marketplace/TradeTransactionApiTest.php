@@ -114,4 +114,5 @@ class TradeTransactionApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/trade_transactions/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

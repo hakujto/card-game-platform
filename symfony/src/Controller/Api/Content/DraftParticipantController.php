@@ -14,8 +14,6 @@ use App\Entity\Content\DraftSession;
 use App\Repository\Content\DraftSessionRepository;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
-use App\Entity\Content\DraftPick;
-use App\Repository\Content\DraftPickRepository;
 
 #[Route('/api/draft_participants', name: 'draftParticipant_')]
 class DraftParticipantController extends AbstractController
@@ -25,7 +23,6 @@ class DraftParticipantController extends AbstractController
         private ValidatorInterface $validator,
         private DraftSessionRepository $draftSessionRepository,
         private PlayerRepository $playerRepository,
-        private DraftPickRepository $draftPickRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -49,9 +46,6 @@ class DraftParticipantController extends AbstractController
         $rel_player = $this->playerRepository->find($data['player']);
         if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $draftParticipant->setPlayer($rel_player);
-        if (array_key_exists('draftedCards', $data)) {
-            $draftParticipant->setDraftedCards($data['draftedCards'] !== null ? $this->draftPickRepository->find($data['draftedCards']) : null);
-        }
 
         $errors = $this->validator->validate($draftParticipant);
         if (count($errors) > 0) {
@@ -81,9 +75,6 @@ class DraftParticipantController extends AbstractController
             $rel_player = $this->playerRepository->find($data['player']);
             if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $draftParticipant->setPlayer($rel_player);
-        }
-        if (array_key_exists('draftedCards', $data)) {
-            $draftParticipant->setDraftedCards($data['draftedCards'] !== null ? $this->draftPickRepository->find($data['draftedCards']) : null);
         }
 
         $errors = $this->validator->validate($draftParticipant);

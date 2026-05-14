@@ -74,10 +74,6 @@ class Tradelisting
     #[ORM\JoinColumn(nullable: false)]
     private ?Card $card = null;
 
-    #[ORM\ManyToOne(targetEntity: TradeBid::class, inversedBy: 'listing')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?TradeBid $bids = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -249,21 +245,22 @@ class Tradelisting
         return $this;
     }
 
-    #[Groups(['tradelisting:read'])]
-    public function getBidsId(): ?int
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Listing quantity must be between 1 and 9999")]
+    public function isQuantityPositiveValid(): bool
     {
-        return $this->bids?->getId();
+        return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 9999));
     }
 
-    public function getBids(): ?TradeBid
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
     {
-        return $this->bids;
-    }
-
-    public function setBids(?TradeBid $bids): static
-    {
-        $this->bids = $bids;
-        return $this;
+        if ($this->getListingType() === 'FIXEDPRICE' && $this->getAskingPrice() === null) {
+            throw new \DomainException('Fixed price listing must have an asking price');
+        }
+        if ($this->getListingType() === 'AUCTION' && !($this->getAuctionStartPrice() !== null && $this->getAuctionEndTime() !== null)) {
+            throw new \DomainException('Auction listing must have a start price and end time');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

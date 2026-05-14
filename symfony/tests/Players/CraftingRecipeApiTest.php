@@ -76,4 +76,5 @@ class CraftingRecipeApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/crafting_recipes/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

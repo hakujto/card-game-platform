@@ -12,8 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Cards\CardSet;
 use App\Repository\Cards\CardSetRepository;
-use App\Entity\Content\DraftParticipant;
-use App\Repository\Content\DraftParticipantRepository;
 
 #[Route('/api/draft_sessions', name: 'draftSession_')]
 class DraftSessionController extends AbstractController
@@ -22,7 +20,6 @@ class DraftSessionController extends AbstractController
         private DraftSessionRepository $repository,
         private ValidatorInterface $validator,
         private CardSetRepository $cardSetRepository,
-        private DraftParticipantRepository $draftParticipantRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -46,10 +43,6 @@ class DraftSessionController extends AbstractController
         $rel_cardSet = $this->cardSetRepository->find($data['cardSet']);
         if (!$rel_cardSet) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $draftSession->setCardSet($rel_cardSet);
-        if (!isset($data['participants'])) return $this->json(['error' => 'participants is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_participants = $this->draftParticipantRepository->find($data['participants']);
-        if (!$rel_participants) return $this->json(['error' => 'DraftParticipant not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $draftSession->setParticipants($rel_participants);
 
         $errors = $this->validator->validate($draftSession);
         if (count($errors) > 0) {
@@ -79,11 +72,6 @@ class DraftSessionController extends AbstractController
             $rel_cardSet = $this->cardSetRepository->find($data['cardSet']);
             if (!$rel_cardSet) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $draftSession->setCardSet($rel_cardSet);
-        }
-        if (isset($data['participants'])) {
-            $rel_participants = $this->draftParticipantRepository->find($data['participants']);
-            if (!$rel_participants) return $this->json(['error' => 'DraftParticipant not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $draftSession->setParticipants($rel_participants);
         }
 
         $errors = $this->validator->validate($draftSession);

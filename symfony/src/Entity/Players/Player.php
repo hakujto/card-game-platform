@@ -67,10 +67,6 @@ class Player
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: PlayerSeasonStats::class, inversedBy: 'player')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?PlayerSeasonStats $seasonStats = null;
-
     #[ORM\ManyToMany(targetEntity: Achievement::class)]
     #[ORM\JoinTable(name: 'player_achievements_m2m')]
     private Collection $achievements;
@@ -228,23 +224,6 @@ class Player
         return $this;
     }
 
-    #[Groups(['player:read'])]
-    public function getSeasonStatsId(): ?int
-    {
-        return $this->seasonStats?->getId();
-    }
-
-    public function getSeasonStats(): ?PlayerSeasonStats
-    {
-        return $this->seasonStats;
-    }
-
-    public function setSeasonStats(?PlayerSeasonStats $seasonStats): static
-    {
-        $this->seasonStats = $seasonStats;
-        return $this;
-    }
-
     public function getAchievements(): Collection
     {
         return $this->achievements;
@@ -281,6 +260,25 @@ class Player
     {
         $this->friends->removeElement($item);
         return $this;
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Rating must be between 0 and 9999")]
+    public function isRatingRangeValid(): bool
+    {
+        return ($this->getRating() === null || ($this->getRating() >= 0 && $this->getRating() <= 9999));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Peak rating must be greater than or equal to current rating")]
+    public function isPeakRatingGteRatingValid(): bool
+    {
+        return ($this->getPeakRating() === null || $this->getPeakRating() >= $this->getRating());
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Display name must not be empty")]
+    public function isDisplayNameNotEmptyValid(): bool
+    {
+        return $this->getDisplayName() !== null;
     }
 
     // ── Business operations ──────────────────────────────────────────

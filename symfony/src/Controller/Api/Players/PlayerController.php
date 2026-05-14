@@ -12,8 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Entity\Players\PlayerSeasonStats;
-use App\Repository\Players\PlayerSeasonStatsRepository;
 
 #[Route('/api/players', name: 'player_')]
 class PlayerController extends AbstractController
@@ -22,7 +20,6 @@ class PlayerController extends AbstractController
         private PlayerRepository $repository,
         private ValidatorInterface $validator,
         private UserRepository $userRepository,
-        private PlayerSeasonStatsRepository $playerSeasonStatsRepository,
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -51,10 +48,6 @@ class PlayerController extends AbstractController
         if (array_key_exists('user', $data)) {
             $player->setUser($data['user'] !== null ? $this->userRepository->find($data['user']) : null);
         }
-        if (!isset($data['seasonStats'])) return $this->json(['error' => 'seasonStats is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_seasonStats = $this->playerSeasonStatsRepository->find($data['seasonStats']);
-        if (!$rel_seasonStats) return $this->json(['error' => 'PlayerSeasonStats not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $player->setSeasonStats($rel_seasonStats);
 
         $errors = $this->validator->validate($player);
         if (count($errors) > 0) {
@@ -88,11 +81,6 @@ class PlayerController extends AbstractController
         if (isset($data['lastActiveAt'])) $player->setLastActiveAt(new \DateTime($data['lastActiveAt']));
         if (array_key_exists('user', $data)) {
             $player->setUser($data['user'] !== null ? $this->userRepository->find($data['user']) : null);
-        }
-        if (isset($data['seasonStats'])) {
-            $rel_seasonStats = $this->playerSeasonStatsRepository->find($data['seasonStats']);
-            if (!$rel_seasonStats) return $this->json(['error' => 'PlayerSeasonStats not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $player->setSeasonStats($rel_seasonStats);
         }
 
         $errors = $this->validator->validate($player);

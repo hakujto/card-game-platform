@@ -88,4 +88,5 @@ class PlayerAchievementApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/player_achievements/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }

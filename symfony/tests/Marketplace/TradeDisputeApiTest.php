@@ -121,4 +121,5 @@ class TradeDisputeApiTest extends WebTestCase
         $this->client->request('DELETE', '/api/trade_disputes/' . $this->entityId);
         $this->assertResponseStatusCodeSame(204);
     }
+
 }
