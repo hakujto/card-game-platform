@@ -272,7 +272,7 @@ class Player
     #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Peak rating must be greater than or equal to current rating")]
     public function isPeakRatingGteRatingValid(): bool
     {
-        return ($this->getPeakRating() === null || $this->getPeakRating() >= $this->getRating());
+        return ($this->getPeakRating() === null || ($this->getRating() !== null && $this->getPeakRating() >= $this->getRating()));
     }
 
     #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Display name must not be empty")]

@@ -175,6 +175,14 @@ class TradeDispute
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getResolvedAt() !== null && !($this->getStatus() === 'RESOLVED')) {
+            throw new \DomainException('resolved_at_requires_terminal_status');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function escalate(): void

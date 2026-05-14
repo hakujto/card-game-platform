@@ -5,8 +5,6 @@ namespace App\Tests\Content;
 use App\Entity\Content\ArticleComment;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class ArticleCommentApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class ArticleCommentApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depAuthor;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class ArticleCommentApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depAuthor = new Player();
-        $this->depAuthor->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depAuthor);
 
         $entity = new ArticleComment();
@@ -54,7 +44,6 @@ class ArticleCommentApiTest extends WebTestCase
         $this->client->request('POST', '/api/article_comments', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'body' => 'test',
-            'isHidden' => true,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'author' => (int) $this->depAuthor->getId(),
         ])

@@ -59,6 +59,12 @@ class TradeTransactionController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $tradeTransaction->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($tradeTransaction, flush: true);
         return $this->json($tradeTransaction, Response::HTTP_CREATED, context: ['groups' => ['tradeTransaction:read']]);
     }
@@ -96,6 +102,12 @@ class TradeTransactionController extends AbstractController
         $errors = $this->validator->validate($tradeTransaction);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tradeTransaction->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tradeTransaction, flush: true);

@@ -59,6 +59,12 @@ class StreamController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $stream->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($stream, flush: true);
         return $this->json($stream, Response::HTTP_CREATED, context: ['groups' => ['stream:read']]);
     }
@@ -94,6 +100,12 @@ class StreamController extends AbstractController
         $errors = $this->validator->validate($stream);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $stream->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($stream, flush: true);

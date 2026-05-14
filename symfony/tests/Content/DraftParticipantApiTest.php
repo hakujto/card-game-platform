@@ -5,8 +5,6 @@ namespace App\Tests\Content;
 use App\Entity\Content\DraftParticipant;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class DraftParticipantApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class DraftParticipantApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depPlayer;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class DraftParticipantApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depPlayer = new Player();
-        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
 
         $entity = new DraftParticipant();

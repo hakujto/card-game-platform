@@ -56,6 +56,12 @@ class GameController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $game->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($game, flush: true);
         return $this->json($game, Response::HTTP_CREATED, context: ['groups' => ['game:read']]);
     }
@@ -88,6 +94,12 @@ class GameController extends AbstractController
         $errors = $this->validator->validate($game);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $game->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($game, flush: true);

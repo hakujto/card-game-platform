@@ -103,6 +103,13 @@ class CraftingRecipe
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Crafting recipe must have a dust cost greater than zero")]
+    public function isDustCostPositiveValid(): bool
+    {
+        return ($this->getDustCost() === null || $this->getDustCost() > 0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function disable(): void

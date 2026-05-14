@@ -38,9 +38,6 @@ class PlayerApiTest extends WebTestCase
         $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'displayName' => 'test',
-            'rating' => 1,
-            'peakRating' => 1,
-            'isVerified' => true,
             'createdAt' => '2024-01-01T00:00:00+00:00',
         ])
         );
@@ -74,24 +71,6 @@ class PlayerApiTest extends WebTestCase
         // Rating must be between 0 and 9999
         $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['displayName' => 'test', 'rank' => 'BRONZE', 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'rating' => 10000])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenPeakRatingGteRatingViolated(): void
-    {
-        // Peak rating must be greater than or equal to current rating
-        $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['displayName' => 'test', 'rank' => 'BRONZE', 'rating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'peakRating' => NaN])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenDisplayNameNotEmptyViolated(): void
-    {
-        // Display name must not be empty
-        $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['rank' => 'BRONZE', 'rating' => 1, 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'displayName' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }

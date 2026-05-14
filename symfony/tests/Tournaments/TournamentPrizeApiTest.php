@@ -6,7 +6,6 @@ use App\Entity\Tournaments\TournamentPrize;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 
@@ -16,7 +15,6 @@ class TournamentPrizeApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $depTournament;
 
@@ -27,11 +25,7 @@ class TournamentPrizeApiTest extends WebTestCase
 
         $this->auxSeason = new Season();
         $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
         $this->depTournament->setSeason($this->auxSeason);
@@ -62,8 +56,6 @@ class TournamentPrizeApiTest extends WebTestCase
             json_encode([
             'placementFrom' => 1,
             'placementTo' => 1,
-            'amount' => '0.00',
-            'seasonPoints' => 1,
             'tournament' => (int) $this->depTournament->getId(),
         ])
         );
@@ -92,4 +84,21 @@ class TournamentPrizeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPlacementFromPositiveViolated(): void
+    {
+        // placement_from must be greater than zero
+        $this->client->request('POST', '/api/tournament_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['placementTo' => 1, 'prizeType' => 'CURRENCY', 'amount' => '0.00', 'seasonPoints' => 1, 'placementFrom' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenAmountNotNegativeViolated(): void
+    {
+        // Prize amount must not be negative
+        $this->client->request('POST', '/api/tournament_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['placementFrom' => 1, 'placementTo' => 1, 'prizeType' => 'CURRENCY', 'seasonPoints' => 1, 'amount' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

@@ -117,6 +117,14 @@ class TournamentRound
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getEndedAt() !== null && !(($this->getEndedAt() === null || ($this->getStartedAt() !== null && $this->getEndedAt() > $this->getStartedAt())))) {
+            throw new \DomainException('Round end time must be after start time');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function start(): void

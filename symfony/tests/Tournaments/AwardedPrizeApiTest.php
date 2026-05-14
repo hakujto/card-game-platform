@@ -6,7 +6,6 @@ use App\Entity\Tournaments\AwardedPrize;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 use App\Entity\Tournaments\TournamentPrize;
@@ -17,7 +16,6 @@ class AwardedPrizeApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $auxTournament;
     private TournamentPrize $depPrize;
@@ -30,11 +28,7 @@ class AwardedPrizeApiTest extends WebTestCase
 
         $this->auxSeason = new Season();
         $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->auxTournament = new Tournament();
         $this->auxTournament->setSeason($this->auxSeason);
@@ -44,7 +38,6 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->depPrize->setTournament($this->auxTournament);
         $this->em->persist($this->depPrize);
         $this->depPlayer = new Player();
-        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
 
         $entity = new AwardedPrize();
@@ -71,7 +64,6 @@ class AwardedPrizeApiTest extends WebTestCase
             json_encode([
             'finalPlacement' => 1,
             'awardedAt' => '2024-01-01T00:00:00+00:00',
-            'claimed' => true,
             'prize' => (int) $this->depPrize->getId(),
             'player' => (int) $this->depPlayer->getId(),
         ])
@@ -101,4 +93,21 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenClaimedRequiresClaimedAtViolated(): void
+    {
+        // Claimed prize must have a claimed_at timestamp
+        $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['finalPlacement' => 1, 'awardedAt' => '2024-01-01T00:00:00+00:00', 'claimed' => true, 'claimedAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenFinalPlacementPositiveViolated(): void
+    {
+        // Final placement must be greater than zero
+        $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['awardedAt' => '2024-01-01T00:00:00+00:00', 'claimed' => true, 'claimedAt' => '2024-01-01T00:00:00+00:00', 'finalPlacement' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

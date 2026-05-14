@@ -5,8 +5,6 @@ namespace App\Tests\Marketplace;
 use App\Entity\Marketplace\TradeBid;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
@@ -17,8 +15,6 @@ class TradeBidApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
@@ -30,13 +26,7 @@ class TradeBidApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
         $this->em->persist($this->auxCardSet);
@@ -48,11 +38,10 @@ class TradeBidApiTest extends WebTestCase
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
         $this->depBidder = new Player();
-        $this->depBidder->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depBidder);
 
         $entity = new TradeBid();
-        $entity->setAmount('0.00');
+        $entity->setAmount('0.01');
         $entity->setPlacedAt(new \DateTime('2024-01-01'));
         $entity->setListing($this->depListing);
         $entity->setBidder($this->depBidder);
@@ -73,9 +62,8 @@ class TradeBidApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/trade_bids', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'amount' => '0.00',
+            'amount' => '0.01',
             'placedAt' => '2024-01-01T00:00:00+00:00',
-            'isWinning' => true,
             'listing' => (int) $this->depListing->getId(),
             'bidder' => (int) $this->depBidder->getId(),
         ])
@@ -93,7 +81,7 @@ class TradeBidApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/trade_bids/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['amount' => '0.00'])
+            json_encode(['amount' => '0.01'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -105,4 +93,12 @@ class TradeBidApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenAmountPositiveViolated(): void
+    {
+        // Bid amount must be greater than zero
+        $this->client->request('POST', '/api/trade_bids', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['placedAt' => '2024-01-01T00:00:00+00:00', 'isWinning' => true, 'amount' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

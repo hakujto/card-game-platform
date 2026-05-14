@@ -119,7 +119,7 @@ Swagger: http://localhost:8000/api/doc
 ## Tests
 
 ```bash
-php bin/phpunit
+php vendor/bin/phpunit
 ```
 
 ## Docker

@@ -48,6 +48,12 @@ class CardAbilityController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $cardAbility->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($cardAbility, flush: true);
         return $this->json($cardAbility, Response::HTTP_CREATED, context: ['groups' => ['cardAbility:read']]);
     }
@@ -75,6 +81,12 @@ class CardAbilityController extends AbstractController
         $errors = $this->validator->validate($cardAbility);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $cardAbility->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($cardAbility, flush: true);

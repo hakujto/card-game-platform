@@ -5,8 +5,6 @@ namespace App\Tests\Cards;
 use App\Entity\Cards\Deck;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class DeckApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class DeckApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depPlayer;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class DeckApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depPlayer = new Player();
-        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
 
         $entity = new Deck();
@@ -55,10 +45,6 @@ class DeckApiTest extends WebTestCase
         $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'isPublic' => true,
-            'isTournamentLegal' => true,
-            'wins' => 1,
-            'losses' => 1,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'updatedAt' => '2024-01-01T00:00:00+00:00',
             'player' => (int) $this->depPlayer->getId(),

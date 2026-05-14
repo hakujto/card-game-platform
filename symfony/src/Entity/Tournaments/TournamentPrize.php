@@ -147,6 +147,25 @@ class TournamentPrize
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "placement_to must be greater than or equal to placement_from")]
+    public function isPlacementRangeValidValid(): bool
+    {
+        return ($this->getPlacementTo() === null || ($this->getPlacementFrom() !== null && $this->getPlacementTo() >= $this->getPlacementFrom()));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "placement_from must be greater than zero")]
+    public function isPlacementFromPositiveValid(): bool
+    {
+        return ($this->getPlacementFrom() === null || $this->getPlacementFrom() > 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Prize amount must not be negative")]
+    public function isAmountNotNegativeValid(): bool
+    {
+        return ($this->getAmount() === null || (float)$this->getAmount() >= (float)0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function appliesToPlacement($placement): void

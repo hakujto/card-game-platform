@@ -6,7 +6,6 @@ use App\Entity\Tournaments\TournamentRegistration;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 use App\Entity\Cards\Deck;
@@ -17,7 +16,6 @@ class TournamentRegistrationApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $depTournament;
     private Player $depPlayer;
@@ -30,18 +28,13 @@ class TournamentRegistrationApiTest extends WebTestCase
 
         $this->auxSeason = new Season();
         $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
         $this->depTournament->setSeason($this->auxSeason);
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
         $this->depPlayer = new Player();
-        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
         $this->depDeck = new Deck();
         $this->depDeck->setPlayer($this->auxPlayer);
@@ -69,7 +62,6 @@ class TournamentRegistrationApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/tournament_registrations', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'pointsEarned' => 1,
             'registeredAt' => '2024-01-01T00:00:00+00:00',
             'tournament' => (int) $this->depTournament->getId(),
             'player' => (int) $this->depPlayer->getId(),

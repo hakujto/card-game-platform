@@ -5,8 +5,6 @@ namespace App\Tests\Cards;
 use App\Entity\Cards\DeckCard;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Cards\Deck;
 use App\Entity\Cards\CardSet;
@@ -17,8 +15,6 @@ class DeckCardApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Deck $depDeck;
     private CardSet $auxCardSet;
@@ -29,13 +25,7 @@ class DeckCardApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->depDeck = new Deck();
         $this->depDeck->setPlayer($this->auxPlayer);
@@ -66,8 +56,6 @@ class DeckCardApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/deck_cards', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'quantity' => 1,
-            'isCommander' => true,
             'deck' => (int) $this->depDeck->getId(),
             'card' => (int) $this->depCard->getId(),
         ])
@@ -97,4 +85,12 @@ class DeckCardApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenQuantityRangeViolated(): void
+    {
+        // A deck can contain between 1 and 4 copies of a card
+        $this->client->request('POST', '/api/deck_cards', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['isCommander' => true, 'quantity' => 5])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

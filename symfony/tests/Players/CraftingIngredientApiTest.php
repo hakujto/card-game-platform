@@ -56,7 +56,6 @@ class CraftingIngredientApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/crafting_ingredients', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'quantity' => 1,
             'recipe' => (int) $this->depRecipe->getId(),
             'card' => (int) $this->depCard->getId(),
         ])

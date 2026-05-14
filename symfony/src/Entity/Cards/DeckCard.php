@@ -93,4 +93,11 @@ class DeckCard
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "A deck can contain between 1 and 4 copies of a card")]
+    public function isQuantityRangeValid(): bool
+    {
+        return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 4));
+    }
+
 }

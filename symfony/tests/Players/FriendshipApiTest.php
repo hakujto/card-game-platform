@@ -5,8 +5,6 @@ namespace App\Tests\Players;
 use App\Entity\Players\Friendship;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class FriendshipApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class FriendshipApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depRequester;
     private Player $depReceiver;
 
@@ -24,16 +20,9 @@ class FriendshipApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depRequester = new Player();
-        $this->depRequester->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depRequester);
         $this->depReceiver = new Player();
-        $this->depReceiver->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depReceiver);
 
         $entity = new Friendship();

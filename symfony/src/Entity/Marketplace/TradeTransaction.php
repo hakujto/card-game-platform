@@ -145,6 +145,27 @@ class TradeTransaction
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Platform fee cannot exceed the final price")]
+    public function isFeeNotExceedPriceValid(): bool
+    {
+        return ($this->getPlatformFee() === null || ($this->getFinalPrice() !== null && (float)$this->getPlatformFee() <= (float)$this->getFinalPrice()));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Platform fee must not be negative")]
+    public function isFeeNotNegativeValid(): bool
+    {
+        return ($this->getPlatformFee() === null || (float)$this->getPlatformFee() >= (float)0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getStatus() === 'COMPLETED' && $this->getCompletedAt() === null) {
+            throw new \DomainException('Completed transaction must have a completed_at timestamp');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function complete(): void

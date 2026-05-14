@@ -42,7 +42,6 @@ class DraftSessionApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/draft_sessions', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'seats' => 1,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'cardSet' => (int) $this->depCardSet->getId(),
         ])

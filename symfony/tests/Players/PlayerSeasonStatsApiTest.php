@@ -41,11 +41,6 @@ class PlayerSeasonStatsApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/player_season_statses', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'wins' => 1,
-            'losses' => 1,
-            'draws' => 1,
-            'tournamentWins' => 1,
-            'seasonPoints' => 1,
             'season' => (int) $this->depSeason->getId(),
         ])
         );

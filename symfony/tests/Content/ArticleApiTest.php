@@ -5,8 +5,6 @@ namespace App\Tests\Content;
 use App\Entity\Content\Article;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class ArticleApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class ArticleApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depAuthor;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class ArticleApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depAuthor = new Player();
-        $this->depAuthor->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depAuthor);
 
         $entity = new Article();
@@ -59,7 +49,6 @@ class ArticleApiTest extends WebTestCase
             'title' => 'test',
             'slug' => 'test',
             'body' => 'test',
-            'viewCount' => 1,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'updatedAt' => '2024-01-01T00:00:00+00:00',
             'author' => (int) $this->depAuthor->getId(),
@@ -90,4 +79,12 @@ class ArticleApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPublishedRequiresPublishedAtViolated(): void
+    {
+        // Published article must have a published_at timestamp
+        $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'viewCount' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PUBLISHED', 'publishedAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

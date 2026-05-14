@@ -200,6 +200,14 @@ class Stream
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getActualStart() !== null && !($this->getStatus() === 'LIVE')) {
+            throw new \DomainException('actual_start_requires_live_or_ended');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function goLive(): void

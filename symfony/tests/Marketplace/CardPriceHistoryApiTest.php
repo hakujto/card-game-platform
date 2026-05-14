@@ -56,7 +56,6 @@ class CardPriceHistoryApiTest extends WebTestCase
             'minPrice' => '0.00',
             'maxPrice' => '0.00',
             'volume' => 1,
-            'foil' => true,
             'card' => (int) $this->depCard->getId(),
         ])
         );

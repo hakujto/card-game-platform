@@ -133,6 +133,13 @@ class CardPriceHistory
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "min_price <= avg_price <= max_price must hold")]
+    public function isPriceBoundsConsistentValid(): bool
+    {
+        return (($this->getMinPrice() === null || ($this->getAvgPrice() !== null && (float)$this->getMinPrice() <= (float)$this->getAvgPrice())) && ($this->getAvgPrice() === null || ($this->getMaxPrice() !== null && (float)$this->getAvgPrice() <= (float)$this->getMaxPrice())));
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function priceChangePercent($previousAvg): void

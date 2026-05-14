@@ -48,7 +48,6 @@ class CraftingRecipeApiTest extends WebTestCase
         $this->client->request('POST', '/api/crafting_recipes', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'dustCost' => 1,
-            'isAvailable' => true,
             'resultCard' => (int) $this->depResultCard->getId(),
         ])
         );
@@ -77,4 +76,12 @@ class CraftingRecipeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenDustCostPositiveViolated(): void
+    {
+        // Crafting recipe must have a dust cost greater than zero
+        $this->client->request('POST', '/api/crafting_recipes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['isAvailable' => true, 'dustCost' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

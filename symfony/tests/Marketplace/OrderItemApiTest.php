@@ -45,7 +45,6 @@ class OrderItemApiTest extends WebTestCase
             json_encode([
             'quantity' => 1,
             'priceAtPurchase' => '0.00',
-            'foil' => true,
             'product' => (int) $this->depProduct->getId(),
         ])
         );
@@ -74,4 +73,21 @@ class OrderItemApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenQuantityPositiveViolated(): void
+    {
+        // Order item quantity must be greater than zero
+        $this->client->request('POST', '/api/order_items', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['priceAtPurchase' => '0.00', 'foil' => true, 'quantity' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenPriceNotNegativeViolated(): void
+    {
+        // Price at purchase must not be negative
+        $this->client->request('POST', '/api/order_items', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['quantity' => 1, 'foil' => true, 'priceAtPurchase' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

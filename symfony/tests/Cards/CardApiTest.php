@@ -46,11 +46,7 @@ class CardApiTest extends WebTestCase
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'manaCost' => 1,
             'description' => 'test',
-            'isBanned' => true,
-            'isRestricted' => true,
-            'powerLevel' => 1,
             'set' => (int) $this->depSet->getId(),
         ])
         );

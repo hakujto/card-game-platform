@@ -5,8 +5,6 @@ namespace App\Tests\Marketplace;
 use App\Entity\Marketplace\TradeDispute;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
@@ -18,8 +16,6 @@ class TradeDisputeApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
@@ -32,13 +28,7 @@ class TradeDisputeApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
         $this->em->persist($this->auxCardSet);
@@ -55,7 +45,6 @@ class TradeDisputeApiTest extends WebTestCase
         $this->depTransaction->setSeller($this->auxPlayer);
         $this->em->persist($this->depTransaction);
         $this->depOpenedBy = new Player();
-        $this->depOpenedBy->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depOpenedBy);
 
         $entity = new TradeDispute();
@@ -122,4 +111,12 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenResolvedAtRequiresTerminalStatusViolated(): void
+    {
+        // resolved_at_requires_terminal_status
+        $this->client->request('POST', '/api/trade_disputes', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['reason' => 'ITEMNOTRECEIVED', 'description' => 'test', 'status' => 'OPEN', 'openedAt' => '2024-01-01T00:00:00+00:00', 'resolvedAt' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

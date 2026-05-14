@@ -154,6 +154,24 @@ class Game
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Game number must be between 1 and 3 (best-of-3)")]
+    public function isGameNumberRangeValid(): bool
+    {
+        return ($this->getGameNumber() === null || ($this->getGameNumber() >= 1 && $this->getGameNumber() <= 3));
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getTurnsPlayed() !== null && !(($this->getTurnsPlayed() === null || $this->getTurnsPlayed() > 0))) {
+            throw new \DomainException('Turns played must be greater than zero');
+        }
+        if ($this->getDurationSeconds() !== null && !(($this->getDurationSeconds() === null || $this->getDurationSeconds() > 0))) {
+            throw new \DomainException('Game duration must be greater than zero');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function recordWinner($winnerSide): void

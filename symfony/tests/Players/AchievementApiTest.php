@@ -39,8 +39,6 @@ class AchievementApiTest extends WebTestCase
             json_encode([
             'name' => 'test',
             'description' => 'test',
-            'points' => 1,
-            'isHidden' => true,
         ])
         );
         $this->assertResponseStatusCodeSame(201);

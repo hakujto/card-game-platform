@@ -5,8 +5,6 @@ namespace App\Tests\Marketplace;
 use App\Entity\Marketplace\TradeTransaction;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
@@ -17,8 +15,6 @@ class TradeTransactionApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
@@ -31,13 +27,7 @@ class TradeTransactionApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
         $this->em->persist($this->auxCardSet);
@@ -49,10 +39,8 @@ class TradeTransactionApiTest extends WebTestCase
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
         $this->depBuyer = new Player();
-        $this->depBuyer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depBuyer);
         $this->depSeller = new Player();
-        $this->depSeller->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depSeller);
 
         $entity = new TradeTransaction();
@@ -115,4 +103,21 @@ class TradeTransactionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenFeeNotNegativeViolated(): void
+    {
+        // Platform fee must not be negative
+        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['finalPrice' => '0.00', 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'platformFee' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenCompletedRequiresCompletedAtViolated(): void
+    {
+        // Completed transaction must have a completed_at timestamp
+        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['finalPrice' => '0.00', 'platformFee' => '0.00', 'status' => 'COMPLETED', 'completedAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

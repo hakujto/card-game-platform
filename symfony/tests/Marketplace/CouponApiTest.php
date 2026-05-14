@@ -19,9 +19,9 @@ class CouponApiTest extends WebTestCase
 
         $entity = new Coupon();
         $entity->setCode('test');
-        $entity->setDiscountValue('0.00');
+        $entity->setDiscountValue('0.01');
         $entity->setValidFrom(new \DateTime('2024-01-01'));
-        $entity->setValidUntil(new \DateTime('2024-01-01'));
+        $entity->setValidUntil(new \DateTime('2024-01-01T00:00:01'));
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -40,12 +40,9 @@ class CouponApiTest extends WebTestCase
         $this->client->request('POST', '/api/coupons', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'code' => 'test',
-            'discountValue' => '0.00',
-            'minOrderValue' => '0.00',
-            'usesCount' => 1,
+            'discountValue' => '0.01',
             'validFrom' => '2024-01-01T00:00:00+00:00',
-            'validUntil' => '2024-01-01T00:00:00+00:00',
-            'isActive' => true,
+            'validUntil' => '2024-01-01T00:00:01+00:00',
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -77,7 +74,7 @@ class CouponApiTest extends WebTestCase
     {
         // Coupon expiry must be after its start date
         $this->client->request('POST', '/api/coupons', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['code' => 'test', 'minOrderValue' => '0.00', 'validFrom' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'discountType' => 'PERCENT', 'discountValue' => 1, 'maxUses' => 1, 'usesCount' => max_uses, 'validUntil' => valid_from])
+            json_encode(['code' => 'test', 'minOrderValue' => '0.00', 'usesCount' => 1, 'validFrom' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'discountType' => 'PERCENT', 'discountValue' => 1, 'maxUses' => 1, 'validUntil' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -86,7 +83,7 @@ class CouponApiTest extends WebTestCase
     {
         // Discount value must be greater than zero
         $this->client->request('POST', '/api/coupons', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['code' => 'test', 'minOrderValue' => '0.00', 'validFrom' => '2024-01-01T00:00:00+00:00', 'validUntil' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'discountType' => 'PERCENT', 'maxUses' => 1, 'usesCount' => max_uses, 'discountValue' => 0])
+            json_encode(['code' => 'test', 'minOrderValue' => '0.00', 'usesCount' => 1, 'validFrom' => '2024-01-01T00:00:00+00:00', 'validUntil' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'discountType' => 'PERCENT', 'maxUses' => 1, 'discountValue' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -104,7 +101,7 @@ class CouponApiTest extends WebTestCase
     {
         // Coupon uses count cannot exceed max_uses
         $this->client->request('POST', '/api/coupons', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['code' => 'test', 'discountType' => 'PERCENT', 'discountValue' => '0.00', 'minOrderValue' => '0.00', 'validFrom' => '2024-01-01T00:00:00+00:00', 'validUntil' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'maxUses' => 1, 'usesCount' => NaN])
+            json_encode(['code' => 'test', 'discountType' => 'PERCENT', 'discountValue' => '0.00', 'minOrderValue' => '0.00', 'usesCount' => 1, 'validFrom' => '2024-01-01T00:00:00+00:00', 'validUntil' => '2024-01-01T00:00:00+00:00', 'isActive' => true, 'maxUses' => 1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

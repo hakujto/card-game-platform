@@ -326,7 +326,7 @@ class Tournament
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
-        if ($this->getEndTime() !== null && !(($this->getEndTime() === null || $this->getEndTime() > $this->getStartTime()))) {
+        if ($this->getEndTime() !== null && !(($this->getEndTime() === null || ($this->getStartTime() !== null && $this->getEndTime() > $this->getStartTime())))) {
             throw new \DomainException('End time must be after start time');
         }
     }

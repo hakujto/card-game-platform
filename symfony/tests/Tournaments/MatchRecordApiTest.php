@@ -5,8 +5,6 @@ namespace App\Tests\Tournaments;
 use App\Entity\Tournaments\MatchRecord;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class MatchRecordApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class MatchRecordApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depPlayer1;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class MatchRecordApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depPlayer1 = new Player();
-        $this->depPlayer1->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer1);
 
         $entity = new MatchRecord();
@@ -51,8 +41,6 @@ class MatchRecordApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/matches', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'player1Wins' => 1,
-            'player2Wins' => 1,
             'player1' => (int) $this->depPlayer1->getId(),
         ])
         );

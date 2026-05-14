@@ -6,7 +6,6 @@ use App\Entity\Tournaments\TournamentRound;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 
@@ -16,7 +15,6 @@ class TournamentRoundApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $depTournament;
 
@@ -27,11 +25,7 @@ class TournamentRoundApiTest extends WebTestCase
 
         $this->auxSeason = new Season();
         $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
         $this->depTournament->setSeason($this->auxSeason);
@@ -59,7 +53,6 @@ class TournamentRoundApiTest extends WebTestCase
         $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'roundNumber' => 1,
-            'timeLimitMinutes' => 1,
             'tournament' => (int) $this->depTournament->getId(),
         ])
         );
@@ -88,4 +81,12 @@ class TournamentRoundApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenEndedAfterStartedViolated(): void
+    {
+        // Round end time must be after start time
+        $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['roundNumber' => 1, 'status' => 'PENDING', 'timeLimitMinutes' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00', 'endedAt' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

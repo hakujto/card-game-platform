@@ -239,7 +239,7 @@ class Order
     #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Discount applied cannot exceed order total")]
     public function isDiscountNotExceedTotalValid(): bool
     {
-        return ($this->getDiscountApplied() === null || (float)$this->getDiscountApplied() <= (float)$this->getTotal());
+        return ($this->getDiscountApplied() === null || ($this->getTotal() !== null && (float)$this->getDiscountApplied() <= (float)$this->getTotal()));
     }
 
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────

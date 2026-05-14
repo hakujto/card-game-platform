@@ -49,6 +49,12 @@ class TournamentRoundController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $tournamentRound->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($tournamentRound, flush: true);
         return $this->json($tournamentRound, Response::HTTP_CREATED, context: ['groups' => ['tournamentRound:read']]);
     }
@@ -77,6 +83,12 @@ class TournamentRoundController extends AbstractController
         $errors = $this->validator->validate($tournamentRound);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $tournamentRound->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($tournamentRound, flush: true);

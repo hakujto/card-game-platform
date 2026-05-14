@@ -124,4 +124,19 @@ class AwardedPrize
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Final placement must be greater than zero")]
+    public function isFinalPlacementPositiveValid(): bool
+    {
+        return ($this->getFinalPlacement() === null || $this->getFinalPlacement() > 0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getClaimed() === true && $this->getClaimedAt() === null) {
+            throw new \DomainException('Claimed prize must have a claimed_at timestamp');
+        }
+    }
+
 }

@@ -20,7 +20,7 @@ class SeasonApiTest extends WebTestCase
         $entity = new Season();
         $entity->setName('test');
         $entity->setStartDate(new \DateTime('2024-01-01'));
-        $entity->setEndDate(new \DateTime('2024-01-01'));
+        $entity->setEndDate(new \DateTime('2024-01-02'));
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -40,8 +40,7 @@ class SeasonApiTest extends WebTestCase
             json_encode([
             'name' => 'test',
             'startDate' => '2024-01-01',
-            'endDate' => '2024-01-01',
-            'isActive' => true,
+            'endDate' => '2024-01-02',
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -73,7 +72,7 @@ class SeasonApiTest extends WebTestCase
     {
         // Season end date must be after start date
         $this->client->request('POST', '/api/seasons', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'startDate' => '2024-01-01', 'format' => 'STANDARD', 'isActive' => true, 'endDate' => start_date])
+            json_encode(['name' => 'test', 'startDate' => '2024-01-01', 'format' => 'STANDARD', 'isActive' => true, 'endDate' => '2024-01-01'])
         );
         $this->assertResponseStatusCodeSame(422);
     }

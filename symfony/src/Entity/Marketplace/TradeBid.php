@@ -109,6 +109,13 @@ class TradeBid
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Bid amount must be greater than zero")]
+    public function isAmountPositiveValid(): bool
+    {
+        return ($this->getAmount() === null || (float)$this->getAmount() > (float)0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function outbidBy($newAmount): void

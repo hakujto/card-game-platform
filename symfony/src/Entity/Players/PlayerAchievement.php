@@ -108,4 +108,12 @@ class PlayerAchievement
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getIsCompleted() === true && !(($this->getProgress() === null || $this->getProgress() > 0))) {
+            throw new \DomainException('Completed achievement must have progress greater than zero');
+        }
+    }
+
 }

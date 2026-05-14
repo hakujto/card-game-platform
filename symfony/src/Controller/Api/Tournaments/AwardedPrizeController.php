@@ -55,6 +55,12 @@ class AwardedPrizeController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $awardedPrize->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($awardedPrize, flush: true);
         return $this->json($awardedPrize, Response::HTTP_CREATED, context: ['groups' => ['awardedPrize:read']]);
     }
@@ -87,6 +93,12 @@ class AwardedPrizeController extends AbstractController
         $errors = $this->validator->validate($awardedPrize);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $awardedPrize->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($awardedPrize, flush: true);

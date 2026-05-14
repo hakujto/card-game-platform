@@ -5,10 +5,7 @@ namespace App\Tests\Content;
 use App\Entity\Content\ArticleTagAssignment;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
-use App\Entity\Content\ArticleComment;
 use App\Entity\Content\Article;
 use App\Entity\Content\ArticleTag;
 
@@ -17,10 +14,7 @@ class ArticleTagAssignmentApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
-    private ArticleComment $auxArticleComment;
     private Article $depArticle;
     private ArticleTag $depTag;
 
@@ -29,20 +23,10 @@ class ArticleTagAssignmentApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
-        $this->auxArticleComment = new ArticleComment();
-        $this->auxArticleComment->setAuthor($this->auxPlayer);
-        $this->em->persist($this->auxArticleComment);
         $this->depArticle = new Article();
         $this->depArticle->setAuthor($this->auxPlayer);
-        $this->depArticle->setComments($this->auxArticleComment);
         $this->em->persist($this->depArticle);
         $this->depTag = new ArticleTag();
         $this->em->persist($this->depTag);

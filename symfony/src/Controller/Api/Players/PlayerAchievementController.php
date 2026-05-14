@@ -54,6 +54,12 @@ class PlayerAchievementController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $playerAchievement->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($playerAchievement, flush: true);
         return $this->json($playerAchievement, Response::HTTP_CREATED, context: ['groups' => ['playerAchievement:read']]);
     }
@@ -85,6 +91,12 @@ class PlayerAchievementController extends AbstractController
         $errors = $this->validator->validate($playerAchievement);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $playerAchievement->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($playerAchievement, flush: true);

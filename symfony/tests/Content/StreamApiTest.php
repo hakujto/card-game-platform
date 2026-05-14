@@ -5,8 +5,6 @@ namespace App\Tests\Content;
 use App\Entity\Content\Stream;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 
 class StreamApiTest extends WebTestCase
@@ -14,8 +12,6 @@ class StreamApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depStreamer;
 
     protected function setUp(): void
@@ -23,13 +19,7 @@ class StreamApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depStreamer = new Player();
-        $this->depStreamer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depStreamer);
 
         $entity = new Stream();
@@ -56,7 +46,6 @@ class StreamApiTest extends WebTestCase
             json_encode([
             'title' => 'test',
             'streamUrl' => 'https://example.com',
-            'viewerCountPeak' => 1,
             'scheduledStart' => '2024-01-01T00:00:00+00:00',
             'streamer' => (int) $this->depStreamer->getId(),
         ])
@@ -86,4 +75,12 @@ class StreamApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenActualStartRequiresLiveOrEndedViolated(): void
+    {
+        // actual_start_requires_live_or_ended
+        $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'actualStart' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

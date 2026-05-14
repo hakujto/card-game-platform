@@ -6,7 +6,6 @@ use App\Entity\Tournaments\TournamentJudge;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 
@@ -16,7 +15,6 @@ class TournamentJudgeApiTest extends WebTestCase
     private EntityManagerInterface $em;
     private int $entityId;
     private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $auxPlayer;
     private Tournament $depTournament;
     private Player $depPlayer;
@@ -28,18 +26,13 @@ class TournamentJudgeApiTest extends WebTestCase
 
         $this->auxSeason = new Season();
         $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->auxPlayer = new Player();
-        $this->auxPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
         $this->depTournament->setSeason($this->auxSeason);
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
         $this->depPlayer = new Player();
-        $this->depPlayer->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depPlayer);
 
         $entity = new TournamentJudge();

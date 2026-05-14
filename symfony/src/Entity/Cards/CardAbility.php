@@ -102,6 +102,14 @@ class CardAbility
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getAbilityType() === 'KEYWORD' && $this->getKeyword() === null) {
+            throw new \DomainException('Keyword ability must have a keyword name');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function isUsableAt($timing): void

@@ -108,6 +108,19 @@ class OrderItem
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Order item quantity must be greater than zero")]
+    public function isQuantityPositiveValid(): bool
+    {
+        return ($this->getQuantity() === null || $this->getQuantity() > 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Price at purchase must not be negative")]
+    public function isPriceNotNegativeValid(): bool
+    {
+        return ($this->getPriceAtPurchase() === null || (float)$this->getPriceAtPurchase() >= (float)0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function lineTotal(): void

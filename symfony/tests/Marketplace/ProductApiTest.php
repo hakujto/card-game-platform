@@ -39,10 +39,6 @@ class ProductApiTest extends WebTestCase
             json_encode([
             'name' => 'test',
             'price' => '0.00',
-            'stock' => 1,
-            'active' => true,
-            'discountPercent' => 1,
-            'featured' => true,
         ])
         );
         $this->assertResponseStatusCodeSame(201);

@@ -5,8 +5,6 @@ namespace App\Tests\Marketplace;
 use App\Entity\Marketplace\Tradelisting;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Tournaments\Season;
-use App\Entity\Players\PlayerSeasonStats;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
@@ -16,8 +14,6 @@ class TradelistingApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Season $auxSeason;
-    private PlayerSeasonStats $auxPlayerSeasonStats;
     private Player $depSeller;
     private CardSet $auxCardSet;
     private Card $depCard;
@@ -27,13 +23,7 @@ class TradelistingApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->auxSeason = new Season();
-        $this->em->persist($this->auxSeason);
-        $this->auxPlayerSeasonStats = new PlayerSeasonStats();
-        $this->auxPlayerSeasonStats->setSeason($this->auxSeason);
-        $this->em->persist($this->auxPlayerSeasonStats);
         $this->depSeller = new Player();
-        $this->depSeller->setSeasonStats($this->auxPlayerSeasonStats);
         $this->em->persist($this->depSeller);
         $this->auxCardSet = new CardSet();
         $this->em->persist($this->auxCardSet);
@@ -62,8 +52,6 @@ class TradelistingApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/tradelistings', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'foil' => true,
-            'quantity' => 1,
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'seller' => (int) $this->depSeller->getId(),
             'card' => (int) $this->depCard->getId(),

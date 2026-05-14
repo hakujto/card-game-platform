@@ -260,6 +260,14 @@ class Article
         return $this;
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getStatus() === 'PUBLISHED' && $this->getPublishedAt() === null) {
+            throw new \DomainException('Published article must have a published_at timestamp');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function publish(): void
