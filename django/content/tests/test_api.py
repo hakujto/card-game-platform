@@ -123,7 +123,7 @@ class ArticleAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         self.player = _dep_player
-        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
+        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("article-list")
         self.detail_url = reverse("article-detail", args=[self.obj.pk])
 
@@ -136,6 +136,7 @@ class ArticleAPITest(APITestCase):
             "title": "test",
             "slug": "test",
             "body": "test",
+            "published_at": "2024-01-01T00:00:00Z",
             "created_at": "2024-01-01T00:00:00Z",
             "updated_at": "2024-01-01T00:00:00Z",
             "author": self.player.pk
@@ -154,6 +155,12 @@ class ArticleAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_published_requires_published_at_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "status": "Published", "published_at": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleTagAPITest(APITestCase):
@@ -294,3 +301,9 @@ class StreamAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_actual_start_requires_live_or_ended_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"title": "test", "stream_url": "https://example.com", "scheduled_start": "2024-01-01T00:00:00Z", "actual_start": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

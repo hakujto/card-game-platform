@@ -192,6 +192,11 @@ class CardAbility(models.Model):
     def describe(self):
         raise NotImplementedError("describe not implemented")
 
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.ability_type == CardAbilityAbilityTypeChoices.KEYWORD) and (self.keyword is None):
+            raise ValidationError({"keyword_ability_requires_keyword": "Keyword ability must have a keyword name"})
+
 
 class DeckFormatChoices(models.TextChoices):
     STANDARD = "Standard", "Standard"
@@ -266,6 +271,14 @@ class DeckCard(models.Model):
 
     def __str__(self):
         return str(self.quantity)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 4))):
+            errors["quantity_range"] = "A deck can contain between 1 and 4 copies of a card"
+        if errors:
+            raise ValidationError(errors)
 
 
 class DeckSideboardCard(models.Model):

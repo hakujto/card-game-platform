@@ -96,6 +96,27 @@ class CardAbilityViewSet(viewsets.ModelViewSet):
     filterset_fields = ["ability_type", "timing", "card"]
     ordering_fields = "__all__"
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class DeckViewSet(viewsets.ModelViewSet):
     queryset = Deck.objects.select_related().all()
@@ -147,6 +168,26 @@ class DeckCardViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["deck", "card"]
     ordering_fields = "__all__"
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
 
 
 class DeckSideboardCardViewSet(viewsets.ModelViewSet):

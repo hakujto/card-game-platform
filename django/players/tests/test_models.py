@@ -69,7 +69,7 @@ class PlayerAchievementModelTest(TestCase):
     def setUp(self):
         _dep_player = Player.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_achievement = Achievement.objects.create(name="test", description="test")
-        self.obj = PlayerAchievement.objects.create(player=_dep_player, achievement=_dep_achievement, earned_at="2024-01-01T00:00:00Z")
+        self.obj = PlayerAchievement.objects.create(player=_dep_player, achievement=_dep_achievement, earned_at="2024-01-01T00:00:00Z", progress=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -84,7 +84,7 @@ class CraftingRecipeModelTest(TestCase):
         _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
-        self.obj = CraftingRecipe.objects.create(result_card=_dep_card, dust_cost=0)
+        self.obj = CraftingRecipe.objects.create(result_card=_dep_card, dust_cost=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -99,7 +99,7 @@ class CraftingIngredientModelTest(TestCase):
         _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=0)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
-        _dep_crafting_recipe = CraftingRecipe.objects.create(dust_cost=0, result_card=_dep_card)
+        _dep_crafting_recipe = CraftingRecipe.objects.create(dust_cost=1, result_card=_dep_card)
         self.obj = CraftingIngredient.objects.create(recipe=_dep_crafting_recipe, card=_dep_card)
 
     def test_str(self):

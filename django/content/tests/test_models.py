@@ -50,7 +50,7 @@ class ArticleModelTest(TestCase):
     def setUp(self):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
+        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))

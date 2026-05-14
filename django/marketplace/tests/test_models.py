@@ -29,7 +29,7 @@ class OrderModelTest(TestCase):
 class OrderItemModelTest(TestCase):
     def setUp(self):
         _dep_product = Product.objects.create(name="test", price="0.00")
-        self.obj = OrderItem.objects.create(product=_dep_product, quantity=0, price_at_purchase="0.00")
+        self.obj = OrderItem.objects.create(product=_dep_product, quantity=1, price_at_purchase=0)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -75,7 +75,7 @@ class TradeBidModelTest(TestCase):
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_tradelisting = Tradelisting.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
-        self.obj = TradeBid.objects.create(listing=_dep_tradelisting, bidder=_dep_player, amount="0.00", placed_at="2024-01-01T00:00:00Z")
+        self.obj = TradeBid.objects.create(listing=_dep_tradelisting, bidder=_dep_player, amount=1, placed_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -93,7 +93,7 @@ class TradeTransactionModelTest(TestCase):
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_tradelisting = Tradelisting.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
-        self.obj = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00")
+        self.obj = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00", completed_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))

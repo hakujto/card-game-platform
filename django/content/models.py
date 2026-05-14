@@ -143,6 +143,11 @@ class Article(models.Model):
     def reading_time_minutes(self):
         raise NotImplementedError("reading_time_minutes not implemented")
 
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.status == ArticleStatusChoices.PUBLISHED) and (self.published_at is None):
+            raise ValidationError({"published_requires_published_at": "Published article must have a published_at timestamp"})
+
 
 class ArticleTag(models.Model):
     name = models.CharField(max_length=100)
@@ -253,3 +258,8 @@ class Stream(models.Model):
 
     def duration_minutes(self):
         raise NotImplementedError("duration_minutes not implemented")
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.actual_start is not None) and (not (self.status == StreamStatusChoices.LIVE)):
+            raise ValidationError({"actual_start_requires_live_or_ended": "actual_start_requires_live_or_ended"})

@@ -73,7 +73,7 @@ class Player(models.Model):
         errors = {}
         if not ((self.rating is None or (self.rating >= 0 and self.rating <= 9999))):
             errors["rating_range"] = "Rating must be between 0 and 9999"
-        if not ((self.peak_rating is None or self.peak_rating >= self.rating)):
+        if not ((self.peak_rating is None or self.rating is None or self.peak_rating >= self.rating)):
             errors["peak_rating_gte_rating"] = "Peak rating must be greater than or equal to current rating"
         if not (self.display_name is not None):
             errors["display_name_not_empty"] = "Display name must not be empty"
@@ -238,6 +238,11 @@ class PlayerAchievement(models.Model):
     def __str__(self):
         return str(self.earned_at)
 
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.is_completed is True) and (not ((self.progress is None or self.progress > 0))):
+            raise ValidationError({"completed_requires_progress": "Completed achievement must have progress greater than zero"})
+
 
 class CraftingRecipe(models.Model):
     dust_cost = models.IntegerField()
@@ -260,6 +265,14 @@ class CraftingRecipe(models.Model):
 
     def enable(self):
         raise NotImplementedError("enable not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.dust_cost is None or self.dust_cost > 0)):
+            errors["dust_cost_positive"] = "Crafting recipe must have a dust cost greater than zero"
+        if errors:
+            raise ValidationError(errors)
 
 
 class CraftingIngredient(models.Model):

@@ -152,7 +152,7 @@ class CardAbilityAPITest(APITestCase):
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.cardset = _dep_card_set
         self.card = _dep_card
-        self.obj = CardAbility.objects.create(card=_dep_card, ability_text="test")
+        self.obj = CardAbility.objects.create(card=_dep_card, keyword="test", ability_text="test")
         self.list_url = reverse("card_ability-list")
         self.detail_url = reverse("card_ability-detail", args=[self.obj.pk])
 
@@ -162,6 +162,7 @@ class CardAbilityAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
+            "keyword": "test",
             "ability_text": "test",
             "card": self.card.pk
         }
@@ -179,6 +180,12 @@ class CardAbilityAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_keyword_ability_requires_keyword_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"ability_text": "test", "ability_type": "Keyword", "keyword": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class DeckAPITest(APITestCase):
@@ -228,7 +235,7 @@ class DeckCardAPITest(APITestCase):
         self.deck = _dep_deck
         self.cardset = _dep_card_set
         self.card = _dep_card
-        self.obj = DeckCard.objects.create(deck=_dep_deck, card=_dep_card)
+        self.obj = DeckCard.objects.create(deck=_dep_deck, card=_dep_card, quantity=1)
         self.list_url = reverse("deck_card-list")
         self.detail_url = reverse("deck_card-detail", args=[self.obj.pk])
 
@@ -238,6 +245,7 @@ class DeckCardAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
+            "quantity": 1,
             "deck": self.deck.pk,
             "card": self.card.pk
         }
@@ -249,12 +257,18 @@ class DeckCardAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"quantity": 0}, format="json")
+        res = self.client.patch(self.detail_url, {"quantity": 1}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_quantity_range_violated(self):
+        # Simple rule violated → 400
+        data = {"quantity": 5}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class DeckSideboardCardAPITest(APITestCase):

@@ -117,7 +117,7 @@ class Order(models.Model):
         errors = {}
         if not ((self.total is None or self.total >= 0)):
             errors["total_not_negative"] = "Order total must not be negative"
-        if not ((self.discount_applied is None or self.discount_applied <= self.total)):
+        if not ((self.discount_applied is None or self.total is None or self.discount_applied <= self.total)):
             errors["discount_not_exceed_total"] = "Discount applied cannot exceed order total"
         if errors:
             raise ValidationError(errors)
@@ -149,6 +149,16 @@ class OrderItem(models.Model):
 
     def line_total(self):
         raise NotImplementedError("line_total not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.quantity is None or self.quantity > 0)):
+            errors["quantity_positive"] = "Order item quantity must be greater than zero"
+        if not ((self.price_at_purchase is None or self.price_at_purchase >= 0)):
+            errors["price_not_negative"] = "Price at purchase must not be negative"
+        if errors:
+            raise ValidationError(errors)
 
 
 class CouponDiscountTypeChoices(models.TextChoices):
@@ -192,7 +202,7 @@ class Coupon(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.valid_until is None or self.valid_until > self.valid_from)):
+        if not ((self.valid_until is None or self.valid_from is None or self.valid_until > self.valid_from)):
             errors["valid_until_after_valid_from"] = "Coupon expiry must be after its start date"
         if not ((self.discount_value is None or self.discount_value > 0)):
             errors["discount_value_positive"] = "Discount value must be greater than zero"
@@ -203,7 +213,7 @@ class Coupon(models.Model):
         from django.core.exceptions import ValidationError
         if (self.discount_type == CouponDiscountTypeChoices.PERCENT) and (not ((self.discount_value is None or (self.discount_value >= 1 and self.discount_value <= 100)))):
             raise ValidationError({"percent_discount_range": "Percent discount must be between 1 and 100"})
-        if (self.max_uses is not None) and (not ((self.uses_count is None or self.uses_count <= self.max_uses))):
+        if (self.max_uses is not None) and (not ((self.uses_count is None or self.max_uses is None or self.uses_count <= self.max_uses))):
             raise ValidationError({"uses_not_exceed_max": "Coupon uses count cannot exceed max_uses"})
 
 
@@ -306,6 +316,14 @@ class TradeBid(models.Model):
     def outbid_by(self, new_amount):
         raise NotImplementedError("outbid_by not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.amount is None or self.amount > 0)):
+            errors["amount_positive"] = "Bid amount must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
+
 
 class TradeTransactionStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -345,6 +363,21 @@ class TradeTransaction(models.Model):
     def seller_net(self):
         raise NotImplementedError("seller_net not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.platform_fee is None or self.final_price is None or self.platform_fee <= self.final_price)):
+            errors["fee_not_exceed_price"] = "Platform fee cannot exceed the final price"
+        if not ((self.platform_fee is None or self.platform_fee >= 0)):
+            errors["fee_not_negative"] = "Platform fee must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.status == TradeTransactionStatusChoices.COMPLETED) and (self.completed_at is None):
+            raise ValidationError({"completed_requires_completed_at": "Completed transaction must have a completed_at timestamp"})
+
 
 class CardPriceHistory(models.Model):
     price_date = models.DateField()
@@ -370,6 +403,14 @@ class CardPriceHistory(models.Model):
 
     def is_price_spike(self, threshold_percent):
         raise NotImplementedError("is_price_spike not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not (((self.min_price is None or self.avg_price is None or self.min_price <= self.avg_price) and (self.avg_price is None or self.max_price is None or self.avg_price <= self.max_price))):
+            errors["price_bounds_consistent"] = "min_price <= avg_price <= max_price must hold"
+        if errors:
+            raise ValidationError(errors)
 
 
 class TradeDisputeReasonChoices(models.TextChoices):
@@ -415,3 +456,8 @@ class TradeDispute(models.Model):
 
     def review(self):
         raise NotImplementedError("review not implemented")
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.resolved_at is not None) and (not (self.status == TradeDisputeStatusChoices.RESOLVED)):
+            raise ValidationError({"resolved_at_requires_terminal_status": "resolved_at_requires_terminal_status"})

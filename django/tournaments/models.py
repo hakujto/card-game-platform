@@ -44,7 +44,7 @@ class Season(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.end_date is None or self.end_date > self.start_date)):
+        if not ((self.end_date is None or self.start_date is None or self.end_date > self.start_date)):
             errors["end_date_after_start_date"] = "Season end date must be after start date"
         if errors:
             raise ValidationError(errors)
@@ -135,7 +135,7 @@ class Tournament(models.Model):
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
-        if (self.end_time is not None) and (not ((self.end_time is None or self.end_time > self.start_time))):
+        if (self.end_time is not None) and (not ((self.end_time is None or self.start_time is None or self.end_time > self.start_time))):
             raise ValidationError({"end_time_after_start": "End time must be after start time"})
 
 
@@ -232,6 +232,11 @@ class TournamentRound(models.Model):
     def is_time_expired(self):
         raise NotImplementedError("is_time_expired not implemented")
 
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.ended_at is not None) and (not ((self.ended_at is None or self.started_at is None or self.ended_at > self.started_at))):
+            raise ValidationError({"ended_after_started": "Round end time must be after start time"})
+
 
 class MatchStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -327,6 +332,21 @@ class Game(models.Model):
     def duration_minutes(self):
         raise NotImplementedError("duration_minutes not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.game_number is None or (self.game_number >= 1 and self.game_number <= 3))):
+            errors["game_number_range"] = "Game number must be between 1 and 3 (best-of-3)"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.turns_played is not None) and (not ((self.turns_played is None or self.turns_played > 0))):
+            raise ValidationError({"turns_played_positive": "Turns played must be greater than zero"})
+        if (self.duration_seconds is not None) and (not ((self.duration_seconds is None or self.duration_seconds > 0))):
+            raise ValidationError({"duration_positive": "Game duration must be greater than zero"})
+
 
 class TournamentPrizePrizeTypeChoices(models.TextChoices):
     CURRENCY = "Currency", "Currency"
@@ -360,6 +380,18 @@ class TournamentPrize(models.Model):
     def applies_to_placement(self, placement):
         raise NotImplementedError("applies_to_placement not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.placement_to is None or self.placement_from is None or self.placement_to >= self.placement_from)):
+            errors["placement_range_valid"] = "placement_to must be greater than or equal to placement_from"
+        if not ((self.placement_from is None or self.placement_from > 0)):
+            errors["placement_from_positive"] = "placement_from must be greater than zero"
+        if not ((self.amount is None or self.amount >= 0)):
+            errors["amount_not_negative"] = "Prize amount must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
 
 class AwardedPrize(models.Model):
     final_placement = models.IntegerField()
@@ -376,3 +408,16 @@ class AwardedPrize(models.Model):
 
     def __str__(self):
         return str(self.final_placement)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.final_placement is None or self.final_placement > 0)):
+            errors["final_placement_positive"] = "Final placement must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.claimed is True) and (self.claimed_at is None):
+            raise ValidationError({"claimed_requires_claimed_at": "Claimed prize must have a claimed_at timestamp"})

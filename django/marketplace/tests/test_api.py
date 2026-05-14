@@ -95,7 +95,7 @@ class OrderItemAPITest(APITestCase):
     def setUp(self):
         _dep_product = Product.objects.create(name="test", price="0.00")
         self.product = _dep_product
-        self.obj = OrderItem.objects.create(product=_dep_product, quantity=0, price_at_purchase="0.00")
+        self.obj = OrderItem.objects.create(product=_dep_product, quantity=1, price_at_purchase=0)
         self.list_url = reverse("order_item-list")
         self.detail_url = reverse("order_item-detail", args=[self.obj.pk])
 
@@ -105,8 +105,8 @@ class OrderItemAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "quantity": 0,
-            "price_at_purchase": "0.00",
+            "quantity": 1,
+            "price_at_purchase": 0,
             "product": self.product.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -117,12 +117,24 @@ class OrderItemAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"quantity": 0}, format="json")
+        res = self.client.patch(self.detail_url, {"quantity": 1}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_quantity_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"quantity": 0, "price_at_purchase": "0.00"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_price_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"quantity": 0, "price_at_purchase": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class CouponAPITest(APITestCase):
@@ -253,7 +265,7 @@ class TradeBidAPITest(APITestCase):
         self.cardset = _dep_card_set
         self.card = _dep_card
         self.tradelisting = _dep_tradelisting
-        self.obj = TradeBid.objects.create(listing=_dep_tradelisting, bidder=_dep_player, amount="0.00", placed_at="2024-01-01T00:00:00Z")
+        self.obj = TradeBid.objects.create(listing=_dep_tradelisting, bidder=_dep_player, amount=1, placed_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("trade_bid-list")
         self.detail_url = reverse("trade_bid-detail", args=[self.obj.pk])
 
@@ -263,7 +275,7 @@ class TradeBidAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "amount": "0.00",
+            "amount": 1,
             "placed_at": "2024-01-01T00:00:00Z",
             "listing": self.tradelisting.pk,
             "bidder": self.player.pk
@@ -276,12 +288,18 @@ class TradeBidAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"amount": "0.00"}, format="json")
+        res = self.client.patch(self.detail_url, {"amount": 1}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_amount_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"amount": 0, "placed_at": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class TradeTransactionAPITest(APITestCase):
@@ -297,7 +315,7 @@ class TradeTransactionAPITest(APITestCase):
         self.cardset = _dep_card_set
         self.card = _dep_card
         self.tradelisting = _dep_tradelisting
-        self.obj = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00")
+        self.obj = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00", completed_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("trade_transaction-list")
         self.detail_url = reverse("trade_transaction-detail", args=[self.obj.pk])
 
@@ -316,6 +334,7 @@ class TradeTransactionAPITest(APITestCase):
         data = {
             "final_price": "0.00",
             "platform_fee": "0.00",
+            "completed_at": "2024-01-01T00:00:00Z",
             "listing": _fresh_tradelisting.pk,
             "buyer": self.player.pk,
             "seller": self.player.pk
@@ -334,6 +353,18 @@ class TradeTransactionAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_fee_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"final_price": "0.00", "platform_fee": -1, "status": "Completed", "completed_at": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_completed_requires_completed_at_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"final_price": "0.00", "platform_fee": "0.00", "status": "Completed", "completed_at": None}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class CardPriceHistoryAPITest(APITestCase):
@@ -408,7 +439,7 @@ class TradeDisputeAPITest(APITestCase):
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_tradelisting = Tradelisting.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
-        _fresh_trade_transaction = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00")
+        _fresh_trade_transaction = TradeTransaction.objects.create(listing=_dep_tradelisting, buyer=_dep_player, seller=_dep_player, final_price="0.00", platform_fee="0.00", completed_at="2024-01-01T00:00:00Z")
         data = {
             "reason": "ItemNotReceived",
             "description": "test",
@@ -430,3 +461,9 @@ class TradeDisputeAPITest(APITestCase):
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_fails_when_resolved_at_requires_terminal_status_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "resolved_at": "2024-01-01T00:00:00Z"}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

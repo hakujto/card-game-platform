@@ -65,7 +65,7 @@ class TournamentRoundModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
-        self.obj = TournamentRound.objects.create(tournament=_dep_tournament, round_number=0)
+        self.obj = TournamentRound.objects.create(tournament=_dep_tournament, round_number=0, ended_at=None)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -92,7 +92,7 @@ class GameModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_match = Match.objects.create(player1=_dep_player)
-        self.obj = Game.objects.create(match=_dep_match, game_number=0)
+        self.obj = Game.objects.create(match=_dep_match, game_number=1, turns_played=1, duration_seconds=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -107,7 +107,7 @@ class TournamentPrizeModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
-        self.obj = TournamentPrize.objects.create(tournament=_dep_tournament, placement_from=0, placement_to=0, prize_type="Currency")
+        self.obj = TournamentPrize.objects.create(tournament=_dep_tournament, placement_from=1, placement_to=1, prize_type="Currency", amount=0)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -122,8 +122,8 @@ class AwardedPrizeModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
-        _dep_tournament_prize = TournamentPrize.objects.create(placement_from=0, placement_to=0, prize_type="Currency", tournament=_dep_tournament)
-        self.obj = AwardedPrize.objects.create(prize=_dep_tournament_prize, player=_dep_player, final_placement=0, awarded_at="2024-01-01T00:00:00Z")
+        _dep_tournament_prize = TournamentPrize.objects.create(placement_from=1, placement_to=1, prize_type="Currency", tournament=_dep_tournament)
+        self.obj = AwardedPrize.objects.create(prize=_dep_tournament_prize, player=_dep_player, final_placement=1, awarded_at="2024-01-01T00:00:00Z", claimed_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
