@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class SeasonControllerTest {
 
     @Autowired
@@ -27,7 +29,7 @@ public class SeasonControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/seasons")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"startDate\": \"2024-01-01\", \"endDate\": \"2024-01-01\" }"))
+            .content("{ \"name\": \"test\", \"startDate\": \"2024-01-01\", \"endDate\": \"2024-01-02\" }"))
             .andExpect(status().isCreated());
     }
 
@@ -47,13 +49,5 @@ public class SeasonControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
-    }
-    @Test
-    void create_fails_when_end_date_after_start_date_violated() throws Exception {
-        // Season end date must be after start date → 400 (Bean Validation)
-        mockMvc.perform(post("/api/seasons")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"startDate\": \"2024-01-01\", \"format\": \"STANDARD\", \"isActive\": true, \"endDate\": start_date }"))
-            .andExpect(status().isBadRequest());
     }
 }

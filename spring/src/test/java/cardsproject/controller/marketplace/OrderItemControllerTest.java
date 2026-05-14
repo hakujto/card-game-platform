@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class OrderItemControllerTest {
 
     @Autowired
@@ -47,5 +49,22 @@ public class OrderItemControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_quantity_positive_violated() throws Exception {
+        // Order item quantity must be greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/order_items")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"priceAtPurchase\": 0.00, \"foil\": true, \"quantity\": 0 }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_price_not_negative_violated() throws Exception {
+        // Price at purchase must not be negative → 400 (Bean Validation)
+        mockMvc.perform(post("/api/order_items")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"quantity\": 1, \"foil\": true, \"priceAtPurchase\": -1 }"))
+            .andExpect(status().isBadRequest());
     }
 }

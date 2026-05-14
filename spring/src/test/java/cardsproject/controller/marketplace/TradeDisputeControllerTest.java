@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class TradeDisputeControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class TradeDisputeControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_resolved_at_requires_terminal_status_violated() throws Exception {
+        // resolved_at_requires_terminal_status: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/trade_disputes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"reason\": \"ITEMNOTRECEIVED\", \"description\": \"test\", \"status\": \"OPEN\", \"openedAt\": \"2024-01-01T00:00:00\", \"resolvedAt\": \"2024-01-01T00:00:00\" }"))
+            .andExpect(status().isBadRequest());
     }
 }

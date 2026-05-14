@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class AwardedPrizeControllerTest {
 
     @Autowired
@@ -47,5 +49,22 @@ public class AwardedPrizeControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_claimed_requires_claimed_at_violated() throws Exception {
+        // Claimed prize must have a claimed_at timestamp: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/awarded_prizes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00\", \"claimed\": true, \"claimedAt\": null }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_final_placement_positive_violated() throws Exception {
+        // Final placement must be greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/awarded_prizes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"awardedAt\": \"2024-01-01T00:00:00\", \"claimed\": true, \"claimedAt\": \"2024-01-01T00:00:00\", \"finalPlacement\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

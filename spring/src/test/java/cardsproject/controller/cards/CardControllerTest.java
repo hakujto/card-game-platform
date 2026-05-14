@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class CardControllerTest {
 
     @Autowired
@@ -27,7 +29,7 @@ public class CardControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\" }"))
+            .content("{ \"name\": \"test\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": false, \"isRestricted\": false }"))
             .andExpect(status().isCreated());
     }
 

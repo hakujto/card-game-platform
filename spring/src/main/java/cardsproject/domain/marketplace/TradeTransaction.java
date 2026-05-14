@@ -58,4 +58,16 @@ public class TradeTransaction {
     public java.math.BigDecimal sellerNet() {
         throw new UnsupportedOperationException("sellerNet not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Platform fee cannot exceed the final price")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isFeeNotExceedPriceValid() {
+        return (getPlatformFee() == null || (getFinalPrice() != null && getPlatformFee().compareTo(getFinalPrice()) <= 0));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Platform fee must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isFeeNotNegativeValid() {
+        return (getPlatformFee() == null || getPlatformFee().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
 }

@@ -35,4 +35,11 @@ public class AwardedPrize {
     public void setPrizeId(Long prizeId) { this.prizeId = prizeId; }
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Final placement must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isFinalPlacementPositiveValid() {
+        return (getFinalPlacement() == null || getFinalPlacement() > 0);
+    }
 }

@@ -24,11 +24,15 @@ public class TournamentRoundService {
     }
 
     public TournamentRound save(TournamentRound entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(TournamentRound entity) {
+        if (entity.getEndedAt() != null && !((entity.getEndedAt() == null || (entity.getStartedAt() != null && entity.getEndedAt().isAfter(entity.getStartedAt()))))) throw new IllegalStateException("Round end time must be after start time");
     }
 
     public void start(Long id) {

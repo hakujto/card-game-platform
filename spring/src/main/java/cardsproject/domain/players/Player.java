@@ -96,7 +96,7 @@ public class Player {
     @jakarta.validation.constraints.AssertTrue(message = "Peak rating must be greater than or equal to current rating")
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isPeakRatingGteRatingValid() {
-        return (getPeakRating() == null || getPeakRating() >= getRating());
+        return (getPeakRating() == null || (getRating() != null && getPeakRating() >= getRating()));
     }
     @jakarta.validation.constraints.AssertTrue(message = "Display name must not be empty")
     @com.fasterxml.jackson.annotation.JsonIgnore

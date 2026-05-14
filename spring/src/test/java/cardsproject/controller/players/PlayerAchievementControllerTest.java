@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class PlayerAchievementControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class PlayerAchievementControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_completed_requires_progress_violated() throws Exception {
+        // Completed achievement must have progress greater than zero: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/player_achievements")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"earnedAt\": \"2024-01-01T00:00:00\", \"isCompleted\": true, \"progress\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class TournamentControllerTest {
 
     @Autowired
@@ -27,7 +29,7 @@ public class TournamentControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"maxPlayers\": 1, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"name\": \"test\", \"maxPlayers\": 2, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
 
@@ -53,7 +55,7 @@ public class TournamentControllerTest {
         // Tournament must allow between 2 and 512 players → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"endTime\": start_time, \"maxPlayers\": 513 }"))
+            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"maxPlayers\": 513 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -62,7 +64,7 @@ public class TournamentControllerTest {
         // Entry fee must not be negative → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"endTime\": start_time, \"entryFee\": -1 }"))
+            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"entryFee\": -1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -71,7 +73,7 @@ public class TournamentControllerTest {
         // Prize pool must not be negative → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"endTime\": start_time, \"prizePool\": -1 }"))
+            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"prizePool\": -1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -80,7 +82,7 @@ public class TournamentControllerTest {
         // End time must be after start time: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\", \"endTime\": start_time }"))
+            .content("{ \"name\": \"test\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"status\": \"DRAFT\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isBadRequest());
     }
 }

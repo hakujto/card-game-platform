@@ -36,4 +36,11 @@ public class CraftingRecipe {
     public void enable() {
         throw new UnsupportedOperationException("enable not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Crafting recipe must have a dust cost greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDustCostPositiveValid() {
+        return (getDustCost() == null || getDustCost() > 0);
+    }
 }

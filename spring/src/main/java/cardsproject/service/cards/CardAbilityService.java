@@ -5,6 +5,7 @@ import cardsproject.repository.cards.CardAbilityRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.cards.CardAbilityAbilityTypeType;
 
 @Service
 public class CardAbilityService {
@@ -24,10 +25,14 @@ public class CardAbilityService {
     }
 
     public CardAbility save(CardAbility entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(CardAbility entity) {
+        if (CardAbilityAbilityTypeType.KEYWORD.equals(entity.getAbilityType()) && entity.getKeyword() == null) throw new IllegalStateException("Keyword ability must have a keyword name");
     }
 }

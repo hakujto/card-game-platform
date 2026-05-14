@@ -24,10 +24,14 @@ public class PlayerAchievementService {
     }
 
     public PlayerAchievement save(PlayerAchievement entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(PlayerAchievement entity) {
+        if (Boolean.TRUE.equals(entity.getIsCompleted()) && !((entity.getProgress() == null || entity.getProgress() > 0))) throw new IllegalStateException("Completed achievement must have progress greater than zero");
     }
 }

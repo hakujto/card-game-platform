@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class CardAbilityControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class CardAbilityControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_keyword_ability_requires_keyword_violated() throws Exception {
+        // Keyword ability must have a keyword name: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/card_abilities")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"abilityText\": \"test\", \"abilityType\": \"KEYWORD\", \"keyword\": null }"))
+            .andExpect(status().isBadRequest());
     }
 }

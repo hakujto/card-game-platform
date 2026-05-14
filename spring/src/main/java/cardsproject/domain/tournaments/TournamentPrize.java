@@ -46,4 +46,21 @@ public class TournamentPrize {
     public Boolean appliesToPlacement(Integer placement) {
         throw new UnsupportedOperationException("appliesToPlacement not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "placement_to must be greater than or equal to placement_from")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPlacementRangeValidValid() {
+        return (getPlacementTo() == null || (getPlacementFrom() != null && getPlacementTo() >= getPlacementFrom()));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "placement_from must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPlacementFromPositiveValid() {
+        return (getPlacementFrom() == null || getPlacementFrom() > 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Prize amount must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isAmountNotNegativeValid() {
+        return (getAmount() == null || getAmount().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
 }

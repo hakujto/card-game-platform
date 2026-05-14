@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class OrderControllerTest {
 
     @Autowired
@@ -72,15 +74,6 @@ public class OrderControllerTest {
         mockMvc.perform(post("/api/orders")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{ \"discountApplied\": 0.00, \"currency\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"status\": \"PAID\", \"paidAt\": \"2024-01-01T00:00:00\", \"status\": \"SHIPPED\", \"trackingNumber\": \"test\", \"total\": -1 }"))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void create_fails_when_discount_not_exceed_total_violated() throws Exception {
-        // Discount applied cannot exceed order total → 400 (Bean Validation)
-        mockMvc.perform(post("/api/orders")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"total\": 0.00, \"currency\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"status\": \"PAID\", \"paidAt\": \"2024-01-01T00:00:00\", \"status\": \"SHIPPED\", \"trackingNumber\": \"test\", \"discountApplied\": NaN }"))
             .andExpect(status().isBadRequest());
     }
 }

@@ -28,4 +28,11 @@ public class DeckCard {
     public void setDeckId(Long deckId) { this.deckId = deckId; }
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "A deck can contain between 1 and 4 copies of a card")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isQuantityRangeValid() {
+        return (getQuantity() == null || (getQuantity() >= 1 && getQuantity() <= 4));
+    }
 }

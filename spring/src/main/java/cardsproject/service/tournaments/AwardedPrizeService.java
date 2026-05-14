@@ -24,10 +24,14 @@ public class AwardedPrizeService {
     }
 
     public AwardedPrize save(AwardedPrize entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(AwardedPrize entity) {
+        if (Boolean.TRUE.equals(entity.getClaimed()) && entity.getClaimedAt() == null) throw new IllegalStateException("Claimed prize must have a claimed_at timestamp");
     }
 }

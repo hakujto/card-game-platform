@@ -5,6 +5,7 @@ import cardsproject.repository.marketplace.TradeTransactionRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.marketplace.TradeTransactionStatusType;
 
 @Service
 public class TradeTransactionService {
@@ -24,11 +25,15 @@ public class TradeTransactionService {
     }
 
     public TradeTransaction save(TradeTransaction entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(TradeTransaction entity) {
+        if (TradeTransactionStatusType.COMPLETED.equals(entity.getStatus()) && entity.getCompletedAt() == null) throw new IllegalStateException("Completed transaction must have a completed_at timestamp");
     }
 
     public void complete(Long id) {

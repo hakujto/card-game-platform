@@ -51,4 +51,11 @@ public class Game {
     public java.math.BigDecimal durationMinutes() {
         throw new UnsupportedOperationException("durationMinutes not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Game number must be between 1 and 3 (best-of-3)")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isGameNumberRangeValid() {
+        return (getGameNumber() == null || (getGameNumber() >= 1 && getGameNumber() <= 3));
+    }
 }

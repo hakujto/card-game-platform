@@ -93,6 +93,6 @@ public class Order {
     @jakarta.validation.constraints.AssertTrue(message = "Discount applied cannot exceed order total")
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isDiscountNotExceedTotalValid() {
-        return (getDiscountApplied() == null || getDiscountApplied().compareTo(getTotal()) <= 0);
+        return (getDiscountApplied() == null || (getTotal() != null && getDiscountApplied().compareTo(getTotal()) <= 0));
     }
 }

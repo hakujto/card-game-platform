@@ -5,6 +5,7 @@ import cardsproject.repository.marketplace.TradeDisputeRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.marketplace.TradeDisputeStatusType;
 
 @Service
 public class TradeDisputeService {
@@ -24,11 +25,15 @@ public class TradeDisputeService {
     }
 
     public TradeDispute save(TradeDispute entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(TradeDispute entity) {
+        if (entity.getResolvedAt() != null && !(TradeDisputeStatusType.RESOLVED.equals(entity.getStatus()))) throw new IllegalStateException("resolved_at_requires_terminal_status");
     }
 
     public void escalate(Long id) {

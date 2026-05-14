@@ -34,7 +34,7 @@ public class CouponService {
     }
     private void validate(Coupon entity) {
         if (CouponDiscountTypeType.PERCENT.equals(entity.getDiscountType()) && !((entity.getDiscountValue() == null || (entity.getDiscountValue().compareTo(new java.math.BigDecimal("1")) >= 0 && entity.getDiscountValue().compareTo(new java.math.BigDecimal("100")) <= 0)))) throw new IllegalStateException("Percent discount must be between 1 and 100");
-        if (entity.getMaxUses() != null && !((entity.getUsesCount() == null || entity.getUsesCount() <= entity.getMaxUses()))) throw new IllegalStateException("Coupon uses count cannot exceed max_uses");
+        if (entity.getMaxUses() != null && !((entity.getUsesCount() == null || (entity.getMaxUses() != null && entity.getUsesCount() <= entity.getMaxUses())))) throw new IllegalStateException("Coupon uses count cannot exceed max_uses");
     }
 
     public void redeem(Long id) {

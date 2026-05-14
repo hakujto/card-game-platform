@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class CraftingRecipeControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class CraftingRecipeControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_dust_cost_positive_violated() throws Exception {
+        // Crafting recipe must have a dust cost greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/crafting_recipes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"isAvailable\": true, \"dustCost\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

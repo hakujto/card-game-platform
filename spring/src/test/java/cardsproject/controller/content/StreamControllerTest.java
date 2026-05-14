@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class StreamControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class StreamControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_actual_start_requires_live_or_ended_violated() throws Exception {
+        // actual_start_requires_live_or_ended: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/streams")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"platform\": \"TWITCH\", \"status\": \"SCHEDULED\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\", \"actualStart\": \"2024-01-01T00:00:00\" }"))
+            .andExpect(status().isBadRequest());
     }
 }

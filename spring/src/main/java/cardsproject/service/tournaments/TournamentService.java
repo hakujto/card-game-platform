@@ -32,7 +32,7 @@ public class TournamentService {
         repository.deleteById(id);
     }
     private void validate(Tournament entity) {
-        if (entity.getEndTime() != null && !((entity.getEndTime() == null || entity.getEndTime().isAfter(entity.getStartTime())))) throw new IllegalStateException("End time must be after start time");
+        if (entity.getEndTime() != null && !((entity.getEndTime() == null || (entity.getStartTime() != null && entity.getEndTime().isAfter(entity.getStartTime()))))) throw new IllegalStateException("End time must be after start time");
     }
 
     public void start(Long id) {

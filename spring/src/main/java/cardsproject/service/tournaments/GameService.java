@@ -24,11 +24,16 @@ public class GameService {
     }
 
     public Game save(Game entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Game entity) {
+        if (entity.getTurnsPlayed() != null && !((entity.getTurnsPlayed() == null || entity.getTurnsPlayed() > 0))) throw new IllegalStateException("Turns played must be greater than zero");
+        if (entity.getDurationSeconds() != null && !((entity.getDurationSeconds() == null || entity.getDurationSeconds() > 0))) throw new IllegalStateException("Game duration must be greater than zero");
     }
 
     public void recordWinner(Long id, String winnerSide) {

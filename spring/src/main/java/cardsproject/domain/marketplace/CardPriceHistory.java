@@ -46,4 +46,11 @@ public class CardPriceHistory {
     public Boolean isPriceSpike(Integer thresholdPercent) {
         throw new UnsupportedOperationException("isPriceSpike not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "min_price <= avg_price <= max_price must hold")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPriceBoundsConsistentValid() {
+        return ((getMinPrice() == null || (getAvgPrice() != null && getMinPrice().compareTo(getAvgPrice()) <= 0)) && (getAvgPrice() == null || (getMaxPrice() != null && getAvgPrice().compareTo(getMaxPrice()) <= 0)));
+    }
 }

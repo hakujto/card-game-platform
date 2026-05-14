@@ -5,6 +5,7 @@ import cardsproject.repository.content.ArticleRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.content.ArticleStatusType;
 
 @Service
 public class ArticleService {
@@ -24,11 +25,15 @@ public class ArticleService {
     }
 
     public Article save(Article entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(Article entity) {
+        if (ArticleStatusType.PUBLISHED.equals(entity.getStatus()) && entity.getPublishedAt() == null) throw new IllegalStateException("Published article must have a published_at timestamp");
     }
 
     public void publish(Long id) {

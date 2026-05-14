@@ -56,6 +56,6 @@ public class Season {
     @jakarta.validation.constraints.AssertTrue(message = "Season end date must be after start date")
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isEndDateAfterStartDateValid() {
-        return (getEndDate() == null || getEndDate().isAfter(getStartDate()));
+        return (getEndDate() == null || (getStartDate() != null && getEndDate().isAfter(getStartDate())));
     }
 }

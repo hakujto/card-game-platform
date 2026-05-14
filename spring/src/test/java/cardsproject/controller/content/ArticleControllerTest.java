@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class ArticleControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class ArticleControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_published_requires_published_at_violated() throws Exception {
+        // Published article must have a published_at timestamp: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/articles")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"title\": \"test\", \"slug\": \"test\", \"body\": \"test\", \"articleType\": \"GUIDE\", \"viewCount\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\", \"status\": \"PUBLISHED\", \"publishedAt\": null }"))
+            .andExpect(status().isBadRequest());
     }
 }

@@ -38,4 +38,16 @@ public class OrderItem {
     public java.math.BigDecimal lineTotal() {
         throw new UnsupportedOperationException("lineTotal not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Order item quantity must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isQuantityPositiveValid() {
+        return (getQuantity() == null || getQuantity() > 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Price at purchase must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPriceNotNegativeValid() {
+        return (getPriceAtPurchase() == null || getPriceAtPurchase().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
 }

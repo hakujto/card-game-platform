@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class MatchControllerTest {
 
     @Autowired
@@ -71,7 +73,7 @@ public class MatchControllerTest {
         // BYE match must not have a second player: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/matches")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"player1Wins\": 1, \"player2Wins\": 1, \"status\": \"BYE\", \"player2\": \"x\" }"))
+            .content("{ \"player1Wins\": 1, \"player2Wins\": 1, \"status\": \"BYE\", \"player2Id\": 1 }"))
             .andExpect(status().isBadRequest());
     }
 }

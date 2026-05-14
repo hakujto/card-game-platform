@@ -6,12 +6,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class DeckCardControllerTest {
 
     @Autowired
@@ -47,5 +49,13 @@ public class DeckCardControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 204 || status == 404;
             });
+    }
+    @Test
+    void create_fails_when_quantity_range_violated() throws Exception {
+        // A deck can contain between 1 and 4 copies of a card → 400 (Bean Validation)
+        mockMvc.perform(post("/api/deck_cards")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"isCommander\": true, \"quantity\": 5 }"))
+            .andExpect(status().isBadRequest());
     }
 }
