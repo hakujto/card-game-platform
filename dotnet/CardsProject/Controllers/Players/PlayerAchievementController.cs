@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Players;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
@@ -11,38 +9,34 @@ namespace CardsProject.Controllers.Players;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class PlayerAchievementController : ControllerBase
 {
-    private readonly AppDbContext _db;
     private readonly PlayerAchievementService _svc;
 
-    public PlayerAchievementController(AppDbContext db, PlayerAchievementService svc) { _db = db; _svc = svc; }
+    public PlayerAchievementController(PlayerAchievementService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.PlayerAchievements.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PlayerAchievementDto dto)
     {
-        var entity = new PlayerAchievement();
-        if (dto.EarnedAt is not null) entity.EarnedAt = dto.EarnedAt.Value;
-        if (dto.Progress is not null) entity.Progress = dto.Progress.Value;
-        if (dto.IsCompleted is not null) entity.IsCompleted = dto.IsCompleted.Value;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.AchievementId is not null) entity.AchievementId = dto.AchievementId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        _db.PlayerAchievements.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.PlayerAchievements.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -51,26 +45,21 @@ public class PlayerAchievementController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] PlayerAchievementDto dto)
     {
-        var entity = await _db.PlayerAchievements.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.EarnedAt is not null) entity.EarnedAt = dto.EarnedAt.Value;
-        if (dto.Progress is not null) entity.Progress = dto.Progress.Value;
-        if (dto.IsCompleted is not null) entity.IsCompleted = dto.IsCompleted.Value;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.AchievementId is not null) entity.AchievementId = dto.AchievementId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.PlayerAchievements.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.PlayerAchievements.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

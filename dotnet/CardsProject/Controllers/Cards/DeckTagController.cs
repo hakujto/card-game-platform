@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Cards;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
@@ -11,32 +9,34 @@ namespace CardsProject.Controllers.Cards;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DeckTagController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public DeckTagController(AppDbContext db) => _db = db;
+    private readonly DeckTagService _svc;
+
+    public DeckTagController(DeckTagService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.DeckTags.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] DeckTagDto dto)
     {
-        var entity = new DeckTag();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Color is not null) entity.Color = dto.Color;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.DeckTags.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.DeckTags.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -45,33 +45,33 @@ public class DeckTagController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DeckTagDto dto)
     {
-        var entity = await _db.DeckTags.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Color is not null) entity.Color = dto.Color;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.DeckTags.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.DeckTags.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/merge")]
     public async System.Threading.Tasks.Task<IActionResult> MergeInto(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
     {
-        var entity = await _db.DeckTags.FindAsync(id);
-        if (entity is null) return NotFound();
-        var targetTagId = (int)body["target_tag_id"];
-        entity.MergeInto(targetTagId);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            var targetTagId = (int)body["target_tag_id"];
+            await _svc.MergeIntoAsync(id, targetTagId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

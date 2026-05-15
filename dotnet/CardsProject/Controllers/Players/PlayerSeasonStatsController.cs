@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Players;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
@@ -11,38 +9,34 @@ namespace CardsProject.Controllers.Players;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class PlayerSeasonStatsController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public PlayerSeasonStatsController(AppDbContext db) => _db = db;
+    private readonly PlayerSeasonStatsService _svc;
+
+    public PlayerSeasonStatsController(PlayerSeasonStatsService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.PlayerSeasonStatses.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PlayerSeasonStatsDto dto)
     {
-        var entity = new PlayerSeasonStats();
-        if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
-        if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
-        if (dto.Draws is not null) entity.Draws = dto.Draws.Value;
-        if (dto.TournamentWins is not null) entity.TournamentWins = dto.TournamentWins.Value;
-        if (dto.HighestRank is not null && Enum.TryParse<PlayerSeasonStatsHighestRankType>(dto.HighestRank, out var highestRankVal)) entity.HighestRank = highestRankVal;
-        if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.SeasonId is not null) entity.SeasonId = dto.SeasonId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.PlayerSeasonStatses.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -51,28 +45,21 @@ public class PlayerSeasonStatsController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] PlayerSeasonStatsDto dto)
     {
-        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
-        if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
-        if (dto.Draws is not null) entity.Draws = dto.Draws.Value;
-        if (dto.TournamentWins is not null) entity.TournamentWins = dto.TournamentWins.Value;
-        if (dto.HighestRank is not null && Enum.TryParse<PlayerSeasonStatsHighestRankType>(dto.HighestRank, out var highestRankVal)) entity.HighestRank = highestRankVal;
-        if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.SeasonId is not null) entity.SeasonId = dto.SeasonId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.PlayerSeasonStatses.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

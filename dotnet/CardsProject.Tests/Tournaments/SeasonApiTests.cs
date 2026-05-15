@@ -20,6 +20,9 @@ public class SeasonApiTests : IClassFixture<SeasonApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,9 +63,9 @@ public class SeasonApiTests : IClassFixture<SeasonApiTests.TestFactory>
     {
         var payload = new
         {
-            EndDate = DateOnly.Parse("2024-01-02"),
+            EndDate = "2024-01-02",
             Name = "test",
-            StartDate = new DateOnly(2024, 1, 1)
+            StartDate = "2024-01-01"
         };
         var response = await _client.PostAsJsonAsync("/api/seasons", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

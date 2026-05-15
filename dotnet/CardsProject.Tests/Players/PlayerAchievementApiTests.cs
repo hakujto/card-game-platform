@@ -20,6 +20,9 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -61,7 +64,9 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
         var payload = new
         {
             Progress = 1,
-            EarnedAt = new DateTime(2024, 1, 1)
+            EarnedAt = "2024-01-01T00:00:00",
+            PlayerId = 1,
+            AchievementId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/player_achievements", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -79,7 +84,7 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { EarnedAt = new DateTime(2024, 1, 1) };
+        var payload = new { EarnedAt = "2024-01-01T00:00:00" };
         var response = await _client.PatchAsJsonAsync("/api/player_achievements/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

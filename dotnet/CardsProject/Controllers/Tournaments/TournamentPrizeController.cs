@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Tournaments;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
@@ -11,38 +9,34 @@ namespace CardsProject.Controllers.Tournaments;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentPrizeController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public TournamentPrizeController(AppDbContext db) => _db = db;
+    private readonly TournamentPrizeService _svc;
+
+    public TournamentPrizeController(TournamentPrizeService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.TournamentPrizes.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TournamentPrizeDto dto)
     {
-        var entity = new TournamentPrize();
-        if (dto.PlacementFrom is not null) entity.PlacementFrom = dto.PlacementFrom.Value;
-        if (dto.PlacementTo is not null) entity.PlacementTo = dto.PlacementTo.Value;
-        if (dto.PrizeType is not null && Enum.TryParse<TournamentPrizePrizeTypeType>(dto.PrizeType, out var prizeTypeVal)) entity.PrizeType = prizeTypeVal;
-        if (dto.Amount is not null) entity.Amount = dto.Amount.Value;
-        if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.PacksCount is not null) entity.PacksCount = dto.PacksCount.Value;
-        if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.TournamentPrizes.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.TournamentPrizes.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -51,28 +45,21 @@ public class TournamentPrizeController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TournamentPrizeDto dto)
     {
-        var entity = await _db.TournamentPrizes.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.PlacementFrom is not null) entity.PlacementFrom = dto.PlacementFrom.Value;
-        if (dto.PlacementTo is not null) entity.PlacementTo = dto.PlacementTo.Value;
-        if (dto.PrizeType is not null && Enum.TryParse<TournamentPrizePrizeTypeType>(dto.PrizeType, out var prizeTypeVal)) entity.PrizeType = prizeTypeVal;
-        if (dto.Amount is not null) entity.Amount = dto.Amount.Value;
-        if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.PacksCount is not null) entity.PacksCount = dto.PacksCount.Value;
-        if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.TournamentPrizes.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.TournamentPrizes.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

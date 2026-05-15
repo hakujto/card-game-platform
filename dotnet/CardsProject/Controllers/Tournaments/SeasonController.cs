@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Tournaments;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
@@ -11,36 +9,34 @@ namespace CardsProject.Controllers.Tournaments;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class SeasonController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public SeasonController(AppDbContext db) => _db = db;
+    private readonly SeasonService _svc;
+
+    public SeasonController(SeasonService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.Seasons.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SeasonDto dto)
     {
-        var entity = new Season();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.StartDate is not null) entity.StartDate = dto.StartDate.Value;
-        if (dto.EndDate is not null) entity.EndDate = dto.EndDate.Value;
-        if (dto.Format is not null && Enum.TryParse<SeasonFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
-        if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
-        if (dto.RewardDescription is not null) entity.RewardDescription = dto.RewardDescription;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.Seasons.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.Seasons.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -49,56 +45,54 @@ public class SeasonController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] SeasonDto dto)
     {
-        var entity = await _db.Seasons.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.StartDate is not null) entity.StartDate = dto.StartDate.Value;
-        if (dto.EndDate is not null) entity.EndDate = dto.EndDate.Value;
-        if (dto.Format is not null && Enum.TryParse<SeasonFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
-        if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
-        if (dto.RewardDescription is not null) entity.RewardDescription = dto.RewardDescription;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.Seasons.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.Seasons.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/activate")]
     public async System.Threading.Tasks.Task<IActionResult> Activate(int id)
     {
-        var entity = await _db.Seasons.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Activate();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.ActivateAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/deactivate")]
     public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
     {
-        var entity = await _db.Seasons.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Deactivate();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.DeactivateAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/finalize")]
     public async System.Threading.Tasks.Task<IActionResult> FinalizeRewards(int id)
     {
-        var entity = await _db.Seasons.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.FinalizeRewards();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.FinalizeRewardsAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

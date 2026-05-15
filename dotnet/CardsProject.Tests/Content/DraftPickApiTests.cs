@@ -20,6 +20,9 @@ public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,7 +65,9 @@ public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
         {
             PickNumber = 1,
             PackNumber = 1,
-            PickedAt = new DateTime(2024, 1, 1)
+            PickedAt = "2024-01-01T00:00:00",
+            ParticipantId = 1,
+            CardId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/draft_picks", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

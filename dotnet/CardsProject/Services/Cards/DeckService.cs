@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Cards;
 using CardsProject.Domain.Cards;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,65 @@ public class DeckService
 
     public DeckService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<Deck> CreateAsync(Deck entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<Deck>> GetAllAsync()
+        => await _db.Decks.AsNoTracking().ToListAsync();
+
+    public async Task<Deck?> GetByIdAsync(int id)
+        => await _db.Decks.FindAsync(id);
+
+    public async Task<Deck> CreateAsync(DeckDto dto)
+    {
+        var entity = new Deck();
+        if (dto.Name is not null) entity.Name = dto.Name;
+        if (dto.Description is not null) entity.Description = dto.Description;
+        if (dto.Format is not null && Enum.TryParse<DeckFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
+        if (dto.IsPublic is not null) entity.IsPublic = dto.IsPublic.Value;
+        if (dto.IsTournamentLegal is not null) entity.IsTournamentLegal = dto.IsTournamentLegal.Value;
+        if (dto.Archetype is not null && Enum.TryParse<DeckArchetypeType>(dto.Archetype, out var archetypeVal)) entity.Archetype = archetypeVal;
+        if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
+        if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
+        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        ValidateEntity(entity);
         _db.Decks.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<Deck> UpdateAsync(Deck entity)
+    public async Task<Deck?> UpdateAsync(int id, DeckDto dto)
     {
-        _db.Decks.Update(entity);
+        var entity = await _db.Decks.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.Name is not null) entity.Name = dto.Name;
+        if (dto.Description is not null) entity.Description = dto.Description;
+        if (dto.Format is not null && Enum.TryParse<DeckFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
+        if (dto.IsPublic is not null) entity.IsPublic = dto.IsPublic.Value;
+        if (dto.IsTournamentLegal is not null) entity.IsTournamentLegal = dto.IsTournamentLegal.Value;
+        if (dto.Archetype is not null && Enum.TryParse<DeckArchetypeType>(dto.Archetype, out var archetypeVal)) entity.Archetype = archetypeVal;
+        if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
+        if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
+        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.Decks.FindAsync(id);
+        if (entity is null) return false;
+        _db.Decks.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async System.Threading.Tasks.Task<bool> ValidateSizeAsync(int id)

@@ -20,6 +20,9 @@ public class ArticleTagAssignmentApiTests : IClassFixture<ArticleTagAssignmentAp
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,8 @@ public class ArticleTagAssignmentApiTests : IClassFixture<ArticleTagAssignmentAp
     {
         var payload = new
         {
-
+            ArticleId = 1,
+            TagId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/article_tag_assignments", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

@@ -20,6 +20,9 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,7 +65,8 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
         {
             Title = "test",
             StreamUrl = "https://example.com",
-            ScheduledStart = new DateTime(2024, 1, 1)
+            ScheduledStart = "2024-01-01T00:00:00",
+            StreamerId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/streams", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

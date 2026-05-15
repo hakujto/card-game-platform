@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,46 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleController : ControllerBase
 {
-    private readonly AppDbContext _db;
     private readonly ArticleService _svc;
 
-    public ArticleController(AppDbContext db, ArticleService svc) { _db = db; _svc = svc; }
+    public ArticleController(ArticleService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.Articles.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ArticleDto dto)
     {
-        var entity = new Article();
-        if (dto.Title is not null) entity.Title = dto.Title;
-        if (dto.Slug is not null) entity.Slug = dto.Slug;
-        if (dto.Body is not null) entity.Body = dto.Body;
-        if (dto.Excerpt is not null) entity.Excerpt = dto.Excerpt;
-        if (dto.CoverImageUrl is not null) entity.CoverImageUrl = dto.CoverImageUrl;
-        if (dto.Status is not null && Enum.TryParse<ArticleStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.ArticleType is not null && Enum.TryParse<ArticleArticleTypeType>(dto.ArticleType, out var articleTypeVal)) entity.ArticleType = articleTypeVal;
-        if (dto.ViewCount is not null) entity.ViewCount = dto.ViewCount.Value;
-        if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
-        if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
-        if (dto.FeaturedDeckId is not null) entity.FeaturedDeckId = dto.FeaturedDeckId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        _db.Articles.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.Articles.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -59,64 +45,54 @@ public class ArticleController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleDto dto)
     {
-        var entity = await _db.Articles.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Title is not null) entity.Title = dto.Title;
-        if (dto.Slug is not null) entity.Slug = dto.Slug;
-        if (dto.Body is not null) entity.Body = dto.Body;
-        if (dto.Excerpt is not null) entity.Excerpt = dto.Excerpt;
-        if (dto.CoverImageUrl is not null) entity.CoverImageUrl = dto.CoverImageUrl;
-        if (dto.Status is not null && Enum.TryParse<ArticleStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.ArticleType is not null && Enum.TryParse<ArticleArticleTypeType>(dto.ArticleType, out var articleTypeVal)) entity.ArticleType = articleTypeVal;
-        if (dto.ViewCount is not null) entity.ViewCount = dto.ViewCount.Value;
-        if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
-        if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
-        if (dto.FeaturedDeckId is not null) entity.FeaturedDeckId = dto.FeaturedDeckId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.Articles.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.Articles.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/publish")]
     public async System.Threading.Tasks.Task<IActionResult> Publish(int id)
     {
-        var entity = await _db.Articles.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Publish();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.PublishAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/archive")]
     public async System.Threading.Tasks.Task<IActionResult> Archive(int id)
     {
-        var entity = await _db.Articles.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Archive();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.ArchiveAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/view")]
     public async System.Threading.Tasks.Task<IActionResult> IncrementView(int id)
     {
-        var entity = await _db.Articles.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.IncrementView();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.IncrementViewAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

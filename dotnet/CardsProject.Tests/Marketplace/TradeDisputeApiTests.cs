@@ -20,6 +20,9 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,7 +65,9 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
         {
             Reason = "ItemNotReceived",
             Description = "test",
-            OpenedAt = new DateTime(2024, 1, 1)
+            OpenedAt = "2024-01-01T00:00:00",
+            TransactionId = 1,
+            OpenedById = 1
         };
         var response = await _client.PostAsJsonAsync("/api/trade_disputes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,32 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleTagAssignmentController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public ArticleTagAssignmentController(AppDbContext db) => _db = db;
+    private readonly ArticleTagAssignmentService _svc;
+
+    public ArticleTagAssignmentController(ArticleTagAssignmentService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.ArticleTagAssignments.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ArticleTagAssignmentDto dto)
     {
-        var entity = new ArticleTagAssignment();
-        if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
-        if (dto.TagId is not null) entity.TagId = dto.TagId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.ArticleTagAssignments.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.ArticleTagAssignments.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -45,22 +45,21 @@ public class ArticleTagAssignmentController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleTagAssignmentDto dto)
     {
-        var entity = await _db.ArticleTagAssignments.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
-        if (dto.TagId is not null) entity.TagId = dto.TagId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.ArticleTagAssignments.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.ArticleTagAssignments.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

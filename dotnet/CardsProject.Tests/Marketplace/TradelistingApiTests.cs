@@ -20,6 +20,9 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,8 +65,10 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
         {
             AskingPrice = 0.00m,
             AuctionStartPrice = 0.00m,
-            AuctionEndTime = DateTime.Parse("2024-01-01T00:00:00"),
-            CreatedAt = new DateTime(2024, 1, 1)
+            AuctionEndTime = "2024-01-01T00:00:00",
+            CreatedAt = "2024-01-01T00:00:00",
+            SellerId = 1,
+            CardId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/tradelistings", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

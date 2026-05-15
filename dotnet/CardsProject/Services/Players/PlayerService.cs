@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Players;
 using CardsProject.Domain.Players;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,67 @@ public class PlayerService
 
     public PlayerService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<Player> CreateAsync(Player entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<Player>> GetAllAsync()
+        => await _db.Players.AsNoTracking().ToListAsync();
+
+    public async Task<Player?> GetByIdAsync(int id)
+        => await _db.Players.FindAsync(id);
+
+    public async Task<Player> CreateAsync(PlayerDto dto)
+    {
+        var entity = new Player();
+        if (dto.DisplayName is not null) entity.DisplayName = dto.DisplayName;
+        if (dto.Rank is not null && Enum.TryParse<PlayerRankType>(dto.Rank, out var rankVal)) entity.Rank = rankVal;
+        if (dto.Rating is not null) entity.Rating = dto.Rating.Value;
+        if (dto.PeakRating is not null) entity.PeakRating = dto.PeakRating.Value;
+        if (dto.Bio is not null) entity.Bio = dto.Bio;
+        if (dto.CountryCode is not null) entity.CountryCode = dto.CountryCode;
+        if (dto.AvatarUrl is not null) entity.AvatarUrl = dto.AvatarUrl;
+        if (dto.PreferredFormat is not null && Enum.TryParse<PlayerPreferredFormatType>(dto.PreferredFormat, out var preferredFormatVal)) entity.PreferredFormat = preferredFormatVal;
+        if (dto.IsVerified is not null) entity.IsVerified = dto.IsVerified.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.LastActiveAt is not null) entity.LastActiveAt = dto.LastActiveAt.Value;
+        if (dto.UserId is not null) entity.UserId = dto.UserId;
+        ValidateEntity(entity);
         _db.Players.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<Player> UpdateAsync(Player entity)
+    public async Task<Player?> UpdateAsync(int id, PlayerDto dto)
     {
-        _db.Players.Update(entity);
+        var entity = await _db.Players.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.DisplayName is not null) entity.DisplayName = dto.DisplayName;
+        if (dto.Rank is not null && Enum.TryParse<PlayerRankType>(dto.Rank, out var rankVal)) entity.Rank = rankVal;
+        if (dto.Rating is not null) entity.Rating = dto.Rating.Value;
+        if (dto.PeakRating is not null) entity.PeakRating = dto.PeakRating.Value;
+        if (dto.Bio is not null) entity.Bio = dto.Bio;
+        if (dto.CountryCode is not null) entity.CountryCode = dto.CountryCode;
+        if (dto.AvatarUrl is not null) entity.AvatarUrl = dto.AvatarUrl;
+        if (dto.PreferredFormat is not null && Enum.TryParse<PlayerPreferredFormatType>(dto.PreferredFormat, out var preferredFormatVal)) entity.PreferredFormat = preferredFormatVal;
+        if (dto.IsVerified is not null) entity.IsVerified = dto.IsVerified.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.LastActiveAt is not null) entity.LastActiveAt = dto.LastActiveAt.Value;
+        if (dto.UserId is not null) entity.UserId = dto.UserId;
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.Players.FindAsync(id);
+        if (entity is null) return false;
+        _db.Players.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async System.Threading.Tasks.Task<bool> PromoteAsync(int id)

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Players;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
@@ -11,34 +9,34 @@ namespace CardsProject.Controllers.Players;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class FriendshipController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public FriendshipController(AppDbContext db) => _db = db;
+    private readonly FriendshipService _svc;
+
+    public FriendshipController(FriendshipService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.Friendships.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] FriendshipDto dto)
     {
-        var entity = new Friendship();
-        if (dto.Status is not null && Enum.TryParse<FriendshipStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.RequesterId is not null) entity.RequesterId = dto.RequesterId;
-        if (dto.ReceiverId is not null) entity.ReceiverId = dto.ReceiverId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.Friendships.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.Friendships.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -47,54 +45,54 @@ public class FriendshipController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] FriendshipDto dto)
     {
-        var entity = await _db.Friendships.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Status is not null && Enum.TryParse<FriendshipStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.RequesterId is not null) entity.RequesterId = dto.RequesterId;
-        if (dto.ReceiverId is not null) entity.ReceiverId = dto.ReceiverId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.Friendships.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.Friendships.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/accept")]
     public async System.Threading.Tasks.Task<IActionResult> Accept(int id)
     {
-        var entity = await _db.Friendships.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Accept();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.AcceptAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/decline")]
     public async System.Threading.Tasks.Task<IActionResult> Decline(int id)
     {
-        var entity = await _db.Friendships.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Decline();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.DeclineAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/block")]
     public async System.Threading.Tasks.Task<IActionResult> Block(int id)
     {
-        var entity = await _db.Friendships.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Block();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.BlockAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

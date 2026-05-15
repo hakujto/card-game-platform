@@ -20,6 +20,9 @@ public class CardRulingApiTests : IClassFixture<CardRulingApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -61,8 +64,9 @@ public class CardRulingApiTests : IClassFixture<CardRulingApiTests.TestFactory>
         var payload = new
         {
             RulingText = "test",
-            PublishedAt = new DateOnly(2024, 1, 1),
-            Source = "test"
+            PublishedAt = "2024-01-01",
+            Source = "test",
+            CardId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/card_rulings", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

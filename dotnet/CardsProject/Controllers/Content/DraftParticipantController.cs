@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,34 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DraftParticipantController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public DraftParticipantController(AppDbContext db) => _db = db;
+    private readonly DraftParticipantService _svc;
+
+    public DraftParticipantController(DraftParticipantService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.DraftParticipants.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] DraftParticipantDto dto)
     {
-        var entity = new DraftParticipant();
-        if (dto.SeatNumber is not null) entity.SeatNumber = dto.SeatNumber.Value;
-        if (dto.JoinedAt is not null) entity.JoinedAt = dto.JoinedAt.Value;
-        if (dto.SessionId is not null) entity.SessionId = dto.SessionId;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.DraftParticipants.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.DraftParticipants.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -47,36 +45,34 @@ public class DraftParticipantController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DraftParticipantDto dto)
     {
-        var entity = await _db.DraftParticipants.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.SeatNumber is not null) entity.SeatNumber = dto.SeatNumber.Value;
-        if (dto.JoinedAt is not null) entity.JoinedAt = dto.JoinedAt.Value;
-        if (dto.SessionId is not null) entity.SessionId = dto.SessionId;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.DraftParticipants.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.DraftParticipants.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/pick")]
     public async System.Threading.Tasks.Task<IActionResult> PickCard(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
     {
-        var entity = await _db.DraftParticipants.FindAsync(id);
-        if (entity is null) return NotFound();
-        var cardId = (int)body["card_id"];
-        var packNumber = (int)body["pack_number"];
-        entity.PickCard(cardId, packNumber);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            var cardId = (int)body["card_id"];
+            var packNumber = (int)body["pack_number"];
+            await _svc.PickCardAsync(id, cardId, packNumber);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

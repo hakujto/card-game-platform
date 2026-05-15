@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,32 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleTagController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public ArticleTagController(AppDbContext db) => _db = db;
+    private readonly ArticleTagService _svc;
+
+    public ArticleTagController(ArticleTagService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.ArticleTags.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ArticleTagDto dto)
     {
-        var entity = new ArticleTag();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Slug is not null) entity.Slug = dto.Slug;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.ArticleTags.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.ArticleTags.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -45,22 +45,21 @@ public class ArticleTagController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleTagDto dto)
     {
-        var entity = await _db.ArticleTags.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Slug is not null) entity.Slug = dto.Slug;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.ArticleTags.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.ArticleTags.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

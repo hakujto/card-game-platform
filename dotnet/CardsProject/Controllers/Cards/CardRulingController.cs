@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Cards;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
@@ -11,34 +9,34 @@ namespace CardsProject.Controllers.Cards;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardRulingController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public CardRulingController(AppDbContext db) => _db = db;
+    private readonly CardRulingService _svc;
+
+    public CardRulingController(CardRulingService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.CardRulings.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CardRulingDto dto)
     {
-        var entity = new CardRuling();
-        if (dto.RulingText is not null) entity.RulingText = dto.RulingText;
-        if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
-        if (dto.Source is not null) entity.Source = dto.Source;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.CardRulings.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.CardRulings.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -47,24 +45,21 @@ public class CardRulingController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CardRulingDto dto)
     {
-        var entity = await _db.CardRulings.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.RulingText is not null) entity.RulingText = dto.RulingText;
-        if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
-        if (dto.Source is not null) entity.Source = dto.Source;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.CardRulings.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.CardRulings.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

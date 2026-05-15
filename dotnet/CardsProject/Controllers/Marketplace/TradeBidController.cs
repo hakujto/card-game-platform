@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Marketplace;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
@@ -11,35 +9,34 @@ namespace CardsProject.Controllers.Marketplace;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TradeBidController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public TradeBidController(AppDbContext db) => _db = db;
+    private readonly TradeBidService _svc;
+
+    public TradeBidController(TradeBidService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.TradeBids.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TradeBidDto dto)
     {
-        var entity = new TradeBid();
-        if (dto.Amount is not null) entity.Amount = dto.Amount.Value;
-        if (dto.PlacedAt is not null) entity.PlacedAt = dto.PlacedAt.Value;
-        if (dto.IsWinning is not null) entity.IsWinning = dto.IsWinning.Value;
-        if (dto.ListingId is not null) entity.ListingId = dto.ListingId;
-        if (dto.BidderId is not null) entity.BidderId = dto.BidderId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.TradeBids.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.TradeBids.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -48,25 +45,21 @@ public class TradeBidController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TradeBidDto dto)
     {
-        var entity = await _db.TradeBids.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Amount is not null) entity.Amount = dto.Amount.Value;
-        if (dto.PlacedAt is not null) entity.PlacedAt = dto.PlacedAt.Value;
-        if (dto.IsWinning is not null) entity.IsWinning = dto.IsWinning.Value;
-        if (dto.ListingId is not null) entity.ListingId = dto.ListingId;
-        if (dto.BidderId is not null) entity.BidderId = dto.BidderId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.TradeBids.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.TradeBids.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

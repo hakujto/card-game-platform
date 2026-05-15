@@ -20,6 +20,9 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,8 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     {
         var payload = new
         {
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = "2024-01-01T00:00:00",
+            CardSetId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/draft_sessions", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

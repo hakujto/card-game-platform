@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Marketplace;
 using CardsProject.Domain.Marketplace;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,71 @@ public class OrderService
 
     public OrderService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<Order> CreateAsync(Order entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<Order>> GetAllAsync()
+        => await _db.Orders.AsNoTracking().ToListAsync();
+
+    public async Task<Order?> GetByIdAsync(int id)
+        => await _db.Orders.FindAsync(id);
+
+    public async Task<Order> CreateAsync(OrderDto dto)
+    {
+        var entity = new Order();
+        if (dto.Status is not null && Enum.TryParse<OrderStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Total is not null) entity.Total = dto.Total.Value;
+        if (dto.DiscountApplied is not null) entity.DiscountApplied = dto.DiscountApplied.Value;
+        if (dto.Currency is not null) entity.Currency = dto.Currency;
+        if (dto.PaymentMethod is not null && Enum.TryParse<OrderPaymentMethodType>(dto.PaymentMethod, out var paymentMethodVal)) entity.PaymentMethod = paymentMethodVal;
+        if (dto.PaymentReference is not null) entity.PaymentReference = dto.PaymentReference;
+        if (dto.ShippingAddress is not null) entity.ShippingAddress = dto.ShippingAddress;
+        if (dto.TrackingNumber is not null) entity.TrackingNumber = dto.TrackingNumber;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.PaidAt is not null) entity.PaidAt = dto.PaidAt.Value;
+        if (dto.ShippedAt is not null) entity.ShippedAt = dto.ShippedAt.Value;
+        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        if (dto.CouponId is not null) entity.CouponId = dto.CouponId;
+        Validate(entity);
+        ValidateEntity(entity);
         _db.Orders.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<Order> UpdateAsync(Order entity)
+    public async Task<Order?> UpdateAsync(int id, OrderDto dto)
     {
-        _db.Orders.Update(entity);
+        var entity = await _db.Orders.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.Status is not null && Enum.TryParse<OrderStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Total is not null) entity.Total = dto.Total.Value;
+        if (dto.DiscountApplied is not null) entity.DiscountApplied = dto.DiscountApplied.Value;
+        if (dto.Currency is not null) entity.Currency = dto.Currency;
+        if (dto.PaymentMethod is not null && Enum.TryParse<OrderPaymentMethodType>(dto.PaymentMethod, out var paymentMethodVal)) entity.PaymentMethod = paymentMethodVal;
+        if (dto.PaymentReference is not null) entity.PaymentReference = dto.PaymentReference;
+        if (dto.ShippingAddress is not null) entity.ShippingAddress = dto.ShippingAddress;
+        if (dto.TrackingNumber is not null) entity.TrackingNumber = dto.TrackingNumber;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.PaidAt is not null) entity.PaidAt = dto.PaidAt.Value;
+        if (dto.ShippedAt is not null) entity.ShippedAt = dto.ShippedAt.Value;
+        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        if (dto.CouponId is not null) entity.CouponId = dto.CouponId;
+        Validate(entity);
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id);
+        if (entity is null) return false;
+        _db.Orders.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async System.Threading.Tasks.Task<bool> CancelAsync(int id)

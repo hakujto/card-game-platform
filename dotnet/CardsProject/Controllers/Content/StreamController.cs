@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 using Stream = CardsProject.Domain.Content.Stream;
 
@@ -12,44 +10,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class StreamController : ControllerBase
 {
-    private readonly AppDbContext _db;
     private readonly StreamService _svc;
 
-    public StreamController(AppDbContext db, StreamService svc) { _db = db; _svc = svc; }
+    public StreamController(StreamService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.Streams.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StreamDto dto)
     {
-        var entity = new Stream();
-        if (dto.Title is not null) entity.Title = dto.Title;
-        if (dto.StreamUrl is not null) entity.StreamUrl = dto.StreamUrl;
-        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
-        if (dto.Status is not null && Enum.TryParse<StreamStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.ViewerCountPeak is not null) entity.ViewerCountPeak = dto.ViewerCountPeak.Value;
-        if (dto.ScheduledStart is not null) entity.ScheduledStart = dto.ScheduledStart.Value;
-        if (dto.ActualStart is not null) entity.ActualStart = dto.ActualStart.Value;
-        if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
-        if (dto.VodUrl is not null) entity.VodUrl = dto.VodUrl;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.StreamerId is not null) entity.StreamerId = dto.StreamerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        _db.Streams.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.Streams.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -58,63 +46,55 @@ public class StreamController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] StreamDto dto)
     {
-        var entity = await _db.Streams.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Title is not null) entity.Title = dto.Title;
-        if (dto.StreamUrl is not null) entity.StreamUrl = dto.StreamUrl;
-        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
-        if (dto.Status is not null && Enum.TryParse<StreamStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
-        if (dto.ViewerCountPeak is not null) entity.ViewerCountPeak = dto.ViewerCountPeak.Value;
-        if (dto.ScheduledStart is not null) entity.ScheduledStart = dto.ScheduledStart.Value;
-        if (dto.ActualStart is not null) entity.ActualStart = dto.ActualStart.Value;
-        if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
-        if (dto.VodUrl is not null) entity.VodUrl = dto.VodUrl;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.StreamerId is not null) entity.StreamerId = dto.StreamerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.Streams.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.Streams.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/live")]
     public async System.Threading.Tasks.Task<IActionResult> GoLive(int id)
     {
-        var entity = await _db.Streams.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.GoLive();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.GoLiveAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/end")]
     public async System.Threading.Tasks.Task<IActionResult> End(int id)
     {
-        var entity = await _db.Streams.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.End();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.EndAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPatch("{id:int}/viewers")]
     public async System.Threading.Tasks.Task<IActionResult> UpdateViewerPeak(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
     {
-        var entity = await _db.Streams.FindAsync(id);
-        if (entity is null) return NotFound();
-        var count = (int)body["count"];
-        entity.UpdateViewerPeak(count);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            var count = (int)body["count"];
+            await _svc.UpdateViewerPeakAsync(id, count);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

@@ -20,6 +20,9 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,9 +63,11 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
     {
         var payload = new
         {
-            ClaimedAt = DateTime.Parse("2024-01-01T00:00:00"),
+            ClaimedAt = "2024-01-01T00:00:00",
             FinalPlacement = 1,
-            AwardedAt = new DateTime(2024, 1, 1)
+            AwardedAt = "2024-01-01T00:00:00",
+            PrizeId = 1,
+            PlayerId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/awarded_prizes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

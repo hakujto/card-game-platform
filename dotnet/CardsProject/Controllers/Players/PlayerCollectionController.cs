@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Players;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
@@ -11,37 +9,34 @@ namespace CardsProject.Controllers.Players;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class PlayerCollectionController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public PlayerCollectionController(AppDbContext db) => _db = db;
+    private readonly PlayerCollectionService _svc;
+
+    public PlayerCollectionController(PlayerCollectionService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.PlayerCollections.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PlayerCollectionDto dto)
     {
-        var entity = new PlayerCollection();
-        if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
-        if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
-        if (dto.Condition is not null && Enum.TryParse<PlayerCollectionConditionType>(dto.Condition, out var conditionVal)) entity.Condition = conditionVal;
-        if (dto.AcquiredAt is not null) entity.AcquiredAt = dto.AcquiredAt.Value;
-        if (dto.AcquiredVia is not null && Enum.TryParse<PlayerCollectionAcquiredViaType>(dto.AcquiredVia, out var acquiredViaVal)) entity.AcquiredVia = acquiredViaVal;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.PlayerCollections.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.PlayerCollections.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -50,37 +45,32 @@ public class PlayerCollectionController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] PlayerCollectionDto dto)
     {
-        var entity = await _db.PlayerCollections.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
-        if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
-        if (dto.Condition is not null && Enum.TryParse<PlayerCollectionConditionType>(dto.Condition, out var conditionVal)) entity.Condition = conditionVal;
-        if (dto.AcquiredAt is not null) entity.AcquiredAt = dto.AcquiredAt.Value;
-        if (dto.AcquiredVia is not null && Enum.TryParse<PlayerCollectionAcquiredViaType>(dto.AcquiredVia, out var acquiredViaVal)) entity.AcquiredVia = acquiredViaVal;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.PlayerCollections.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.PlayerCollections.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpGet("{id:int}/value")]
     public async System.Threading.Tasks.Task<IActionResult> EstimatedValue(int id)
     {
-        var entity = await _db.PlayerCollections.FindAsync(id);
-        if (entity is null) return NotFound();
-        var result = entity.EstimatedValue();
-        await _db.SaveChangesAsync();
-        return Ok(result);
+        try
+        {
+            var result = await _svc.EstimatedValueAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Players;
 using CardsProject.Domain.Players;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,49 @@ public class CraftingRecipeService
 
     public CraftingRecipeService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<CraftingRecipe> CreateAsync(CraftingRecipe entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<CraftingRecipe>> GetAllAsync()
+        => await _db.CraftingRecipes.AsNoTracking().ToListAsync();
+
+    public async Task<CraftingRecipe?> GetByIdAsync(int id)
+        => await _db.CraftingRecipes.FindAsync(id);
+
+    public async Task<CraftingRecipe> CreateAsync(CraftingRecipeDto dto)
+    {
+        var entity = new CraftingRecipe();
+        if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
+        if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
+        if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
+        ValidateEntity(entity);
         _db.CraftingRecipes.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<CraftingRecipe> UpdateAsync(CraftingRecipe entity)
+    public async Task<CraftingRecipe?> UpdateAsync(int id, CraftingRecipeDto dto)
     {
-        _db.CraftingRecipes.Update(entity);
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
+        if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
+        if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) return false;
+        _db.CraftingRecipes.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
 }

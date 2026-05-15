@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Tournaments;
 using CardsProject.Domain.Tournaments;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,65 @@ public class MatchService
 
     public MatchService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<Match> CreateAsync(Match entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<Match>> GetAllAsync()
+        => await _db.Matches.AsNoTracking().ToListAsync();
+
+    public async Task<Match?> GetByIdAsync(int id)
+        => await _db.Matches.FindAsync(id);
+
+    public async Task<Match> CreateAsync(MatchDto dto)
+    {
+        var entity = new Match();
+        if (dto.TableNumber is not null) entity.TableNumber = dto.TableNumber.Value;
+        if (dto.Status is not null && Enum.TryParse<MatchStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Player1Wins is not null) entity.Player1Wins = dto.Player1Wins.Value;
+        if (dto.Player2Wins is not null) entity.Player2Wins = dto.Player2Wins.Value;
+        if (dto.StartedAt is not null) entity.StartedAt = dto.StartedAt.Value;
+        if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
+        if (dto.ResultNotes is not null) entity.ResultNotes = dto.ResultNotes;
+        if (dto.RoundId is not null) entity.RoundId = dto.RoundId;
+        if (dto.Player1Id is not null) entity.Player1Id = dto.Player1Id;
+        if (dto.Player2Id is not null) entity.Player2Id = dto.Player2Id;
+        Validate(entity);
+        ValidateEntity(entity);
         _db.Matches.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<Match> UpdateAsync(Match entity)
+    public async Task<Match?> UpdateAsync(int id, MatchDto dto)
     {
-        _db.Matches.Update(entity);
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.TableNumber is not null) entity.TableNumber = dto.TableNumber.Value;
+        if (dto.Status is not null && Enum.TryParse<MatchStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Player1Wins is not null) entity.Player1Wins = dto.Player1Wins.Value;
+        if (dto.Player2Wins is not null) entity.Player2Wins = dto.Player2Wins.Value;
+        if (dto.StartedAt is not null) entity.StartedAt = dto.StartedAt.Value;
+        if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
+        if (dto.ResultNotes is not null) entity.ResultNotes = dto.ResultNotes;
+        if (dto.RoundId is not null) entity.RoundId = dto.RoundId;
+        if (dto.Player1Id is not null) entity.Player1Id = dto.Player1Id;
+        if (dto.Player2Id is not null) entity.Player2Id = dto.Player2Id;
+        Validate(entity);
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) return false;
+        _db.Matches.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async System.Threading.Tasks.Task<bool> RecordResultAsync(int id, int p1Wins, int p2Wins)

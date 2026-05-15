@@ -20,6 +20,9 @@ public class TournamentJudgeApiTests : IClassFixture<TournamentJudgeApiTests.Tes
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,8 @@ public class TournamentJudgeApiTests : IClassFixture<TournamentJudgeApiTests.Tes
     {
         var payload = new
         {
-
+            TournamentId = 1,
+            PlayerId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/tournament_judges", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

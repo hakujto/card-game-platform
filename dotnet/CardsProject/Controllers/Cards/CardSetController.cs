@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Cards;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
@@ -11,37 +9,34 @@ namespace CardsProject.Controllers.Cards;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardSetController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public CardSetController(AppDbContext db) => _db = db;
+    private readonly CardSetService _svc;
+
+    public CardSetController(CardSetService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.CardSets.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CardSetDto dto)
     {
-        var entity = new CardSet();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Code is not null) entity.Code = dto.Code;
-        if (dto.ReleaseDate is not null) entity.ReleaseDate = dto.ReleaseDate.Value;
-        if (dto.SetType is not null && Enum.TryParse<CardSetSetTypeType>(dto.SetType, out var setTypeVal)) entity.SetType = setTypeVal;
-        if (dto.TotalCards is not null) entity.TotalCards = dto.TotalCards.Value;
-        if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.LogoUrl is not null) entity.LogoUrl = dto.LogoUrl;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.CardSets.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.CardSets.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -50,27 +45,21 @@ public class CardSetController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CardSetDto dto)
     {
-        var entity = await _db.CardSets.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Name is not null) entity.Name = dto.Name;
-        if (dto.Code is not null) entity.Code = dto.Code;
-        if (dto.ReleaseDate is not null) entity.ReleaseDate = dto.ReleaseDate.Value;
-        if (dto.SetType is not null && Enum.TryParse<CardSetSetTypeType>(dto.SetType, out var setTypeVal)) entity.SetType = setTypeVal;
-        if (dto.TotalCards is not null) entity.TotalCards = dto.TotalCards.Value;
-        if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.LogoUrl is not null) entity.LogoUrl = dto.LogoUrl;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.CardSets.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.CardSets.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

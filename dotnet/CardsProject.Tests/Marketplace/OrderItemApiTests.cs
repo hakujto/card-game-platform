@@ -20,6 +20,9 @@ public class OrderItemApiTests : IClassFixture<OrderItemApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -61,7 +64,9 @@ public class OrderItemApiTests : IClassFixture<OrderItemApiTests.TestFactory>
         var payload = new
         {
             Quantity = 1,
-            PriceAtPurchase = 0.00m
+            PriceAtPurchase = 0.00m,
+            OrderId = 1,
+            ProductId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/order_items", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

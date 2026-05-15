@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Tournaments;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
@@ -11,33 +9,34 @@ namespace CardsProject.Controllers.Tournaments;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentJudgeController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public TournamentJudgeController(AppDbContext db) => _db = db;
+    private readonly TournamentJudgeService _svc;
+
+    public TournamentJudgeController(TournamentJudgeService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.TournamentJudges.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TournamentJudgeDto dto)
     {
-        var entity = new TournamentJudge();
-        if (dto.Role is not null && Enum.TryParse<TournamentJudgeRoleType>(dto.Role, out var roleVal)) entity.Role = roleVal;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.TournamentJudges.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.TournamentJudges.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -46,23 +45,21 @@ public class TournamentJudgeController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TournamentJudgeDto dto)
     {
-        var entity = await _db.TournamentJudges.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Role is not null && Enum.TryParse<TournamentJudgeRoleType>(dto.Role, out var roleVal)) entity.Role = roleVal;
-        if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.TournamentJudges.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.TournamentJudges.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

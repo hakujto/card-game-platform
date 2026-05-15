@@ -20,6 +20,9 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,8 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
     {
         var payload = new
         {
-            DustCost = 1
+            DustCost = 1,
+            ResultCardId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/crafting_recipes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

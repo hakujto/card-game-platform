@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Marketplace;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
@@ -11,42 +9,34 @@ namespace CardsProject.Controllers.Marketplace;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CouponController : ControllerBase
 {
-    private readonly AppDbContext _db;
     private readonly CouponService _svc;
 
-    public CouponController(AppDbContext db, CouponService svc) { _db = db; _svc = svc; }
+    public CouponController(CouponService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.Coupons.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CouponDto dto)
     {
-        var entity = new Coupon();
-        if (dto.Code is not null) entity.Code = dto.Code;
-        if (dto.DiscountType is not null && Enum.TryParse<CouponDiscountTypeType>(dto.DiscountType, out var discountTypeVal)) entity.DiscountType = discountTypeVal;
-        if (dto.DiscountValue is not null) entity.DiscountValue = dto.DiscountValue.Value;
-        if (dto.MinOrderValue is not null) entity.MinOrderValue = dto.MinOrderValue.Value;
-        if (dto.MaxUses is not null) entity.MaxUses = dto.MaxUses.Value;
-        if (dto.UsesCount is not null) entity.UsesCount = dto.UsesCount.Value;
-        if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
-        if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
-        if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        _db.Coupons.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.Coupons.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -55,50 +45,43 @@ public class CouponController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CouponDto dto)
     {
-        var entity = await _db.Coupons.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Code is not null) entity.Code = dto.Code;
-        if (dto.DiscountType is not null && Enum.TryParse<CouponDiscountTypeType>(dto.DiscountType, out var discountTypeVal)) entity.DiscountType = discountTypeVal;
-        if (dto.DiscountValue is not null) entity.DiscountValue = dto.DiscountValue.Value;
-        if (dto.MinOrderValue is not null) entity.MinOrderValue = dto.MinOrderValue.Value;
-        if (dto.MaxUses is not null) entity.MaxUses = dto.MaxUses.Value;
-        if (dto.UsesCount is not null) entity.UsesCount = dto.UsesCount.Value;
-        if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
-        if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
-        if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.Coupons.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.Coupons.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/redeem")]
     public async System.Threading.Tasks.Task<IActionResult> Redeem(int id)
     {
-        var entity = await _db.Coupons.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Redeem();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.RedeemAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/deactivate")]
     public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
     {
-        var entity = await _db.Coupons.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Deactivate();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.DeactivateAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

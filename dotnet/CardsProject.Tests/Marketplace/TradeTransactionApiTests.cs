@@ -20,6 +20,9 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,9 +63,12 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
     {
         var payload = new
         {
-            CompletedAt = DateTime.Parse("2024-01-01T00:00:00"),
+            CompletedAt = "2024-01-01T00:00:00",
             PlatformFee = 0.00m,
-            FinalPrice = 0.00m
+            FinalPrice = 0.00m,
+            ListingId = 1,
+            BuyerId = 1,
+            SellerId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/trade_transactions", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

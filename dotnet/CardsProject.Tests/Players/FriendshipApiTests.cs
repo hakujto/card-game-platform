@@ -20,6 +20,9 @@ public class FriendshipApiTests : IClassFixture<FriendshipApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,9 @@ public class FriendshipApiTests : IClassFixture<FriendshipApiTests.TestFactory>
     {
         var payload = new
         {
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = "2024-01-01T00:00:00",
+            RequesterId = 1,
+            ReceiverId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/friendships", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -78,7 +83,7 @@ public class FriendshipApiTests : IClassFixture<FriendshipApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { CreatedAt = new DateTime(2024, 1, 1) };
+        var payload = new { CreatedAt = "2024-01-01T00:00:00" };
         var response = await _client.PatchAsJsonAsync("/api/friendships/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using CardsProject.Controllers.Content;
 using CardsProject.Domain.Content;
 using CardsProject.Infrastructure;
 
@@ -9,18 +12,55 @@ public class DraftSessionService
 
     public DraftSessionService(AppDbContext db) => _db = db;
 
-    public async System.Threading.Tasks.Task<DraftSession> CreateAsync(DraftSession entity)
+    private static void ValidateEntity(object entity)
     {
+        var ctx = new ValidationContext(entity);
+        Validator.ValidateObject(entity, ctx, validateAllProperties: true);
+    }
+
+    public async Task<List<DraftSession>> GetAllAsync()
+        => await _db.DraftSessions.AsNoTracking().ToListAsync();
+
+    public async Task<DraftSession?> GetByIdAsync(int id)
+        => await _db.DraftSessions.FindAsync(id);
+
+    public async Task<DraftSession> CreateAsync(DraftSessionDto dto)
+    {
+        var entity = new DraftSession();
+        if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
+        if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
+        if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        ValidateEntity(entity);
         _db.DraftSessions.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
     }
 
-    public async System.Threading.Tasks.Task<DraftSession> UpdateAsync(DraftSession entity)
+    public async Task<DraftSession?> UpdateAsync(int id, DraftSessionDto dto)
     {
-        _db.DraftSessions.Update(entity);
+        var entity = await _db.DraftSessions.FindAsync(id);
+        if (entity is null) return null;
+        if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
+        if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
+        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
+        if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
+        if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id);
+        if (entity is null) return false;
+        _db.DraftSessions.Remove(entity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
     public async System.Threading.Tasks.Task<bool> StartAsync(int id)

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,36 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleCommentController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public ArticleCommentController(AppDbContext db) => _db = db;
+    private readonly ArticleCommentService _svc;
+
+    public ArticleCommentController(ArticleCommentService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.ArticleComments.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ArticleCommentDto dto)
     {
-        var entity = new ArticleComment();
-        if (dto.Body is not null) entity.Body = dto.Body;
-        if (dto.IsHidden is not null) entity.IsHidden = dto.IsHidden.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
-        if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
-        if (dto.ParentCommentId is not null) entity.ParentCommentId = dto.ParentCommentId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.ArticleComments.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.ArticleComments.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -49,46 +45,43 @@ public class ArticleCommentController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleCommentDto dto)
     {
-        var entity = await _db.ArticleComments.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.Body is not null) entity.Body = dto.Body;
-        if (dto.IsHidden is not null) entity.IsHidden = dto.IsHidden.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
-        if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
-        if (dto.ParentCommentId is not null) entity.ParentCommentId = dto.ParentCommentId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.ArticleComments.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.ArticleComments.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
     [HttpPost("{id:int}/hide")]
     public async System.Threading.Tasks.Task<IActionResult> Hide(int id)
     {
-        var entity = await _db.ArticleComments.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Hide();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.HideAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 
     [HttpPost("{id:int}/unhide")]
     public async System.Threading.Tasks.Task<IActionResult> Unhide(int id)
     {
-        var entity = await _db.ArticleComments.FindAsync(id);
-        if (entity is null) return NotFound();
-        entity.Unhide();
-        await _db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _svc.UnhideAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
     }
 }

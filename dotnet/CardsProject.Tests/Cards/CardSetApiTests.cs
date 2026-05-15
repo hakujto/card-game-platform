@@ -20,6 +20,9 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,7 +65,7 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
         {
             Name = "test",
             Code = "test",
-            ReleaseDate = new DateOnly(2024, 1, 1),
+            ReleaseDate = "2024-01-01",
             TotalCards = 1
         };
         var response = await _client.PostAsJsonAsync("/api/card_sets", payload);

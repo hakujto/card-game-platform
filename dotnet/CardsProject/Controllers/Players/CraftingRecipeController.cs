@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Players;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
@@ -11,33 +9,34 @@ namespace CardsProject.Controllers.Players;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CraftingRecipeController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public CraftingRecipeController(AppDbContext db) => _db = db;
+    private readonly CraftingRecipeService _svc;
+
+    public CraftingRecipeController(CraftingRecipeService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.CraftingRecipes.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CraftingRecipeDto dto)
     {
-        var entity = new CraftingRecipe();
-        if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
-        if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
-        if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.CraftingRecipes.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.CraftingRecipes.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -46,23 +45,21 @@ public class CraftingRecipeController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CraftingRecipeDto dto)
     {
-        var entity = await _db.CraftingRecipes.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
-        if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
-        if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.CraftingRecipes.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.CraftingRecipes.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 

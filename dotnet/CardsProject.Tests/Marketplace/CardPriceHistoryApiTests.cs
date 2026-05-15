@@ -20,6 +20,9 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -62,9 +65,10 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
         {
             MinPrice = 0.00m,
             AvgPrice = 0.00m,
-            PriceDate = new DateOnly(2024, 1, 1),
+            PriceDate = "2024-01-01",
             MaxPrice = 0.00m,
-            Volume = 1
+            Volume = 1,
+            CardId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/card_price_histories", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -82,7 +86,7 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { PriceDate = new DateOnly(2024, 1, 1) };
+        var payload = new { PriceDate = "2024-01-01" };
         var response = await _client.PatchAsJsonAsync("/api/card_price_histories/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

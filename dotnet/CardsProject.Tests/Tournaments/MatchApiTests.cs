@@ -20,6 +20,9 @@ public class MatchApiTests : IClassFixture<MatchApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -60,7 +63,8 @@ public class MatchApiTests : IClassFixture<MatchApiTests.TestFactory>
     {
         var payload = new
         {
-
+            RoundId = 1,
+            Player1Id = 1
         };
         var response = await _client.PostAsJsonAsync("/api/matches", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

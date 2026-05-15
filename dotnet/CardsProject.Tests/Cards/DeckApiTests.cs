@@ -20,6 +20,9 @@ public class DeckApiTests : IClassFixture<DeckApiTests.TestFactory>
         {
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            cmd.ExecuteNonQuery();
         }
 
         protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -61,8 +64,9 @@ public class DeckApiTests : IClassFixture<DeckApiTests.TestFactory>
         var payload = new
         {
             Name = "test",
-            CreatedAt = new DateTime(2024, 1, 1),
-            UpdatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = "2024-01-01T00:00:00",
+            UpdatedAt = "2024-01-01T00:00:00",
+            PlayerId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/decks", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

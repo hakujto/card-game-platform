@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CardsProject.Infrastructure;
-using CardsProject.Domain.Content;
+using System.ComponentModel.DataAnnotations;
 using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
@@ -11,35 +9,34 @@ namespace CardsProject.Controllers.Content;
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DraftPickController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public DraftPickController(AppDbContext db) => _db = db;
+    private readonly DraftPickService _svc;
+
+    public DraftPickController(DraftPickService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var items = await _db.DraftPicks.AsNoTracking().ToListAsync();
+        var items = await _svc.GetAllAsync();
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] DraftPickDto dto)
     {
-        var entity = new DraftPick();
-        if (dto.PickNumber is not null) entity.PickNumber = dto.PickNumber.Value;
-        if (dto.PackNumber is not null) entity.PackNumber = dto.PackNumber.Value;
-        if (dto.PickedAt is not null) entity.PickedAt = dto.PickedAt.Value;
-        if (dto.ParticipantId is not null) entity.ParticipantId = dto.ParticipantId;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        _db.DraftPicks.Add(entity);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        try
+        {
+            var entity = await _svc.CreateAsync(dto);
+            return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
-        var entity = await _db.DraftPicks.FindAsync(id);
+        var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
     }
@@ -48,25 +45,21 @@ public class DraftPickController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DraftPickDto dto)
     {
-        var entity = await _db.DraftPicks.FindAsync(id);
-        if (entity is null) return NotFound();
-        if (dto.PickNumber is not null) entity.PickNumber = dto.PickNumber.Value;
-        if (dto.PackNumber is not null) entity.PackNumber = dto.PackNumber.Value;
-        if (dto.PickedAt is not null) entity.PickedAt = dto.PickedAt.Value;
-        if (dto.ParticipantId is not null) entity.ParticipantId = dto.ParticipantId;
-        if (dto.CardId is not null) entity.CardId = dto.CardId;
-        if (!TryValidateModel(entity)) return BadRequest(ModelState);
-        await _db.SaveChangesAsync();
-        return Ok(entity);
+        try
+        {
+            var entity = await _svc.UpdateAsync(id, dto);
+            if (entity is null) return NotFound();
+            return Ok(entity);
+        }
+        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.DraftPicks.FindAsync(id);
-        if (entity is null) return NotFound();
-        _db.DraftPicks.Remove(entity);
-        await _db.SaveChangesAsync();
+        var deleted = await _svc.DeleteAsync(id);
+        if (!deleted) return NotFound();
         return NoContent();
     }
 
