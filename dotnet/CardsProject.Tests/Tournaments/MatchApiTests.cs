@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,8 +60,7 @@ public class MatchApiTests : IClassFixture<MatchApiTests.TestFactory>
     {
         var payload = new
         {
-        Player1Wins = 1,
-        Player2Wins = 1
+
         };
         var response = await _client.PostAsJsonAsync("/api/matches", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -92,5 +92,31 @@ public class MatchApiTests : IClassFixture<MatchApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_WinsNotNegative_Violated()
+    {
+        // Win counts must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""RoundId"": 1, ""Player1Id"": 1, ""Status"": ""BYE"", ""Player2"": null, ""Player2Wins"": 1, ""Player1Wins"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/matches", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_MaxThreeGames_Violated()
+    {
+        // Win counts cannot exceed 2 in a best-of-3 match → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""RoundId"": 1, ""Player1Id"": 1, ""Status"": ""BYE"", ""Player2"": null, ""Player2Wins"": 1, ""Player1Wins"": 3 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/matches", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_ByeHasNoPlayer2_Violated()
+    {
+        // BYE match must not have a second player: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""RoundId"": 1, ""Player1Id"": 1, ""Player1Wins"": 1, ""Player2Wins"": 1, ""Status"": ""BYE"", ""Player2Id"": 1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/matches", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

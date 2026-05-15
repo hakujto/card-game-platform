@@ -30,4 +30,16 @@ public class CardAbility
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // Business operations
+
+    public bool IsUsableAt(string timing)
+    {
+        throw new NotImplementedException("is_usable_at not implemented");
+    }
+
+    public string Describe()
+    {
+        throw new NotImplementedException("describe not implemented");
+    }
 }

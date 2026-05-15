@@ -9,13 +9,18 @@ public class TournamentPrizeService
 
     public TournamentPrizeService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<TournamentPrize> Create(TournamentPrize entity)
+    public async System.Threading.Tasks.Task<TournamentPrize> CreateAsync(TournamentPrize entity)
     {
-        throw new NotImplementedException();
+        _db.TournamentPrizes.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<TournamentPrize> Update(TournamentPrize entity)
+    public async System.Threading.Tasks.Task<TournamentPrize> UpdateAsync(TournamentPrize entity)
     {
-        throw new NotImplementedException();
+        _db.TournamentPrizes.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

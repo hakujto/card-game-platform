@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournament_prizes")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentPrizeController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public TournamentPrizeController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -32,6 +33,7 @@ public class TournamentPrizeController : ControllerBase
         if (dto.PacksCount is not null) entity.PacksCount = dto.PacksCount.Value;
         if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.TournamentPrizes.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -59,6 +61,7 @@ public class TournamentPrizeController : ControllerBase
         if (dto.PacksCount is not null) entity.PacksCount = dto.PacksCount.Value;
         if (dto.SeasonPoints is not null) entity.SeasonPoints = dto.SeasonPoints.Value;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -72,4 +75,5 @@ public class TournamentPrizeController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

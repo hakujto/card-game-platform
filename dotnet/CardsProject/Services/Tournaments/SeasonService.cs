@@ -9,13 +9,42 @@ public class SeasonService
 
     public SeasonService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<Season> Create(Season entity)
+    public async System.Threading.Tasks.Task<Season> CreateAsync(Season entity)
     {
-        throw new NotImplementedException();
+        _db.Seasons.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<Season> Update(Season entity)
+    public async System.Threading.Tasks.Task<Season> UpdateAsync(Season entity)
     {
-        throw new NotImplementedException();
+        _db.Seasons.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<bool> ActivateAsync(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Season not found: " + id);
+        entity.Activate();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> DeactivateAsync(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Season not found: " + id);
+        entity.Deactivate();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> FinalizeRewardsAsync(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Season not found: " + id);
+        entity.FinalizeRewards();
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

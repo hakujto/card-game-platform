@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/games")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class GameController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly GameService _svc;
 
-    public GameController(AppDbContext db) => _db = db;
+    public GameController(AppDbContext db, GameService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -32,6 +35,8 @@ public class GameController : ControllerBase
         if (dto.ReplayUrl is not null) entity.ReplayUrl = dto.ReplayUrl;
         if (dto.MatchId is not null) entity.MatchId = dto.MatchId;
         if (dto.WinnerId is not null) entity.WinnerId = dto.WinnerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Games.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -59,6 +64,8 @@ public class GameController : ControllerBase
         if (dto.ReplayUrl is not null) entity.ReplayUrl = dto.ReplayUrl;
         if (dto.MatchId is not null) entity.MatchId = dto.MatchId;
         if (dto.WinnerId is not null) entity.WinnerId = dto.WinnerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -69,6 +76,17 @@ public class GameController : ControllerBase
         var entity = await _db.Games.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Games.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/winner")]
+    public async System.Threading.Tasks.Task<IActionResult> RecordWinner(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.Games.FindAsync(id);
+        if (entity is null) return NotFound();
+        var winnerSide = (string)body["winner_side"];
+        entity.RecordWinner(winnerSide);
         await _db.SaveChangesAsync();
         return NoContent();
     }

@@ -9,13 +9,18 @@ public class CardPriceHistoryService
 
     public CardPriceHistoryService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<CardPriceHistory> Create(CardPriceHistory entity)
+    public async System.Threading.Tasks.Task<CardPriceHistory> CreateAsync(CardPriceHistory entity)
     {
-        throw new NotImplementedException();
+        _db.CardPriceHistories.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<CardPriceHistory> Update(CardPriceHistory entity)
+    public async System.Threading.Tasks.Task<CardPriceHistory> UpdateAsync(CardPriceHistory entity)
     {
-        throw new NotImplementedException();
+        _db.CardPriceHistories.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

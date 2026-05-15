@@ -17,4 +17,11 @@ public class DraftPick
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // Business operations
+
+    public bool IsFirstPick()
+    {
+        throw new NotImplementedException("is_first_pick not implemented");
+    }
 }

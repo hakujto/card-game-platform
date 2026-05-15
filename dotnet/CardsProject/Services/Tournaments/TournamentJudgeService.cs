@@ -9,13 +9,18 @@ public class TournamentJudgeService
 
     public TournamentJudgeService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<TournamentJudge> Create(TournamentJudge entity)
+    public async System.Threading.Tasks.Task<TournamentJudge> CreateAsync(TournamentJudge entity)
     {
-        throw new NotImplementedException();
+        _db.TournamentJudges.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<TournamentJudge> Update(TournamentJudge entity)
+    public async System.Threading.Tasks.Task<TournamentJudge> UpdateAsync(TournamentJudge entity)
     {
-        throw new NotImplementedException();
+        _db.TournamentJudges.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

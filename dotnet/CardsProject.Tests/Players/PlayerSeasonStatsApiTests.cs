@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,11 +60,7 @@ public class PlayerSeasonStatsApiTests : IClassFixture<PlayerSeasonStatsApiTests
     {
         var payload = new
         {
-        Wins = 1,
-        Losses = 1,
-        Draws = 1,
-        TournamentWins = 1,
-        SeasonPoints = 1
+
         };
         var response = await _client.PostAsJsonAsync("/api/player_season_statses", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

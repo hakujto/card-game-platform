@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Marketplace;
+using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/coupons")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CouponController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly CouponService _svc;
 
-    public CouponController(AppDbContext db) => _db = db;
+    public CouponController(AppDbContext db, CouponService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -33,6 +36,8 @@ public class CouponController : ControllerBase
         if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
         if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Coupons.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -61,6 +66,8 @@ public class CouponController : ControllerBase
         if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
         if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -71,6 +78,26 @@ public class CouponController : ControllerBase
         var entity = await _db.Coupons.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Coupons.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/redeem")]
+    public async System.Threading.Tasks.Task<IActionResult> Redeem(int id)
+    {
+        var entity = await _db.Coupons.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Redeem();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/deactivate")]
+    public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
+    {
+        var entity = await _db.Coupons.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Deactivate();
         await _db.SaveChangesAsync();
         return NoContent();
     }

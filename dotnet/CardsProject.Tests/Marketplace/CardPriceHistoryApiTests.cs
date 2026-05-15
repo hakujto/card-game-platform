@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,12 +60,11 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
     {
         var payload = new
         {
-        PriceDate = new DateOnly(2024, 1, 1),
-        AvgPrice = 0.00m,
-        MinPrice = 0.00m,
-        MaxPrice = 0.00m,
-        Volume = 1,
-        Foil = true
+            MinPrice = 0.00m,
+            AvgPrice = 0.00m,
+            PriceDate = new DateOnly(2024, 1, 1),
+            MaxPrice = 0.00m,
+            Volume = 1
         };
         var response = await _client.PostAsJsonAsync("/api/card_price_histories", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

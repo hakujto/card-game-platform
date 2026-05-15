@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,8 +60,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     {
         var payload = new
         {
-        Seats = 1,
-        CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/draft_sessions", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -78,7 +78,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Status = "test" };
+        var payload = new { Seats = 1 };
         var response = await _client.PatchAsJsonAsync("/api/draft_sessions/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

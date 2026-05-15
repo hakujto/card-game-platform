@@ -43,9 +43,28 @@ public class Article
     public int? FeaturedDeckId { get; set; }
     [ForeignKey(nameof(FeaturedDeckId))]
     public Deck? FeaturedDeck { get; set; }
-    public int? CommentsId { get; set; }
-    [ForeignKey(nameof(CommentsId))]
-    public ArticleComment? Comments { get; set; }
 
     public ICollection<ArticleTag> Tags { get; set; } = new List<ArticleTag>();
+
+    // Business operations
+
+    public void Publish()
+    {
+        throw new NotImplementedException("publish not implemented");
+    }
+
+    public void Archive()
+    {
+        throw new NotImplementedException("archive not implemented");
+    }
+
+    public void IncrementView()
+    {
+        throw new NotImplementedException("increment_view not implemented");
+    }
+
+    public int ReadingTimeMinutes()
+    {
+        throw new NotImplementedException("reading_time_minutes not implemented");
+    }
 }

@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/article_tags")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleTagController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public ArticleTagController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -26,6 +27,7 @@ public class ArticleTagController : ControllerBase
         var entity = new ArticleTag();
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Slug is not null) entity.Slug = dto.Slug;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.ArticleTags.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -47,6 +49,7 @@ public class ArticleTagController : ControllerBase
         if (entity is null) return NotFound();
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Slug is not null) entity.Slug = dto.Slug;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -60,4 +63,5 @@ public class ArticleTagController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

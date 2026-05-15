@@ -9,13 +9,18 @@ public class CraftingRecipeService
 
     public CraftingRecipeService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<CraftingRecipe> Create(CraftingRecipe entity)
+    public async System.Threading.Tasks.Task<CraftingRecipe> CreateAsync(CraftingRecipe entity)
     {
-        throw new NotImplementedException();
+        _db.CraftingRecipes.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<CraftingRecipe> Update(CraftingRecipe entity)
+    public async System.Threading.Tasks.Task<CraftingRecipe> UpdateAsync(CraftingRecipe entity)
     {
-        throw new NotImplementedException();
+        _db.CraftingRecipes.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

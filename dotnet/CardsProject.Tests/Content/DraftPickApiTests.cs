@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,9 +60,9 @@ public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
     {
         var payload = new
         {
-        PickNumber = 1,
-        PackNumber = 1,
-        PickedAt = new DateTime(2024, 1, 1)
+            PickNumber = 1,
+            PackNumber = 1,
+            PickedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/draft_picks", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

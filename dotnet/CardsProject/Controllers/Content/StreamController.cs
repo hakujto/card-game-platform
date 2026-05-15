@@ -2,17 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 using Stream = CardsProject.Domain.Content.Stream;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/streams")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class StreamController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly StreamService _svc;
 
-    public StreamController(AppDbContext db) => _db = db;
+    public StreamController(AppDbContext db, StreamService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -36,6 +39,8 @@ public class StreamController : ControllerBase
         if (dto.VodUrl is not null) entity.VodUrl = dto.VodUrl;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.StreamerId is not null) entity.StreamerId = dto.StreamerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Streams.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -66,6 +71,8 @@ public class StreamController : ControllerBase
         if (dto.VodUrl is not null) entity.VodUrl = dto.VodUrl;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.StreamerId is not null) entity.StreamerId = dto.StreamerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -76,6 +83,37 @@ public class StreamController : ControllerBase
         var entity = await _db.Streams.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Streams.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/live")]
+    public async System.Threading.Tasks.Task<IActionResult> GoLive(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.GoLive();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/end")]
+    public async System.Threading.Tasks.Task<IActionResult> End(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.End();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}/viewers")]
+    public async System.Threading.Tasks.Task<IActionResult> UpdateViewerPeak(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.Streams.FindAsync(id);
+        if (entity is null) return NotFound();
+        var count = (int)body["count"];
+        entity.UpdateViewerPeak(count);
         await _db.SaveChangesAsync();
         return NoContent();
     }

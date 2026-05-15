@@ -22,4 +22,21 @@ public class Friendship
     public int? ReceiverId { get; set; }
     [ForeignKey(nameof(ReceiverId))]
     public Player? Receiver { get; set; }
+
+    // Business operations
+
+    public void Accept()
+    {
+        throw new NotImplementedException("accept not implemented");
+    }
+
+    public void Decline()
+    {
+        throw new NotImplementedException("decline not implemented");
+    }
+
+    public void Block()
+    {
+        throw new NotImplementedException("block not implemented");
+    }
 }

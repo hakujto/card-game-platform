@@ -9,13 +9,34 @@ public class ArticleCommentService
 
     public ArticleCommentService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<ArticleComment> Create(ArticleComment entity)
+    public async System.Threading.Tasks.Task<ArticleComment> CreateAsync(ArticleComment entity)
     {
-        throw new NotImplementedException();
+        _db.ArticleComments.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<ArticleComment> Update(ArticleComment entity)
+    public async System.Threading.Tasks.Task<ArticleComment> UpdateAsync(ArticleComment entity)
     {
-        throw new NotImplementedException();
+        _db.ArticleComments.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<bool> HideAsync(int id)
+    {
+        var entity = await _db.ArticleComments.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("ArticleComment not found: " + id);
+        entity.Hide();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> UnhideAsync(int id)
+    {
+        var entity = await _db.ArticleComments.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("ArticleComment not found: " + id);
+        entity.Unhide();
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -29,7 +30,7 @@ public enum TradelistingStatusType
     Pending
 }
 
-public class Tradelisting
+public class Tradelisting : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -52,7 +53,38 @@ public class Tradelisting
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
-    public int? BidsId { get; set; }
-    [ForeignKey(nameof(BidsId))]
-    public TradeBid? Bids { get; set; }
+
+    // Business operations
+
+    public void Close()
+    {
+        throw new NotImplementedException("close not implemented");
+    }
+
+    public void Extend(int days)
+    {
+        throw new NotImplementedException("extend not implemented");
+    }
+
+    public void Cancel()
+    {
+        throw new NotImplementedException("cancel not implemented");
+    }
+
+    public bool IsExpired()
+    {
+        throw new NotImplementedException("is_expired not implemented");
+    }
+
+    public void FinalizeAuction()
+    {
+        throw new NotImplementedException("finalize_auction not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Quantity >= 1 && Quantity <= 9999 ))
+            yield return new ValidationResult("Listing quantity must be between 1 and 9999", new[] { nameof(Id) });
+    }
 }

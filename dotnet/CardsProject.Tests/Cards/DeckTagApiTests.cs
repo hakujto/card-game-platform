@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Cards;
 using Xunit;
 
 namespace CardsProject.Tests.Cards;
@@ -59,7 +60,7 @@ public class DeckTagApiTests : IClassFixture<DeckTagApiTests.TestFactory>
     {
         var payload = new
         {
-        Name = "test"
+            Name = "test"
         };
         var response = await _client.PostAsJsonAsync("/api/deck_tags", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

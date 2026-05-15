@@ -9,13 +9,18 @@ public class DeckTagAssignmentService
 
     public DeckTagAssignmentService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<DeckTagAssignment> Create(DeckTagAssignment entity)
+    public async System.Threading.Tasks.Task<DeckTagAssignment> CreateAsync(DeckTagAssignment entity)
     {
-        throw new NotImplementedException();
+        _db.DeckTagAssignments.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<DeckTagAssignment> Update(DeckTagAssignment entity)
+    public async System.Threading.Tasks.Task<DeckTagAssignment> UpdateAsync(DeckTagAssignment entity)
     {
-        throw new NotImplementedException();
+        _db.DeckTagAssignments.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

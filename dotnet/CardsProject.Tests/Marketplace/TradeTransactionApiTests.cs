@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,8 +60,9 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
     {
         var payload = new
         {
-        FinalPrice = 0.00m,
-        PlatformFee = 0.00m
+            CompletedAt = DateTime.Parse("2024-01-01T00:00:00"),
+            PlatformFee = 0.00m,
+            FinalPrice = 0.00m
         };
         var response = await _client.PostAsJsonAsync("/api/trade_transactions", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -92,5 +94,22 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_FeeNotNegative_Violated()
+    {
+        // Platform fee must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ListingId"": 1, ""BuyerId"": 1, ""SellerId"": 1, ""Status"": ""Completed"", ""CompletedAt"": ""2024-01-01T00:00:00"", ""FinalPrice"": 0.00, ""PlatformFee"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/trade_transactions", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_CompletedRequiresCompletedAt_Violated()
+    {
+        // Completed transaction must have a completed_at timestamp: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""ListingId"": 1, ""BuyerId"": 1, ""SellerId"": 1, ""FinalPrice"": 0.00, ""PlatformFee"": 0.00, ""Status"": ""Completed"", ""CompletedAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/trade_transactions", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

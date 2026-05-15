@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/card_rulings")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardRulingController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public CardRulingController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -28,6 +29,7 @@ public class CardRulingController : ControllerBase
         if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
         if (dto.Source is not null) entity.Source = dto.Source;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.CardRulings.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -51,6 +53,7 @@ public class CardRulingController : ControllerBase
         if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
         if (dto.Source is not null) entity.Source = dto.Source;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -64,4 +67,5 @@ public class CardRulingController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

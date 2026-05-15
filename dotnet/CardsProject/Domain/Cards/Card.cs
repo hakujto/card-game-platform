@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Cards;
 
@@ -41,7 +42,7 @@ public enum CardLegalFormatsType
     Draft
 }
 
-public class Card
+public class Card : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -65,10 +66,42 @@ public class Card
     public int? SetId { get; set; }
     [ForeignKey(nameof(SetId))]
     public CardSet? Set { get; set; }
-    public int? RulingsId { get; set; }
-    [ForeignKey(nameof(RulingsId))]
-    public CardRuling? Rulings { get; set; }
-    public int? AbilitiesId { get; set; }
-    [ForeignKey(nameof(AbilitiesId))]
-    public CardAbility? Abilities { get; set; }
+
+    // Business operations
+
+    public void Ban()
+    {
+        throw new NotImplementedException("ban not implemented");
+    }
+
+    public void Unban()
+    {
+        throw new NotImplementedException("unban not implemented");
+    }
+
+    public void Restrict()
+    {
+        throw new NotImplementedException("restrict not implemented");
+    }
+
+    public void Unrestrict()
+    {
+        throw new NotImplementedException("unrestrict not implemented");
+    }
+
+    public decimal CalculateValue()
+    {
+        throw new NotImplementedException("calculate_value not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( ManaCost >= 0 && ManaCost <= 20 ))
+            yield return new ValidationResult("mana_cost must be between 0 and 20", new[] { nameof(Id) });
+        if (!( PowerLevel >= 1 && PowerLevel <= 10 ))
+            yield return new ValidationResult("power_level must be between 1 and 10", new[] { nameof(Id) });
+        if (!( !((IsBanned == true && IsRestricted == true)) ))
+            yield return new ValidationResult("Card cannot be both banned and restricted at the same time", new[] { nameof(Id) });
+    }
 }

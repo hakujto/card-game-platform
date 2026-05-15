@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/deck_tag_assignments")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DeckTagAssignmentController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public DeckTagAssignmentController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -26,6 +27,7 @@ public class DeckTagAssignmentController : ControllerBase
         var entity = new DeckTagAssignment();
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.TagId is not null) entity.TagId = dto.TagId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.DeckTagAssignments.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -47,6 +49,7 @@ public class DeckTagAssignmentController : ControllerBase
         if (entity is null) return NotFound();
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.TagId is not null) entity.TagId = dto.TagId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -60,4 +63,5 @@ public class DeckTagAssignmentController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

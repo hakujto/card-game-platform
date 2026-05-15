@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Marketplace;
+using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/products")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ProductController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public ProductController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -35,6 +36,7 @@ public class ProductController : ControllerBase
         if (dto.Featured is not null) entity.Featured = dto.Featured.Value;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.Products.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -65,6 +67,7 @@ public class ProductController : ControllerBase
         if (dto.Featured is not null) entity.Featured = dto.Featured.Value;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -75,6 +78,48 @@ public class ProductController : ControllerBase
         var entity = await _db.Products.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Products.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/activate")]
+    public async System.Threading.Tasks.Task<IActionResult> Activate(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Activate();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/deactivate")]
+    public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Deactivate();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id:int}/discount")]
+    public async System.Threading.Tasks.Task<IActionResult> ApplyDiscount(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) return NotFound();
+        var percent = (int)body["percent"];
+        var result = entity.ApplyDiscount(percent);
+        await _db.SaveChangesAsync();
+        return Ok(result);
+    }
+
+    [HttpPost("{id:int}/restock")]
+    public async System.Threading.Tasks.Task<IActionResult> Restock(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) return NotFound();
+        var quantity = (int)body["quantity"];
+        entity.Restock(quantity);
         await _db.SaveChangesAsync();
         return NoContent();
     }

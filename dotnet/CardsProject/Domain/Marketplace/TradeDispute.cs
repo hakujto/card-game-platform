@@ -39,4 +39,21 @@ public class TradeDispute
     public int? ResolvedById { get; set; }
     [ForeignKey(nameof(ResolvedById))]
     public Player? ResolvedBy { get; set; }
+
+    // Business operations
+
+    public void Escalate()
+    {
+        throw new NotImplementedException("escalate not implemented");
+    }
+
+    public void Resolve(string resolutionText)
+    {
+        throw new NotImplementedException("resolve not implemented");
+    }
+
+    public void Review()
+    {
+        throw new NotImplementedException("review not implemented");
+    }
 }

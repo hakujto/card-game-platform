@@ -9,13 +9,18 @@ public class OrderItemService
 
     public OrderItemService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<OrderItem> Create(OrderItem entity)
+    public async System.Threading.Tasks.Task<OrderItem> CreateAsync(OrderItem entity)
     {
-        throw new NotImplementedException();
+        _db.OrderItems.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<OrderItem> Update(OrderItem entity)
+    public async System.Threading.Tasks.Task<OrderItem> UpdateAsync(OrderItem entity)
     {
-        throw new NotImplementedException();
+        _db.OrderItems.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

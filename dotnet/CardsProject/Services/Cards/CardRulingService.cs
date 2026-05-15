@@ -9,13 +9,18 @@ public class CardRulingService
 
     public CardRulingService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<CardRuling> Create(CardRuling entity)
+    public async System.Threading.Tasks.Task<CardRuling> CreateAsync(CardRuling entity)
     {
-        throw new NotImplementedException();
+        _db.CardRulings.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<CardRuling> Update(CardRuling entity)
+    public async System.Threading.Tasks.Task<CardRuling> UpdateAsync(CardRuling entity)
     {
-        throw new NotImplementedException();
+        _db.CardRulings.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

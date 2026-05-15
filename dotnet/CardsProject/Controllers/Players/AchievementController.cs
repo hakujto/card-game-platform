@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Players;
+using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
 
 [ApiController]
 [Route("api/achievements")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class AchievementController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public AchievementController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -30,6 +31,7 @@ public class AchievementController : ControllerBase
         if (dto.Points is not null) entity.Points = dto.Points.Value;
         if (dto.Rarity is not null && Enum.TryParse<AchievementRarityType>(dto.Rarity, out var rarityVal)) entity.Rarity = rarityVal;
         if (dto.IsHidden is not null) entity.IsHidden = dto.IsHidden.Value;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.Achievements.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -55,6 +57,7 @@ public class AchievementController : ControllerBase
         if (dto.Points is not null) entity.Points = dto.Points.Value;
         if (dto.Rarity is not null && Enum.TryParse<AchievementRarityType>(dto.Rarity, out var rarityVal)) entity.Rarity = rarityVal;
         if (dto.IsHidden is not null) entity.IsHidden = dto.IsHidden.Value;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -68,4 +71,5 @@ public class AchievementController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

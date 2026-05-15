@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/card_sets")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardSetController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public CardSetController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -31,6 +32,7 @@ public class CardSetController : ControllerBase
         if (dto.TotalCards is not null) entity.TotalCards = dto.TotalCards.Value;
         if (dto.Description is not null) entity.Description = dto.Description;
         if (dto.LogoUrl is not null) entity.LogoUrl = dto.LogoUrl;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.CardSets.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -57,6 +59,7 @@ public class CardSetController : ControllerBase
         if (dto.TotalCards is not null) entity.TotalCards = dto.TotalCards.Value;
         if (dto.Description is not null) entity.Description = dto.Description;
         if (dto.LogoUrl is not null) entity.LogoUrl = dto.LogoUrl;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -70,4 +73,5 @@ public class CardSetController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

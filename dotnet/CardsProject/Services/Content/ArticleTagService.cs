@@ -9,13 +9,18 @@ public class ArticleTagService
 
     public ArticleTagService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<ArticleTag> Create(ArticleTag entity)
+    public async System.Threading.Tasks.Task<ArticleTag> CreateAsync(ArticleTag entity)
     {
-        throw new NotImplementedException();
+        _db.ArticleTags.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<ArticleTag> Update(ArticleTag entity)
+    public async System.Threading.Tasks.Task<ArticleTag> UpdateAsync(ArticleTag entity)
     {
-        throw new NotImplementedException();
+        _db.ArticleTags.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

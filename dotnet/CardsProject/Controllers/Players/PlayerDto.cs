@@ -14,5 +14,4 @@ public class PlayerDto
     public DateTime? CreatedAt { get; set; }
     public DateTime? LastActiveAt { get; set; }
     public string? UserId { get; set; }
-    public int? SeasonStatsId { get; set; }
 }

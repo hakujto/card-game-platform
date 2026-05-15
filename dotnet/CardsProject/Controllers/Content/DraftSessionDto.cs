@@ -8,5 +8,4 @@ public class DraftSessionDto
     public DateTime? CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public int? CardSetId { get; set; }
-    public int? ParticipantsId { get; set; }
 }

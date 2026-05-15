@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,9 +60,9 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
     {
         var payload = new
         {
-        FinalPlacement = 1,
-        AwardedAt = new DateTime(2024, 1, 1),
-        Claimed = true
+            ClaimedAt = DateTime.Parse("2024-01-01T00:00:00"),
+            FinalPlacement = 1,
+            AwardedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/awarded_prizes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -93,5 +94,22 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_ClaimedRequiresClaimedAt_Violated()
+    {
+        // Claimed prize must have a claimed_at timestamp: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""PrizeId"": 1, ""PlayerId"": 1, ""FinalPlacement"": 1, ""AwardedAt"": ""2024-01-01T00:00:00"", ""Claimed"": true, ""ClaimedAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/awarded_prizes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_FinalPlacementPositive_Violated()
+    {
+        // Final placement must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PrizeId"": 1, ""PlayerId"": 1, ""Claimed"": true, ""ClaimedAt"": ""2024-01-01T00:00:00"", ""AwardedAt"": ""2024-01-01T00:00:00"", ""FinalPlacement"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/awarded_prizes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

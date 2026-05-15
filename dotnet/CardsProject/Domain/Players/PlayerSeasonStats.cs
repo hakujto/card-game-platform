@@ -31,4 +31,21 @@ public class PlayerSeasonStats
     public int? SeasonId { get; set; }
     [ForeignKey(nameof(SeasonId))]
     public Season? Season { get; set; }
+
+    // Business operations
+
+    public decimal WinRate()
+    {
+        throw new NotImplementedException("win_rate not implemented");
+    }
+
+    public void AddPoints(int points)
+    {
+        throw new NotImplementedException("add_points not implemented");
+    }
+
+    public void RecordTournamentWin()
+    {
+        throw new NotImplementedException("record_tournament_win not implemented");
+    }
 }

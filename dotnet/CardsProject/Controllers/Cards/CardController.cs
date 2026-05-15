@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/cards")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly CardService _svc;
 
-    public CardController(AppDbContext db) => _db = db;
+    public CardController(AppDbContext db, CardService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -41,8 +44,8 @@ public class CardController : ControllerBase
         if (dto.IsRestricted is not null) entity.IsRestricted = dto.IsRestricted.Value;
         if (dto.PowerLevel is not null) entity.PowerLevel = dto.PowerLevel.Value;
         if (dto.SetId is not null) entity.SetId = dto.SetId;
-        if (dto.RulingsId is not null) entity.RulingsId = dto.RulingsId;
-        if (dto.AbilitiesId is not null) entity.AbilitiesId = dto.AbilitiesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Cards.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -79,8 +82,8 @@ public class CardController : ControllerBase
         if (dto.IsRestricted is not null) entity.IsRestricted = dto.IsRestricted.Value;
         if (dto.PowerLevel is not null) entity.PowerLevel = dto.PowerLevel.Value;
         if (dto.SetId is not null) entity.SetId = dto.SetId;
-        if (dto.RulingsId is not null) entity.RulingsId = dto.RulingsId;
-        if (dto.AbilitiesId is not null) entity.AbilitiesId = dto.AbilitiesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -93,5 +96,55 @@ public class CardController : ControllerBase
         _db.Cards.Remove(entity);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/ban")]
+    public async System.Threading.Tasks.Task<IActionResult> Ban(int id)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Ban();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/unban")]
+    public async System.Threading.Tasks.Task<IActionResult> Unban(int id)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Unban();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/restrict")]
+    public async System.Threading.Tasks.Task<IActionResult> Restrict(int id)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Restrict();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/unrestrict")]
+    public async System.Threading.Tasks.Task<IActionResult> Unrestrict(int id)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Unrestrict();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpGet("{id:int}/value")]
+    public async System.Threading.Tasks.Task<IActionResult> CalculateValue(int id)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) return NotFound();
+        var result = entity.CalculateValue();
+        await _db.SaveChangesAsync();
+        return Ok(result);
     }
 }

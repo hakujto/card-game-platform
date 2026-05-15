@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournament_rounds")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentRoundController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly TournamentRoundService _svc;
 
-    public TournamentRoundController(AppDbContext db) => _db = db;
+    public TournamentRoundController(AppDbContext db, TournamentRoundService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -30,7 +33,8 @@ public class TournamentRoundController : ControllerBase
         if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
         if (dto.TimeLimitMinutes is not null) entity.TimeLimitMinutes = dto.TimeLimitMinutes.Value;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.MatchesId is not null) entity.MatchesId = dto.MatchesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.TournamentRounds.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -56,7 +60,8 @@ public class TournamentRoundController : ControllerBase
         if (dto.EndedAt is not null) entity.EndedAt = dto.EndedAt.Value;
         if (dto.TimeLimitMinutes is not null) entity.TimeLimitMinutes = dto.TimeLimitMinutes.Value;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
-        if (dto.MatchesId is not null) entity.MatchesId = dto.MatchesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -67,6 +72,36 @@ public class TournamentRoundController : ControllerBase
         var entity = await _db.TournamentRounds.FindAsync(id);
         if (entity is null) return NotFound();
         _db.TournamentRounds.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/start")]
+    public async System.Threading.Tasks.Task<IActionResult> Start(int id)
+    {
+        var entity = await _db.TournamentRounds.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Start();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/complete")]
+    public async System.Threading.Tasks.Task<IActionResult> Complete(int id)
+    {
+        var entity = await _db.TournamentRounds.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Complete();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/pairings")]
+    public async System.Threading.Tasks.Task<IActionResult> GeneratePairings(int id)
+    {
+        var entity = await _db.TournamentRounds.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.GeneratePairings();
         await _db.SaveChangesAsync();
         return NoContent();
     }

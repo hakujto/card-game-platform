@@ -32,4 +32,36 @@ public class Product
     public int? CardSetId { get; set; }
     [ForeignKey(nameof(CardSetId))]
     public CardSet? CardSet { get; set; }
+
+    // Business operations
+
+    public void Activate()
+    {
+        throw new NotImplementedException("activate not implemented");
+    }
+
+    public void Deactivate()
+    {
+        throw new NotImplementedException("deactivate not implemented");
+    }
+
+    public decimal ApplyDiscount(int percent)
+    {
+        throw new NotImplementedException("apply_discount not implemented");
+    }
+
+    public void Restock(int quantity)
+    {
+        throw new NotImplementedException("restock not implemented");
+    }
+
+    public decimal EffectivePrice()
+    {
+        throw new NotImplementedException("effective_price not implemented");
+    }
+
+    public bool IsInStock()
+    {
+        throw new NotImplementedException("is_in_stock not implemented");
+    }
 }

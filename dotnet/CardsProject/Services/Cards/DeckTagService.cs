@@ -9,13 +9,26 @@ public class DeckTagService
 
     public DeckTagService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<DeckTag> Create(DeckTag entity)
+    public async System.Threading.Tasks.Task<DeckTag> CreateAsync(DeckTag entity)
     {
-        throw new NotImplementedException();
+        _db.DeckTags.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<DeckTag> Update(DeckTag entity)
+    public async System.Threading.Tasks.Task<DeckTag> UpdateAsync(DeckTag entity)
     {
-        throw new NotImplementedException();
+        _db.DeckTags.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<bool> MergeIntoAsync(int id, int targetTagId)
+    {
+        var entity = await _db.DeckTags.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DeckTag not found: " + id);
+        entity.MergeInto(targetTagId);
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

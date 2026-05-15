@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -12,7 +13,7 @@ public enum MatchStatusType
     Draw
 }
 
-public class Match
+public class Match : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -33,7 +34,30 @@ public class Match
     public int? Player2Id { get; set; }
     [ForeignKey(nameof(Player2Id))]
     public Player? Player2 { get; set; }
-    public int? GamesId { get; set; }
-    [ForeignKey(nameof(GamesId))]
-    public Game? Games { get; set; }
+
+    // Business operations
+
+    public void RecordResult(int p1Wins, int p2Wins)
+    {
+        throw new NotImplementedException("record_result not implemented");
+    }
+
+    public bool DetermineWinner()
+    {
+        throw new NotImplementedException("determine_winner not implemented");
+    }
+
+    public void Draw()
+    {
+        throw new NotImplementedException("draw not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( (Player1Wins >= 0 && Player2Wins >= 0) ))
+            yield return new ValidationResult("Win counts must not be negative", new[] { nameof(Id) });
+        if (!( (Player1Wins >= 0 && Player1Wins <= 2 && Player2Wins >= 0 && Player2Wins <= 2) ))
+            yield return new ValidationResult("Win counts cannot exceed 2 in a best-of-3 match", new[] { nameof(Id) });
+    }
 }

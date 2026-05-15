@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,10 +60,9 @@ public class SeasonApiTests : IClassFixture<SeasonApiTests.TestFactory>
     {
         var payload = new
         {
-        Name = "test",
-        StartDate = new DateOnly(2024, 1, 1),
-        EndDate = new DateOnly(2024, 1, 1),
-        IsActive = true
+            EndDate = DateOnly.Parse("2024-01-02"),
+            Name = "test",
+            StartDate = new DateOnly(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/seasons", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

@@ -31,7 +31,26 @@ public class DraftSession
     public int? CardSetId { get; set; }
     [ForeignKey(nameof(CardSetId))]
     public CardSet? CardSet { get; set; }
-    public int? ParticipantsId { get; set; }
-    [ForeignKey(nameof(ParticipantsId))]
-    public DraftParticipant? Participants { get; set; }
+
+    // Business operations
+
+    public void Start()
+    {
+        throw new NotImplementedException("start not implemented");
+    }
+
+    public void Abandon()
+    {
+        throw new NotImplementedException("abandon not implemented");
+    }
+
+    public void Complete()
+    {
+        throw new NotImplementedException("complete not implemented");
+    }
+
+    public bool IsFull()
+    {
+        throw new NotImplementedException("is_full not implemented");
+    }
 }

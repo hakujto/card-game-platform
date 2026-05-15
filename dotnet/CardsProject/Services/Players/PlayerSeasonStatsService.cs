@@ -9,13 +9,18 @@ public class PlayerSeasonStatsService
 
     public PlayerSeasonStatsService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<PlayerSeasonStats> Create(PlayerSeasonStats entity)
+    public async System.Threading.Tasks.Task<PlayerSeasonStats> CreateAsync(PlayerSeasonStats entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerSeasonStatses.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<PlayerSeasonStats> Update(PlayerSeasonStats entity)
+    public async System.Threading.Tasks.Task<PlayerSeasonStats> UpdateAsync(PlayerSeasonStats entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerSeasonStatses.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

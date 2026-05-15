@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -12,7 +13,7 @@ public enum TournamentPrizePrizeTypeType
     Mixed
 }
 
-public class TournamentPrize
+public class TournamentPrize : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -27,4 +28,22 @@ public class TournamentPrize
     public int? TournamentId { get; set; }
     [ForeignKey(nameof(TournamentId))]
     public Tournament? Tournament { get; set; }
+
+    // Business operations
+
+    public bool AppliesToPlacement(int placement)
+    {
+        throw new NotImplementedException("applies_to_placement not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( (PlacementFrom != null && PlacementTo >= PlacementFrom) ))
+            yield return new ValidationResult("placement_to must be greater than or equal to placement_from", new[] { nameof(Id) });
+        if (!( PlacementFrom > 0 ))
+            yield return new ValidationResult("placement_from must be greater than zero", new[] { nameof(Id) });
+        if (!( Amount >= 0m ))
+            yield return new ValidationResult("Prize amount must not be negative", new[] { nameof(Id) });
+    }
 }

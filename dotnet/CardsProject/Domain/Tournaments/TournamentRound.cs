@@ -22,7 +22,26 @@ public class TournamentRound
     public int? TournamentId { get; set; }
     [ForeignKey(nameof(TournamentId))]
     public Tournament? Tournament { get; set; }
-    public int? MatchesId { get; set; }
-    [ForeignKey(nameof(MatchesId))]
-    public Match? Matches { get; set; }
+
+    // Business operations
+
+    public void Start()
+    {
+        throw new NotImplementedException("start not implemented");
+    }
+
+    public void Complete()
+    {
+        throw new NotImplementedException("complete not implemented");
+    }
+
+    public void GeneratePairings()
+    {
+        throw new NotImplementedException("generate_pairings not implemented");
+    }
+
+    public bool IsTimeExpired()
+    {
+        throw new NotImplementedException("is_time_expired not implemented");
+    }
 }

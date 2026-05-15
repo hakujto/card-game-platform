@@ -9,13 +9,18 @@ public class CardSetService
 
     public CardSetService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<CardSet> Create(CardSet entity)
+    public async System.Threading.Tasks.Task<CardSet> CreateAsync(CardSet entity)
     {
-        throw new NotImplementedException();
+        _db.CardSets.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<CardSet> Update(CardSet entity)
+    public async System.Threading.Tasks.Task<CardSet> UpdateAsync(CardSet entity)
     {
-        throw new NotImplementedException();
+        _db.CardSets.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

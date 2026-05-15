@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournaments")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly TournamentService _svc;
 
-    public TournamentController(AppDbContext db) => _db = db;
+    public TournamentController(AppDbContext db, TournamentService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -40,9 +43,8 @@ public class TournamentController : ControllerBase
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.SeasonId is not null) entity.SeasonId = dto.SeasonId;
         if (dto.OrganizerId is not null) entity.OrganizerId = dto.OrganizerId;
-        if (dto.RegistrationsId is not null) entity.RegistrationsId = dto.RegistrationsId;
-        if (dto.RoundsId is not null) entity.RoundsId = dto.RoundsId;
-        if (dto.PrizesId is not null) entity.PrizesId = dto.PrizesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Tournaments.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -78,9 +80,8 @@ public class TournamentController : ControllerBase
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.SeasonId is not null) entity.SeasonId = dto.SeasonId;
         if (dto.OrganizerId is not null) entity.OrganizerId = dto.OrganizerId;
-        if (dto.RegistrationsId is not null) entity.RegistrationsId = dto.RegistrationsId;
-        if (dto.RoundsId is not null) entity.RoundsId = dto.RoundsId;
-        if (dto.PrizesId is not null) entity.PrizesId = dto.PrizesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -93,5 +94,55 @@ public class TournamentController : ControllerBase
         _db.Tournaments.Remove(entity);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/start")]
+    public async System.Threading.Tasks.Task<IActionResult> Start(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Start();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/cancel")]
+    public async System.Threading.Tasks.Task<IActionResult> Cancel(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Cancel();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/complete")]
+    public async System.Threading.Tasks.Task<IActionResult> Complete(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Complete();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/rounds")]
+    public async System.Threading.Tasks.Task<IActionResult> GenerateRound(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.GenerateRound();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpGet("{id:int}/prizes")]
+    public async System.Threading.Tasks.Task<IActionResult> CalculatePrizeDistribution(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) return NotFound();
+        var result = entity.CalculatePrizeDistribution();
+        await _db.SaveChangesAsync();
+        return Ok(result);
     }
 }

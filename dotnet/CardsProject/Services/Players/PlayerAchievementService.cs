@@ -9,13 +9,22 @@ public class PlayerAchievementService
 
     public PlayerAchievementService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<PlayerAchievement> Create(PlayerAchievement entity)
+    public async System.Threading.Tasks.Task<PlayerAchievement> CreateAsync(PlayerAchievement entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerAchievements.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<PlayerAchievement> Update(PlayerAchievement entity)
+    public async System.Threading.Tasks.Task<PlayerAchievement> UpdateAsync(PlayerAchievement entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerAchievements.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public void Validate(PlayerAchievement entity)
+    {
+        if (entity.IsCompleted == true && !(entity.Progress > 0)) throw new InvalidOperationException("Completed achievement must have progress greater than zero");
     }
 }

@@ -9,13 +9,18 @@ public class DeckSideboardCardService
 
     public DeckSideboardCardService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<DeckSideboardCard> Create(DeckSideboardCard entity)
+    public async System.Threading.Tasks.Task<DeckSideboardCard> CreateAsync(DeckSideboardCard entity)
     {
-        throw new NotImplementedException();
+        _db.DeckSideboardCards.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<DeckSideboardCard> Update(DeckSideboardCard entity)
+    public async System.Threading.Tasks.Task<DeckSideboardCard> UpdateAsync(DeckSideboardCard entity)
     {
-        throw new NotImplementedException();
+        _db.DeckSideboardCards.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

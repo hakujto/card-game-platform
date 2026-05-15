@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,9 +60,8 @@ public class ArticleCommentApiTests : IClassFixture<ArticleCommentApiTests.TestF
     {
         var payload = new
         {
-        Body = "test",
-        IsHidden = true,
-        CreatedAt = new DateTime(2024, 1, 1)
+            Body = "test",
+            CreatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/article_comments", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

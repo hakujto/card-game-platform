@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/article_tag_assignments")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleTagAssignmentController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public ArticleTagAssignmentController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -26,6 +27,7 @@ public class ArticleTagAssignmentController : ControllerBase
         var entity = new ArticleTagAssignment();
         if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
         if (dto.TagId is not null) entity.TagId = dto.TagId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.ArticleTagAssignments.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -47,6 +49,7 @@ public class ArticleTagAssignmentController : ControllerBase
         if (entity is null) return NotFound();
         if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
         if (dto.TagId is not null) entity.TagId = dto.TagId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -60,4 +63,5 @@ public class ArticleTagAssignmentController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

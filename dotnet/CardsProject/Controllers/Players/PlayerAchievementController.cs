@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Players;
+using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
 
 [ApiController]
 [Route("api/player_achievements")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class PlayerAchievementController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly PlayerAchievementService _svc;
 
-    public PlayerAchievementController(AppDbContext db) => _db = db;
+    public PlayerAchievementController(AppDbContext db, PlayerAchievementService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -29,6 +32,8 @@ public class PlayerAchievementController : ControllerBase
         if (dto.IsCompleted is not null) entity.IsCompleted = dto.IsCompleted.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.AchievementId is not null) entity.AchievementId = dto.AchievementId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.PlayerAchievements.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -53,6 +58,8 @@ public class PlayerAchievementController : ControllerBase
         if (dto.IsCompleted is not null) entity.IsCompleted = dto.IsCompleted.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.AchievementId is not null) entity.AchievementId = dto.AchievementId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -66,4 +73,5 @@ public class PlayerAchievementController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

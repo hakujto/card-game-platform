@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,9 +60,10 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     {
         var payload = new
         {
-        Foil = true,
-        Quantity = 1,
-        CreatedAt = new DateTime(2024, 1, 1)
+            AskingPrice = 0.00m,
+            AuctionStartPrice = 0.00m,
+            AuctionEndTime = DateTime.Parse("2024-01-01T00:00:00"),
+            CreatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/tradelistings", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -79,7 +81,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { ListingType = "test" };
+        var payload = new { AskingPrice = 0.00m };
         var response = await _client.PatchAsJsonAsync("/api/tradelistings/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -93,5 +95,31 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_FixedPriceRequiresAskingPrice_Violated()
+    {
+        // Fixed price listing must have an asking price: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""Foil"": true, ""Condition"": ""test"", ""Quantity"": 1, ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""ListingType"": ""FixedPrice"", ""AskingPrice"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tradelistings", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_AuctionRequiresStartPriceAndEndTime_Violated()
+    {
+        // Auction listing must have a start price and end time: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""Foil"": true, ""Condition"": ""test"", ""Quantity"": 1, ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""ListingType"": ""Auction"", ""AuctionStartPrice"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tradelistings", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_QuantityPositive_Violated()
+    {
+        // Listing quantity must be between 1 and 9999 → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""ListingType"": ""FixedPrice"", ""AskingPrice"": 0.00, ""AuctionStartPrice"": 0.00, ""AuctionEndTime"": ""2024-01-01T00:00:00"", ""Foil"": true, ""Condition"": ""test"", ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Quantity"": 10000 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tradelistings", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

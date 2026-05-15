@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,9 +60,8 @@ public class TradeBidApiTests : IClassFixture<TradeBidApiTests.TestFactory>
     {
         var payload = new
         {
-        Amount = 0.00m,
-        PlacedAt = new DateTime(2024, 1, 1),
-        IsWinning = true
+            Amount = 0.01m,
+            PlacedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/trade_bids", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -79,7 +79,7 @@ public class TradeBidApiTests : IClassFixture<TradeBidApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Amount = 0.00m };
+        var payload = new { Amount = 0.01m };
         var response = await _client.PatchAsJsonAsync("/api/trade_bids/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -93,5 +93,13 @@ public class TradeBidApiTests : IClassFixture<TradeBidApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_AmountPositive_Violated()
+    {
+        // Bid amount must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ListingId"": 1, ""BidderId"": 1, ""PlacedAt"": ""2024-01-01T00:00:00"", ""IsWinning"": true, ""Amount"": 0.00 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/trade_bids", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

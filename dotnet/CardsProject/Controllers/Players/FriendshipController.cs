@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Players;
+using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
 
 [ApiController]
 [Route("api/friendships")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class FriendshipController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public FriendshipController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -28,6 +29,7 @@ public class FriendshipController : ControllerBase
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.RequesterId is not null) entity.RequesterId = dto.RequesterId;
         if (dto.ReceiverId is not null) entity.ReceiverId = dto.ReceiverId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.Friendships.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -51,6 +53,7 @@ public class FriendshipController : ControllerBase
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.RequesterId is not null) entity.RequesterId = dto.RequesterId;
         if (dto.ReceiverId is not null) entity.ReceiverId = dto.ReceiverId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -61,6 +64,36 @@ public class FriendshipController : ControllerBase
         var entity = await _db.Friendships.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Friendships.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/accept")]
+    public async System.Threading.Tasks.Task<IActionResult> Accept(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Accept();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/decline")]
+    public async System.Threading.Tasks.Task<IActionResult> Decline(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Decline();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/block")]
+    public async System.Threading.Tasks.Task<IActionResult> Block(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Block();
         await _db.SaveChangesAsync();
         return NoContent();
     }

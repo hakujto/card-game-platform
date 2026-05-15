@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,10 +60,8 @@ public class AchievementApiTests : IClassFixture<AchievementApiTests.TestFactory
     {
         var payload = new
         {
-        Name = "test",
-        Description = "test",
-        Points = 1,
-        IsHidden = true
+            Name = "test",
+            Description = "test"
         };
         var response = await _client.PostAsJsonAsync("/api/achievements", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

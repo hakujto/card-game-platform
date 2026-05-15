@@ -9,13 +9,18 @@ public class TradeBidService
 
     public TradeBidService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<TradeBid> Create(TradeBid entity)
+    public async System.Threading.Tasks.Task<TradeBid> CreateAsync(TradeBid entity)
     {
-        throw new NotImplementedException();
+        _db.TradeBids.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<TradeBid> Update(TradeBid entity)
+    public async System.Threading.Tasks.Task<TradeBid> UpdateAsync(TradeBid entity)
     {
-        throw new NotImplementedException();
+        _db.TradeBids.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

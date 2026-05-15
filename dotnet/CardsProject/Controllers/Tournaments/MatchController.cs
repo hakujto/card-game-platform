@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/matches")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class MatchController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly MatchService _svc;
 
-    public MatchController(AppDbContext db) => _db = db;
+    public MatchController(AppDbContext db, MatchService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -34,7 +37,8 @@ public class MatchController : ControllerBase
         if (dto.RoundId is not null) entity.RoundId = dto.RoundId;
         if (dto.Player1Id is not null) entity.Player1Id = dto.Player1Id;
         if (dto.Player2Id is not null) entity.Player2Id = dto.Player2Id;
-        if (dto.GamesId is not null) entity.GamesId = dto.GamesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Matches.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -64,7 +68,8 @@ public class MatchController : ControllerBase
         if (dto.RoundId is not null) entity.RoundId = dto.RoundId;
         if (dto.Player1Id is not null) entity.Player1Id = dto.Player1Id;
         if (dto.Player2Id is not null) entity.Player2Id = dto.Player2Id;
-        if (dto.GamesId is not null) entity.GamesId = dto.GamesId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -75,6 +80,38 @@ public class MatchController : ControllerBase
         var entity = await _db.Matches.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Matches.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/record")]
+    public async System.Threading.Tasks.Task<IActionResult> RecordResult(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) return NotFound();
+        var p1Wins = (int)body["p1_wins"];
+        var p2Wins = (int)body["p2_wins"];
+        entity.RecordResult(p1Wins, p2Wins);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpGet("{id:int}/winner")]
+    public async System.Threading.Tasks.Task<IActionResult> DetermineWinner(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) return NotFound();
+        var result = entity.DetermineWinner();
+        await _db.SaveChangesAsync();
+        return Ok(result);
+    }
+
+    [HttpPost("{id:int}/draw")]
+    public async System.Threading.Tasks.Task<IActionResult> Draw(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Draw();
         await _db.SaveChangesAsync();
         return NoContent();
     }

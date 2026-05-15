@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,8 +60,7 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
     {
         var payload = new
         {
-        PointsEarned = 1,
-        RegisteredAt = new DateTime(2024, 1, 1)
+            RegisteredAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/tournament_registrations", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -78,7 +78,7 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Status = "test" };
+        var payload = new { Seed = 1 };
         var response = await _client.PatchAsJsonAsync("/api/tournament_registrations/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

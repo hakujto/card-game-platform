@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Players;
+using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
 
 [ApiController]
 [Route("api/crafting_recipes")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CraftingRecipeController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public CraftingRecipeController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -27,6 +28,7 @@ public class CraftingRecipeController : ControllerBase
         if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
         if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
         if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.CraftingRecipes.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -49,6 +51,7 @@ public class CraftingRecipeController : ControllerBase
         if (dto.DustCost is not null) entity.DustCost = dto.DustCost.Value;
         if (dto.IsAvailable is not null) entity.IsAvailable = dto.IsAvailable.Value;
         if (dto.ResultCardId is not null) entity.ResultCardId = dto.ResultCardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -62,4 +65,5 @@ public class CraftingRecipeController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

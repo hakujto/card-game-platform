@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/draft_picks")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DraftPickController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public DraftPickController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -29,6 +30,7 @@ public class DraftPickController : ControllerBase
         if (dto.PickedAt is not null) entity.PickedAt = dto.PickedAt.Value;
         if (dto.ParticipantId is not null) entity.ParticipantId = dto.ParticipantId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.DraftPicks.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -53,6 +55,7 @@ public class DraftPickController : ControllerBase
         if (dto.PickedAt is not null) entity.PickedAt = dto.PickedAt.Value;
         if (dto.ParticipantId is not null) entity.ParticipantId = dto.ParticipantId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -66,4 +69,5 @@ public class DraftPickController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

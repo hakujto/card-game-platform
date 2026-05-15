@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Cards;
 using Xunit;
 
 namespace CardsProject.Tests.Cards;
@@ -59,7 +60,8 @@ public class CardAbilityApiTests : IClassFixture<CardAbilityApiTests.TestFactory
     {
         var payload = new
         {
-        AbilityText = "test"
+            Keyword = "test",
+            AbilityText = "test"
         };
         var response = await _client.PostAsJsonAsync("/api/card_abilities", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -77,7 +79,7 @@ public class CardAbilityApiTests : IClassFixture<CardAbilityApiTests.TestFactory
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { AbilityType = "test" };
+        var payload = new { Keyword = "test" };
         var response = await _client.PatchAsJsonAsync("/api/card_abilities/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -91,5 +93,13 @@ public class CardAbilityApiTests : IClassFixture<CardAbilityApiTests.TestFactory
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_KeywordAbilityRequiresKeyword_Violated()
+    {
+        // Keyword ability must have a keyword name: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""CardId"": 1, ""AbilityText"": ""test"", ""AbilityType"": ""Keyword"", ""Keyword"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_abilities", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

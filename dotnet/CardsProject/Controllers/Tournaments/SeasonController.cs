@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/seasons")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class SeasonController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public SeasonController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -30,6 +31,7 @@ public class SeasonController : ControllerBase
         if (dto.Format is not null && Enum.TryParse<SeasonFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
         if (dto.RewardDescription is not null) entity.RewardDescription = dto.RewardDescription;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.Seasons.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -55,6 +57,7 @@ public class SeasonController : ControllerBase
         if (dto.Format is not null && Enum.TryParse<SeasonFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
         if (dto.RewardDescription is not null) entity.RewardDescription = dto.RewardDescription;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -65,6 +68,36 @@ public class SeasonController : ControllerBase
         var entity = await _db.Seasons.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Seasons.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/activate")]
+    public async System.Threading.Tasks.Task<IActionResult> Activate(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Activate();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/deactivate")]
+    public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Deactivate();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/finalize")]
+    public async System.Threading.Tasks.Task<IActionResult> FinalizeRewards(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.FinalizeRewards();
         await _db.SaveChangesAsync();
         return NoContent();
     }

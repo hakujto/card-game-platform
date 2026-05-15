@@ -16,7 +16,16 @@ public class DraftParticipant
     public int? PlayerId { get; set; }
     [ForeignKey(nameof(PlayerId))]
     public Player? Player { get; set; }
-    public int? DraftedCardsId { get; set; }
-    [ForeignKey(nameof(DraftedCardsId))]
-    public DraftPick? DraftedCards { get; set; }
+
+    // Business operations
+
+    public void PickCard(int cardId, int packNumber)
+    {
+        throw new NotImplementedException("pick_card not implemented");
+    }
+
+    public int DraftedCardCount()
+    {
+        throw new NotImplementedException("drafted_card_count not implemented");
+    }
 }

@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,8 +60,7 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
     {
         var payload = new
         {
-        DustCost = 1,
-        IsAvailable = true
+            DustCost = 1
         };
         var response = await _client.PostAsJsonAsync("/api/crafting_recipes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -92,5 +92,13 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_DustCostPositive_Violated()
+    {
+        // Crafting recipe must have a dust cost greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ResultCardId"": 1, ""IsAvailable"": true, ""DustCost"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/crafting_recipes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

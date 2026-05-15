@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Players;
+using CardsProject.Services.Players;
 
 namespace CardsProject.Controllers.Players;
 
 [ApiController]
 [Route("api/player_collections")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class PlayerCollectionController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public PlayerCollectionController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -31,6 +32,7 @@ public class PlayerCollectionController : ControllerBase
         if (dto.AcquiredVia is not null && Enum.TryParse<PlayerCollectionAcquiredViaType>(dto.AcquiredVia, out var acquiredViaVal)) entity.AcquiredVia = acquiredViaVal;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.PlayerCollections.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -57,6 +59,7 @@ public class PlayerCollectionController : ControllerBase
         if (dto.AcquiredVia is not null && Enum.TryParse<PlayerCollectionAcquiredViaType>(dto.AcquiredVia, out var acquiredViaVal)) entity.AcquiredVia = acquiredViaVal;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -69,5 +72,15 @@ public class PlayerCollectionController : ControllerBase
         _db.PlayerCollections.Remove(entity);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("{id:int}/value")]
+    public async System.Threading.Tasks.Task<IActionResult> EstimatedValue(int id)
+    {
+        var entity = await _db.PlayerCollections.FindAsync(id);
+        if (entity is null) return NotFound();
+        var result = entity.EstimatedValue();
+        await _db.SaveChangesAsync();
+        return Ok(result);
     }
 }

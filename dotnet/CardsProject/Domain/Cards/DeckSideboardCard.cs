@@ -14,4 +14,16 @@ public class DeckSideboardCard
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // Business operations
+
+    public void Increment(int amount)
+    {
+        throw new NotImplementedException("increment not implemented");
+    }
+
+    public void Decrement(int amount)
+    {
+        throw new NotImplementedException("decrement not implemented");
+    }
 }

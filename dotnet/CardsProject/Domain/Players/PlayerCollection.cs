@@ -37,4 +37,21 @@ public class PlayerCollection
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // Business operations
+
+    public void Add(int quantity)
+    {
+        throw new NotImplementedException("add not implemented");
+    }
+
+    public void Remove(int quantity)
+    {
+        throw new NotImplementedException("remove not implemented");
+    }
+
+    public decimal EstimatedValue()
+    {
+        throw new NotImplementedException("estimated_value not implemented");
+    }
 }

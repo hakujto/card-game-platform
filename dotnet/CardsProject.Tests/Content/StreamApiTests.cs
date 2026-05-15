@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,10 +60,9 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
     {
         var payload = new
         {
-        Title = "test",
-        StreamUrl = "https://example.com",
-        ViewerCountPeak = 1,
-        ScheduledStart = new DateTime(2024, 1, 1)
+            Title = "test",
+            StreamUrl = "https://example.com",
+            ScheduledStart = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/streams", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -94,5 +94,13 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_ActualStartRequiresLiveOrEnded_Violated()
+    {
+        // actual_start_requires_live_or_ended: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""StreamerId"": 1, ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Platform"": ""test"", ""Status"": ""test"", ""ViewerCountPeak"": 1, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""ActualStart"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/streams", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

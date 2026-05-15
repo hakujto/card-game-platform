@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Marketplace;
+using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/trade_bids")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TradeBidController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public TradeBidController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -29,6 +30,7 @@ public class TradeBidController : ControllerBase
         if (dto.IsWinning is not null) entity.IsWinning = dto.IsWinning.Value;
         if (dto.ListingId is not null) entity.ListingId = dto.ListingId;
         if (dto.BidderId is not null) entity.BidderId = dto.BidderId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.TradeBids.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -53,6 +55,7 @@ public class TradeBidController : ControllerBase
         if (dto.IsWinning is not null) entity.IsWinning = dto.IsWinning.Value;
         if (dto.ListingId is not null) entity.ListingId = dto.ListingId;
         if (dto.BidderId is not null) entity.BidderId = dto.BidderId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -66,4 +69,5 @@ public class TradeBidController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Cards;
 
-public class DeckCard
+public class DeckCard : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -15,4 +16,11 @@ public class DeckCard
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Quantity >= 1 && Quantity <= 4 ))
+            yield return new ValidationResult("A deck can contain between 1 and 4 copies of a card", new[] { nameof(Id) });
+    }
 }

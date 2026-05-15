@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,7 +60,7 @@ public class FriendshipApiTests : IClassFixture<FriendshipApiTests.TestFactory>
     {
         var payload = new
         {
-        CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/friendships", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -77,7 +78,7 @@ public class FriendshipApiTests : IClassFixture<FriendshipApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Status = "test" };
+        var payload = new { CreatedAt = new DateTime(2024, 1, 1) };
         var response = await _client.PatchAsJsonAsync("/api/friendships/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

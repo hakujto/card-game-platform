@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,7 +60,7 @@ public class GameApiTests : IClassFixture<GameApiTests.TestFactory>
     {
         var payload = new
         {
-        GameNumber = 1
+            GameNumber = 1
         };
         var response = await _client.PostAsJsonAsync("/api/games", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -91,5 +92,31 @@ public class GameApiTests : IClassFixture<GameApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_GameNumberRange_Violated()
+    {
+        // Game number must be between 1 and 3 (best-of-3) → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""MatchId"": 1, ""TurnsPlayed"": 1, ""DurationSeconds"": 1, ""GameNumber"": 4 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/games", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_TurnsPlayedPositive_Violated()
+    {
+        // Turns played must be greater than zero: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""MatchId"": 1, ""GameNumber"": 1, ""TurnsPlayed"": 1, ""TurnsPlayed"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/games", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_DurationPositive_Violated()
+    {
+        // Game duration must be greater than zero: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""MatchId"": 1, ""GameNumber"": 1, ""DurationSeconds"": 1, ""DurationSeconds"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/games", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

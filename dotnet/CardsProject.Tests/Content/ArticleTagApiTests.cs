@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,8 +60,8 @@ public class ArticleTagApiTests : IClassFixture<ArticleTagApiTests.TestFactory>
     {
         var payload = new
         {
-        Name = "test",
-        Slug = "test"
+            Name = "test",
+            Slug = "test"
         };
         var response = await _client.PostAsJsonAsync("/api/article_tags", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

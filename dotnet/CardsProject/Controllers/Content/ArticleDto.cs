@@ -15,5 +15,4 @@ public class ArticleDto
     public DateTime? UpdatedAt { get; set; }
     public int? AuthorId { get; set; }
     public int? FeaturedDeckId { get; set; }
-    public int? CommentsId { get; set; }
 }

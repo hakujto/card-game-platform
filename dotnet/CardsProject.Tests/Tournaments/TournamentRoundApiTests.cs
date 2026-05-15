@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,8 +60,7 @@ public class TournamentRoundApiTests : IClassFixture<TournamentRoundApiTests.Tes
     {
         var payload = new
         {
-        RoundNumber = 1,
-        TimeLimitMinutes = 1
+            RoundNumber = 1
         };
         var response = await _client.PostAsJsonAsync("/api/tournament_rounds", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -92,5 +92,13 @@ public class TournamentRoundApiTests : IClassFixture<TournamentRoundApiTests.Tes
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_EndedAfterStarted_Violated()
+    {
+        // Round end time must be after start time: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""RoundNumber"": 1, ""Status"": ""test"", ""TimeLimitMinutes"": 1, ""EndedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_rounds", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

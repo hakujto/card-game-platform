@@ -14,6 +14,5 @@ public class OrderDto
     public DateTime? PaidAt { get; set; }
     public DateTime? ShippedAt { get; set; }
     public int? PlayerId { get; set; }
-    public int? ItemsId { get; set; }
     public int? CouponId { get; set; }
 }

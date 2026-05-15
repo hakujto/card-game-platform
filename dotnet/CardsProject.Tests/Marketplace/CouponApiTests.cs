@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,13 +60,10 @@ public class CouponApiTests : IClassFixture<CouponApiTests.TestFactory>
     {
         var payload = new
         {
-        Code = "test",
-        DiscountValue = 0.00m,
-        MinOrderValue = 0.00m,
-        UsesCount = 1,
-        ValidFrom = new DateTime(2024, 1, 1),
-        ValidUntil = new DateTime(2024, 1, 1),
-        IsActive = true
+            DiscountValue = 1.00m,
+            ValidUntil = DateTime.Parse("2024-01-01T00:00:01"),
+            Code = "test",
+            ValidFrom = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/coupons", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -97,5 +95,31 @@ public class CouponApiTests : IClassFixture<CouponApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_DiscountValuePositive_Violated()
+    {
+        // Discount value must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""DiscountType"": ""Percent"", ""MaxUses"": 1, ""Code"": ""test"", ""MinOrderValue"": 0.00, ""UsesCount"": 1, ""ValidFrom"": ""2024-01-01T00:00:00"", ""ValidUntil"": ""2024-01-01T00:00:00"", ""IsActive"": true, ""DiscountValue"": 0.00 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/coupons", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_PercentDiscountRange_Violated()
+    {
+        // Percent discount must be between 1 and 100: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""Code"": ""test"", ""MinOrderValue"": 0.00, ""UsesCount"": 1, ""ValidFrom"": ""2024-01-01T00:00:00"", ""ValidUntil"": ""2024-01-01T00:00:00"", ""IsActive"": true, ""DiscountType"": ""Percent"", ""DiscountValue"": 101 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/coupons", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_UsesNotExceedMax_Violated()
+    {
+        // Coupon uses count cannot exceed max_uses: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""Code"": ""test"", ""DiscountType"": ""test"", ""DiscountValue"": 0.00, ""MinOrderValue"": 0.00, ""UsesCount"": 1, ""ValidFrom"": ""2024-01-01T00:00:00"", ""ValidUntil"": ""2024-01-01T00:00:00"", ""IsActive"": true, ""MaxUses"": 1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/coupons", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

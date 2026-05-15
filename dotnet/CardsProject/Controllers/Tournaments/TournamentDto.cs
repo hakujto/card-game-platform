@@ -18,7 +18,4 @@ public class TournamentDto
     public DateTime? CreatedAt { get; set; }
     public int? SeasonId { get; set; }
     public int? OrganizerId { get; set; }
-    public int? RegistrationsId { get; set; }
-    public int? RoundsId { get; set; }
-    public int? PrizesId { get; set; }
 }

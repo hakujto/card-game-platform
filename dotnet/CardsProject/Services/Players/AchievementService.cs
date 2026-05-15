@@ -9,13 +9,18 @@ public class AchievementService
 
     public AchievementService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<Achievement> Create(Achievement entity)
+    public async System.Threading.Tasks.Task<Achievement> CreateAsync(Achievement entity)
     {
-        throw new NotImplementedException();
+        _db.Achievements.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<Achievement> Update(Achievement entity)
+    public async System.Threading.Tasks.Task<Achievement> UpdateAsync(Achievement entity)
     {
-        throw new NotImplementedException();
+        _db.Achievements.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

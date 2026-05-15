@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,7 +60,7 @@ public class CraftingIngredientApiTests : IClassFixture<CraftingIngredientApiTes
     {
         var payload = new
         {
-        Quantity = 1
+
         };
         var response = await _client.PostAsJsonAsync("/api/crafting_ingredients", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

@@ -19,6 +19,4 @@ public class CardDto
     public bool? IsRestricted { get; set; }
     public int? PowerLevel { get; set; }
     public int? SetId { get; set; }
-    public int? RulingsId { get; set; }
-    public int? AbilitiesId { get; set; }
 }

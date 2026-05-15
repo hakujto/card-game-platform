@@ -16,5 +16,4 @@ public class TradelistingDto
     public DateTime? ExpiresAt { get; set; }
     public int? SellerId { get; set; }
     public int? CardId { get; set; }
-    public int? BidsId { get; set; }
 }

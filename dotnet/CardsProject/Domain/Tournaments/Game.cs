@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -18,7 +19,7 @@ public enum GameEndedByType
     DrawOffer
 }
 
-public class Game
+public class Game : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -35,4 +36,23 @@ public class Game
     public int? WinnerId { get; set; }
     [ForeignKey(nameof(WinnerId))]
     public Player? Winner { get; set; }
+
+    // Business operations
+
+    public void RecordWinner(string winnerSide)
+    {
+        throw new NotImplementedException("record_winner not implemented");
+    }
+
+    public decimal DurationMinutes()
+    {
+        throw new NotImplementedException("duration_minutes not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( GameNumber >= 1 && GameNumber <= 3 ))
+            yield return new ValidationResult("Game number must be between 1 and 3 (best-of-3)", new[] { nameof(Id) });
+    }
 }

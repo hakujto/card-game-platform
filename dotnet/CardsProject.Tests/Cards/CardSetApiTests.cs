@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Cards;
 using Xunit;
 
 namespace CardsProject.Tests.Cards;
@@ -59,10 +60,10 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
     {
         var payload = new
         {
-        Name = "test",
-        Code = "test",
-        ReleaseDate = new DateOnly(2024, 1, 1),
-        TotalCards = 1
+            Name = "test",
+            Code = "test",
+            ReleaseDate = new DateOnly(2024, 1, 1),
+            TotalCards = 1
         };
         var response = await _client.PostAsJsonAsync("/api/card_sets", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

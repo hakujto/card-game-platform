@@ -9,13 +9,22 @@ public class CardAbilityService
 
     public CardAbilityService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<CardAbility> Create(CardAbility entity)
+    public async System.Threading.Tasks.Task<CardAbility> CreateAsync(CardAbility entity)
     {
-        throw new NotImplementedException();
+        _db.CardAbilities.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<CardAbility> Update(CardAbility entity)
+    public async System.Threading.Tasks.Task<CardAbility> UpdateAsync(CardAbility entity)
     {
-        throw new NotImplementedException();
+        _db.CardAbilities.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public void Validate(CardAbility entity)
+    {
+        if (entity.AbilityType == CardAbilityAbilityTypeType.Keyword && entity.Keyword == null) throw new InvalidOperationException("Keyword ability must have a keyword name");
     }
 }

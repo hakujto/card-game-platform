@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Content;
 using Xunit;
 
 namespace CardsProject.Tests.Content;
@@ -59,12 +60,12 @@ public class ArticleApiTests : IClassFixture<ArticleApiTests.TestFactory>
     {
         var payload = new
         {
-        Title = "test",
-        Slug = "test",
-        Body = "test",
-        ViewCount = 1,
-        CreatedAt = new DateTime(2024, 1, 1),
-        UpdatedAt = new DateTime(2024, 1, 1)
+            PublishedAt = DateTime.Parse("2024-01-01T00:00:00"),
+            Title = "test",
+            Slug = "test",
+            Body = "test",
+            CreatedAt = new DateTime(2024, 1, 1),
+            UpdatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/articles", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -96,5 +97,13 @@ public class ArticleApiTests : IClassFixture<ArticleApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_PublishedRequiresPublishedAt_Violated()
+    {
+        // Published article must have a published_at timestamp: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""AuthorId"": 1, ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""ViewCount"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Published"", ""PublishedAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/articles", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournament_judges")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentJudgeController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public TournamentJudgeController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -27,6 +28,7 @@ public class TournamentJudgeController : ControllerBase
         if (dto.Role is not null && Enum.TryParse<TournamentJudgeRoleType>(dto.Role, out var roleVal)) entity.Role = roleVal;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.TournamentJudges.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -49,6 +51,7 @@ public class TournamentJudgeController : ControllerBase
         if (dto.Role is not null && Enum.TryParse<TournamentJudgeRoleType>(dto.Role, out var roleVal)) entity.Role = roleVal;
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -62,4 +65,5 @@ public class TournamentJudgeController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

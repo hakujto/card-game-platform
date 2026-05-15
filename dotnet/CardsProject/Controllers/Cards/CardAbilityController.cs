@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/card_abilities")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardAbilityController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly CardAbilityService _svc;
 
-    public CardAbilityController(AppDbContext db) => _db = db;
+    public CardAbilityController(AppDbContext db, CardAbilityService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -29,6 +32,8 @@ public class CardAbilityController : ControllerBase
         if (dto.AbilityText is not null) entity.AbilityText = dto.AbilityText;
         if (dto.Timing is not null && Enum.TryParse<CardAbilityTimingType>(dto.Timing, out var timingVal)) entity.Timing = timingVal;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.CardAbilities.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -53,6 +58,8 @@ public class CardAbilityController : ControllerBase
         if (dto.AbilityText is not null) entity.AbilityText = dto.AbilityText;
         if (dto.Timing is not null && Enum.TryParse<CardAbilityTimingType>(dto.Timing, out var timingVal)) entity.Timing = timingVal;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -66,4 +73,5 @@ public class CardAbilityController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

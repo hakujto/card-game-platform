@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Cards;
 using Xunit;
 
 namespace CardsProject.Tests.Cards;
@@ -59,8 +60,7 @@ public class DeckCardApiTests : IClassFixture<DeckCardApiTests.TestFactory>
     {
         var payload = new
         {
-        Quantity = 1,
-        IsCommander = true
+
         };
         var response = await _client.PostAsJsonAsync("/api/deck_cards", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -92,5 +92,13 @@ public class DeckCardApiTests : IClassFixture<DeckCardApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_QuantityRange_Violated()
+    {
+        // A deck can contain between 1 and 4 copies of a card → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""DeckId"": 1, ""CardId"": 1, ""IsCommander"": true, ""Quantity"": 5 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/deck_cards", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

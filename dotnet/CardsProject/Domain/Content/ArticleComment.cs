@@ -20,4 +20,21 @@ public class ArticleComment
     public int? ParentCommentId { get; set; }
     [ForeignKey(nameof(ParentCommentId))]
     public ArticleComment? ParentComment { get; set; }
+
+    // Business operations
+
+    public void Hide()
+    {
+        throw new NotImplementedException("hide not implemented");
+    }
+
+    public void Unhide()
+    {
+        throw new NotImplementedException("unhide not implemented");
+    }
+
+    public bool IsReply()
+    {
+        throw new NotImplementedException("is_reply not implemented");
+    }
 }

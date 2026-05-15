@@ -31,4 +31,21 @@ public class TournamentRegistration
     public int? DeckId { get; set; }
     [ForeignKey(nameof(DeckId))]
     public Deck? Deck { get; set; }
+
+    // Business operations
+
+    public void Withdraw()
+    {
+        throw new NotImplementedException("withdraw not implemented");
+    }
+
+    public void Disqualify(string reason)
+    {
+        throw new NotImplementedException("disqualify not implemented");
+    }
+
+    public void PromoteFromWaitlist()
+    {
+        throw new NotImplementedException("promote_from_waitlist not implemented");
+    }
 }

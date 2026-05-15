@@ -45,4 +45,31 @@ public class Deck
     public ICollection<Card> Cards { get; set; } = new List<Card>();
     public ICollection<Card> SideboardCards { get; set; } = new List<Card>();
     public ICollection<DeckTag> Tags { get; set; } = new List<DeckTag>();
+
+    // Business operations
+
+    public bool ValidateSize()
+    {
+        throw new NotImplementedException("validate_size not implemented");
+    }
+
+    public object Clone()
+    {
+        throw new NotImplementedException("clone not implemented");
+    }
+
+    public void Publish()
+    {
+        throw new NotImplementedException("publish not implemented");
+    }
+
+    public void Unpublish()
+    {
+        throw new NotImplementedException("unpublish not implemented");
+    }
+
+    public bool CertifyTournamentLegal()
+    {
+        throw new NotImplementedException("certify_tournament_legal not implemented");
+    }
 }

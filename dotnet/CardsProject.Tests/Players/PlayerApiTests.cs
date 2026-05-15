@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,11 +60,9 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
     {
         var payload = new
         {
-        DisplayName = "test",
-        Rating = 1,
-        PeakRating = 1,
-        IsVerified = true,
-        CreatedAt = new DateTime(2024, 1, 1)
+            PeakRating = 1000,
+            DisplayName = "test",
+            CreatedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/players", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -95,5 +94,13 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_RatingRange_Violated()
+    {
+        // Rating must be between 0 and 9999 → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""DisplayName"": ""test"", ""Rank"": ""test"", ""PeakRating"": 1, ""IsVerified"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""Rating"": 10000 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/players", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

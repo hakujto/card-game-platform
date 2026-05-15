@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -59,10 +60,9 @@ public class TournamentPrizeApiTests : IClassFixture<TournamentPrizeApiTests.Tes
     {
         var payload = new
         {
-        PlacementFrom = 1,
-        PlacementTo = 1,
-        Amount = 0.00m,
-        SeasonPoints = 1
+            PlacementFrom = 1,
+            PlacementTo = 1,
+            PrizeType = "Currency"
         };
         var response = await _client.PostAsJsonAsync("/api/tournament_prizes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -94,5 +94,22 @@ public class TournamentPrizeApiTests : IClassFixture<TournamentPrizeApiTests.Tes
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_PlacementFromPositive_Violated()
+    {
+        // placement_from must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""PlacementTo"": 1, ""PrizeType"": ""test"", ""Amount"": 0.00, ""SeasonPoints"": 1, ""PlacementFrom"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_prizes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_AmountNotNegative_Violated()
+    {
+        // Prize amount must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""PlacementFrom"": 1, ""PlacementTo"": 1, ""PrizeType"": ""test"", ""SeasonPoints"": 1, ""Amount"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_prizes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

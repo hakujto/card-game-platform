@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/articles")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ArticleService _svc;
 
-    public ArticleController(AppDbContext db) => _db = db;
+    public ArticleController(AppDbContext db, ArticleService svc) { _db = db; _svc = svc; }
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -37,7 +40,8 @@ public class ArticleController : ControllerBase
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
         if (dto.FeaturedDeckId is not null) entity.FeaturedDeckId = dto.FeaturedDeckId;
-        if (dto.CommentsId is not null) entity.CommentsId = dto.CommentsId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         _db.Articles.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -70,7 +74,8 @@ public class ArticleController : ControllerBase
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
         if (dto.FeaturedDeckId is not null) entity.FeaturedDeckId = dto.FeaturedDeckId;
-        if (dto.CommentsId is not null) entity.CommentsId = dto.CommentsId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
+        try { _svc.Validate(entity); } catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -81,6 +86,36 @@ public class ArticleController : ControllerBase
         var entity = await _db.Articles.FindAsync(id);
         if (entity is null) return NotFound();
         _db.Articles.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/publish")]
+    public async System.Threading.Tasks.Task<IActionResult> Publish(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Publish();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/archive")]
+    public async System.Threading.Tasks.Task<IActionResult> Archive(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Archive();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/view")]
+    public async System.Threading.Tasks.Task<IActionResult> IncrementView(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.IncrementView();
         await _db.SaveChangesAsync();
         return NoContent();
     }

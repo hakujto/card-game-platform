@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Tournaments;
+using CardsProject.Services.Tournaments;
 
 namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournament_registrations")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentRegistrationController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public TournamentRegistrationController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -32,6 +33,7 @@ public class TournamentRegistrationController : ControllerBase
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.TournamentRegistrations.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -59,6 +61,7 @@ public class TournamentRegistrationController : ControllerBase
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -69,6 +72,37 @@ public class TournamentRegistrationController : ControllerBase
         var entity = await _db.TournamentRegistrations.FindAsync(id);
         if (entity is null) return NotFound();
         _db.TournamentRegistrations.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/withdraw")]
+    public async System.Threading.Tasks.Task<IActionResult> Withdraw(int id)
+    {
+        var entity = await _db.TournamentRegistrations.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Withdraw();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/disqualify")]
+    public async System.Threading.Tasks.Task<IActionResult> Disqualify(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        var entity = await _db.TournamentRegistrations.FindAsync(id);
+        if (entity is null) return NotFound();
+        var reason = (string)body["reason"];
+        entity.Disqualify(reason);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/promote")]
+    public async System.Threading.Tasks.Task<IActionResult> PromoteFromWaitlist(int id)
+    {
+        var entity = await _db.TournamentRegistrations.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.PromoteFromWaitlist();
         await _db.SaveChangesAsync();
         return NoContent();
     }

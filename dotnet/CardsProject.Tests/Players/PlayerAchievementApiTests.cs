@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Players;
 using Xunit;
 
 namespace CardsProject.Tests.Players;
@@ -59,9 +60,8 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
     {
         var payload = new
         {
-        EarnedAt = new DateTime(2024, 1, 1),
-        Progress = 1,
-        IsCompleted = true
+            Progress = 1,
+            EarnedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/player_achievements", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -93,5 +93,13 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_CompletedRequiresProgress_Violated()
+    {
+        // Completed achievement must have progress greater than zero: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""AchievementId"": 1, ""EarnedAt"": ""2024-01-01T00:00:00"", ""IsCompleted"": true, ""Progress"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_achievements", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

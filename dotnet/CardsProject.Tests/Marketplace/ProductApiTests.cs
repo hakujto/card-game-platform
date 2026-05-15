@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,12 +60,8 @@ public class ProductApiTests : IClassFixture<ProductApiTests.TestFactory>
     {
         var payload = new
         {
-        Name = "test",
-        Price = 0.00m,
-        Stock = 1,
-        Active = true,
-        DiscountPercent = 1,
-        Featured = true
+            Name = "test",
+            Price = 0.00m
         };
         var response = await _client.PostAsJsonAsync("/api/products", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);

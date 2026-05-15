@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Marketplace;
+using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/order_items")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class OrderItemController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public OrderItemController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -29,6 +30,7 @@ public class OrderItemController : ControllerBase
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.OrderId is not null) entity.OrderId = dto.OrderId;
         if (dto.ProductId is not null) entity.ProductId = dto.ProductId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.OrderItems.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -53,6 +55,7 @@ public class OrderItemController : ControllerBase
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.OrderId is not null) entity.OrderId = dto.OrderId;
         if (dto.ProductId is not null) entity.ProductId = dto.ProductId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -66,4 +69,5 @@ public class OrderItemController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

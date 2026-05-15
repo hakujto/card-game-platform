@@ -9,13 +9,26 @@ public class PlayerCollectionService
 
     public PlayerCollectionService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<PlayerCollection> Create(PlayerCollection entity)
+    public async System.Threading.Tasks.Task<PlayerCollection> CreateAsync(PlayerCollection entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerCollections.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<PlayerCollection> Update(PlayerCollection entity)
+    public async System.Threading.Tasks.Task<PlayerCollection> UpdateAsync(PlayerCollection entity)
     {
-        throw new NotImplementedException();
+        _db.PlayerCollections.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<decimal> EstimatedValueAsync(int id)
+    {
+        var entity = await _db.PlayerCollections.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerCollection not found: " + id);
+        var result = entity.EstimatedValue();
+        await _db.SaveChangesAsync();
+        return result;
     }
 }

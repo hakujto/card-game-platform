@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,8 +60,9 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
     {
         var payload = new
         {
-        Description = "test",
-        OpenedAt = new DateTime(2024, 1, 1)
+            Reason = "ItemNotReceived",
+            Description = "test",
+            OpenedAt = new DateTime(2024, 1, 1)
         };
         var response = await _client.PostAsJsonAsync("/api/trade_disputes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -78,7 +80,7 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Reason = "test" };
+        var payload = new { Description = "test" };
         var response = await _client.PatchAsJsonAsync("/api/trade_disputes/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -92,5 +94,13 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_ResolvedAtRequiresTerminalStatus_Violated()
+    {
+        // resolved_at_requires_terminal_status: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""TransactionId"": 1, ""OpenedById"": 1, ""Reason"": ""test"", ""Description"": ""test"", ""Status"": ""test"", ""OpenedAt"": ""2024-01-01T00:00:00"", ""ResolvedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/trade_disputes", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

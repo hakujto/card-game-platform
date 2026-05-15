@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -30,7 +31,7 @@ public enum TournamentStatusType
     Cancelled
 }
 
-public class Tournament
+public class Tournament : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -55,15 +56,49 @@ public class Tournament
     public int? OrganizerId { get; set; }
     [ForeignKey(nameof(OrganizerId))]
     public Player? Organizer { get; set; }
-    public int? RegistrationsId { get; set; }
-    [ForeignKey(nameof(RegistrationsId))]
-    public TournamentRegistration? Registrations { get; set; }
-    public int? RoundsId { get; set; }
-    [ForeignKey(nameof(RoundsId))]
-    public TournamentRound? Rounds { get; set; }
-    public int? PrizesId { get; set; }
-    [ForeignKey(nameof(PrizesId))]
-    public TournamentPrize? Prizes { get; set; }
 
     public ICollection<Player> Judges { get; set; } = new List<Player>();
+
+    // Business operations
+
+    public void Start()
+    {
+        throw new NotImplementedException("start not implemented");
+    }
+
+    public void Cancel()
+    {
+        throw new NotImplementedException("cancel not implemented");
+    }
+
+    public void Complete()
+    {
+        throw new NotImplementedException("complete not implemented");
+    }
+
+    public void GenerateRound()
+    {
+        throw new NotImplementedException("generate_round not implemented");
+    }
+
+    public decimal CalculatePrizeDistribution()
+    {
+        throw new NotImplementedException("calculate_prize_distribution not implemented");
+    }
+
+    public bool IsFull()
+    {
+        throw new NotImplementedException("is_full not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( MaxPlayers >= 2 && MaxPlayers <= 512 ))
+            yield return new ValidationResult("Tournament must allow between 2 and 512 players", new[] { nameof(Id) });
+        if (!( EntryFee >= 0m ))
+            yield return new ValidationResult("Entry fee must not be negative", new[] { nameof(Id) });
+        if (!( PrizePool >= 0m ))
+            yield return new ValidationResult("Prize pool must not be negative", new[] { nameof(Id) });
+    }
 }

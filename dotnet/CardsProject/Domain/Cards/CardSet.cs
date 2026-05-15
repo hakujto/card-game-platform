@@ -20,4 +20,11 @@ public class CardSet
     public int TotalCards { get; set; } = 0;
     public string? Description { get; set; }
     public string? LogoUrl { get; set; }
+
+    // Business operations
+
+    public bool IsLegalInStandard()
+    {
+        throw new NotImplementedException("is_legal_in_standard not implemented");
+    }
 }

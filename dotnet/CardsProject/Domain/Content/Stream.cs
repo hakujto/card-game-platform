@@ -39,4 +39,26 @@ public class Stream
     public int? StreamerId { get; set; }
     [ForeignKey(nameof(StreamerId))]
     public Player? Streamer { get; set; }
+
+    // Business operations
+
+    public void GoLive()
+    {
+        throw new NotImplementedException("go_live not implemented");
+    }
+
+    public void End()
+    {
+        throw new NotImplementedException("end not implemented");
+    }
+
+    public void UpdateViewerPeak(int count)
+    {
+        throw new NotImplementedException("update_viewer_peak not implemented");
+    }
+
+    public int DurationMinutes()
+    {
+        throw new NotImplementedException("duration_minutes not implemented");
+    }
 }

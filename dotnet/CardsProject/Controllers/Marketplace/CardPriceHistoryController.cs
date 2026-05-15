@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Marketplace;
+using CardsProject.Services.Marketplace;
 
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/card_price_histories")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class CardPriceHistoryController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public CardPriceHistoryController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -31,6 +32,7 @@ public class CardPriceHistoryController : ControllerBase
         if (dto.Volume is not null) entity.Volume = dto.Volume.Value;
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.CardPriceHistories.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -57,6 +59,7 @@ public class CardPriceHistoryController : ControllerBase
         if (dto.Volume is not null) entity.Volume = dto.Volume.Value;
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -70,4 +73,5 @@ public class CardPriceHistoryController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

@@ -9,13 +9,22 @@ public class AwardedPrizeService
 
     public AwardedPrizeService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<AwardedPrize> Create(AwardedPrize entity)
+    public async System.Threading.Tasks.Task<AwardedPrize> CreateAsync(AwardedPrize entity)
     {
-        throw new NotImplementedException();
+        _db.AwardedPrizes.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<AwardedPrize> Update(AwardedPrize entity)
+    public async System.Threading.Tasks.Task<AwardedPrize> UpdateAsync(AwardedPrize entity)
     {
-        throw new NotImplementedException();
+        _db.AwardedPrizes.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public void Validate(AwardedPrize entity)
+    {
+        if (entity.Claimed == true && entity.ClaimedAt == null) throw new InvalidOperationException("Claimed prize must have a claimed_at timestamp");
     }
 }

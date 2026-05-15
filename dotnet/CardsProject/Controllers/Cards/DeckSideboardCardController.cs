@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Cards;
+using CardsProject.Services.Cards;
 
 namespace CardsProject.Controllers.Cards;
 
 [ApiController]
 [Route("api/deck_sideboard_cards")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DeckSideboardCardController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public DeckSideboardCardController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -27,6 +28,7 @@ public class DeckSideboardCardController : ControllerBase
         if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.DeckSideboardCards.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -49,6 +51,7 @@ public class DeckSideboardCardController : ControllerBase
         if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -62,4 +65,5 @@ public class DeckSideboardCardController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
 }

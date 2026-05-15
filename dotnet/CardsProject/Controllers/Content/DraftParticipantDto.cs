@@ -6,5 +6,4 @@ public class DraftParticipantDto
     public DateTime? JoinedAt { get; set; }
     public int? SessionId { get; set; }
     public int? PlayerId { get; set; }
-    public int? DraftedCardsId { get; set; }
 }

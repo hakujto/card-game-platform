@@ -9,13 +9,18 @@ public class DraftPickService
 
     public DraftPickService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<DraftPick> Create(DraftPick entity)
+    public async System.Threading.Tasks.Task<DraftPick> CreateAsync(DraftPick entity)
     {
-        throw new NotImplementedException();
+        _db.DraftPicks.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<DraftPick> Update(DraftPick entity)
+    public async System.Threading.Tasks.Task<DraftPick> UpdateAsync(DraftPick entity)
     {
-        throw new NotImplementedException();
+        _db.DraftPicks.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
+
 }

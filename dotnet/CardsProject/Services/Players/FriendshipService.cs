@@ -9,13 +9,42 @@ public class FriendshipService
 
     public FriendshipService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<Friendship> Create(Friendship entity)
+    public async System.Threading.Tasks.Task<Friendship> CreateAsync(Friendship entity)
     {
-        throw new NotImplementedException();
+        _db.Friendships.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<Friendship> Update(Friendship entity)
+    public async System.Threading.Tasks.Task<Friendship> UpdateAsync(Friendship entity)
     {
-        throw new NotImplementedException();
+        _db.Friendships.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<bool> AcceptAsync(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Friendship not found: " + id);
+        entity.Accept();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> DeclineAsync(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Friendship not found: " + id);
+        entity.Decline();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> BlockAsync(int id)
+    {
+        var entity = await _db.Friendships.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Friendship not found: " + id);
+        entity.Block();
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

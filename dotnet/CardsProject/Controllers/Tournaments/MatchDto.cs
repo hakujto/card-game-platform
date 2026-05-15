@@ -12,5 +12,4 @@ public class MatchDto
     public int? RoundId { get; set; }
     public int? Player1Id { get; set; }
     public int? Player2Id { get; set; }
-    public int? GamesId { get; set; }
 }

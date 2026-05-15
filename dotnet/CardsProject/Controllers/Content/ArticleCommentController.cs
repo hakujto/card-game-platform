@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CardsProject.Infrastructure;
 using CardsProject.Domain.Content;
+using CardsProject.Services.Content;
 
 namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/article_comments")]
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleCommentController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public ArticleCommentController(AppDbContext db) => _db = db;
 
     [HttpGet]
@@ -30,6 +31,7 @@ public class ArticleCommentController : ControllerBase
         if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
         if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
         if (dto.ParentCommentId is not null) entity.ParentCommentId = dto.ParentCommentId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         _db.ArticleComments.Add(entity);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(Show), new { id = entity.Id }, entity);
@@ -55,6 +57,7 @@ public class ArticleCommentController : ControllerBase
         if (dto.ArticleId is not null) entity.ArticleId = dto.ArticleId;
         if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
         if (dto.ParentCommentId is not null) entity.ParentCommentId = dto.ParentCommentId;
+        if (!TryValidateModel(entity)) return BadRequest(ModelState);
         await _db.SaveChangesAsync();
         return Ok(entity);
     }
@@ -65,6 +68,26 @@ public class ArticleCommentController : ControllerBase
         var entity = await _db.ArticleComments.FindAsync(id);
         if (entity is null) return NotFound();
         _db.ArticleComments.Remove(entity);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/hide")]
+    public async System.Threading.Tasks.Task<IActionResult> Hide(int id)
+    {
+        var entity = await _db.ArticleComments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Hide();
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/unhide")]
+    public async System.Threading.Tasks.Task<IActionResult> Unhide(int id)
+    {
+        var entity = await _db.ArticleComments.FindAsync(id);
+        if (entity is null) return NotFound();
+        entity.Unhide();
         await _db.SaveChangesAsync();
         return NoContent();
     }

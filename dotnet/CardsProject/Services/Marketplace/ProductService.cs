@@ -9,13 +9,50 @@ public class ProductService
 
     public ProductService(AppDbContext db) => _db = db;
 
-    public System.Threading.Tasks.Task<Product> Create(Product entity)
+    public async System.Threading.Tasks.Task<Product> CreateAsync(Product entity)
     {
-        throw new NotImplementedException();
+        _db.Products.Add(entity);
+        await _db.SaveChangesAsync();
+        return entity;
     }
 
-    public System.Threading.Tasks.Task<Product> Update(Product entity)
+    public async System.Threading.Tasks.Task<Product> UpdateAsync(Product entity)
     {
-        throw new NotImplementedException();
+        _db.Products.Update(entity);
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async System.Threading.Tasks.Task<bool> ActivateAsync(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        entity.Activate();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> DeactivateAsync(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        entity.Deactivate();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<decimal> ApplyDiscountAsync(int id, int percent)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        var result = entity.ApplyDiscount(percent);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> RestockAsync(int id, int quantity)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        entity.Restock(quantity);
+        await _db.SaveChangesAsync();
+        return true;
     }
 }

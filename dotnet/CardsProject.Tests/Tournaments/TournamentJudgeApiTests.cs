@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Tournaments;
 using Xunit;
 
 namespace CardsProject.Tests.Tournaments;
@@ -77,7 +78,7 @@ public class TournamentJudgeApiTests : IClassFixture<TournamentJudgeApiTests.Tes
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Role = "test" };
+        var payload = new {  };
         var response = await _client.PatchAsJsonAsync("/api/tournament_judges/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Marketplace;
 using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
@@ -59,9 +60,8 @@ public class OrderItemApiTests : IClassFixture<OrderItemApiTests.TestFactory>
     {
         var payload = new
         {
-        Quantity = 1,
-        PriceAtPurchase = 0.00m,
-        Foil = true
+            Quantity = 1,
+            PriceAtPurchase = 0.00m
         };
         var response = await _client.PostAsJsonAsync("/api/order_items", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -93,5 +93,22 @@ public class OrderItemApiTests : IClassFixture<OrderItemApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_QuantityPositive_Violated()
+    {
+        // Order item quantity must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""OrderId"": 1, ""ProductId"": 1, ""PriceAtPurchase"": 0.00, ""Foil"": true, ""Quantity"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/order_items", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_PriceNotNegative_Violated()
+    {
+        // Price at purchase must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""OrderId"": 1, ""ProductId"": 1, ""Quantity"": 1, ""Foil"": true, ""PriceAtPurchase"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/order_items", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

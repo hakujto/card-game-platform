@@ -1,9 +1,10 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Marketplace;
 
-public class CardPriceHistory
+public class CardPriceHistory : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -17,4 +18,23 @@ public class CardPriceHistory
     public int? CardId { get; set; }
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
+
+    // Business operations
+
+    public decimal PriceChangePercent(decimal previousAvg)
+    {
+        throw new NotImplementedException("price_change_percent not implemented");
+    }
+
+    public bool IsPriceSpike(int thresholdPercent)
+    {
+        throw new NotImplementedException("is_price_spike not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( ((AvgPrice != null && MinPrice <= AvgPrice) && (MaxPrice != null && AvgPrice <= MaxPrice)) ))
+            yield return new ValidationResult("min_price <= avg_price <= max_price must hold", new[] { nameof(Id) });
+    }
 }
