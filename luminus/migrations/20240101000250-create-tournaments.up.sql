@@ -15,9 +15,6 @@ CREATE TABLE IF NOT EXISTS tournaments (
   rules_text TEXT,
   season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE SET NULL,
   organizer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,
-  registrations_id INTEGER REFERENCES tournament_registrations(id) ON DELETE SET NULL,
-  rounds_id INTEGER REFERENCES tournament_rounds(id) ON DELETE SET NULL,
-  prizes_id INTEGER REFERENCES tournament_prizes(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

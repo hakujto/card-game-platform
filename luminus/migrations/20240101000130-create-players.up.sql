@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS players (
   is_verified BOOLEAN NOT NULL DEFAULT 0,
   last_active_at DATETIME,
   user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  season_stats_id INTEGER NOT NULL REFERENCES player_season_statses(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

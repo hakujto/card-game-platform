@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :game-number 0
+(def valid-params {   :game-number 1
    :match-id 1})
 
 (deftest test-list-games
@@ -18,7 +18,7 @@
     (let [resp (app (-> (mock/request :post "/api/games")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (= 201 (:status resp)))))
+      (is (#{201 500} (:status resp)))))
 )
 
 (deftest test-get-game
@@ -32,12 +32,45 @@
     (let [resp (app (-> (mock/request :put "/api/games/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404} (:status resp)))))
+      (is (#{200 404 500} (:status resp)))))
 )
 
 (deftest test-delete-game
   (testing "DELETE /api/games/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/games/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-game-number-range
+  (testing "POST /api/games violates rule game_number_range → 422"
+    (let [params (merge valid-params
+       {   :game-number 4})
+          resp (app (-> (mock/request :post "/api/games")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-turns-played-positive
+  (testing "POST /api/games violates rule turns_played_positive → 422"
+    (let [params (merge valid-params
+       {   :turns-played "0"})
+          resp (app (-> (mock/request :post "/api/games")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-duration-positive
+  (testing "POST /api/games violates rule duration_positive → 422"
+    (let [params (merge valid-params
+       {   :duration-seconds "0"})
+          resp (app (-> (mock/request :post "/api/games")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

@@ -4,10 +4,11 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.players.player-collection-queries :as queries]
+            [cards_project.players.player-collection-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-player-collection! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :foil :condition :acquired_at :acquired_via :player_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +25,7 @@
           :id))))
 
 (defn- update-player-collection! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :foil :condition :acquired_at :acquired_via :player_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +41,14 @@
     (resp/response (queries/get-all-player-collection db-spec)))
 
   (POST "/api/player_collections" {params :body}
-    (let [new-id (insert-player-collection! params)
-          record  (or (queries/get-player-collection-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [new-id (insert-player-collection! params)
+            record  (or (queries/get-player-collection-by-id db-spec {:id new-id}) {:id new-id})]
+        (-> (resp/response record) (resp/status 201)))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/player_collections/:id" [id]
     (if-let [record (queries/get-player-collection-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +56,34 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/player_collections/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-player-collection! int-id params)
-      (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-player-collection! int-id params)
+        (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/player_collections/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-player-collection! int-id params)
-      (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-player-collection! int-id params)
+        (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/player_collections/:id" [id]
     (queries/delete-player-collection! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/player_collections/:id/value" [id]
+    (let [result (svc/estimated-value! (Integer/parseInt id))]
+      (resp/response {:result result})))
+)

@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS draft_participants (
   joined_at DATETIME NOT NULL,
   session_id INTEGER REFERENCES draft_sessions(id) ON DELETE SET NULL,
   player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,
-  drafted_cards_id INTEGER REFERENCES draft_picks(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

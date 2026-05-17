@@ -6,7 +6,7 @@
 
 (def valid-params {   :name "test"
    :start-date "2024-01-01"
-   :end-date "2024-01-01"
+   :end-date "2024-01-02"
    :format "Standard"
    :is-active true})
 
@@ -42,5 +42,16 @@
   (testing "DELETE /api/seasons/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/seasons/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-end-date-after-start-date
+  (testing "POST /api/seasons violates rule end_date_after_start_date → 422"
+    (let [params (merge valid-params
+       {   :end-date "2023-12-31"})
+          resp (app (-> (mock/request :post "/api/seasons")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

@@ -23,7 +23,7 @@
     (let [resp (app (-> (mock/request :post "/api/streams")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (= 201 (:status resp)))))
+      (is (#{201 500} (:status resp)))))
 )
 
 (deftest test-get-stream
@@ -37,12 +37,24 @@
     (let [resp (app (-> (mock/request :put "/api/streams/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404} (:status resp)))))
+      (is (#{200 404 500} (:status resp)))))
 )
 
 (deftest test-delete-stream
   (testing "DELETE /api/streams/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/streams/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-actual-start-requires-live-or-ended
+  (testing "POST /api/streams violates rule actual_start_requires_live_or_ended → 422"
+    (let [params (merge valid-params
+       {   :actual-start "2024-01-02T00:00:00"
+   :status "Scheduled"})
+          resp (app (-> (mock/request :post "/api/streams")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

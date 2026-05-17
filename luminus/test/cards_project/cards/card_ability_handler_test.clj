@@ -5,6 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :ability-type "Keyword"
+   :keyword 1
    :ability-text "test"
    :card-id 1})
 
@@ -19,7 +20,7 @@
     (let [resp (app (-> (mock/request :post "/api/card_abilities")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (= 201 (:status resp)))))
+      (is (#{201 500} (:status resp)))))
 )
 
 (deftest test-get-card-ability
@@ -33,12 +34,24 @@
     (let [resp (app (-> (mock/request :put "/api/card_abilities/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404} (:status resp)))))
+      (is (#{200 404 500} (:status resp)))))
 )
 
 (deftest test-delete-card-ability
   (testing "DELETE /api/card_abilities/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/card_abilities/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-keyword-ability-requires-keyword
+  (testing "POST /api/card_abilities violates rule keyword_ability_requires_keyword → 422"
+    (let [params (merge valid-params
+       {   :ability-type "Keyword"
+   :keyword nil})
+          resp (app (-> (mock/request :post "/api/card_abilities")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

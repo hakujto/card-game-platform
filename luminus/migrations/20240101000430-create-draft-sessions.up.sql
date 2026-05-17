@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
   seats INTEGER NOT NULL DEFAULT 8,
   completed_at DATETIME,
   card_set_id INTEGER NOT NULL REFERENCES card_sets(id) ON DELETE SET NULL,
-  participants_id INTEGER NOT NULL REFERENCES draft_participants(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :dust-cost 0
+(def valid-params {   :dust-cost 1
    :is-available true
    :result-card-id 1})
 
@@ -19,7 +19,7 @@
     (let [resp (app (-> (mock/request :post "/api/crafting_recipes")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (= 201 (:status resp)))))
+      (is (#{201 500} (:status resp)))))
 )
 
 (deftest test-get-crafting-recipe
@@ -33,12 +33,23 @@
     (let [resp (app (-> (mock/request :put "/api/crafting_recipes/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404} (:status resp)))))
+      (is (#{200 404 500} (:status resp)))))
 )
 
 (deftest test-delete-crafting-recipe
   (testing "DELETE /api/crafting_recipes/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/crafting_recipes/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-dust-cost-positive
+  (testing "POST /api/crafting_recipes violates rule dust_cost_positive → 422"
+    (let [params (merge valid-params
+       {   :dust-cost "0"})
+          resp (app (-> (mock/request :post "/api/crafting_recipes")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

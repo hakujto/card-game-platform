@@ -4,11 +4,22 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.content.article-queries :as queries]
+            [cards_project.content.article-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- article-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- validate-article-implies! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :status) "Published") (not (some? (get m :published_at))))
+      (swap! errors conj "Published article must have a published_at timestamp"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-article! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id :comments_id}
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
+        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -24,8 +35,8 @@
           :id))))
 
 (defn- update-article! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id :comments_id}
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
+        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -40,9 +51,16 @@
     (resp/response (queries/get-all-article db-spec)))
 
   (POST "/api/articles" {params :body}
-    (let [new-id (insert-article! params)
-          record  (or (queries/get-article-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [kw (article-kw-params params)]
+        (validate-article-implies! kw)
+        (let [new-id (insert-article! params)
+              record  (or (queries/get-article-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/articles/:id" [id]
     (if-let [record (queries/get-article-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +68,46 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/articles/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-article! int-id params)
-      (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (article-kw-params params)]
+        (validate-article-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-article! int-id params)
+          (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/articles/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-article! int-id params)
-      (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (article-kw-params params)]
+        (validate-article-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-article! int-id params)
+          (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/articles/:id" [id]
     (queries/delete-article! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/articles/:id/publish" [id]
+    (svc/publish! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/articles/:id/archive" [id]
+    (svc/archive! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/articles/:id/view" [id]
+    (svc/increment-view! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+)

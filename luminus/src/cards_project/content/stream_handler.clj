@@ -4,10 +4,21 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.content.stream-queries :as queries]
+            [cards_project.content.stream-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- stream-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- validate-stream-implies! [m]
+  (let [errors (atom [])]
+    (when (and (some? (get m :actual_start)) (not (= (get m :status) "Live")))
+      (swap! errors conj "actual_start_requires_live_or_ended"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-stream! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:title :stream_url :platform :status :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +35,7 @@
           :id))))
 
 (defn- update-stream! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:title :stream_url :platform :status :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +51,16 @@
     (resp/response (queries/get-all-stream db-spec)))
 
   (POST "/api/streams" {params :body}
-    (let [new-id (insert-stream! params)
-          record  (or (queries/get-stream-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [kw (stream-kw-params params)]
+        (validate-stream-implies! kw)
+        (let [new-id (insert-stream! params)
+              record  (or (queries/get-stream-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/streams/:id" [id]
     (if-let [record (queries/get-stream-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +68,48 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/streams/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-stream! int-id params)
-      (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (stream-kw-params params)]
+        (validate-stream-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-stream! int-id params)
+          (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/streams/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-stream! int-id params)
-      (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (stream-kw-params params)]
+        (validate-stream-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-stream! int-id params)
+          (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/streams/:id" [id]
     (queries/delete-stream! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/streams/:id/live" [id]
+    (svc/go-live! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/streams/:id/end" [id]
+    (svc/end! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/streams/:id/viewers" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        count (get params :count)]
+      (svc/update-viewer-peak! int-id count)
+      (-> (resp/response nil) (resp/status 204))))
+)

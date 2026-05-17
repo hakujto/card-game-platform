@@ -6,7 +6,7 @@
 
 (def valid-params {   :name "test"
    :product-type "SingleCard"
-   :price 0.00M
+   :price "0.00"
    :stock 0
    :active true
    :discount-percent 0

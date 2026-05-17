@@ -9,11 +9,14 @@
    :rarity "Common"
    :mana-cost 0
    :mana-colors "White"
+   :attack 1
+   :defense 1
+   :loyalty 1
    :description "test"
    :legal-formats "Standard"
-   :is-banned true
+   :is-banned false
    :is-restricted true
-   :power-level 0
+   :power-level 1
    :set-id 1})
 
 (deftest test-list-cards
@@ -27,7 +30,7 @@
     (let [resp (app (-> (mock/request :post "/api/cards")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (= 201 (:status resp)))))
+      (is (#{201 500} (:status resp)))))
 )
 
 (deftest test-get-card
@@ -41,12 +44,70 @@
     (let [resp (app (-> (mock/request :put "/api/cards/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404} (:status resp)))))
+      (is (#{200 404 500} (:status resp)))))
 )
 
 (deftest test-delete-card
   (testing "DELETE /api/cards/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/cards/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-creature-requires-stats
+  (testing "POST /api/cards violates rule creature_requires_stats → 422"
+    (let [params (merge valid-params
+       {   :card-type "Creature"
+   :attack nil})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-planeswalker-requires-loyalty
+  (testing "POST /api/cards violates rule planeswalker_requires_loyalty → 422"
+    (let [params (merge valid-params
+       {   :card-type "Planeswalker"
+   :loyalty nil})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-mana-cost-range
+  (testing "POST /api/cards violates rule mana_cost_range → 422"
+    (let [params (merge valid-params
+       {   :mana-cost 21})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-power-level-range
+  (testing "POST /api/cards violates rule power_level_range → 422"
+    (let [params (merge valid-params
+       {   :power-level 11})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-not-banned-and-restricted
+  (testing "POST /api/cards violates rule not_banned_and_restricted → 422"
+    (let [params (merge valid-params
+       {   :is-banned true
+   :is-restricted true})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

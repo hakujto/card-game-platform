@@ -23,7 +23,9 @@
              :main-opts   ["-m" "cards_project.migrate" "rollback"]}
 
   :test {:extra-paths ["test"]
-         :extra-deps  {ring/ring-mock {:mvn/version "0.4.0"}}}
+         :extra-deps  {ring/ring-mock                    {:mvn/version "0.4.0"}
+                       io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts   ["-m" "cognitect.test-runner" "-d" "test"]}
 
   :uberjar {:extra-deps {org.clojure/tools.build {:mvn/version "0.10.5"}}
             :main-opts ["-m" "build" "uber"]}}}

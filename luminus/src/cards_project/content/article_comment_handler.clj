@@ -4,10 +4,11 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.content.article-comment-queries :as queries]
+            [cards_project.content.article-comment-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-article-comment! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:body :is_hidden :article_id :author_id :parent_comment_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +25,7 @@
           :id))))
 
 (defn- update-article-comment! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:body :is_hidden :article_id :author_id :parent_comment_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +41,14 @@
     (resp/response (queries/get-all-article-comment db-spec)))
 
   (POST "/api/article_comments" {params :body}
-    (let [new-id (insert-article-comment! params)
-          record  (or (queries/get-article-comment-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [new-id (insert-article-comment! params)
+            record  (or (queries/get-article-comment-by-id db-spec {:id new-id}) {:id new-id})]
+        (-> (resp/response record) (resp/status 201)))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/article_comments/:id" [id]
     (if-let [record (queries/get-article-comment-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +56,38 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/article_comments/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-article-comment! int-id params)
-      (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-article-comment! int-id params)
+        (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/article_comments/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-article-comment! int-id params)
-      (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-article-comment! int-id params)
+        (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/article_comments/:id" [id]
     (queries/delete-article-comment! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/article_comments/:id/hide" [id]
+    (svc/hide! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/article_comments/:id/unhide" [id]
+    (svc/unhide! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+)

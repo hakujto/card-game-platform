@@ -4,11 +4,12 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.content.draft-participant-queries :as queries]
+            [cards_project.content.draft-participant-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-draft-participant! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
-        allowed  #{:seat_number :joined_at :session_id :player_id :drafted_cards_id}
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
+        allowed  #{:seat_number :joined_at :session_id :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -24,8 +25,8 @@
           :id))))
 
 (defn- update-draft-participant! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
-        allowed  #{:seat_number :joined_at :session_id :player_id :drafted_cards_id}
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
+        allowed  #{:seat_number :joined_at :session_id :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -40,9 +41,14 @@
     (resp/response (queries/get-all-draft-participant db-spec)))
 
   (POST "/api/draft_participants" {params :body}
-    (let [new-id (insert-draft-participant! params)
-          record  (or (queries/get-draft-participant-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [new-id (insert-draft-participant! params)
+            record  (or (queries/get-draft-participant-by-id db-spec {:id new-id}) {:id new-id})]
+        (-> (resp/response record) (resp/status 201)))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/draft_participants/:id" [id]
     (if-let [record (queries/get-draft-participant-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +56,37 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/draft_participants/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-draft-participant! int-id params)
-      (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-draft-participant! int-id params)
+        (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/draft_participants/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-draft-participant! int-id params)
-      (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-draft-participant! int-id params)
+        (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/draft_participants/:id" [id]
     (queries/delete-draft-participant! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/draft_participants/:id/pick" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        card-id (get params :card-id)
+        pack-number (get params :pack-number)]
+      (svc/pick-card! int-id card-id pack-number)
+      (-> (resp/response nil) (resp/status 204))))
+)

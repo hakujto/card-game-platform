@@ -4,10 +4,11 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.cards.deck-tag-queries :as queries]
+            [cards_project.cards.deck-tag-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-deck-tag! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:name :color}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +25,7 @@
           :id))))
 
 (defn- update-deck-tag! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:name :color}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +41,14 @@
     (resp/response (queries/get-all-deck-tag db-spec)))
 
   (POST "/api/deck_tags" {params :body}
-    (let [new-id (insert-deck-tag! params)
-          record  (or (queries/get-deck-tag-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [new-id (insert-deck-tag! params)
+            record  (or (queries/get-deck-tag-by-id db-spec {:id new-id}) {:id new-id})]
+        (-> (resp/response record) (resp/status 201)))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/deck_tags/:id" [id]
     (if-let [record (queries/get-deck-tag-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +56,36 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/deck_tags/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-deck-tag! int-id params)
-      (if-let [record (queries/get-deck-tag-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-deck-tag! int-id params)
+        (if-let [record (queries/get-deck-tag-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/deck_tags/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-deck-tag! int-id params)
-      (if-let [record (queries/get-deck-tag-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-deck-tag! int-id params)
+        (if-let [record (queries/get-deck-tag-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/deck_tags/:id" [id]
     (queries/delete-deck-tag! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/deck_tags/:id/merge" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        target-tag-id (get params :target-tag-id)]
+      (svc/merge-into! int-id target-tag-id)
+      (-> (resp/response nil) (resp/status 204))))
+)

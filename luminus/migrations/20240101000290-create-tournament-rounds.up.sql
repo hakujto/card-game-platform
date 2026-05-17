@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS tournament_rounds (
   ended_at DATETIME,
   time_limit_minutes INTEGER NOT NULL DEFAULT 50,
   tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE SET NULL,
-  matches_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

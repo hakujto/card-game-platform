@@ -7,7 +7,7 @@
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-tournament-judge! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:role :tournament_id :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +24,7 @@
           :id))))
 
 (defn- update-tournament-judge! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:role :tournament_id :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +40,14 @@
     (resp/response (queries/get-all-tournament-judge db-spec)))
 
   (POST "/api/tournament_judges" {params :body}
-    (let [new-id (insert-tournament-judge! params)
-          record  (or (queries/get-tournament-judge-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [new-id (insert-tournament-judge! params)
+            record  (or (queries/get-tournament-judge-by-id db-spec {:id new-id}) {:id new-id})]
+        (-> (resp/response record) (resp/status 201)))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/tournament_judges/:id" [id]
     (if-let [record (queries/get-tournament-judge-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +55,30 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/tournament_judges/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-tournament-judge! int-id params)
-      (if-let [record (queries/get-tournament-judge-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-tournament-judge! int-id params)
+        (if-let [record (queries/get-tournament-judge-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/tournament_judges/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-tournament-judge! int-id params)
-      (if-let [record (queries/get-tournament-judge-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [int-id (Integer/parseInt id)]
+        (update-tournament-judge! int-id params)
+        (if-let [record (queries/get-tournament-judge-by-id db-spec {:id int-id})]
+          (resp/response record)
+          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/tournament_judges/:id" [id]
     (queries/delete-tournament-judge! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+)

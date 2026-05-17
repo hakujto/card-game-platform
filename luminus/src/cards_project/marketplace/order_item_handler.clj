@@ -6,8 +6,22 @@
             [cards_project.marketplace.order-item-queries :as queries]
             [cards_project.db :refer [db-spec]]))
 
+(defn- order-item-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-order-item-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :quantity)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Order item quantity must be greater than zero"))
+    (when-not (let [v (get m :price_at_purchase)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Price at purchase must not be negative"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-order-item! [params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :price_at_purchase :foil :order_id :product_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -24,7 +38,7 @@
           :id))))
 
 (defn- update-order-item! [id params]
-  (let [kw-params (into {} (map (fn [[k v]] [(keyword (name k)) v]) params))
+  (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :price_at_purchase :foil :order_id :product_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
@@ -40,9 +54,16 @@
     (resp/response (queries/get-all-order-item db-spec)))
 
   (POST "/api/order_items" {params :body}
-    (let [new-id (insert-order-item! params)
-          record  (or (queries/get-order-item-by-id db-spec {:id new-id}) {:id new-id})]
-      (-> (resp/response record) (resp/status 201))))
+    (try
+      (let [kw (order-item-kw-params params)]
+        (validate-order-item-rules! kw)
+        (let [new-id (insert-order-item! params)
+              record  (or (queries/get-order-item-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (GET "/api/order_items/:id" [id]
     (if-let [record (queries/get-order-item-by-id db-spec {:id (Integer/parseInt id)})]
@@ -50,19 +71,34 @@
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/order_items/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-order-item! int-id params)
-      (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (order-item-kw-params params)]
+        (validate-order-item-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-order-item! int-id params)
+          (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/order_items/:id" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)]
-      (update-order-item! int-id params)
-      (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
-        (resp/response record)
-        (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+    (try
+      (let [kw (order-item-kw-params params)]
+        (validate-order-item-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-order-item! int-id params)
+          (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (catch clojure.lang.ExceptionInfo e
+        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/order_items/:id" [id]
     (queries/delete-order-item! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204))))
+    (-> (resp/response nil) (resp/status 204)))
+)

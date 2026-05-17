@@ -126,5 +126,29 @@ Base URL: `http://localhost:3000`
 ## Tests
 
 ```bash
-clojure -M:test -m cognitect.test-runner
+clojure -M:test
 ```
+
+## Architecture
+
+Stack: **Clojure + Compojure + http-kit + HugSQL + next.jdbc + Migratus + SQLite**
+
+Bounded Contexts:
+
+- **Cards BC** (`src/cards_project/cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
+- **Players BC** (`src/cards_project/players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
+- **Tournaments BC** (`src/cards_project/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
+- **Marketplace BC** (`src/cards_project/marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Content BC** (`src/cards_project/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 3000:3000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up Clojure CLI + Java 21, runs Migratus migrations, and executes the test suite via cognitect.test-runner.
