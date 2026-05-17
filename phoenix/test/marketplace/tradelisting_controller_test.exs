@@ -1,13 +1,10 @@
 defmodule CardsProjectWeb.Marketplace.TradelistingControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "listing_type" => "test",
     "foil" => true,
-    "condition" => "test",
     "quantity" => 0,
-    "status" => "test",
     "created_at" => ~N[2024-01-01 00:00:00],
     "listing_type" => "FixedPrice",
     "condition" => "Mint",

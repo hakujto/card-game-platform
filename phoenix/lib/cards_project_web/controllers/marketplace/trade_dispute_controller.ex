@@ -48,6 +48,25 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/disputes/{id}/escalate
+  def escalate(conn, %{"id" => id}) do
+    Marketplace.trade_dispute_escalate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/disputes/{id}/resolve
+  def resolve(conn, %{"id" => id} = params) do
+    resolution_text = Map.get(params, "resolution_text")
+    Marketplace.trade_dispute_resolve_behavior(id, resolution_text)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/disputes/{id}/review
+  def review(conn, %{"id" => id}) do
+    Marketplace.trade_dispute_review_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_trade_dispute(%TradeDispute{} = record) do
     Map.take(record, [:id, :reason, :description, :status, :resolution, :opened_at, :resolved_at, :transaction_id, :opened_by_id, :resolved_by_id])
   end

@@ -14,6 +14,5 @@ defmodule CardsProject.Repo.Migrations.CreateDraftSessions do
       timestamps()
     end
     create index(:draft_sessions, [:card_set_id])
-    create index(:draft_sessions, [:participants_id])
   end
 end

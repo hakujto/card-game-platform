@@ -22,4 +22,11 @@ defmodule CardsProject.Tournaments.TournamentPrize do
     |> validate_required([:placement_from, :placement_to, :amount, :season_points])
     |> validate_inclusion(:prize_type, ["Currency", "Cards", "BoosterPacks", "Trophy", "SeasonPoints", "Mixed"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def applies_to_placement(_record, _placement) do
+    # TODO: implement TournamentPrize.applies_to_placement
+    {:error, :not_implemented}
+  end
 end

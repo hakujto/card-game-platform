@@ -1,12 +1,10 @@
 defmodule CardsProjectWeb.Cards.CardAbilityControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "ability_type" => "test",
     "ability_text" => "test",
-    "ability_type" => "Keyword",
-    "timing" => "Any"
+    "ability_type" => "Keyword"
   }
 
   describe "GET /api/card_abilities" do

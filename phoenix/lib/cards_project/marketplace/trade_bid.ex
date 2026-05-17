@@ -18,4 +18,11 @@ defmodule CardsProject.Marketplace.TradeBid do
     |> cast(attrs, [:amount, :placed_at, :is_winning, :listing_id, :bidder_id])
     |> validate_required([:amount, :placed_at, :is_winning])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def outbid_by(_record, _new_amount) do
+    # TODO: implement TradeBid.outbid_by
+    {:error, :not_implemented}
+  end
 end

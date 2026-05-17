@@ -1,13 +1,11 @@
 defmodule CardsProjectWeb.Content.ArticleControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "title" => "test",
     "slug" => "test",
     "body" => "test",
-    "status" => "test",
-    "article_type" => "test",
     "view_count" => 0,
     "created_at" => ~N[2024-01-01 00:00:00],
     "updated_at" => ~N[2024-01-01 00:00:00],

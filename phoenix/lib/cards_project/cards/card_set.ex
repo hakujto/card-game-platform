@@ -21,4 +21,11 @@ defmodule CardsProject.Cards.CardSet do
     |> validate_required([:name, :code, :release_date, :total_cards])
     |> validate_inclusion(:set_type, ["Core", "Expansion", "Supplemental", "Masters", "Draft"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def is_legal_in_standard(_record) do
+    # TODO: implement CardSet.is_legal_in_standard
+    {:error, :not_implemented}
+  end
 end

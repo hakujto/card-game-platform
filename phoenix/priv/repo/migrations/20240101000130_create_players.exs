@@ -20,6 +20,5 @@ defmodule CardsProject.Repo.Migrations.CreatePlayers do
       timestamps()
     end
     create index(:players, [:user_id])
-    create index(:players, [:season_stats_id])
   end
 end

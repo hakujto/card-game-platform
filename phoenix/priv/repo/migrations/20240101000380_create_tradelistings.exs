@@ -23,6 +23,5 @@ defmodule CardsProject.Repo.Migrations.CreateTradelistings do
     end
     create index(:tradelistings, [:seller_id])
     create index(:tradelistings, [:card_id])
-    create index(:tradelistings, [:bids_id])
   end
 end

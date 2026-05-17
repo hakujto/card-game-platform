@@ -1,5 +1,5 @@
 defmodule CardsProjectWeb.Players.PlayerSeasonStatsControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
@@ -7,8 +7,7 @@ defmodule CardsProjectWeb.Players.PlayerSeasonStatsControllerTest do
     "losses" => 0,
     "draws" => 0,
     "tournament_wins" => 0,
-    "season_points" => 0,
-    "highest_rank" => "Bronze"
+    "season_points" => 0
   }
 
   describe "GET /api/player_season_statses" do

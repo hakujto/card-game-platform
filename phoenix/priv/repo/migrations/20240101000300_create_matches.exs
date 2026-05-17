@@ -20,6 +20,5 @@ defmodule CardsProject.Repo.Migrations.CreateMatches do
     create index(:matches, [:round_id])
     create index(:matches, [:player1_id])
     create index(:matches, [:player2_id])
-    create index(:matches, [:games_id])
   end
 end

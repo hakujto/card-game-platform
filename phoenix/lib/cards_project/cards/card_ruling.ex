@@ -17,4 +17,16 @@ defmodule CardsProject.Cards.CardRuling do
     |> cast(attrs, [:ruling_text, :published_at, :source, :card_id])
     |> validate_required([:ruling_text, :published_at, :source])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def is_current(_record) do
+    # TODO: implement CardRuling.is_current
+    {:error, :not_implemented}
+  end
+
+  def supersedes_previous(_record) do
+    # TODO: implement CardRuling.supersedes_previous
+    {:error, :not_implemented}
+  end
 end

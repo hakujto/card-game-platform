@@ -48,6 +48,36 @@ defmodule CardsProjectWeb.Cards.DeckController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/decks/{id}/validate
+  def validate_size(conn, %{"id" => id}) do
+    result = Cards.deck_validate_size_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/decks/{id}/clone
+  def clone(conn, %{"id" => id}) do
+    result = Cards.deck_clone_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/decks/{id}/publish
+  def publish(conn, %{"id" => id}) do
+    Cards.deck_publish_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/decks/{id}/unpublish
+  def unpublish(conn, %{"id" => id}) do
+    Cards.deck_unpublish_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/decks/{id}/certify
+  def certify_tournament_legal(conn, %{"id" => id}) do
+    result = Cards.deck_certify_tournament_legal_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_deck(%Deck{} = record) do
     Map.take(record, [:id, :name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id])
   end

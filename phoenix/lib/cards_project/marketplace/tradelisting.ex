@@ -25,10 +25,37 @@ defmodule CardsProject.Marketplace.Tradelisting do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:foil, :quantity, :created_at, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :status, :description, :expires_at, :seller_id, :card_id, :bids_id])
+    |> cast(attrs, [:foil, :quantity, :created_at, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :status, :description, :expires_at, :seller_id, :card_id])
     |> validate_required([:foil, :quantity, :created_at])
     |> validate_inclusion(:listing_type, ["FixedPrice", "Auction", "TradeOffer"])
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
     |> validate_inclusion(:status, ["Active", "Sold", "Expired", "Cancelled", "Pending"])
+  end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def close(_record) do
+    # TODO: implement Tradelisting.close
+    :ok
+  end
+
+  def extend(_record, _days) do
+    # TODO: implement Tradelisting.extend
+    :ok
+  end
+
+  def cancel(_record) do
+    # TODO: implement Tradelisting.cancel
+    :ok
+  end
+
+  def is_expired(_record) do
+    # TODO: implement Tradelisting.is_expired
+    {:error, :not_implemented}
+  end
+
+  def finalize_auction(_record) do
+    # TODO: implement Tradelisting.finalize_auction
+    :ok
   end
 end

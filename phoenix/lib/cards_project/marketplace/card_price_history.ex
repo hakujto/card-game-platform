@@ -20,4 +20,16 @@ defmodule CardsProject.Marketplace.CardPriceHistory do
     |> cast(attrs, [:price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id])
     |> validate_required([:price_date, :avg_price, :min_price, :max_price, :volume, :foil])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def price_change_percent(_record, _previous_avg) do
+    # TODO: implement CardPriceHistory.price_change_percent
+    {:error, :not_implemented}
+  end
+
+  def is_price_spike(_record, _threshold_percent) do
+    # TODO: implement CardPriceHistory.is_price_spike
+    {:error, :not_implemented}
+  end
 end

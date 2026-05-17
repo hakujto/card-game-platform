@@ -28,4 +28,31 @@ defmodule CardsProject.Cards.Deck do
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:archetype, ["Aggro", "Control", "Midrange", "Combo", "Prison", "Tempo"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def validate_size(_record) do
+    # TODO: implement Deck.validate_size
+    {:error, :not_implemented}
+  end
+
+  def clone(_record) do
+    # TODO: implement Deck.clone
+    {:error, :not_implemented}
+  end
+
+  def publish(_record) do
+    # TODO: implement Deck.publish
+    :ok
+  end
+
+  def unpublish(_record) do
+    # TODO: implement Deck.unpublish
+    :ok
+  end
+
+  def certify_tournament_legal(_record) do
+    # TODO: implement Deck.certify_tournament_legal
+    {:error, :not_implemented}
+  end
 end

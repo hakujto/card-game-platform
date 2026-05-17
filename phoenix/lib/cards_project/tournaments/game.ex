@@ -23,4 +23,16 @@ defmodule CardsProject.Tournaments.Game do
     |> validate_inclusion(:winner_side, ["Player1", "Player2", "Draw"])
     |> validate_inclusion(:ended_by, ["Normal", "Timeout", "Concession", "DrawOffer"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def record_winner(_record, _winner_side) do
+    # TODO: implement Game.record_winner
+    :ok
+  end
+
+  def duration_minutes(_record) do
+    # TODO: implement Game.duration_minutes
+    {:error, :not_implemented}
+  end
 end

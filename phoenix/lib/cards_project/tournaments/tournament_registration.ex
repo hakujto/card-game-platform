@@ -22,4 +22,21 @@ defmodule CardsProject.Tournaments.TournamentRegistration do
     |> validate_required([:points_earned, :registered_at])
     |> validate_inclusion(:status, ["Registered", "Waitlisted", "Withdrawn", "Disqualified"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def withdraw(_record) do
+    # TODO: implement TournamentRegistration.withdraw
+    :ok
+  end
+
+  def disqualify(_record, _reason) do
+    # TODO: implement TournamentRegistration.disqualify
+    :ok
+  end
+
+  def promote_from_waitlist(_record) do
+    # TODO: implement TournamentRegistration.promote_from_waitlist
+    :ok
+  end
 end

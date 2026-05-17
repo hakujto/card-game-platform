@@ -22,4 +22,21 @@ defmodule CardsProject.Players.PlayerCollection do
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
     |> validate_inclusion(:acquired_via, ["Purchase", "Trade", "TournamentReward", "Pack", "Craft"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def add(_record, _quantity) do
+    # TODO: implement PlayerCollection.add
+    :ok
+  end
+
+  def remove(_record, _quantity) do
+    # TODO: implement PlayerCollection.remove
+    :ok
+  end
+
+  def estimated_value(_record) do
+    # TODO: implement PlayerCollection.estimated_value
+    {:error, :not_implemented}
+  end
 end

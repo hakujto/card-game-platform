@@ -27,8 +27,5 @@ defmodule CardsProject.Repo.Migrations.CreateTournaments do
     end
     create index(:tournaments, [:season_id])
     create index(:tournaments, [:organizer_id])
-    create index(:tournaments, [:registrations_id])
-    create index(:tournaments, [:rounds_id])
-    create index(:tournaments, [:prizes_id])
   end
 end

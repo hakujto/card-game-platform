@@ -1,12 +1,10 @@
 defmodule CardsProjectWeb.Content.StreamControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "title" => "test",
     "stream_url" => "https://example.com",
-    "platform" => "test",
-    "status" => "test",
     "viewer_count_peak" => 0,
     "scheduled_start" => ~N[2024-01-01 00:00:00],
     "platform" => "Twitch",

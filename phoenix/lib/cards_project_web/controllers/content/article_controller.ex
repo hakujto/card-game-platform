@@ -48,6 +48,24 @@ defmodule CardsProjectWeb.Content.ArticleController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/articles/{id}/publish
+  def publish(conn, %{"id" => id}) do
+    Content.article_publish_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/articles/{id}/archive
+  def archive(conn, %{"id" => id}) do
+    Content.article_archive_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/articles/{id}/view
+  def increment_view(conn, %{"id" => id}) do
+    Content.article_increment_view_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_article(%Article{} = record) do
     Map.take(record, [:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :view_count, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
   end

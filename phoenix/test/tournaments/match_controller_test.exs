@@ -1,9 +1,8 @@
 defmodule CardsProjectWeb.Tournaments.MatchControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "status" => "test",
     "player1_wins" => 0,
     "player2_wins" => 0,
     "status" => "Pending"

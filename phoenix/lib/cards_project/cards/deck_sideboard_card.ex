@@ -16,4 +16,16 @@ defmodule CardsProject.Cards.DeckSideboardCard do
     |> cast(attrs, [:quantity, :deck_id, :card_id])
     |> validate_required([:quantity])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def increment(_record, _amount) do
+    # TODO: implement DeckSideboardCard.increment
+    :ok
+  end
+
+  def decrement(_record, _amount) do
+    # TODO: implement DeckSideboardCard.decrement
+    :ok
+  end
 end

@@ -48,6 +48,24 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/draft-sessions/{id}/start
+  def start(conn, %{"id" => id}) do
+    Content.draft_session_start_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/draft-sessions/{id}/abandon
+  def abandon(conn, %{"id" => id}) do
+    Content.draft_session_abandon_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/draft-sessions/{id}/complete
+  def complete(conn, %{"id" => id}) do
+    Content.draft_session_complete_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_draft_session(%DraftSession{} = record) do
     Map.take(record, [:id, :status, :draft_type, :seats, :created_at, :completed_at, :card_set_id, :participants_id])
   end

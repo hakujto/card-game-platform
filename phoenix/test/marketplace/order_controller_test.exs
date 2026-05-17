@@ -1,15 +1,13 @@
 defmodule CardsProjectWeb.Marketplace.OrderControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "status" => "test",
     "total" => "0.00",
     "discount_applied" => "0.00",
     "currency" => "test",
     "created_at" => ~N[2024-01-01 00:00:00],
-    "status" => "Pending",
-    "payment_method" => "Card"
+    "status" => "Pending"
   }
 
   describe "GET /api/orders" do

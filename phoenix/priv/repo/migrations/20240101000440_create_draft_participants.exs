@@ -13,6 +13,5 @@ defmodule CardsProject.Repo.Migrations.CreateDraftParticipants do
     end
     create index(:draft_participants, [:session_id])
     create index(:draft_participants, [:player_id])
-    create index(:draft_participants, [:drafted_cards_id])
   end
 end

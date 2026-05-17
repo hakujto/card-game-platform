@@ -1,10 +1,9 @@
 defmodule CardsProjectWeb.Marketplace.CouponControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "code" => "test",
-    "discount_type" => "test",
     "discount_value" => "0.00",
     "min_order_value" => "0.00",
     "uses_count" => 0,

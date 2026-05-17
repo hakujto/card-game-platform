@@ -39,6 +39,24 @@ defmodule CardsProject.Content do
     DraftSession.changeset(draft_session, attrs)
   end
 
+  def draft_session_start_behavior(id) do
+    draft_session = Repo.get!(DraftSession, id)
+    DraftSession.start(draft_session)
+    Repo.update!(DraftSession.changeset(draft_session, %{}))
+  end
+
+  def draft_session_abandon_behavior(id) do
+    draft_session = Repo.get!(DraftSession, id)
+    DraftSession.abandon(draft_session)
+    Repo.update!(DraftSession.changeset(draft_session, %{}))
+  end
+
+  def draft_session_complete_behavior(id) do
+    draft_session = Repo.get!(DraftSession, id)
+    DraftSession.complete(draft_session)
+    Repo.update!(DraftSession.changeset(draft_session, %{}))
+  end
+
   # ── DraftParticipant ─────────────────────────────────────────────────────
 
   def list_draft_participants, do: Repo.all(DraftParticipant)
@@ -61,6 +79,12 @@ defmodule CardsProject.Content do
 
   def change_draft_participant(%DraftParticipant{} = draft_participant, attrs \\ %{}) do
     DraftParticipant.changeset(draft_participant, attrs)
+  end
+
+  def draft_participant_pick_card_behavior(id, card_id, pack_number) do
+    draft_participant = Repo.get!(DraftParticipant, id)
+    DraftParticipant.pick_card(draft_participant, card_id, pack_number)
+    Repo.update!(DraftParticipant.changeset(draft_participant, %{}))
   end
 
   # ── DraftPick ─────────────────────────────────────────────────────
@@ -109,6 +133,24 @@ defmodule CardsProject.Content do
 
   def change_article(%Article{} = article, attrs \\ %{}) do
     Article.changeset(article, attrs)
+  end
+
+  def article_publish_behavior(id) do
+    article = Repo.get!(Article, id)
+    Article.publish(article)
+    Repo.update!(Article.changeset(article, %{}))
+  end
+
+  def article_archive_behavior(id) do
+    article = Repo.get!(Article, id)
+    Article.archive(article)
+    Repo.update!(Article.changeset(article, %{}))
+  end
+
+  def article_increment_view_behavior(id) do
+    article = Repo.get!(Article, id)
+    Article.increment_view(article)
+    Repo.update!(Article.changeset(article, %{}))
   end
 
   # ── ArticleTag ─────────────────────────────────────────────────────
@@ -183,6 +225,18 @@ defmodule CardsProject.Content do
     ArticleComment.changeset(article_comment, attrs)
   end
 
+  def article_comment_hide_behavior(id) do
+    article_comment = Repo.get!(ArticleComment, id)
+    ArticleComment.hide(article_comment)
+    Repo.update!(ArticleComment.changeset(article_comment, %{}))
+  end
+
+  def article_comment_unhide_behavior(id) do
+    article_comment = Repo.get!(ArticleComment, id)
+    ArticleComment.unhide(article_comment)
+    Repo.update!(ArticleComment.changeset(article_comment, %{}))
+  end
+
   # ── Stream ─────────────────────────────────────────────────────
 
   def list_streams, do: Repo.all(Stream)
@@ -205,6 +259,24 @@ defmodule CardsProject.Content do
 
   def change_stream(%Stream{} = stream, attrs \\ %{}) do
     Stream.changeset(stream, attrs)
+  end
+
+  def stream_go_live_behavior(id) do
+    stream = Repo.get!(Stream, id)
+    Stream.go_live(stream)
+    Repo.update!(Stream.changeset(stream, %{}))
+  end
+
+  def stream_end_action_behavior(id) do
+    stream = Repo.get!(Stream, id)
+    Stream.end_action(stream)
+    Repo.update!(Stream.changeset(stream, %{}))
+  end
+
+  def stream_update_viewer_peak_behavior(id, count) do
+    stream = Repo.get!(Stream, id)
+    Stream.update_viewer_peak(stream, count)
+    Repo.update!(Stream.changeset(stream, %{}))
   end
 
 end

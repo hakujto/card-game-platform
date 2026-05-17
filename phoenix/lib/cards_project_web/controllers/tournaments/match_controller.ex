@@ -48,6 +48,26 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/matches/{id}/record
+  def record_result(conn, %{"id" => id} = params) do
+    p1_wins = Map.get(params, "p1_wins")
+    p2_wins = Map.get(params, "p2_wins")
+    Tournaments.match_record_result_behavior(id, p1_wins, p2_wins)
+    send_resp(conn, :no_content, "")
+  end
+
+  # GET /api/matches/{id}/winner
+  def determine_winner(conn, %{"id" => id}) do
+    result = Tournaments.match_determine_winner_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/matches/{id}/draw
+  def draw(conn, %{"id" => id}) do
+    Tournaments.match_draw_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_match(%Match{} = record) do
     Map.take(record, [:id, :table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id, :games_id])
   end

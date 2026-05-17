@@ -18,4 +18,11 @@ defmodule CardsProject.Content.DraftPick do
     |> cast(attrs, [:pick_number, :pack_number, :picked_at, :participant_id, :card_id])
     |> validate_required([:pick_number, :pack_number, :picked_at])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def is_first_pick(_record) do
+    # TODO: implement DraftPick.is_first_pick
+    {:error, :not_implemented}
+  end
 end

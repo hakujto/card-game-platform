@@ -21,4 +21,26 @@ defmodule CardsProject.Marketplace.TradeTransaction do
     |> validate_required([:final_price, :platform_fee])
     |> validate_inclusion(:status, ["Pending", "Completed", "Disputed", "Refunded"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def complete(_record) do
+    # TODO: implement TradeTransaction.complete
+    :ok
+  end
+
+  def refund(_record) do
+    # TODO: implement TradeTransaction.refund
+    :ok
+  end
+
+  def open_dispute(_record, _reason) do
+    # TODO: implement TradeTransaction.open_dispute
+    :ok
+  end
+
+  def seller_net(_record) do
+    # TODO: implement TradeTransaction.seller_net
+    {:error, :not_implemented}
+  end
 end

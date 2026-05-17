@@ -20,4 +20,26 @@ defmodule CardsProject.Tournaments.Season do
     |> validate_required([:name, :start_date, :end_date, :is_active])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def activate(_record) do
+    # TODO: implement Season.activate
+    :ok
+  end
+
+  def deactivate(_record) do
+    # TODO: implement Season.deactivate
+    :ok
+  end
+
+  def finalize_rewards(_record) do
+    # TODO: implement Season.finalize_rewards
+    :ok
+  end
+
+  def is_ongoing(_record) do
+    # TODO: implement Season.is_ongoing
+    {:error, :not_implemented}
+  end
 end

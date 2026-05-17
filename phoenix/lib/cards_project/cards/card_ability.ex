@@ -20,4 +20,16 @@ defmodule CardsProject.Cards.CardAbility do
     |> validate_inclusion(:ability_type, ["Keyword", "Activated", "Triggered", "Static"])
     |> validate_inclusion(:timing, ["Any", "Sorcery", "Instant", "Combat"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def is_usable_at(_record, _timing) do
+    # TODO: implement CardAbility.is_usable_at
+    {:error, :not_implemented}
+  end
+
+  def describe(_record) do
+    # TODO: implement CardAbility.describe
+    {:error, :not_implemented}
+  end
 end

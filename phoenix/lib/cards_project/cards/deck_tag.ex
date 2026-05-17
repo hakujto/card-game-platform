@@ -15,4 +15,16 @@ defmodule CardsProject.Cards.DeckTag do
     |> cast(attrs, [:name, :color])
     |> validate_required([:name])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def rename(_record, _new_name) do
+    # TODO: implement DeckTag.rename
+    :ok
+  end
+
+  def merge_into(_record, _target_tag_id) do
+    # TODO: implement DeckTag.merge_into
+    :ok
+  end
 end

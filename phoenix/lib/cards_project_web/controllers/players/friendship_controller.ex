@@ -48,6 +48,24 @@ defmodule CardsProjectWeb.Players.FriendshipController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/friendships/{id}/accept
+  def accept(conn, %{"id" => id}) do
+    Players.friendship_accept_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/friendships/{id}/decline
+  def decline(conn, %{"id" => id}) do
+    Players.friendship_decline_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/friendships/{id}/block
+  def block(conn, %{"id" => id}) do
+    Players.friendship_block_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_friendship(%Friendship{} = record) do
     Map.take(record, [:id, :status, :created_at, :requester_id, :receiver_id])
   end

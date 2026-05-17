@@ -4,7 +4,7 @@ config :cards_project, CardsProject.Repo,
   adapter: Ecto.Adapters.SQLite3,
   database: "db/cards_project_test.db",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  pool_size: 1
 
 config :cards_project, CardsProject.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],

@@ -1,11 +1,9 @@
 defmodule CardsProjectWeb.Tournaments.GameControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "game_number" => 0,
-    "winner_side" => "Player1",
-    "ended_by" => "Normal"
+    "game_number" => 0
   }
 
   describe "GET /api/games" do

@@ -1,5 +1,5 @@
 defmodule CardsProjectWeb.Content.ArticleCommentControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{

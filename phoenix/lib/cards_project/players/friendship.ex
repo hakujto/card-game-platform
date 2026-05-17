@@ -18,4 +18,21 @@ defmodule CardsProject.Players.Friendship do
     |> validate_required([:created_at])
     |> validate_inclusion(:status, ["Pending", "Accepted", "Blocked"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def accept(_record) do
+    # TODO: implement Friendship.accept
+    :ok
+  end
+
+  def decline(_record) do
+    # TODO: implement Friendship.decline
+    :ok
+  end
+
+  def block(_record) do
+    # TODO: implement Friendship.block
+    :ok
+  end
 end

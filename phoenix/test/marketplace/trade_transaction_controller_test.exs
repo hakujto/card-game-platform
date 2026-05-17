@@ -1,11 +1,10 @@
 defmodule CardsProjectWeb.Marketplace.TradeTransactionControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "final_price" => "0.00",
     "platform_fee" => "0.00",
-    "status" => "test",
     "status" => "Pending"
   }
 

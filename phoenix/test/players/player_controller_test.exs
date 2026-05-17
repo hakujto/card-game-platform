@@ -1,16 +1,14 @@
 defmodule CardsProjectWeb.Players.PlayerControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "display_name" => "test",
-    "rank" => "test",
     "rating" => 0,
     "peak_rating" => 0,
     "is_verified" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
-    "rank" => "Bronze",
-    "preferred_format" => "Standard"
+    "rank" => "Bronze"
   }
 
   describe "GET /api/players" do

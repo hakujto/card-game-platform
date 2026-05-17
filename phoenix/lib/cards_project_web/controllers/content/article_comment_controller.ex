@@ -48,6 +48,18 @@ defmodule CardsProjectWeb.Content.ArticleCommentController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/comments/{id}/hide
+  def hide(conn, %{"id" => id}) do
+    Content.article_comment_hide_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/comments/{id}/unhide
+  def unhide(conn, %{"id" => id}) do
+    Content.article_comment_unhide_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_article_comment(%ArticleComment{} = record) do
     Map.take(record, [:id, :body, :is_hidden, :created_at, :article_id, :author_id, :parent_comment_id])
   end

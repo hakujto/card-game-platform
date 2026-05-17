@@ -48,6 +48,13 @@ defmodule CardsProjectWeb.Tournaments.GameController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/games/{id}/winner
+  def record_winner(conn, %{"id" => id} = params) do
+    winner_side = Map.get(params, "winner_side")
+    Tournaments.game_record_winner_behavior(id, winner_side)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_game(%Game{} = record) do
     Map.take(record, [:id, :game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
   end

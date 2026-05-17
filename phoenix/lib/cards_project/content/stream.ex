@@ -26,4 +26,26 @@ defmodule CardsProject.Content.Stream do
     |> validate_inclusion(:platform, ["Twitch", "YouTube", "KickStream", "Platform"])
     |> validate_inclusion(:status, ["Scheduled", "Live", "Ended"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def go_live(_record) do
+    # TODO: implement Stream.go_live
+    :ok
+  end
+
+  def end_action(_record) do
+    # TODO: implement Stream.end_action
+    :ok
+  end
+
+  def update_viewer_peak(_record, _count) do
+    # TODO: implement Stream.update_viewer_peak
+    :ok
+  end
+
+  def duration_minutes(_record) do
+    # TODO: implement Stream.duration_minutes
+    {:error, :not_implemented}
+  end
 end

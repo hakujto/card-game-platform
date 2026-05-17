@@ -1,15 +1,11 @@
 defmodule CardsProjectWeb.Cards.CardControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
-    "card_type" => "test",
-    "rarity" => "test",
     "mana_cost" => 0,
-    "mana_colors" => "test",
     "description" => "test",
-    "legal_formats" => "test",
     "is_banned" => true,
     "is_restricted" => true,
     "power_level" => 0,

@@ -17,4 +17,16 @@ defmodule CardsProject.Players.CraftingRecipe do
     |> cast(attrs, [:dust_cost, :is_available, :result_card_id])
     |> validate_required([:dust_cost, :is_available])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def disable(_record) do
+    # TODO: implement CraftingRecipe.disable
+    :ok
+  end
+
+  def enable(_record) do
+    # TODO: implement CraftingRecipe.enable
+    :ok
+  end
 end

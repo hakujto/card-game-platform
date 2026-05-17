@@ -48,6 +48,18 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/coupons/{id}/redeem
+  def redeem(conn, %{"id" => id}) do
+    Marketplace.coupon_redeem_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/coupons/{id}/deactivate
+  def deactivate(conn, %{"id" => id}) do
+    Marketplace.coupon_deactivate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_coupon(%Coupon{} = record) do
     Map.take(record, [:id, :code, :discount_type, :discount_value, :min_order_value, :max_uses, :uses_count, :valid_from, :valid_until, :is_active])
   end

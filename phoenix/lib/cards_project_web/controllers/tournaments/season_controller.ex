@@ -48,6 +48,24 @@ defmodule CardsProjectWeb.Tournaments.SeasonController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/seasons/{id}/activate
+  def activate(conn, %{"id" => id}) do
+    Tournaments.season_activate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/seasons/{id}/deactivate
+  def deactivate(conn, %{"id" => id}) do
+    Tournaments.season_deactivate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/seasons/{id}/finalize
+  def finalize_rewards(conn, %{"id" => id}) do
+    Tournaments.season_finalize_rewards_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_season(%Season{} = record) do
     Map.take(record, [:id, :name, :start_date, :end_date, :format, :is_active, :reward_description])
   end

@@ -18,4 +18,11 @@ defmodule CardsProject.Marketplace.OrderItem do
     |> cast(attrs, [:quantity, :price_at_purchase, :foil, :order_id, :product_id])
     |> validate_required([:quantity, :price_at_purchase, :foil])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def line_total(_record) do
+    # TODO: implement OrderItem.line_total
+    {:error, :not_implemented}
+  end
 end

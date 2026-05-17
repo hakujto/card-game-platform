@@ -23,4 +23,26 @@ defmodule CardsProject.Marketplace.Coupon do
     |> validate_required([:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active])
     |> validate_inclusion(:discount_type, ["Percent", "Fixed"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def is_valid(_record) do
+    # TODO: implement Coupon.is_valid
+    {:error, :not_implemented}
+  end
+
+  def is_applicable_to_order(_record, _order_total) do
+    # TODO: implement Coupon.is_applicable_to_order
+    {:error, :not_implemented}
+  end
+
+  def redeem(_record) do
+    # TODO: implement Coupon.redeem
+    :ok
+  end
+
+  def deactivate(_record) do
+    # TODO: implement Coupon.deactivate
+    :ok
+  end
 end

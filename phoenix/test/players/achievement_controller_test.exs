@@ -1,12 +1,11 @@
 defmodule CardsProjectWeb.Players.AchievementControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
     "description" => "test",
     "points" => 0,
-    "rarity" => "test",
     "is_hidden" => true,
     "rarity" => "Common"
   }

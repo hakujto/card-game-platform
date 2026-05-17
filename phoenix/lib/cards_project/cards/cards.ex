@@ -40,6 +40,37 @@ defmodule CardsProject.Cards do
     Card.changeset(card, attrs)
   end
 
+  def card_ban_behavior(id) do
+    card = Repo.get!(Card, id)
+    Card.ban(card)
+    Repo.update!(Card.changeset(card, %{}))
+  end
+
+  def card_unban_behavior(id) do
+    card = Repo.get!(Card, id)
+    Card.unban(card)
+    Repo.update!(Card.changeset(card, %{}))
+  end
+
+  def card_restrict_behavior(id) do
+    card = Repo.get!(Card, id)
+    Card.restrict(card)
+    Repo.update!(Card.changeset(card, %{}))
+  end
+
+  def card_unrestrict_behavior(id) do
+    card = Repo.get!(Card, id)
+    Card.unrestrict(card)
+    Repo.update!(Card.changeset(card, %{}))
+  end
+
+  def card_calculate_value_behavior(id) do
+    card = Repo.get!(Card, id)
+    result = Card.calculate_value(card)
+    Repo.update!(Card.changeset(card, %{}))
+    result
+  end
+
   # ── CardSet ─────────────────────────────────────────────────────
 
   def list_card_sets, do: Repo.all(CardSet)
@@ -136,6 +167,39 @@ defmodule CardsProject.Cards do
     Deck.changeset(deck, attrs)
   end
 
+  def deck_validate_size_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    result = Deck.validate_size(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+    result
+  end
+
+  def deck_clone_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    result = Deck.clone(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+    result
+  end
+
+  def deck_publish_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    Deck.publish(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+  end
+
+  def deck_unpublish_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    Deck.unpublish(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+  end
+
+  def deck_certify_tournament_legal_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    result = Deck.certify_tournament_legal(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+    result
+  end
+
   # ── DeckCard ─────────────────────────────────────────────────────
 
   def list_deck_cards, do: Repo.all(DeckCard)
@@ -206,6 +270,12 @@ defmodule CardsProject.Cards do
 
   def change_deck_tag(%DeckTag{} = deck_tag, attrs \\ %{}) do
     DeckTag.changeset(deck_tag, attrs)
+  end
+
+  def deck_tag_merge_into_behavior(id, target_tag_id) do
+    deck_tag = Repo.get!(DeckTag, id)
+    DeckTag.merge_into(deck_tag, target_tag_id)
+    Repo.update!(DeckTag.changeset(deck_tag, %{}))
   end
 
   # ── DeckTagAssignment ─────────────────────────────────────────────────────

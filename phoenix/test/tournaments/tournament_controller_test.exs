@@ -1,12 +1,9 @@
 defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
-    "format" => "test",
-    "tournament_type" => "test",
-    "status" => "test",
     "max_players" => 0,
     "entry_fee" => "0.00",
     "prize_pool" => "0.00",

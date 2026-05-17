@@ -48,6 +48,24 @@ defmodule CardsProjectWeb.Tournaments.TournamentRoundController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/rounds/{id}/start
+  def start(conn, %{"id" => id}) do
+    Tournaments.tournament_round_start_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/rounds/{id}/complete
+  def complete(conn, %{"id" => id}) do
+    Tournaments.tournament_round_complete_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/rounds/{id}/pairings
+  def generate_pairings(conn, %{"id" => id}) do
+    Tournaments.tournament_round_generate_pairings_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_tournament_round(%TournamentRound{} = record) do
     Map.take(record, [:id, :round_number, :status, :started_at, :ended_at, :time_limit_minutes, :tournament_id, :matches_id])
   end

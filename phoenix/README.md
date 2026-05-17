@@ -127,3 +127,25 @@ Base URL: `http://localhost:4000`
 ```bash
 mix test
 ```
+
+## Architecture
+
+Bounded Contexts:
+
+- **Cards BC** (`lib/cards_project/cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
+- **Players BC** (`lib/cards_project/players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
+- **Tournaments BC** (`lib/cards_project/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
+- **Marketplace BC** (`lib/cards_project/marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Content BC** (`lib/cards_project/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 4000:4000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up Elixir + OTP, installs Mix deps, creates the Ecto DB, runs migrations, and executes ExUnit.

@@ -48,6 +48,25 @@ defmodule CardsProjectWeb.Content.StreamController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/streams/{id}/live
+  def go_live(conn, %{"id" => id}) do
+    Content.stream_go_live_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/streams/{id}/end
+  def end_action(conn, %{"id" => id}) do
+    Content.stream_end_action_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # PATCH /api/streams/{id}/viewers
+  def update_viewer_peak(conn, %{"id" => id} = params) do
+    count = Map.get(params, "count")
+    Content.stream_update_viewer_peak_behavior(id, count)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_stream(%Stream{} = record) do
     Map.take(record, [:id, :title, :stream_url, :platform, :status, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
   end

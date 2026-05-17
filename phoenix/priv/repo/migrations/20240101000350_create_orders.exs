@@ -21,7 +21,6 @@ defmodule CardsProject.Repo.Migrations.CreateOrders do
       timestamps()
     end
     create index(:orders, [:player_id])
-    create index(:orders, [:items_id])
     create index(:orders, [:coupon_id])
   end
 end

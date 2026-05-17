@@ -40,6 +40,31 @@ defmodule CardsProject.Marketplace do
     Product.changeset(product, attrs)
   end
 
+  def product_activate_behavior(id) do
+    product = Repo.get!(Product, id)
+    Product.activate(product)
+    Repo.update!(Product.changeset(product, %{}))
+  end
+
+  def product_deactivate_behavior(id) do
+    product = Repo.get!(Product, id)
+    Product.deactivate(product)
+    Repo.update!(Product.changeset(product, %{}))
+  end
+
+  def product_apply_discount_behavior(id, percent) do
+    product = Repo.get!(Product, id)
+    result = Product.apply_discount(product, percent)
+    Repo.update!(Product.changeset(product, %{}))
+    result
+  end
+
+  def product_restock_behavior(id, quantity) do
+    product = Repo.get!(Product, id)
+    Product.restock(product, quantity)
+    Repo.update!(Product.changeset(product, %{}))
+  end
+
   # ── Order ─────────────────────────────────────────────────────
 
   def list_orders, do: Repo.all(Order)
@@ -62,6 +87,51 @@ defmodule CardsProject.Marketplace do
 
   def change_order(%Order{} = order, attrs \\ %{}) do
     Order.changeset(order, attrs)
+  end
+
+  def order_cancel_behavior(id) do
+    order = Repo.get!(Order, id)
+    Order.cancel(order)
+    Repo.update!(Order.changeset(order, %{}))
+  end
+
+  def order_pay_behavior(id, payment_ref) do
+    order = Repo.get!(Order, id)
+    result = Order.pay(order, payment_ref)
+    Repo.update!(Order.changeset(order, %{}))
+    result
+  end
+
+  def order_calculate_total_behavior(id) do
+    order = Repo.get!(Order, id)
+    result = Order.calculate_total(order)
+    Repo.update!(Order.changeset(order, %{}))
+    result
+  end
+
+  def order_apply_discount_behavior(id, percent) do
+    order = Repo.get!(Order, id)
+    result = Order.apply_discount(order, percent)
+    Repo.update!(Order.changeset(order, %{}))
+    result
+  end
+
+  def order_refund_behavior(id) do
+    order = Repo.get!(Order, id)
+    Order.refund(order)
+    Repo.update!(Order.changeset(order, %{}))
+  end
+
+  # triggered by @on(status = Shipped)
+  def order_set_status(id, value) do
+    order = Repo.get!(Order, id)
+    order = Order.changeset(order, %{status: value})
+    order = Repo.update!(order)
+    if to_string(value) == "Shipped" do
+      Order.notify_shipped(order)
+      Repo.update!(Order.changeset(order, %{}))
+    end
+    :ok
   end
 
   # ── OrderItem ─────────────────────────────────────────────────────
@@ -112,6 +182,18 @@ defmodule CardsProject.Marketplace do
     Coupon.changeset(coupon, attrs)
   end
 
+  def coupon_redeem_behavior(id) do
+    coupon = Repo.get!(Coupon, id)
+    Coupon.redeem(coupon)
+    Repo.update!(Coupon.changeset(coupon, %{}))
+  end
+
+  def coupon_deactivate_behavior(id) do
+    coupon = Repo.get!(Coupon, id)
+    Coupon.deactivate(coupon)
+    Repo.update!(Coupon.changeset(coupon, %{}))
+  end
+
   # ── Tradelisting ─────────────────────────────────────────────────────
 
   def list_tradelistings, do: Repo.all(Tradelisting)
@@ -134,6 +216,36 @@ defmodule CardsProject.Marketplace do
 
   def change_tradelisting(%Tradelisting{} = tradelisting, attrs \\ %{}) do
     Tradelisting.changeset(tradelisting, attrs)
+  end
+
+  def tradelisting_close_behavior(id) do
+    tradelisting = Repo.get!(Tradelisting, id)
+    Tradelisting.close(tradelisting)
+    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  end
+
+  def tradelisting_extend_behavior(id, days) do
+    tradelisting = Repo.get!(Tradelisting, id)
+    Tradelisting.extend(tradelisting, days)
+    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  end
+
+  def tradelisting_cancel_behavior(id) do
+    tradelisting = Repo.get!(Tradelisting, id)
+    Tradelisting.cancel(tradelisting)
+    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  end
+
+  # triggered by @on(status = Sold)
+  def tradelisting_set_status(id, value) do
+    tradelisting = Repo.get!(Tradelisting, id)
+    tradelisting = Tradelisting.changeset(tradelisting, %{status: value})
+    tradelisting = Repo.update!(tradelisting)
+    if to_string(value) == "Sold" do
+      Tradelisting.finalize_auction(tradelisting)
+      Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+    end
+    :ok
   end
 
   # ── TradeBid ─────────────────────────────────────────────────────
@@ -184,6 +296,24 @@ defmodule CardsProject.Marketplace do
     TradeTransaction.changeset(trade_transaction, attrs)
   end
 
+  def trade_transaction_complete_behavior(id) do
+    trade_transaction = Repo.get!(TradeTransaction, id)
+    TradeTransaction.complete(trade_transaction)
+    Repo.update!(TradeTransaction.changeset(trade_transaction, %{}))
+  end
+
+  def trade_transaction_refund_behavior(id) do
+    trade_transaction = Repo.get!(TradeTransaction, id)
+    TradeTransaction.refund(trade_transaction)
+    Repo.update!(TradeTransaction.changeset(trade_transaction, %{}))
+  end
+
+  def trade_transaction_open_dispute_behavior(id, reason) do
+    trade_transaction = Repo.get!(TradeTransaction, id)
+    TradeTransaction.open_dispute(trade_transaction, reason)
+    Repo.update!(TradeTransaction.changeset(trade_transaction, %{}))
+  end
+
   # ── CardPriceHistory ─────────────────────────────────────────────────────
 
   def list_card_price_histories, do: Repo.all(CardPriceHistory)
@@ -230,6 +360,24 @@ defmodule CardsProject.Marketplace do
 
   def change_trade_dispute(%TradeDispute{} = trade_dispute, attrs \\ %{}) do
     TradeDispute.changeset(trade_dispute, attrs)
+  end
+
+  def trade_dispute_escalate_behavior(id) do
+    trade_dispute = Repo.get!(TradeDispute, id)
+    TradeDispute.escalate(trade_dispute)
+    Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
+  end
+
+  def trade_dispute_resolve_behavior(id, resolution_text) do
+    trade_dispute = Repo.get!(TradeDispute, id)
+    TradeDispute.resolve(trade_dispute, resolution_text)
+    Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
+  end
+
+  def trade_dispute_review_behavior(id) do
+    trade_dispute = Repo.get!(TradeDispute, id)
+    TradeDispute.review(trade_dispute)
+    Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
   end
 
 end

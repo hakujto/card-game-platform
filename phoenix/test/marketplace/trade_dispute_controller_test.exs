@@ -1,11 +1,9 @@
 defmodule CardsProjectWeb.Marketplace.TradeDisputeControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "reason" => "test",
     "description" => "test",
-    "status" => "test",
     "opened_at" => ~N[2024-01-01 00:00:00],
     "reason" => "ItemNotReceived",
     "status" => "Open"

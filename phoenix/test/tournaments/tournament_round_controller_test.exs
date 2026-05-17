@@ -1,10 +1,9 @@
 defmodule CardsProjectWeb.Tournaments.TournamentRoundControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "round_number" => 0,
-    "status" => "test",
     "time_limit_minutes" => 0,
     "status" => "Pending"
   }

@@ -21,6 +21,5 @@ defmodule CardsProject.Repo.Migrations.CreateArticles do
     end
     create index(:articles, [:author_id])
     create index(:articles, [:featured_deck_id])
-    create index(:articles, [:comments_id])
   end
 end

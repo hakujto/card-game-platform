@@ -1,10 +1,8 @@
 defmodule CardsProjectWeb.Content.DraftSessionControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "status" => "test",
-    "draft_type" => "test",
     "seats" => 0,
     "created_at" => ~N[2024-01-01 00:00:00],
     "status" => "WaitingForPlayers",

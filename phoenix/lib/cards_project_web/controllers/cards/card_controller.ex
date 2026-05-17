@@ -48,6 +48,36 @@ defmodule CardsProjectWeb.Cards.CardController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/cards/{id}/ban
+  def ban(conn, %{"id" => id}) do
+    Cards.card_ban_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/cards/{id}/unban
+  def unban(conn, %{"id" => id}) do
+    Cards.card_unban_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/cards/{id}/restrict
+  def restrict(conn, %{"id" => id}) do
+    Cards.card_restrict_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/cards/{id}/unrestrict
+  def unrestrict(conn, %{"id" => id}) do
+    Cards.card_unrestrict_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # GET /api/cards/{id}/value
+  def calculate_value(conn, %{"id" => id}) do
+    result = Cards.card_calculate_value_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_card(%Card{} = record) do
     Map.take(record, [:id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id, :rulings_id, :abilities_id])
   end

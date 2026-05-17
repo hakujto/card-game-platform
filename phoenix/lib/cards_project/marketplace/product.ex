@@ -25,4 +25,36 @@ defmodule CardsProject.Marketplace.Product do
     |> validate_required([:name, :price, :stock, :active, :discount_percent, :featured])
     |> validate_inclusion(:product_type, ["SingleCard", "BoosterPack", "Bundle", "PreconstructedDeck", "Accessory"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def activate(_record) do
+    # TODO: implement Product.activate
+    :ok
+  end
+
+  def deactivate(_record) do
+    # TODO: implement Product.deactivate
+    :ok
+  end
+
+  def apply_discount(_record, _percent) do
+    # TODO: implement Product.apply_discount
+    {:error, :not_implemented}
+  end
+
+  def restock(_record, _quantity) do
+    # TODO: implement Product.restock
+    :ok
+  end
+
+  def effective_price(_record) do
+    # TODO: implement Product.effective_price
+    {:error, :not_implemented}
+  end
+
+  def is_in_stock(_record) do
+    # TODO: implement Product.is_in_stock
+    {:error, :not_implemented}
+  end
 end

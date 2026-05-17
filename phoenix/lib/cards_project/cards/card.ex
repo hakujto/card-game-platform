@@ -29,11 +29,38 @@ defmodule CardsProject.Cards.Card do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :mana_cost, :description, :is_banned, :is_restricted, :power_level, :card_type, :rarity, :mana_colors, :attack, :defense, :loyalty, :flavor_text, :image_url, :artist_name, :legal_formats, :set_id, :rulings_id, :abilities_id])
+    |> cast(attrs, [:name, :mana_cost, :description, :is_banned, :is_restricted, :power_level, :card_type, :rarity, :mana_colors, :attack, :defense, :loyalty, :flavor_text, :image_url, :artist_name, :legal_formats, :set_id])
     |> validate_required([:name, :mana_cost, :description, :is_banned, :is_restricted, :power_level])
     |> validate_inclusion(:card_type, ["Creature", "Spell", "Land", "Artifact", "Enchantment", "Planeswalker"])
     |> validate_inclusion(:rarity, ["Common", "Uncommon", "Rare", "MythicRare", "Legendary"])
     |> validate_inclusion(:mana_colors, ["White", "Blue", "Black", "Red", "Green", "Colorless"])
     |> validate_inclusion(:legal_formats, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+  end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def ban(_record) do
+    # TODO: implement Card.ban
+    :ok
+  end
+
+  def unban(_record) do
+    # TODO: implement Card.unban
+    :ok
+  end
+
+  def restrict(_record) do
+    # TODO: implement Card.restrict
+    :ok
+  end
+
+  def unrestrict(_record) do
+    # TODO: implement Card.unrestrict
+    :ok
+  end
+
+  def calculate_value(_record) do
+    # TODO: implement Card.calculate_value
+    {:error, :not_implemented}
   end
 end

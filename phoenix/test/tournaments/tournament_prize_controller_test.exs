@@ -1,11 +1,10 @@
 defmodule CardsProjectWeb.Tournaments.TournamentPrizeControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "placement_from" => 0,
     "placement_to" => 0,
-    "prize_type" => "test",
     "amount" => "0.00",
     "season_points" => 0,
     "prize_type" => "Currency"

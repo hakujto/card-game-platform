@@ -15,7 +15,19 @@ defmodule CardsProject.Content.DraftParticipant do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id])
+    |> cast(attrs, [:seat_number, :joined_at, :session_id, :player_id])
     |> validate_required([:seat_number, :joined_at])
+  end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def pick_card(_record, _card_id, _pack_number) do
+    # TODO: implement DraftParticipant.pick_card
+    :ok
+  end
+
+  def drafted_card_count(_record) do
+    # TODO: implement DraftParticipant.drafted_card_count
+    {:error, :not_implemented}
   end
 end

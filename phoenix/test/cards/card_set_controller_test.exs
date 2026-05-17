@@ -1,12 +1,11 @@
 defmodule CardsProjectWeb.Cards.CardSetControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
     "code" => "test",
     "release_date" => ~D[2024-01-01],
-    "set_type" => "test",
     "total_cards" => 0,
     "set_type" => "Core"
   }

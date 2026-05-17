@@ -14,6 +14,5 @@ defmodule CardsProject.Repo.Migrations.CreateTournamentRounds do
       timestamps()
     end
     create index(:tournament_rounds, [:tournament_id])
-    create index(:tournament_rounds, [:matches_id])
   end
 end

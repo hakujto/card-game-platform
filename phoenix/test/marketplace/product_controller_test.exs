@@ -1,10 +1,9 @@
 defmodule CardsProjectWeb.Marketplace.ProductControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
-    "product_type" => "test",
     "price" => "0.00",
     "stock" => 0,
     "active" => true,

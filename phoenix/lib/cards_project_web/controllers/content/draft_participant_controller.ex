@@ -48,6 +48,14 @@ defmodule CardsProjectWeb.Content.DraftParticipantController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/draft-participants/{id}/pick
+  def pick_card(conn, %{"id" => id} = params) do
+    card_id = Map.get(params, "card_id")
+    pack_number = Map.get(params, "pack_number")
+    Content.draft_participant_pick_card_behavior(id, card_id, pack_number)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_draft_participant(%DraftParticipant{} = record) do
     Map.take(record, [:id, :seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id])
   end

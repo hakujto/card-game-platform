@@ -48,6 +48,25 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/registrations/{id}/withdraw
+  def withdraw(conn, %{"id" => id}) do
+    Tournaments.tournament_registration_withdraw_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/registrations/{id}/disqualify
+  def disqualify(conn, %{"id" => id} = params) do
+    reason = Map.get(params, "reason")
+    Tournaments.tournament_registration_disqualify_behavior(id, reason)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/registrations/{id}/promote
+  def promote_from_waitlist(conn, %{"id" => id}) do
+    Tournaments.tournament_registration_promote_from_waitlist_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_tournament_registration(%TournamentRegistration{} = record) do
     Map.take(record, [:id, :status, :seed, :final_standing, :points_earned, :registered_at, :tournament_id, :player_id, :deck_id])
   end

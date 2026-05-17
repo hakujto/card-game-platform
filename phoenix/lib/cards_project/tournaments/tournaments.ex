@@ -40,6 +40,24 @@ defmodule CardsProject.Tournaments do
     Season.changeset(season, attrs)
   end
 
+  def season_activate_behavior(id) do
+    season = Repo.get!(Season, id)
+    Season.activate(season)
+    Repo.update!(Season.changeset(season, %{}))
+  end
+
+  def season_deactivate_behavior(id) do
+    season = Repo.get!(Season, id)
+    Season.deactivate(season)
+    Repo.update!(Season.changeset(season, %{}))
+  end
+
+  def season_finalize_rewards_behavior(id) do
+    season = Repo.get!(Season, id)
+    Season.finalize_rewards(season)
+    Repo.update!(Season.changeset(season, %{}))
+  end
+
   # ── Tournament ─────────────────────────────────────────────────────
 
   def list_tournaments, do: Repo.all(Tournament)
@@ -62,6 +80,37 @@ defmodule CardsProject.Tournaments do
 
   def change_tournament(%Tournament{} = tournament, attrs \\ %{}) do
     Tournament.changeset(tournament, attrs)
+  end
+
+  def tournament_start_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    Tournament.start(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+  end
+
+  def tournament_cancel_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    Tournament.cancel(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+  end
+
+  def tournament_complete_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    Tournament.complete(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+  end
+
+  def tournament_generate_round_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    Tournament.generate_round(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+  end
+
+  def tournament_calculate_prize_distribution_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    result = Tournament.calculate_prize_distribution(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+    result
   end
 
   # ── TournamentJudge ─────────────────────────────────────────────────────
@@ -112,6 +161,24 @@ defmodule CardsProject.Tournaments do
     TournamentRegistration.changeset(tournament_registration, attrs)
   end
 
+  def tournament_registration_withdraw_behavior(id) do
+    tournament_registration = Repo.get!(TournamentRegistration, id)
+    TournamentRegistration.withdraw(tournament_registration)
+    Repo.update!(TournamentRegistration.changeset(tournament_registration, %{}))
+  end
+
+  def tournament_registration_disqualify_behavior(id, reason) do
+    tournament_registration = Repo.get!(TournamentRegistration, id)
+    TournamentRegistration.disqualify(tournament_registration, reason)
+    Repo.update!(TournamentRegistration.changeset(tournament_registration, %{}))
+  end
+
+  def tournament_registration_promote_from_waitlist_behavior(id) do
+    tournament_registration = Repo.get!(TournamentRegistration, id)
+    TournamentRegistration.promote_from_waitlist(tournament_registration)
+    Repo.update!(TournamentRegistration.changeset(tournament_registration, %{}))
+  end
+
   # ── TournamentRound ─────────────────────────────────────────────────────
 
   def list_tournament_rounds, do: Repo.all(TournamentRound)
@@ -134,6 +201,24 @@ defmodule CardsProject.Tournaments do
 
   def change_tournament_round(%TournamentRound{} = tournament_round, attrs \\ %{}) do
     TournamentRound.changeset(tournament_round, attrs)
+  end
+
+  def tournament_round_start_behavior(id) do
+    tournament_round = Repo.get!(TournamentRound, id)
+    TournamentRound.start(tournament_round)
+    Repo.update!(TournamentRound.changeset(tournament_round, %{}))
+  end
+
+  def tournament_round_complete_behavior(id) do
+    tournament_round = Repo.get!(TournamentRound, id)
+    TournamentRound.complete(tournament_round)
+    Repo.update!(TournamentRound.changeset(tournament_round, %{}))
+  end
+
+  def tournament_round_generate_pairings_behavior(id) do
+    tournament_round = Repo.get!(TournamentRound, id)
+    TournamentRound.generate_pairings(tournament_round)
+    Repo.update!(TournamentRound.changeset(tournament_round, %{}))
   end
 
   # ── Match ─────────────────────────────────────────────────────
@@ -160,6 +245,26 @@ defmodule CardsProject.Tournaments do
     Match.changeset(match, attrs)
   end
 
+  def match_record_result_behavior(id, p1_wins, p2_wins) do
+    match = Repo.get!(Match, id)
+    Match.record_result(match, p1_wins, p2_wins)
+    Match.determine_winner(match)  # @after
+    Repo.update!(Match.changeset(match, %{}))
+  end
+
+  def match_determine_winner_behavior(id) do
+    match = Repo.get!(Match, id)
+    result = Match.determine_winner(match)
+    Repo.update!(Match.changeset(match, %{}))
+    result
+  end
+
+  def match_draw_behavior(id) do
+    match = Repo.get!(Match, id)
+    Match.draw(match)
+    Repo.update!(Match.changeset(match, %{}))
+  end
+
   # ── Game ─────────────────────────────────────────────────────
 
   def list_games, do: Repo.all(Game)
@@ -182,6 +287,12 @@ defmodule CardsProject.Tournaments do
 
   def change_game(%Game{} = game, attrs \\ %{}) do
     Game.changeset(game, attrs)
+  end
+
+  def game_record_winner_behavior(id, winner_side) do
+    game = Repo.get!(Game, id)
+    Game.record_winner(game, winner_side)
+    Repo.update!(Game.changeset(game, %{}))
   end
 
   # ── TournamentPrize ─────────────────────────────────────────────────────

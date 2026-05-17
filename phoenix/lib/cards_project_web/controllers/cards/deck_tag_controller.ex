@@ -48,6 +48,13 @@ defmodule CardsProjectWeb.Cards.DeckTagController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/deck-tags/{id}/merge
+  def merge_into(conn, %{"id" => id} = params) do
+    target_tag_id = Map.get(params, "target_tag_id")
+    Cards.deck_tag_merge_into_behavior(id, target_tag_id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_deck_tag(%DeckTag{} = record) do
     Map.take(record, [:id, :name, :color])
   end

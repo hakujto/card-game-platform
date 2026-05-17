@@ -48,6 +48,32 @@ defmodule CardsProjectWeb.Marketplace.ProductController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/products/{id}/activate
+  def activate(conn, %{"id" => id}) do
+    Marketplace.product_activate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/products/{id}/deactivate
+  def deactivate(conn, %{"id" => id}) do
+    Marketplace.product_deactivate_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # PATCH /api/products/{id}/discount
+  def apply_discount(conn, %{"id" => id} = params) do
+    percent = Map.get(params, "percent")
+    result = Marketplace.product_apply_discount_behavior(id, percent)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/products/{id}/restock
+  def restock(conn, %{"id" => id} = params) do
+    quantity = Map.get(params, "quantity")
+    Marketplace.product_restock_behavior(id, quantity)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_product(%Product{} = record) do
     Map.take(record, [:id, :name, :product_type, :price, :stock, :active, :discount_percent, :description, :image_url, :featured, :card_id, :card_set_id])
   end

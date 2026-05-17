@@ -22,4 +22,21 @@ defmodule CardsProject.Players.PlayerSeasonStats do
     |> validate_required([:wins, :losses, :draws, :tournament_wins, :season_points])
     |> validate_inclusion(:highest_rank, ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def win_rate(_record) do
+    # TODO: implement PlayerSeasonStats.win_rate
+    {:error, :not_implemented}
+  end
+
+  def add_points(_record, _points) do
+    # TODO: implement PlayerSeasonStats.add_points
+    :ok
+  end
+
+  def record_tournament_win(_record) do
+    # TODO: implement PlayerSeasonStats.record_tournament_win
+    :ok
+  end
 end

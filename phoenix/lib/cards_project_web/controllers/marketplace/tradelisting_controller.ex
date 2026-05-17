@@ -48,6 +48,25 @@ defmodule CardsProjectWeb.Marketplace.TradelistingController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/trade-listings/{id}/close
+  def close(conn, %{"id" => id}) do
+    Marketplace.tradelisting_close_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # PATCH /api/trade-listings/{id}/extend
+  def extend(conn, %{"id" => id} = params) do
+    days = Map.get(params, "days")
+    Marketplace.tradelisting_extend_behavior(id, days)
+    send_resp(conn, :no_content, "")
+  end
+
+  # DELETE /api/trade-listings/{id}/cancel
+  def cancel(conn, %{"id" => id}) do
+    Marketplace.tradelisting_cancel_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_tradelisting(%Tradelisting{} = record) do
     Map.take(record, [:id, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
   end

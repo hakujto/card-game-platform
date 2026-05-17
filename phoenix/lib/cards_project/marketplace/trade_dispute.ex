@@ -24,4 +24,21 @@ defmodule CardsProject.Marketplace.TradeDispute do
     |> validate_inclusion(:reason, ["ItemNotReceived", "ItemNotAsDescribed", "FraudSuspected", "Other"])
     |> validate_inclusion(:status, ["Open", "UnderReview", "Resolved", "Escalated"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def escalate(_record) do
+    # TODO: implement TradeDispute.escalate
+    :ok
+  end
+
+  def resolve(_record, _resolution_text) do
+    # TODO: implement TradeDispute.resolve
+    :ok
+  end
+
+  def review(_record) do
+    # TODO: implement TradeDispute.review
+    :ok
+  end
 end

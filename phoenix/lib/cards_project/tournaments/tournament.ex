@@ -30,10 +30,42 @@ defmodule CardsProject.Tournaments.Tournament do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :format, :tournament_type, :status, :end_time, :location, :rules_text, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
+    |> cast(attrs, [:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :format, :tournament_type, :status, :end_time, :location, :rules_text, :season_id, :organizer_id])
     |> validate_required([:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:tournament_type, ["Swiss", "SingleElimination", "DoubleElimination", "RoundRobin"])
     |> validate_inclusion(:status, ["Draft", "Registration", "Ongoing", "Completed", "Cancelled"])
+  end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def start(_record) do
+    # TODO: implement Tournament.start
+    :ok
+  end
+
+  def cancel(_record) do
+    # TODO: implement Tournament.cancel
+    :ok
+  end
+
+  def complete(_record) do
+    # TODO: implement Tournament.complete
+    :ok
+  end
+
+  def generate_round(_record) do
+    # TODO: implement Tournament.generate_round
+    :ok
+  end
+
+  def calculate_prize_distribution(_record) do
+    # TODO: implement Tournament.calculate_prize_distribution
+    {:error, :not_implemented}
+  end
+
+  def is_full(_record) do
+    # TODO: implement Tournament.is_full
+    {:error, :not_implemented}
   end
 end

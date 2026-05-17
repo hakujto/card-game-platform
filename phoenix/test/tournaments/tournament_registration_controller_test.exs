@@ -1,9 +1,8 @@
 defmodule CardsProjectWeb.Tournaments.TournamentRegistrationControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "status" => "test",
     "points_earned" => 0,
     "registered_at" => ~N[2024-01-01 00:00:00],
     "status" => "Registered"

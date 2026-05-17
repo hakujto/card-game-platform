@@ -1,12 +1,11 @@
 defmodule CardsProjectWeb.Tournaments.SeasonControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
     "name" => "test",
     "start_date" => ~D[2024-01-01],
     "end_date" => ~D[2024-01-01],
-    "format" => "test",
     "is_active" => true,
     "format" => "Standard"
   }

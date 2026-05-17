@@ -15,4 +15,16 @@ defmodule CardsProject.Content.ArticleTag do
     |> cast(attrs, [:name, :slug])
     |> validate_required([:name, :slug])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def rename(_record, _new_name) do
+    # TODO: implement ArticleTag.rename
+    :ok
+  end
+
+  def article_count(_record) do
+    # TODO: implement ArticleTag.article_count
+    {:error, :not_implemented}
+  end
 end

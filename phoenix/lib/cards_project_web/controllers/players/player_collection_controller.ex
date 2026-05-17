@@ -48,6 +48,12 @@ defmodule CardsProjectWeb.Players.PlayerCollectionController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/collection/{id}/value
+  def estimated_value(conn, %{"id" => id}) do
+    result = Players.player_collection_estimated_value_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_player_collection(%PlayerCollection{} = record) do
     Map.take(record, [:id, :quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id])
   end

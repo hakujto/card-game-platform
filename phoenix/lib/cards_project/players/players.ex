@@ -39,6 +39,51 @@ defmodule CardsProject.Players do
     Player.changeset(player, attrs)
   end
 
+  def player_promote_behavior(id) do
+    player = Repo.get!(Player, id)
+    result = Player.promote(player)
+    Repo.update!(Player.changeset(player, %{}))
+    result
+  end
+
+  def player_demote_behavior(id) do
+    player = Repo.get!(Player, id)
+    result = Player.demote(player)
+    Repo.update!(Player.changeset(player, %{}))
+    result
+  end
+
+  def player_record_win_behavior(id) do
+    player = Repo.get!(Player, id)
+    Player.record_win(player)
+    Repo.update!(Player.changeset(player, %{}))
+  end
+
+  def player_record_loss_behavior(id) do
+    player = Repo.get!(Player, id)
+    Player.record_loss(player)
+    Repo.update!(Player.changeset(player, %{}))
+  end
+
+  def player_win_rate_behavior(id) do
+    player = Repo.get!(Player, id)
+    result = Player.win_rate(player)
+    Repo.update!(Player.changeset(player, %{}))
+    result
+  end
+
+  def player_verify_behavior(id) do
+    player = Repo.get!(Player, id)
+    Player.verify(player)
+    Repo.update!(Player.changeset(player, %{}))
+  end
+
+  def player_update_rating_behavior(id, delta) do
+    player = Repo.get!(Player, id)
+    Player.update_rating(player, delta)
+    Repo.update!(Player.changeset(player, %{}))
+  end
+
   # ── PlayerSeasonStats ─────────────────────────────────────────────────────
 
   def list_player_season_statses, do: Repo.all(PlayerSeasonStats)
@@ -87,6 +132,13 @@ defmodule CardsProject.Players do
     PlayerCollection.changeset(player_collection, attrs)
   end
 
+  def player_collection_estimated_value_behavior(id) do
+    player_collection = Repo.get!(PlayerCollection, id)
+    result = PlayerCollection.estimated_value(player_collection)
+    Repo.update!(PlayerCollection.changeset(player_collection, %{}))
+    result
+  end
+
   # ── Friendship ─────────────────────────────────────────────────────
 
   def list_friendships, do: Repo.all(Friendship)
@@ -109,6 +161,24 @@ defmodule CardsProject.Players do
 
   def change_friendship(%Friendship{} = friendship, attrs \\ %{}) do
     Friendship.changeset(friendship, attrs)
+  end
+
+  def friendship_accept_behavior(id) do
+    friendship = Repo.get!(Friendship, id)
+    Friendship.accept(friendship)
+    Repo.update!(Friendship.changeset(friendship, %{}))
+  end
+
+  def friendship_decline_behavior(id) do
+    friendship = Repo.get!(Friendship, id)
+    Friendship.decline(friendship)
+    Repo.update!(Friendship.changeset(friendship, %{}))
+  end
+
+  def friendship_block_behavior(id) do
+    friendship = Repo.get!(Friendship, id)
+    Friendship.block(friendship)
+    Repo.update!(Friendship.changeset(friendship, %{}))
   end
 
   # ── Achievement ─────────────────────────────────────────────────────

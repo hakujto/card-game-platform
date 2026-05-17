@@ -26,7 +26,5 @@ defmodule CardsProject.Repo.Migrations.CreateCards do
       timestamps()
     end
     create index(:cards, [:set_id])
-    create index(:cards, [:rulings_id])
-    create index(:cards, [:abilities_id])
   end
 end

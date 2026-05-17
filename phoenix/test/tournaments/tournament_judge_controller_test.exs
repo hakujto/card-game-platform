@@ -1,9 +1,8 @@
 defmodule CardsProjectWeb.Tournaments.TournamentJudgeControllerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "role" => "test",
     "role" => "HeadJudge"
   }
 
