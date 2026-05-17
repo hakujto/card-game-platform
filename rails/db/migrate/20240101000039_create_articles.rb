@@ -12,7 +12,6 @@ class CreateArticles < ActiveRecord::Migration[7.1]
       t.datetime :published_at, null: true
       t.references :author, null: false, foreign_key: { to_table: :players }
       t.references :featured_deck, null: true, foreign_key: { to_table: :decks }
-      t.references :comments, null: false, foreign_key: { to_table: :article_comments }
 
       t.timestamps
     end

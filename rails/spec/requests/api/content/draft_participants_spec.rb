@@ -1,10 +1,18 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Content::DraftParticipants", type: :request do
+  before(:each) do
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
+    @dep_session = DraftSession.create!({ status: :waiting_for_players, draft_type: :booster, seats: 1, created_at: Time.now, card_set_id: @aux_card_set.id })
+    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+  end
+
   let(:valid_attributes) do
     {
-        seat_number: 1,
-        joined_at: Time.now
+      seat_number: 1,
+      joined_at: Time.now,
+      session_id: @dep_session.id,
+      player_id: @dep_player.id
     }
   end
 
@@ -18,7 +26,12 @@ RSpec.describe "Api::Content::DraftParticipants", type: :request do
   describe "POST /api/draft_participants" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/draft_participants", params: { draft_participant: valid_attributes }, as: :json
+        post "/api/draft_participants", params: { draft_participant: {
+      seat_number: 1,
+      joined_at: Time.now,
+      session_id: @dep_session.id,
+      player_id: @dep_player.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

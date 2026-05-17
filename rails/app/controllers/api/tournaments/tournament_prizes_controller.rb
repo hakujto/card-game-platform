@@ -15,7 +15,7 @@ module Api
         if @tournamentPrize.save
           render json: @tournamentPrize, status: :created
         else
-          render json: { errors: @tournamentPrize.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentPrize.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/tournament_prizes/:id
       def update
-        if @tournamentPrize.update(tournament_prize_params)
+        if @tournamentPrize.update(tournament_prize_update_params)
           render json: @tournamentPrize
         else
-          render json: { errors: @tournamentPrize.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentPrize.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def tournament_prize_params
-        params.permit(:placement_from, :placement_to, :prize_type, :amount, :description, :packs_count, :season_points, :tournament_id)
+        params.fetch(:tournament_prize, params).permit(:placement_from, :placement_to, :prize_type, :amount, :description, :packs_count, :season_points, :tournament_id)
+      end
+
+      def tournament_prize_update_params
+        params.fetch(:tournament_prize, params).permit(:placement_from, :placement_to, :prize_type, :amount, :description, :packs_count, :season_points, :tournament_id)
       end
     end
   end

@@ -11,5 +11,23 @@ module Tournaments
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def activate(id)
+      instance = Season.find(id)
+      instance.activate()
+      instance.save!
+    end
+
+    def deactivate(id)
+      instance = Season.find(id)
+      instance.deactivate()
+      instance.save!
+    end
+
+    def finalize_rewards(id)
+      instance = Season.find(id)
+      instance.finalize_rewards()
+      instance.save!
+    end
   end
 end

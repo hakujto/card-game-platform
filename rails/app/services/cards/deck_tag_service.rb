@@ -11,5 +11,11 @@ module Cards
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def merge_into(id, target_tag_id)
+      instance = DeckTag.find(id)
+      instance.merge_into(target_tag_id)
+      instance.save!
+    end
   end
 end

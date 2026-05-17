@@ -15,7 +15,7 @@ module Api
         if @deckCard.save
           render json: @deckCard, status: :created
         else
-          render json: { errors: @deckCard.errors }, status: :unprocessable_entity
+          render json: { errors: @deckCard.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/deck_cards/:id
       def update
-        if @deckCard.update(deck_card_params)
+        if @deckCard.update(deck_card_update_params)
           render json: @deckCard
         else
-          render json: { errors: @deckCard.errors }, status: :unprocessable_entity
+          render json: { errors: @deckCard.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def deck_card_params
-        params.permit(:quantity, :is_commander, :deck_id, :card_id)
+        params.fetch(:deck_card, params).permit(:quantity, :is_commander, :deck_id, :card_id)
+      end
+
+      def deck_card_update_params
+        params.fetch(:deck_card, params).permit(:quantity, :is_commander, :deck_id, :card_id)
       end
     end
   end

@@ -15,7 +15,7 @@ module Api
         if @deck.save
           render json: @deck, status: :created
         else
-          render json: { errors: @deck.errors }, status: :unprocessable_entity
+          render json: { errors: @deck.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/decks/:id
       def update
-        if @deck.update(deck_params)
+        if @deck.update(deck_update_params)
           render json: @deck
         else
-          render json: { errors: @deck.errors }, status: :unprocessable_entity
+          render json: { errors: @deck.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,51 @@ module Api
       def destroy
         @deck.destroy
         head :no_content
+      end
+
+      # GET /api/decks/:id/validate
+      def validate_size
+        @deck = Deck.find(params[:id])
+        result = @deck.validate_size
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # POST /api/decks/:id/clone
+      def clone
+        @deck = Deck.find(params[:id])
+        result = @deck.clone
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # POST /api/decks/:id/publish
+      def publish
+        @deck = Deck.find(params[:id])
+        @deck.publish
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # POST /api/decks/:id/unpublish
+      def unpublish
+        @deck = Deck.find(params[:id])
+        @deck.unpublish
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # POST /api/decks/:id/certify
+      def certify_tournament_legal
+        @deck = Deck.find(params[:id])
+        result = @deck.certify_tournament_legal
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
       end
 
       private
@@ -48,7 +93,11 @@ module Api
       end
 
       def deck_params
-        params.permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id)
+        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id)
+      end
+
+      def deck_update_params
+        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id)
       end
     end
   end

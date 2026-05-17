@@ -11,5 +11,23 @@ module Marketplace
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def escalate(id)
+      instance = TradeDispute.find(id)
+      instance.escalate()
+      instance.save!
+    end
+
+    def resolve(id, resolution_text)
+      instance = TradeDispute.find(id)
+      instance.resolve(resolution_text)
+      instance.save!
+    end
+
+    def review(id)
+      instance = TradeDispute.find(id)
+      instance.review()
+      instance.save!
+    end
   end
 end

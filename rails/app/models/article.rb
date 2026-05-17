@@ -6,13 +6,37 @@ class Article < ApplicationRecord
 
   belongs_to :author, class_name: 'Player'
   belongs_to :featured_deck, class_name: 'Deck', optional: true
-  belongs_to :comments, class_name: 'ArticleComment'
   has_many :tags, class_name: 'ArticleTag', through: :article_tag_assignments
 
   validates :title, presence: true, length: { maximum: 300 }
   validates :slug, presence: true, length: { maximum: 300 }
 
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Published article must have a published_at timestamp') if (status == 'published') && published_at.nil?
+  end
+
   def to_s
     title.to_s
+  end
+
+  # Business operations
+
+  def publish
+    raise NotImplementedError, "publish not implemented"
+  end
+
+  def archive
+    raise NotImplementedError, "archive not implemented"
+  end
+
+  def increment_view
+    raise NotImplementedError, "increment_view not implemented"
+  end
+
+  def reading_time_minutes
+    raise NotImplementedError, "reading_time_minutes not implemented"
   end
 end

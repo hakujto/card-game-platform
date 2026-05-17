@@ -16,9 +16,6 @@ class CreateTournaments < ActiveRecord::Migration[7.1]
       t.text :rules_text, null: true
       t.references :season, null: false, foreign_key: { to_table: :seasons }
       t.references :organizer, null: false, foreign_key: { to_table: :players }
-      t.references :registrations, null: true, foreign_key: { to_table: :tournament_registrations }
-      t.references :rounds, null: true, foreign_key: { to_table: :tournament_rounds }
-      t.references :prizes, null: true, foreign_key: { to_table: :tournament_prizes }
 
       t.timestamps
     end

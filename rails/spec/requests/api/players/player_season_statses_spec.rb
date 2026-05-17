@@ -1,13 +1,20 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Players::PlayerSeasonStatses", type: :request do
+  before(:each) do
+    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
+  end
+
   let(:valid_attributes) do
     {
-        wins: 1,
-        losses: 1,
-        draws: 1,
-        tournament_wins: 1,
-        season_points: 1
+      wins: 1,
+      losses: 1,
+      draws: 1,
+      tournament_wins: 1,
+      season_points: 1,
+      player_id: @dep_player.id,
+      season_id: @dep_season.id
     }
   end
 
@@ -21,7 +28,15 @@ RSpec.describe "Api::Players::PlayerSeasonStatses", type: :request do
   describe "POST /api/player_season_statses" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/player_season_statses", params: { player_season_stats: valid_attributes }, as: :json
+        post "/api/player_season_statses", params: { player_season_stats: {
+      wins: 1,
+      losses: 1,
+      draws: 1,
+      tournament_wins: 1,
+      season_points: 1,
+      player_id: @dep_player.id,
+      season_id: @dep_season.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

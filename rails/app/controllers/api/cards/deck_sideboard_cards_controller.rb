@@ -15,7 +15,7 @@ module Api
         if @deckSideboardCard.save
           render json: @deckSideboardCard, status: :created
         else
-          render json: { errors: @deckSideboardCard.errors }, status: :unprocessable_entity
+          render json: { errors: @deckSideboardCard.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/deck_sideboard_cards/:id
       def update
-        if @deckSideboardCard.update(deck_sideboard_card_params)
+        if @deckSideboardCard.update(deck_sideboard_card_update_params)
           render json: @deckSideboardCard
         else
-          render json: { errors: @deckSideboardCard.errors }, status: :unprocessable_entity
+          render json: { errors: @deckSideboardCard.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def deck_sideboard_card_params
-        params.permit(:quantity, :deck_id, :card_id)
+        params.fetch(:deck_sideboard_card, params).permit(:quantity, :deck_id, :card_id)
+      end
+
+      def deck_sideboard_card_update_params
+        params.fetch(:deck_sideboard_card, params).permit(:quantity, :deck_id, :card_id)
       end
     end
   end

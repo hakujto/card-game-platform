@@ -7,4 +7,10 @@ class DraftPick < ApplicationRecord
   def to_s
     pick_number.to_s
   end
+
+  # Business operations
+
+  def is_first_pick
+    raise NotImplementedError, "is_first_pick not implemented"
+  end
 end

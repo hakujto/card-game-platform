@@ -1,9 +1,18 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Cards::DeckSideboardCards", type: :request do
+  before(:each) do
+    @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_deck = Deck.create!({ name: 'test', format: :standard, is_public: true, is_tournament_legal: true, wins: 1, losses: 1, created_at: Time.now, updated_at: Time.now, player_id: @aux_player.id })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
+    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+  end
+
   let(:valid_attributes) do
     {
-        quantity: 1
+      quantity: 1,
+      deck_id: @dep_deck.id,
+      card_id: @dep_card.id
     }
   end
 
@@ -17,7 +26,11 @@ RSpec.describe "Api::Cards::DeckSideboardCards", type: :request do
   describe "POST /api/deck_sideboard_cards" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/deck_sideboard_cards", params: { deck_sideboard_card: valid_attributes }, as: :json
+        post "/api/deck_sideboard_cards", params: { deck_sideboard_card: {
+      quantity: 1,
+      deck_id: @dep_deck.id,
+      card_id: @dep_card.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

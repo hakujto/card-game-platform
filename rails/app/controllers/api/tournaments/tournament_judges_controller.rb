@@ -15,7 +15,7 @@ module Api
         if @tournamentJudge.save
           render json: @tournamentJudge, status: :created
         else
-          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/tournament_judges/:id
       def update
-        if @tournamentJudge.update(tournament_judge_params)
+        if @tournamentJudge.update(tournament_judge_update_params)
           render json: @tournamentJudge
         else
-          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def tournament_judge_params
-        params.permit(:role, :tournament_id, :player_id)
+        params.fetch(:tournament_judge, params).permit(:role, :tournament_id, :player_id)
+      end
+
+      def tournament_judge_update_params
+        params.fetch(:tournament_judge, params).permit(:role, :tournament_id, :player_id)
       end
     end
   end

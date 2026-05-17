@@ -11,4 +11,30 @@ class Product < ApplicationRecord
   def to_s
     name.to_s
   end
+
+  # Business operations
+
+  def activate
+    raise NotImplementedError, "activate not implemented"
+  end
+
+  def deactivate
+    raise NotImplementedError, "deactivate not implemented"
+  end
+
+  def apply_discount(percent)
+    raise NotImplementedError, "apply_discount not implemented"
+  end
+
+  def restock(quantity)
+    raise NotImplementedError, "restock not implemented"
+  end
+
+  def effective_price
+    raise NotImplementedError, "effective_price not implemented"
+  end
+
+  def is_in_stock
+    raise NotImplementedError, "is_in_stock not implemented"
+  end
 end

@@ -7,7 +7,6 @@ class CreateTournamentRounds < ActiveRecord::Migration[7.1]
       t.datetime :ended_at, null: true
       t.integer :time_limit_minutes, null: false, default: 50
       t.references :tournament, null: false, foreign_key: { to_table: :tournaments }
-      t.references :matches, null: false, foreign_key: { to_table: :matches }
 
       t.timestamps
     end

@@ -10,4 +10,18 @@ class TournamentRegistration < ApplicationRecord
   def to_s
     status.to_s
   end
+
+  # Business operations
+
+  def withdraw
+    raise NotImplementedError, "withdraw not implemented"
+  end
+
+  def disqualify(reason)
+    raise NotImplementedError, "disqualify not implemented"
+  end
+
+  def promote_from_waitlist
+    raise NotImplementedError, "promote_from_waitlist not implemented"
+  end
 end

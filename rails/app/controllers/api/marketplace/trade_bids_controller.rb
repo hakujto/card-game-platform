@@ -15,7 +15,7 @@ module Api
         if @tradeBid.save
           render json: @tradeBid, status: :created
         else
-          render json: { errors: @tradeBid.errors }, status: :unprocessable_entity
+          render json: { errors: @tradeBid.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/trade_bids/:id
       def update
-        if @tradeBid.update(trade_bid_params)
+        if @tradeBid.update(trade_bid_update_params)
           render json: @tradeBid
         else
-          render json: { errors: @tradeBid.errors }, status: :unprocessable_entity
+          render json: { errors: @tradeBid.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def trade_bid_params
-        params.permit(:amount, :placed_at, :is_winning, :listing_id, :bidder_id)
+        params.fetch(:trade_bid, params).permit(:amount, :placed_at, :is_winning, :listing_id, :bidder_id)
+      end
+
+      def trade_bid_update_params
+        params.fetch(:trade_bid, params).permit(:amount, :placed_at, :is_winning, :listing_id, :bidder_id)
       end
     end
   end

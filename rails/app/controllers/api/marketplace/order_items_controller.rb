@@ -15,7 +15,7 @@ module Api
         if @orderItem.save
           render json: @orderItem, status: :created
         else
-          render json: { errors: @orderItem.errors }, status: :unprocessable_entity
+          render json: { errors: @orderItem.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/order_items/:id
       def update
-        if @orderItem.update(order_item_params)
+        if @orderItem.update(order_item_update_params)
           render json: @orderItem
         else
-          render json: { errors: @orderItem.errors }, status: :unprocessable_entity
+          render json: { errors: @orderItem.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def order_item_params
-        params.permit(:quantity, :price_at_purchase, :foil, :order_id, :product_id)
+        params.fetch(:order_item, params).permit(:quantity, :price_at_purchase, :foil, :order_id, :product_id)
+      end
+
+      def order_item_update_params
+        params.fetch(:order_item, params).permit(:quantity, :price_at_purchase, :foil, :order_id, :product_id)
       end
     end
   end

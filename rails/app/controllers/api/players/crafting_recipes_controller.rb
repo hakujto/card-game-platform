@@ -15,7 +15,7 @@ module Api
         if @craftingRecipe.save
           render json: @craftingRecipe, status: :created
         else
-          render json: { errors: @craftingRecipe.errors }, status: :unprocessable_entity
+          render json: { errors: @craftingRecipe.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/crafting_recipes/:id
       def update
-        if @craftingRecipe.update(crafting_recipe_params)
+        if @craftingRecipe.update(crafting_recipe_update_params)
           render json: @craftingRecipe
         else
-          render json: { errors: @craftingRecipe.errors }, status: :unprocessable_entity
+          render json: { errors: @craftingRecipe.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def crafting_recipe_params
-        params.permit(:dust_cost, :is_available, :result_card_id)
+        params.fetch(:crafting_recipe, params).permit(:dust_cost, :is_available, :result_card_id)
+      end
+
+      def crafting_recipe_update_params
+        params.fetch(:crafting_recipe, params).permit(:dust_cost, :is_available, :result_card_id)
       end
     end
   end

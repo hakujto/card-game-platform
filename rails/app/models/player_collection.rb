@@ -10,4 +10,18 @@ class PlayerCollection < ApplicationRecord
   def to_s
     quantity.to_s
   end
+
+  # Business operations
+
+  def add(quantity)
+    raise NotImplementedError, "add not implemented"
+  end
+
+  def remove(quantity)
+    raise NotImplementedError, "remove not implemented"
+  end
+
+  def estimated_value
+    raise NotImplementedError, "estimated_value not implemented"
+  end
 end

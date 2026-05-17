@@ -15,7 +15,7 @@ module Api
         if @product.save
           render json: @product, status: :created
         else
-          render json: { errors: @product.errors }, status: :unprocessable_entity
+          render json: { errors: @product.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/products/:id
       def update
-        if @product.update(product_params)
+        if @product.update(product_update_params)
           render json: @product
         else
-          render json: { errors: @product.errors }, status: :unprocessable_entity
+          render json: { errors: @product.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,44 @@ module Api
       def destroy
         @product.destroy
         head :no_content
+      end
+
+      # POST /api/products/:id/activate
+      def activate
+        @product = Product.find(params[:id])
+        @product.activate
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
+      end
+
+      # POST /api/products/:id/deactivate
+      def deactivate
+        @product = Product.find(params[:id])
+        @product.deactivate
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
+      end
+
+      # PATCH /api/products/:id/discount
+      def apply_discount
+        @product = Product.find(params[:id])
+        percent = params[:percent]
+        result = @product.apply_discount(percent)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
+      end
+
+      # POST /api/products/:id/restock
+      def restock
+        @product = Product.find(params[:id])
+        quantity = params[:quantity]
+        @product.restock(quantity)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
       end
 
       private
@@ -48,7 +86,11 @@ module Api
       end
 
       def product_params
-        params.permit(:name, :product_type, :price, :stock, :active, :discount_percent, :description, :image_url, :featured, :card_id, :card_set_id)
+        params.fetch(:product, params).permit(:name, :product_type, :price, :stock, :active, :discount_percent, :description, :image_url, :featured, :card_id, :card_set_id)
+      end
+
+      def product_update_params
+        params.fetch(:product, params).permit(:name, :product_type, :price, :stock, :active, :discount_percent, :description, :image_url, :featured, :card_id, :card_set_id)
       end
     end
   end

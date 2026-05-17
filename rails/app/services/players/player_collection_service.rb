@@ -11,5 +11,12 @@ module Players
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def estimated_value(id)
+      instance = PlayerCollection.find(id)
+      result = instance.estimated_value()
+      instance.save!
+      result
+    end
   end
 end

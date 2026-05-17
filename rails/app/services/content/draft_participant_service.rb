@@ -11,5 +11,11 @@ module Content
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def pick_card(id, card_id, pack_number)
+      instance = DraftParticipant.find(id)
+      instance.pick_card(card_id, pack_number)
+      instance.save!
+    end
   end
 end

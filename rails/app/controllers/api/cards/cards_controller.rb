@@ -15,7 +15,7 @@ module Api
         if @card.save
           render json: @card, status: :created
         else
-          render json: { errors: @card.errors }, status: :unprocessable_entity
+          render json: { errors: @card.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/cards/:id
       def update
-        if @card.update(card_params)
+        if @card.update(card_update_params)
           render json: @card
         else
-          render json: { errors: @card.errors }, status: :unprocessable_entity
+          render json: { errors: @card.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,51 @@ module Api
       def destroy
         @card.destroy
         head :no_content
+      end
+
+      # POST /api/cards/:id/ban
+      def ban
+        @card = Card.find(params[:id])
+        @card.ban
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # POST /api/cards/:id/unban
+      def unban
+        @card = Card.find(params[:id])
+        @card.unban
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # POST /api/cards/:id/restrict
+      def restrict
+        @card = Card.find(params[:id])
+        @card.restrict
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # POST /api/cards/:id/unrestrict
+      def unrestrict
+        @card = Card.find(params[:id])
+        @card.unrestrict
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # GET /api/cards/:id/value
+      def calculate_value
+        @card = Card.find(params[:id])
+        result = @card.calculate_value
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
       end
 
       private
@@ -48,7 +93,11 @@ module Api
       end
 
       def card_params
-        params.permit(:name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id, :rulings_id, :abilities_id)
+        params.fetch(:card, params).permit(:name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id)
+      end
+
+      def card_update_params
+        params.fetch(:card, params).permit(:name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id)
       end
     end
   end

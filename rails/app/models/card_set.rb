@@ -9,4 +9,10 @@ class CardSet < ApplicationRecord
   def to_s
     name.to_s
   end
+
+  # Business operations
+
+  def is_legal_in_standard
+    raise NotImplementedError, "is_legal_in_standard not implemented"
+  end
 end

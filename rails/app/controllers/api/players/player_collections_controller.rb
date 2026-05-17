@@ -15,7 +15,7 @@ module Api
         if @playerCollection.save
           render json: @playerCollection, status: :created
         else
-          render json: { errors: @playerCollection.errors }, status: :unprocessable_entity
+          render json: { errors: @playerCollection.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/player_collections/:id
       def update
-        if @playerCollection.update(player_collection_params)
+        if @playerCollection.update(player_collection_update_params)
           render json: @playerCollection
         else
-          render json: { errors: @playerCollection.errors }, status: :unprocessable_entity
+          render json: { errors: @playerCollection.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,15 @@ module Api
       def destroy
         @playerCollection.destroy
         head :no_content
+      end
+
+      # GET /api/player_collections/:id/value
+      def estimated_value
+        @playerCollection = PlayerCollection.find(params[:id])
+        result = @playerCollection.estimated_value
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerCollection not found' }, status: :not_found
       end
 
       private
@@ -48,7 +57,11 @@ module Api
       end
 
       def player_collection_params
-        params.permit(:quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id)
+        params.fetch(:player_collection, params).permit(:quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id)
+      end
+
+      def player_collection_update_params
+        params.fetch(:player_collection, params).permit(:quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id)
       end
     end
   end

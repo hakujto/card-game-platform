@@ -15,7 +15,7 @@ module Api
         if @cardRuling.save
           render json: @cardRuling, status: :created
         else
-          render json: { errors: @cardRuling.errors }, status: :unprocessable_entity
+          render json: { errors: @cardRuling.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/card_rulings/:id
       def update
-        if @cardRuling.update(card_ruling_params)
+        if @cardRuling.update(card_ruling_update_params)
           render json: @cardRuling
         else
-          render json: { errors: @cardRuling.errors }, status: :unprocessable_entity
+          render json: { errors: @cardRuling.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def card_ruling_params
-        params.permit(:ruling_text, :published_at, :source, :card_id)
+        params.fetch(:card_ruling, params).permit(:ruling_text, :published_at, :source, :card_id)
+      end
+
+      def card_ruling_update_params
+        params.fetch(:card_ruling, params).permit(:ruling_text, :published_at, :source, :card_id)
       end
     end
   end

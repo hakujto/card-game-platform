@@ -15,7 +15,7 @@ module Api
         if @tradelisting.save
           render json: @tradelisting, status: :created
         else
-          render json: { errors: @tradelisting.errors }, status: :unprocessable_entity
+          render json: { errors: @tradelisting.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/tradelistings/:id
       def update
-        if @tradelisting.update(tradelisting_params)
+        if @tradelisting.update(tradelisting_update_params)
           render json: @tradelisting
         else
-          render json: { errors: @tradelisting.errors }, status: :unprocessable_entity
+          render json: { errors: @tradelisting.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,34 @@ module Api
       def destroy
         @tradelisting.destroy
         head :no_content
+      end
+
+      # POST /api/tradelistings/:id/close
+      def close
+        @tradelisting = Tradelisting.find(params[:id])
+        @tradelisting.close
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tradelisting not found' }, status: :not_found
+      end
+
+      # PATCH /api/tradelistings/:id/extend
+      def extend
+        @tradelisting = Tradelisting.find(params[:id])
+        days = params[:days]
+        @tradelisting.extend(days)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tradelisting not found' }, status: :not_found
+      end
+
+      # DELETE /api/tradelistings/:id/cancel
+      def cancel
+        @tradelisting = Tradelisting.find(params[:id])
+        @tradelisting.cancel
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tradelisting not found' }, status: :not_found
       end
 
       private
@@ -48,7 +76,11 @@ module Api
       end
 
       def tradelisting_params
-        params.permit(:listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id)
+        params.fetch(:tradelisting, params).permit(:listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id)
+      end
+
+      def tradelisting_update_params
+        params.fetch(:tradelisting, params).permit(:listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id)
       end
     end
   end

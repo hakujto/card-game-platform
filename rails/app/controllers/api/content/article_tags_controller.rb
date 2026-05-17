@@ -15,7 +15,7 @@ module Api
         if @articleTag.save
           render json: @articleTag, status: :created
         else
-          render json: { errors: @articleTag.errors }, status: :unprocessable_entity
+          render json: { errors: @articleTag.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/article_tags/:id
       def update
-        if @articleTag.update(article_tag_params)
+        if @articleTag.update(article_tag_update_params)
           render json: @articleTag
         else
-          render json: { errors: @articleTag.errors }, status: :unprocessable_entity
+          render json: { errors: @articleTag.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def article_tag_params
-        params.permit(:name, :slug)
+        params.fetch(:article_tag, params).permit(:name, :slug)
+      end
+
+      def article_tag_update_params
+        params.fetch(:article_tag, params).permit(:name, :slug)
       end
     end
   end

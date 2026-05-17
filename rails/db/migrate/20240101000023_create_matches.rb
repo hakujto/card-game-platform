@@ -8,10 +8,9 @@ class CreateMatches < ActiveRecord::Migration[7.1]
       t.datetime :started_at, null: true
       t.datetime :ended_at, null: true
       t.text :result_notes, null: true
-      t.references :round, null: true, foreign_key: { to_table: :tournament_rounds }
+      t.references :round, null: false, foreign_key: { to_table: :tournament_rounds }
       t.references :player1, null: false, foreign_key: { to_table: :players }
       t.references :player2, null: true, foreign_key: { to_table: :players }
-      t.references :games, null: true, foreign_key: { to_table: :games }
 
       t.timestamps
     end

@@ -3,11 +3,12 @@ require 'rails_helper'
 RSpec.describe "Api::Players::Players", type: :request do
   let(:valid_attributes) do
     {
-        display_name: 'test',
-        rating: 1,
-        peak_rating: 1,
-        is_verified: true,
-        created_at: Time.now
+      display_name: 'test',
+      rank: :bronze,
+      rating: 1,
+      peak_rating: 1,
+      is_verified: true,
+      created_at: Time.now
     }
   end
 
@@ -21,7 +22,14 @@ RSpec.describe "Api::Players::Players", type: :request do
   describe "POST /api/players" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/players", params: { player: valid_attributes }, as: :json
+        post "/api/players", params: { player: {
+      display_name: 'test',
+      rank: :bronze,
+      rating: 1,
+      peak_rating: 1,
+      is_verified: true,
+      created_at: Time.now
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end
@@ -53,6 +61,18 @@ RSpec.describe "Api::Players::Players", type: :request do
     it "returns 204" do
       delete "/api/players/#{player.id}"
       expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe "POST /api/players (rule: rating_range)" do
+    it "create fails when rating range violated" do
+      # Rating must be between 0 and 9999
+      post "/api/players", params: { player: {
+        display_name: 'test',
+        created_at: Time.now,
+        rating: 10000,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 end

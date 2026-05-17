@@ -12,7 +12,6 @@ class CreatePlayers < ActiveRecord::Migration[7.1]
       t.boolean :is_verified, null: false, default: false
       t.datetime :last_active_at, null: true
       t.references :user, null: true, foreign_key: false
-      t.references :season_stats, null: false, foreign_key: { to_table: :player_season_statses }
 
       t.timestamps
     end

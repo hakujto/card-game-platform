@@ -7,4 +7,14 @@ class ArticleTag < ApplicationRecord
   def to_s
     name.to_s
   end
+
+  # Business operations
+
+  def rename(new_name)
+    raise NotImplementedError, "rename not implemented"
+  end
+
+  def article_count
+    raise NotImplementedError, "article_count not implemented"
+  end
 end

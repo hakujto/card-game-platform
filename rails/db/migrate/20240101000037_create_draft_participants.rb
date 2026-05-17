@@ -3,9 +3,8 @@ class CreateDraftParticipants < ActiveRecord::Migration[7.1]
     create_table :draft_participants do |t|
       t.integer :seat_number, null: false
       t.datetime :joined_at, null: false
-      t.references :session, null: true, foreign_key: { to_table: :draft_sessions }
+      t.references :session, null: false, foreign_key: { to_table: :draft_sessions }
       t.references :player, null: false, foreign_key: { to_table: :players }
-      t.references :drafted_cards, null: true, foreign_key: { to_table: :draft_picks }
 
       t.timestamps
     end

@@ -18,8 +18,6 @@ class CreateCards < ActiveRecord::Migration[7.1]
       t.boolean :is_restricted, null: false, default: false
       t.integer :power_level, null: false, default: 1
       t.references :set, null: false, foreign_key: { to_table: :card_sets }
-      t.references :rulings, null: true, foreign_key: { to_table: :card_rulings }
-      t.references :abilities, null: true, foreign_key: { to_table: :card_abilities }
 
       t.timestamps
     end

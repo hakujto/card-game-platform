@@ -1,9 +1,16 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Content::ArticleTagAssignments", type: :request do
+  before(:each) do
+    @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_article = Article.create!({ title: 'test', slug: 'test', body: 'test', status: :draft, article_type: :guide, view_count: 1, created_at: Time.now, updated_at: Time.now, author_id: @aux_player.id })
+    @dep_tag = ArticleTag.create!({ name: 'test', slug: 'test' })
+  end
+
   let(:valid_attributes) do
     {
-        # add required fields here
+      article_id: @dep_article.id,
+      tag_id: @dep_tag.id
     }
   end
 
@@ -17,7 +24,10 @@ RSpec.describe "Api::Content::ArticleTagAssignments", type: :request do
   describe "POST /api/article_tag_assignments" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/article_tag_assignments", params: { article_tag_assignment: valid_attributes }, as: :json
+        post "/api/article_tag_assignments", params: { article_tag_assignment: {
+      article_id: @dep_article.id,
+      tag_id: @dep_tag.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

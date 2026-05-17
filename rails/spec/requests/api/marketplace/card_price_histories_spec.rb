@@ -1,14 +1,20 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Marketplace::CardPriceHistories", type: :request do
+  before(:each) do
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
+    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+  end
+
   let(:valid_attributes) do
     {
-        price_date: Date.today,
-        avg_price: '0.00',
-        min_price: '0.00',
-        max_price: '0.00',
-        volume: 1,
-        foil: true
+      price_date: Date.today,
+      avg_price: '0.00',
+      min_price: '0.00',
+      max_price: '0.00',
+      volume: 1,
+      foil: true,
+      card_id: @dep_card.id
     }
   end
 
@@ -22,7 +28,15 @@ RSpec.describe "Api::Marketplace::CardPriceHistories", type: :request do
   describe "POST /api/card_price_histories" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/card_price_histories", params: { card_price_history: valid_attributes }, as: :json
+        post "/api/card_price_histories", params: { card_price_history: {
+      price_date: Date.today,
+      avg_price: '0.00',
+      min_price: '0.00',
+      max_price: '0.00',
+      volume: 1,
+      foil: true,
+      card_id: @dep_card.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

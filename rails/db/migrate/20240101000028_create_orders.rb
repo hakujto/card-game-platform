@@ -12,7 +12,6 @@ class CreateOrders < ActiveRecord::Migration[7.1]
       t.datetime :paid_at, null: true
       t.datetime :shipped_at, null: true
       t.references :player, null: false, foreign_key: { to_table: :players }
-      t.references :items, null: false, foreign_key: { to_table: :order_items }
       t.references :coupon, null: true, foreign_key: { to_table: :coupons }
 
       t.timestamps

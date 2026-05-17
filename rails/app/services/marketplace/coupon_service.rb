@@ -11,5 +11,17 @@ module Marketplace
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def redeem(id)
+      instance = Coupon.find(id)
+      instance.redeem()
+      instance.save!
+    end
+
+    def deactivate(id)
+      instance = Coupon.find(id)
+      instance.deactivate()
+      instance.save!
+    end
   end
 end

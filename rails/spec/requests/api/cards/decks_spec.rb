@@ -1,15 +1,21 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Cards::Decks", type: :request do
+  before(:each) do
+    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+  end
+
   let(:valid_attributes) do
     {
-        name: 'test',
-        is_public: true,
-        is_tournament_legal: true,
-        wins: 1,
-        losses: 1,
-        created_at: Time.now,
-        updated_at: Time.now
+      name: 'test',
+      format: :standard,
+      is_public: true,
+      is_tournament_legal: true,
+      wins: 1,
+      losses: 1,
+      created_at: Time.now,
+      updated_at: Time.now,
+      player_id: @dep_player.id
     }
   end
 
@@ -23,7 +29,17 @@ RSpec.describe "Api::Cards::Decks", type: :request do
   describe "POST /api/decks" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/decks", params: { deck: valid_attributes }, as: :json
+        post "/api/decks", params: { deck: {
+      name: 'test',
+      format: :standard,
+      is_public: true,
+      is_tournament_legal: true,
+      wins: 1,
+      losses: 1,
+      created_at: Time.now,
+      updated_at: Time.now,
+      player_id: @dep_player.id
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

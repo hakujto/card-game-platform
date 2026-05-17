@@ -3,10 +3,11 @@ require 'rails_helper'
 RSpec.describe "Api::Cards::CardSets", type: :request do
   let(:valid_attributes) do
     {
-        name: 'test',
-        code: 'test',
-        release_date: Date.today,
-        total_cards: 1
+      name: 'test',
+      code: 'test',
+      release_date: Date.today,
+      set_type: :core,
+      total_cards: 1
     }
   end
 
@@ -20,7 +21,13 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
   describe "POST /api/card_sets" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/card_sets", params: { card_set: valid_attributes }, as: :json
+        post "/api/card_sets", params: { card_set: {
+      name: 'test',
+      code: 'test',
+      release_date: Date.today,
+      set_type: :core,
+      total_cards: 1
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

@@ -242,3 +242,15 @@ DELETE /api/content/streams/:id
 ```bash
 bundle exec rspec
 ```
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 3000:3000 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up Ruby, installs gems, runs migrations, and executes RSpec.

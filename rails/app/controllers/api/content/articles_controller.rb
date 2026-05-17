@@ -15,7 +15,7 @@ module Api
         if @article.save
           render json: @article, status: :created
         else
-          render json: { errors: @article.errors }, status: :unprocessable_entity
+          render json: { errors: @article.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/articles/:id
       def update
-        if @article.update(article_params)
+        if @article.update(article_update_params)
           render json: @article
         else
-          render json: { errors: @article.errors }, status: :unprocessable_entity
+          render json: { errors: @article.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,33 @@ module Api
       def destroy
         @article.destroy
         head :no_content
+      end
+
+      # POST /api/articles/:id/publish
+      def publish
+        @article = Article.find(params[:id])
+        @article.publish
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Article not found' }, status: :not_found
+      end
+
+      # POST /api/articles/:id/archive
+      def archive
+        @article = Article.find(params[:id])
+        @article.archive
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Article not found' }, status: :not_found
+      end
+
+      # POST /api/articles/:id/view
+      def increment_view
+        @article = Article.find(params[:id])
+        @article.increment_view
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Article not found' }, status: :not_found
       end
 
       private
@@ -48,7 +75,11 @@ module Api
       end
 
       def article_params
-        params.permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :view_count, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id)
+        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :view_count, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id)
+      end
+
+      def article_update_params
+        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :view_count, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id)
       end
     end
   end

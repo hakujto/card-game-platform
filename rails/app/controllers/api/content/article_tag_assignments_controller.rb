@@ -15,7 +15,7 @@ module Api
         if @articleTagAssignment.save
           render json: @articleTagAssignment, status: :created
         else
-          render json: { errors: @articleTagAssignment.errors }, status: :unprocessable_entity
+          render json: { errors: @articleTagAssignment.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/article_tag_assignments/:id
       def update
-        if @articleTagAssignment.update(article_tag_assignment_params)
+        if @articleTagAssignment.update(article_tag_assignment_update_params)
           render json: @articleTagAssignment
         else
-          render json: { errors: @articleTagAssignment.errors }, status: :unprocessable_entity
+          render json: { errors: @articleTagAssignment.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def article_tag_assignment_params
-        params.permit(:article_id, :tag_id)
+        params.fetch(:article_tag_assignment, params).permit(:article_id, :tag_id)
+      end
+
+      def article_tag_assignment_update_params
+        params.fetch(:article_tag_assignment, params).permit(:article_id, :tag_id)
       end
     end
   end

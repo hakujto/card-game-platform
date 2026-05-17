@@ -15,7 +15,7 @@ module Api
         if @cardSet.save
           render json: @cardSet, status: :created
         else
-          render json: { errors: @cardSet.errors }, status: :unprocessable_entity
+          render json: { errors: @cardSet.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/card_sets/:id
       def update
-        if @cardSet.update(card_set_params)
+        if @cardSet.update(card_set_update_params)
           render json: @cardSet
         else
-          render json: { errors: @cardSet.errors }, status: :unprocessable_entity
+          render json: { errors: @cardSet.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def card_set_params
-        params.permit(:name, :code, :release_date, :set_type, :total_cards, :description, :logo_url)
+        params.fetch(:card_set, params).permit(:name, :code, :release_date, :set_type, :total_cards, :description, :logo_url)
+      end
+
+      def card_set_update_params
+        params.fetch(:card_set, params).permit(:name, :code, :release_date, :set_type, :total_cards, :description, :logo_url)
       end
     end
   end

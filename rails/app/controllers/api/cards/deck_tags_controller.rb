@@ -15,7 +15,7 @@ module Api
         if @deckTag.save
           render json: @deckTag, status: :created
         else
-          render json: { errors: @deckTag.errors }, status: :unprocessable_entity
+          render json: { errors: @deckTag.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/deck_tags/:id
       def update
-        if @deckTag.update(deck_tag_params)
+        if @deckTag.update(deck_tag_update_params)
           render json: @deckTag
         else
-          render json: { errors: @deckTag.errors }, status: :unprocessable_entity
+          render json: { errors: @deckTag.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,16 @@ module Api
       def destroy
         @deckTag.destroy
         head :no_content
+      end
+
+      # POST /api/deck_tags/:id/merge
+      def merge_into
+        @deckTag = DeckTag.find(params[:id])
+        target_tag_id = params[:target_tag_id]
+        @deckTag.merge_into(target_tag_id)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckTag not found' }, status: :not_found
       end
 
       private
@@ -48,7 +58,11 @@ module Api
       end
 
       def deck_tag_params
-        params.permit(:name, :color)
+        params.fetch(:deck_tag, params).permit(:name, :color)
+      end
+
+      def deck_tag_update_params
+        params.fetch(:deck_tag, params).permit(:name, :color)
       end
     end
   end

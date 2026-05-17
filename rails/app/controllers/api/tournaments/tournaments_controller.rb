@@ -15,7 +15,7 @@ module Api
         if @tournament.save
           render json: @tournament, status: :created
         else
-          render json: { errors: @tournament.errors }, status: :unprocessable_entity
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/tournaments/:id
       def update
-        if @tournament.update(tournament_params)
+        if @tournament.update(tournament_update_params)
           render json: @tournament
         else
-          render json: { errors: @tournament.errors }, status: :unprocessable_entity
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,51 @@ module Api
       def destroy
         @tournament.destroy
         head :no_content
+      end
+
+      # POST /api/tournaments/:id/start
+      def start
+        @tournament = Tournament.find(params[:id])
+        @tournament.start
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # POST /api/tournaments/:id/cancel
+      def cancel
+        @tournament = Tournament.find(params[:id])
+        @tournament.cancel
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # POST /api/tournaments/:id/complete
+      def complete
+        @tournament = Tournament.find(params[:id])
+        @tournament.complete
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # POST /api/tournaments/:id/rounds
+      def generate_round
+        @tournament = Tournament.find(params[:id])
+        @tournament.generate_round
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # GET /api/tournaments/:id/prizes
+      def calculate_prize_distribution
+        @tournament = Tournament.find(params[:id])
+        result = @tournament.calculate_prize_distribution
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
       end
 
       private
@@ -48,7 +93,11 @@ module Api
       end
 
       def tournament_params
-        params.permit(:name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id)
+        params.fetch(:tournament, params).permit(:name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
+      end
+
+      def tournament_update_params
+        params.fetch(:tournament, params).permit(:name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
       end
     end
   end

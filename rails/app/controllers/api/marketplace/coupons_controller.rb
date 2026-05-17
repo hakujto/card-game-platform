@@ -15,7 +15,7 @@ module Api
         if @coupon.save
           render json: @coupon, status: :created
         else
-          render json: { errors: @coupon.errors }, status: :unprocessable_entity
+          render json: { errors: @coupon.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/coupons/:id
       def update
-        if @coupon.update(coupon_params)
+        if @coupon.update(coupon_update_params)
           render json: @coupon
         else
-          render json: { errors: @coupon.errors }, status: :unprocessable_entity
+          render json: { errors: @coupon.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,24 @@ module Api
       def destroy
         @coupon.destroy
         head :no_content
+      end
+
+      # POST /api/coupons/:id/redeem
+      def redeem
+        @coupon = Coupon.find(params[:id])
+        @coupon.redeem
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Coupon not found' }, status: :not_found
+      end
+
+      # POST /api/coupons/:id/deactivate
+      def deactivate
+        @coupon = Coupon.find(params[:id])
+        @coupon.deactivate
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Coupon not found' }, status: :not_found
       end
 
       private
@@ -48,7 +66,11 @@ module Api
       end
 
       def coupon_params
-        params.permit(:code, :discount_type, :discount_value, :min_order_value, :max_uses, :uses_count, :valid_from, :valid_until, :is_active)
+        params.fetch(:coupon, params).permit(:code, :discount_type, :discount_value, :min_order_value, :max_uses, :uses_count, :valid_from, :valid_until, :is_active)
+      end
+
+      def coupon_update_params
+        params.fetch(:coupon, params).permit(:code, :discount_type, :discount_value, :min_order_value, :max_uses, :uses_count, :valid_from, :valid_until, :is_active)
       end
     end
   end

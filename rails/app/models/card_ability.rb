@@ -6,7 +6,24 @@ class CardAbility < ApplicationRecord
 
   belongs_to :card, class_name: 'Card'
 
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Keyword ability must have a keyword name') if (ability_type == 'keyword') && keyword.nil?
+  end
+
   def to_s
     ability_type.to_s
+  end
+
+  # Business operations
+
+  def is_usable_at(timing)
+    raise NotImplementedError, "is_usable_at not implemented"
+  end
+
+  def describe
+    raise NotImplementedError, "describe not implemented"
   end
 end

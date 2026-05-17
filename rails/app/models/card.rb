@@ -7,12 +7,49 @@ class Card < ApplicationRecord
   enum :legal_formats, { standard: 0, extended: 1, legacy: 2, vintage: 3, commander: 4, draft: 5 }, prefix: :legal_formats
 
   belongs_to :set, class_name: 'CardSet'
-  belongs_to :rulings, class_name: 'CardRuling', optional: true
-  belongs_to :abilities, class_name: 'CardAbility', optional: true
 
   validates :name, presence: true, length: { maximum: 200 }
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:mana_cost_range, 'mana_cost must be between 0 and 20') unless ((mana_cost.nil? || (mana_cost >= 0 && mana_cost <= 20)))
+    errors.add(:power_level_range, 'power_level must be between 1 and 10') unless ((power_level.nil? || (power_level >= 1 && power_level <= 10)))
+    errors.add(:not_banned_and_restricted, 'Card cannot be both banned and restricted at the same time') unless (!((is_banned == true && is_restricted == true)))
+  end
+
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Creature card must have attack and defense') if (card_type == 'creature') && !(!attack.nil? && !defense.nil?)
+    errors.add(:base, 'Planeswalker card must have loyalty') if (card_type == 'planeswalker') && loyalty.nil?
+  end
+
   def to_s
     name.to_s
+  end
+
+  # Business operations
+
+  def ban
+    raise NotImplementedError, "ban not implemented"
+  end
+
+  def unban
+    raise NotImplementedError, "unban not implemented"
+  end
+
+  def restrict
+    raise NotImplementedError, "restrict not implemented"
+  end
+
+  def unrestrict
+    raise NotImplementedError, "unrestrict not implemented"
+  end
+
+  def calculate_value
+    raise NotImplementedError, "calculate_value not implemented"
   end
 end

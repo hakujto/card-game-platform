@@ -15,7 +15,7 @@ module Api
         if @tournamentRound.save
           render json: @tournamentRound, status: :created
         else
-          render json: { errors: @tournamentRound.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentRound.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/tournament_rounds/:id
       def update
-        if @tournamentRound.update(tournament_round_params)
+        if @tournamentRound.update(tournament_round_update_params)
           render json: @tournamentRound
         else
-          render json: { errors: @tournamentRound.errors }, status: :unprocessable_entity
+          render json: { errors: @tournamentRound.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,33 @@ module Api
       def destroy
         @tournamentRound.destroy
         head :no_content
+      end
+
+      # POST /api/tournament_rounds/:id/start
+      def start
+        @tournamentRound = TournamentRound.find(params[:id])
+        @tournamentRound.start
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentRound not found' }, status: :not_found
+      end
+
+      # POST /api/tournament_rounds/:id/complete
+      def complete
+        @tournamentRound = TournamentRound.find(params[:id])
+        @tournamentRound.complete
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentRound not found' }, status: :not_found
+      end
+
+      # POST /api/tournament_rounds/:id/pairings
+      def generate_pairings
+        @tournamentRound = TournamentRound.find(params[:id])
+        @tournamentRound.generate_pairings
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentRound not found' }, status: :not_found
       end
 
       private
@@ -48,7 +75,11 @@ module Api
       end
 
       def tournament_round_params
-        params.permit(:round_number, :status, :started_at, :ended_at, :time_limit_minutes, :tournament_id, :matches_id)
+        params.fetch(:tournament_round, params).permit(:round_number, :status, :started_at, :ended_at, :time_limit_minutes, :tournament_id)
+      end
+
+      def tournament_round_update_params
+        params.fetch(:tournament_round, params).permit(:round_number, :status, :started_at, :ended_at, :time_limit_minutes, :tournament_id)
       end
     end
   end

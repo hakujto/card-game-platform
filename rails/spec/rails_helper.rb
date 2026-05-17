@@ -3,6 +3,8 @@ require File.expand_path('../config/environment', __dir__)
 require 'rspec/rails'
 require 'factory_bot_rails'
 
+ActiveRecord::Migration.maintain_test_schema!
+
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.use_transactional_fixtures = true
@@ -11,5 +13,8 @@ RSpec.configure do |config|
 end
 
 Shoulda::Matchers.configure do |config|
-  config.integrate { |with| with.test_framework(:rspec).library(:rails) }
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
 end

@@ -6,7 +6,6 @@ class CreateDraftSessions < ActiveRecord::Migration[7.1]
       t.integer :seats, null: false, default: 8
       t.datetime :completed_at, null: true
       t.references :card_set, null: false, foreign_key: { to_table: :card_sets }
-      t.references :participants, null: false, foreign_key: { to_table: :draft_participants }
 
       t.timestamps
     end

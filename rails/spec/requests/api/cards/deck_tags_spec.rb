@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Api::Cards::DeckTags", type: :request do
   let(:valid_attributes) do
     {
-        name: 'test'
+      name: 'test'
     }
   end
 
@@ -17,7 +17,9 @@ RSpec.describe "Api::Cards::DeckTags", type: :request do
   describe "POST /api/deck_tags" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/deck_tags", params: { deck_tag: valid_attributes }, as: :json
+        post "/api/deck_tags", params: { deck_tag: {
+      name: 'test'
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

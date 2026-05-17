@@ -15,7 +15,7 @@ module Api
         if @season.save
           render json: @season, status: :created
         else
-          render json: { errors: @season.errors }, status: :unprocessable_entity
+          render json: { errors: @season.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/seasons/:id
       def update
-        if @season.update(season_params)
+        if @season.update(season_update_params)
           render json: @season
         else
-          render json: { errors: @season.errors }, status: :unprocessable_entity
+          render json: { errors: @season.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,33 @@ module Api
       def destroy
         @season.destroy
         head :no_content
+      end
+
+      # POST /api/seasons/:id/activate
+      def activate
+        @season = Season.find(params[:id])
+        @season.activate
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Season not found' }, status: :not_found
+      end
+
+      # POST /api/seasons/:id/deactivate
+      def deactivate
+        @season = Season.find(params[:id])
+        @season.deactivate
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Season not found' }, status: :not_found
+      end
+
+      # POST /api/seasons/:id/finalize
+      def finalize_rewards
+        @season = Season.find(params[:id])
+        @season.finalize_rewards
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Season not found' }, status: :not_found
       end
 
       private
@@ -48,7 +75,11 @@ module Api
       end
 
       def season_params
-        params.permit(:name, :start_date, :end_date, :format, :is_active, :reward_description)
+        params.fetch(:season, params).permit(:name, :start_date, :end_date, :format, :is_active, :reward_description)
+      end
+
+      def season_update_params
+        params.fetch(:season, params).permit(:name, :start_date, :end_date, :format, :is_active, :reward_description)
       end
     end
   end

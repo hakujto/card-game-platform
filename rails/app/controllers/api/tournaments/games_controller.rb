@@ -15,7 +15,7 @@ module Api
         if @game.save
           render json: @game, status: :created
         else
-          render json: { errors: @game.errors }, status: :unprocessable_entity
+          render json: { errors: @game.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/games/:id
       def update
-        if @game.update(game_params)
+        if @game.update(game_update_params)
           render json: @game
         else
-          render json: { errors: @game.errors }, status: :unprocessable_entity
+          render json: { errors: @game.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,16 @@ module Api
       def destroy
         @game.destroy
         head :no_content
+      end
+
+      # POST /api/games/:id/winner
+      def record_winner
+        @game = Game.find(params[:id])
+        winner_side = params[:winner_side]
+        @game.record_winner(winner_side)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Game not found' }, status: :not_found
       end
 
       private
@@ -48,7 +58,11 @@ module Api
       end
 
       def game_params
-        params.permit(:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
+        params.fetch(:game, params).permit(:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
+      end
+
+      def game_update_params
+        params.fetch(:game, params).permit(:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
       end
     end
   end

@@ -15,7 +15,7 @@ module Api
         if @achievement.save
           render json: @achievement, status: :created
         else
-          render json: { errors: @achievement.errors }, status: :unprocessable_entity
+          render json: { errors: @achievement.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/achievements/:id
       def update
-        if @achievement.update(achievement_params)
+        if @achievement.update(achievement_update_params)
           render json: @achievement
         else
-          render json: { errors: @achievement.errors }, status: :unprocessable_entity
+          render json: { errors: @achievement.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def achievement_params
-        params.permit(:name, :description, :icon_url, :points, :rarity, :is_hidden)
+        params.fetch(:achievement, params).permit(:name, :description, :icon_url, :points, :rarity, :is_hidden)
+      end
+
+      def achievement_update_params
+        params.fetch(:achievement, params).permit(:name, :description, :icon_url, :points, :rarity, :is_hidden)
       end
     end
   end

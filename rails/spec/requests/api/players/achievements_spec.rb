@@ -3,10 +3,11 @@ require 'rails_helper'
 RSpec.describe "Api::Players::Achievements", type: :request do
   let(:valid_attributes) do
     {
-        name: 'test',
-        description: 'test',
-        points: 1,
-        is_hidden: true
+      name: 'test',
+      description: 'test',
+      points: 1,
+      rarity: :common,
+      is_hidden: true
     }
   end
 
@@ -20,7 +21,13 @@ RSpec.describe "Api::Players::Achievements", type: :request do
   describe "POST /api/achievements" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/achievements", params: { achievement: valid_attributes }, as: :json
+        post "/api/achievements", params: { achievement: {
+      name: 'test',
+      description: 'test',
+      points: 1,
+      rarity: :common,
+      is_hidden: true
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

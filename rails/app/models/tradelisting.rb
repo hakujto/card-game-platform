@@ -7,9 +7,45 @@ class Tradelisting < ApplicationRecord
 
   belongs_to :seller, class_name: 'Player'
   belongs_to :card, class_name: 'Card'
-  belongs_to :bids, class_name: 'TradeBid', optional: true
+
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:quantity_positive, 'Listing quantity must be between 1 and 9999') unless ((quantity.nil? || (quantity >= 1 && quantity <= 9999)))
+  end
+
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Fixed price listing must have an asking price') if (listing_type == 'fixed_price') && asking_price.nil?
+    errors.add(:base, 'Auction listing must have a start price and end time') if (listing_type == 'auction') && !(!auction_start_price.nil? && !auction_end_time.nil?)
+  end
 
   def to_s
     listing_type.to_s
+  end
+
+  # Business operations
+
+  def close
+    raise NotImplementedError, "close not implemented"
+  end
+
+  def extend(days)
+    raise NotImplementedError, "extend not implemented"
+  end
+
+  def cancel
+    raise NotImplementedError, "cancel not implemented"
+  end
+
+  def is_expired
+    raise NotImplementedError, "is_expired not implemented"
+  end
+
+  def finalize_auction
+    raise NotImplementedError, "finalize_auction not implemented"
   end
 end

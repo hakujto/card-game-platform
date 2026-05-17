@@ -15,7 +15,7 @@ module Api
         if @draftPick.save
           render json: @draftPick, status: :created
         else
-          render json: { errors: @draftPick.errors }, status: :unprocessable_entity
+          render json: { errors: @draftPick.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/draft_picks/:id
       def update
-        if @draftPick.update(draft_pick_params)
+        if @draftPick.update(draft_pick_update_params)
           render json: @draftPick
         else
-          render json: { errors: @draftPick.errors }, status: :unprocessable_entity
+          render json: { errors: @draftPick.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def draft_pick_params
-        params.permit(:pick_number, :pack_number, :picked_at, :participant_id, :card_id)
+        params.fetch(:draft_pick, params).permit(:pick_number, :pack_number, :picked_at, :participant_id, :card_id)
+      end
+
+      def draft_pick_update_params
+        params.fetch(:draft_pick, params).permit(:pick_number, :pack_number, :picked_at, :participant_id, :card_id)
       end
     end
   end

@@ -9,4 +9,18 @@ class Friendship < ApplicationRecord
   def to_s
     status.to_s
   end
+
+  # Business operations
+
+  def accept
+    raise NotImplementedError, "accept not implemented"
+  end
+
+  def decline
+    raise NotImplementedError, "decline not implemented"
+  end
+
+  def block
+    raise NotImplementedError, "block not implemented"
+  end
 end

@@ -7,4 +7,14 @@ class DeckSideboardCard < ApplicationRecord
   def to_s
     quantity.to_s
   end
+
+  # Business operations
+
+  def increment(amount)
+    raise NotImplementedError, "increment not implemented"
+  end
+
+  def decrement(amount)
+    raise NotImplementedError, "decrement not implemented"
+  end
 end

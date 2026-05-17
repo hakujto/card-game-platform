@@ -3,12 +3,13 @@ require 'rails_helper'
 RSpec.describe "Api::Marketplace::Products", type: :request do
   let(:valid_attributes) do
     {
-        name: 'test',
-        price: '0.00',
-        stock: 1,
-        active: true,
-        discount_percent: 1,
-        featured: true
+      name: 'test',
+      product_type: :single_card,
+      price: '0.00',
+      stock: 1,
+      active: true,
+      discount_percent: 1,
+      featured: true
     }
   end
 
@@ -22,7 +23,15 @@ RSpec.describe "Api::Marketplace::Products", type: :request do
   describe "POST /api/products" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/products", params: { product: valid_attributes }, as: :json
+        post "/api/products", params: { product: {
+      name: 'test',
+      product_type: :single_card,
+      price: '0.00',
+      stock: 1,
+      active: true,
+      discount_percent: 1,
+      featured: true
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

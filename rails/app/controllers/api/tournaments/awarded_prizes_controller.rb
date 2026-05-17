@@ -15,7 +15,7 @@ module Api
         if @awardedPrize.save
           render json: @awardedPrize, status: :created
         else
-          render json: { errors: @awardedPrize.errors }, status: :unprocessable_entity
+          render json: { errors: @awardedPrize.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/awarded_prizes/:id
       def update
-        if @awardedPrize.update(awarded_prize_params)
+        if @awardedPrize.update(awarded_prize_update_params)
           render json: @awardedPrize
         else
-          render json: { errors: @awardedPrize.errors }, status: :unprocessable_entity
+          render json: { errors: @awardedPrize.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def awarded_prize_params
-        params.permit(:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id)
+        params.fetch(:awarded_prize, params).permit(:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id)
+      end
+
+      def awarded_prize_update_params
+        params.fetch(:awarded_prize, params).permit(:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id)
       end
     end
   end

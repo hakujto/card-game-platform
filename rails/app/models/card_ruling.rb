@@ -8,4 +8,14 @@ class CardRuling < ApplicationRecord
   def to_s
     ruling_text.to_s
   end
+
+  # Business operations
+
+  def is_current
+    raise NotImplementedError, "is_current not implemented"
+  end
+
+  def supersedes_previous
+    raise NotImplementedError, "supersedes_previous not implemented"
+  end
 end

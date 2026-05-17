@@ -11,5 +11,23 @@ module Content
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def start(id)
+      instance = DraftSession.find(id)
+      instance.start()
+      instance.save!
+    end
+
+    def abandon(id)
+      instance = DraftSession.find(id)
+      instance.abandon()
+      instance.save!
+    end
+
+    def complete(id)
+      instance = DraftSession.find(id)
+      instance.complete()
+      instance.save!
+    end
   end
 end

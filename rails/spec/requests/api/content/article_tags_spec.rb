@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe "Api::Content::ArticleTags", type: :request do
   let(:valid_attributes) do
     {
-        name: 'test',
-        slug: 'test'
+      name: 'test',
+      slug: 'test'
     }
   end
 
@@ -18,7 +18,10 @@ RSpec.describe "Api::Content::ArticleTags", type: :request do
   describe "POST /api/article_tags" do
     context "with valid params" do
       it "returns 201" do
-        post "/api/article_tags", params: { article_tag: valid_attributes }, as: :json
+        post "/api/article_tags", params: { article_tag: {
+      name: 'test',
+      slug: 'test'
+        } }, as: :json
         expect(response).to have_http_status(:created)
       end
     end

@@ -15,7 +15,7 @@ module Api
         if @deckTagAssignment.save
           render json: @deckTagAssignment, status: :created
         else
-          render json: { errors: @deckTagAssignment.errors }, status: :unprocessable_entity
+          render json: { errors: @deckTagAssignment.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/deck_tag_assignments/:id
       def update
-        if @deckTagAssignment.update(deck_tag_assignment_params)
+        if @deckTagAssignment.update(deck_tag_assignment_update_params)
           render json: @deckTagAssignment
         else
-          render json: { errors: @deckTagAssignment.errors }, status: :unprocessable_entity
+          render json: { errors: @deckTagAssignment.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def deck_tag_assignment_params
-        params.permit(:deck_id, :tag_id)
+        params.fetch(:deck_tag_assignment, params).permit(:deck_id, :tag_id)
+      end
+
+      def deck_tag_assignment_update_params
+        params.fetch(:deck_tag_assignment, params).permit(:deck_id, :tag_id)
       end
     end
   end

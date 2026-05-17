@@ -15,7 +15,7 @@ module Api
         if @match.save
           render json: @match, status: :created
         else
-          render json: { errors: @match.errors }, status: :unprocessable_entity
+          render json: { errors: @match.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/matches/:id
       def update
-        if @match.update(match_params)
+        if @match.update(match_update_params)
           render json: @match
         else
-          render json: { errors: @match.errors }, status: :unprocessable_entity
+          render json: { errors: @match.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,35 @@ module Api
       def destroy
         @match.destroy
         head :no_content
+      end
+
+      # POST /api/matches/:id/record
+      def record_result
+        @match = Match.find(params[:id])
+        p1_wins = params[:p1_wins]
+        p2_wins = params[:p2_wins]
+        @match.record_result(p1_wins, p2_wins)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # GET /api/matches/:id/winner
+      def determine_winner
+        @match = Match.find(params[:id])
+        result = @match.determine_winner
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # POST /api/matches/:id/draw
+      def draw
+        @match = Match.find(params[:id])
+        @match.draw
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
       end
 
       private
@@ -48,7 +77,11 @@ module Api
       end
 
       def match_params
-        params.permit(:table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id, :games_id)
+        params.fetch(:match, params).permit(:table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id)
+      end
+
+      def match_update_params
+        params.fetch(:match, params).permit(:table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id)
       end
     end
   end

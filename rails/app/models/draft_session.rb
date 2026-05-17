@@ -5,9 +5,26 @@ class DraftSession < ApplicationRecord
   enum :draft_type, { booster: 0, cube: 1, rochester: 2 }, prefix: :draft_type
 
   belongs_to :card_set, class_name: 'CardSet'
-  belongs_to :participants, class_name: 'DraftParticipant'
 
   def to_s
     status.to_s
+  end
+
+  # Business operations
+
+  def start
+    raise NotImplementedError, "start not implemented"
+  end
+
+  def abandon
+    raise NotImplementedError, "abandon not implemented"
+  end
+
+  def complete
+    raise NotImplementedError, "complete not implemented"
+  end
+
+  def is_full
+    raise NotImplementedError, "is_full not implemented"
   end
 end

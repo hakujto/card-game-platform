@@ -15,7 +15,7 @@ module Api
         if @draftParticipant.save
           render json: @draftParticipant, status: :created
         else
-          render json: { errors: @draftParticipant.errors }, status: :unprocessable_entity
+          render json: { errors: @draftParticipant.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/draft_participants/:id
       def update
-        if @draftParticipant.update(draft_participant_params)
+        if @draftParticipant.update(draft_participant_update_params)
           render json: @draftParticipant
         else
-          render json: { errors: @draftParticipant.errors }, status: :unprocessable_entity
+          render json: { errors: @draftParticipant.errors }, status: :unprocessable_content
         end
       end
 
@@ -37,6 +37,17 @@ module Api
       def destroy
         @draftParticipant.destroy
         head :no_content
+      end
+
+      # POST /api/draft_participants/:id/pick
+      def pick_card
+        @draftParticipant = DraftParticipant.find(params[:id])
+        card_id = params[:card_id]
+        pack_number = params[:pack_number]
+        @draftParticipant.pick_card(card_id, pack_number)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftParticipant not found' }, status: :not_found
       end
 
       private
@@ -48,7 +59,11 @@ module Api
       end
 
       def draft_participant_params
-        params.permit(:seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id)
+        params.fetch(:draft_participant, params).permit(:seat_number, :joined_at, :session_id, :player_id)
+      end
+
+      def draft_participant_update_params
+        params.fetch(:draft_participant, params).permit(:seat_number, :joined_at, :session_id, :player_id)
       end
     end
   end

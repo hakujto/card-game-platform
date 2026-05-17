@@ -15,7 +15,7 @@ module Api
         if @cardPriceHistory.save
           render json: @cardPriceHistory, status: :created
         else
-          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_entity
+          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/card_price_histories/:id
       def update
-        if @cardPriceHistory.update(card_price_history_params)
+        if @cardPriceHistory.update(card_price_history_update_params)
           render json: @cardPriceHistory
         else
-          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_entity
+          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def card_price_history_params
-        params.permit(:price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id)
+        params.fetch(:card_price_history, params).permit(:price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id)
+      end
+
+      def card_price_history_update_params
+        params.fetch(:card_price_history, params).permit(:price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id)
       end
     end
   end

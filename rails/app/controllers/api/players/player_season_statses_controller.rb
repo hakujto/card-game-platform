@@ -15,7 +15,7 @@ module Api
         if @playerSeasonStats.save
           render json: @playerSeasonStats, status: :created
         else
-          render json: { errors: @playerSeasonStats.errors }, status: :unprocessable_entity
+          render json: { errors: @playerSeasonStats.errors }, status: :unprocessable_content
         end
       end
 
@@ -26,10 +26,10 @@ module Api
 
       # PATCH/PUT /api/player_season_statses/:id
       def update
-        if @playerSeasonStats.update(player_season_stats_params)
+        if @playerSeasonStats.update(player_season_stats_update_params)
           render json: @playerSeasonStats
         else
-          render json: { errors: @playerSeasonStats.errors }, status: :unprocessable_entity
+          render json: { errors: @playerSeasonStats.errors }, status: :unprocessable_content
         end
       end
 
@@ -48,7 +48,11 @@ module Api
       end
 
       def player_season_stats_params
-        params.permit(:wins, :losses, :draws, :tournament_wins, :highest_rank, :season_points, :player_id, :season_id)
+        params.fetch(:player_season_stats, params).permit(:wins, :losses, :draws, :tournament_wins, :highest_rank, :season_points, :player_id, :season_id)
+      end
+
+      def player_season_stats_update_params
+        params.fetch(:player_season_stats, params).permit(:wins, :losses, :draws, :tournament_wins, :highest_rank, :season_points, :player_id, :season_id)
       end
     end
   end
