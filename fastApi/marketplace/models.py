@@ -30,6 +30,24 @@ class Product(Base):
     card_set_id = Column(Integer, ForeignKey("card_set.id"), nullable=True)
     card_set = relationship("CardSet", foreign_keys=[card_set_id])
 
+    def activate(self):
+        raise NotImplementedError("activate not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
+
+    def apply_discount(self, percent: int) -> float:
+        raise NotImplementedError("apply_discount not implemented")
+
+    def restock(self, quantity: int):
+        raise NotImplementedError("restock not implemented")
+
+    def effective_price(self) -> float:
+        raise NotImplementedError("effective_price not implemented")
+
+    def is_in_stock(self) -> bool:
+        raise NotImplementedError("is_in_stock not implemented")
+
     def __repr__(self) -> str:
         return f"<Product id={{self.id}}>"
 
@@ -59,6 +77,40 @@ class Order(Base):
     coupon_id = Column(Integer, ForeignKey("coupon.id"), nullable=True)
     coupon = relationship("Coupon", foreign_keys=[coupon_id])
 
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def pay(self, payment_ref: str) -> bool:
+        raise NotImplementedError("pay not implemented")
+
+    def calculate_total(self) -> float:
+        raise NotImplementedError("calculate_total not implemented")
+
+    def apply_discount(self, percent: int) -> float:
+        raise NotImplementedError("apply_discount not implemented")
+
+    def refund(self):
+        raise NotImplementedError("refund not implemented")
+
+    def notify_shipped(self):
+        raise NotImplementedError("notify_shipped not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.total is None or self.total >= 0)):
+            errors.append("Order total must not be negative")
+        if not ((self.discount_applied is None or (self.total is not None and self.discount_applied <= self.total))):
+            errors.append("Discount applied cannot exceed order total")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.status == "Paid") and not (self.paid_at is not None):
+            errors.append("Paid order must have paid_at set")
+        if (self.status == "Shipped") and not (self.tracking_number is not None):
+            errors.append("Shipped order must have a tracking number")
+        return errors
     def __repr__(self) -> str:
         return f"<Order id={{self.id}}>"
 
@@ -75,6 +127,17 @@ class OrderItem(Base):
     product_id = Column(Integer, ForeignKey("product.id"), nullable=False)
     product = relationship("Product", foreign_keys=[product_id])
 
+    def line_total(self) -> float:
+        raise NotImplementedError("line_total not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.quantity is None or self.quantity > 0)):
+            errors.append("Order item quantity must be greater than zero")
+        if not ((self.price_at_purchase is None or self.price_at_purchase >= 0)):
+            errors.append("Price at purchase must not be negative")
+        return errors
     def __repr__(self) -> str:
         return f"<OrderItem id={{self.id}}>"
 
@@ -97,6 +160,34 @@ class Coupon(Base):
     valid_until = Column(DateTime)
     is_active = Column(Boolean, default="true")
 
+    def is_valid(self) -> bool:
+        raise NotImplementedError("is_valid not implemented")
+
+    def is_applicable_to_order(self, order_total: float) -> bool:
+        raise NotImplementedError("is_applicable_to_order not implemented")
+
+    def redeem(self):
+        raise NotImplementedError("redeem not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.valid_until is None or (self.valid_from is not None and self.valid_until > self.valid_from))):
+            errors.append("Coupon expiry must be after its start date")
+        if not ((self.discount_value is None or self.discount_value > 0)):
+            errors.append("Discount value must be greater than zero")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.discount_type == "Percent") and not ((self.discount_value is None or (self.discount_value >= 1 and self.discount_value <= 100))):
+            errors.append("Percent discount must be between 1 and 100")
+        if (self.max_uses is not None) and not ((self.uses_count is None or (self.max_uses is not None and self.uses_count <= self.max_uses))):
+            errors.append("Coupon uses count cannot exceed max_uses")
+        return errors
     def __repr__(self) -> str:
         return f"<Coupon id={{self.id}}>"
 
@@ -128,6 +219,35 @@ class Tradelisting(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def close(self):
+        raise NotImplementedError("close not implemented")
+
+    def extend(self, days: int):
+        raise NotImplementedError("extend not implemented")
+
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def is_expired(self) -> bool:
+        raise NotImplementedError("is_expired not implemented")
+
+    def finalize_auction(self):
+        raise NotImplementedError("finalize_auction not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 9999))):
+            errors.append("Listing quantity must be between 1 and 9999")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.listing_type == "FixedPrice") and not (self.asking_price is not None):
+            errors.append("Fixed price listing must have an asking price")
+        if (self.listing_type == "Auction") and not ((self.auction_start_price is not None and self.auction_end_time is not None)):
+            errors.append("Auction listing must have a start price and end time")
+        return errors
     def __repr__(self) -> str:
         return f"<Tradelisting id={{self.id}}>"
 
@@ -144,6 +264,15 @@ class TradeBid(Base):
     bidder_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     bidder = relationship("Player", foreign_keys=[bidder_id])
 
+    def outbid_by(self, new_amount: float) -> bool:
+        raise NotImplementedError("outbid_by not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.amount is None or self.amount > 0)):
+            errors.append("Bid amount must be greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<TradeBid id={{self.id}}>"
 
@@ -167,6 +296,32 @@ class TradeTransaction(Base):
     seller_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     seller = relationship("Player", foreign_keys=[seller_id])
 
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def refund(self):
+        raise NotImplementedError("refund not implemented")
+
+    def open_dispute(self, reason: str):
+        raise NotImplementedError("open_dispute not implemented")
+
+    def seller_net(self) -> float:
+        raise NotImplementedError("seller_net not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.platform_fee is None or (self.final_price is not None and self.platform_fee <= self.final_price))):
+            errors.append("Platform fee cannot exceed the final price")
+        if not ((self.platform_fee is None or self.platform_fee >= 0)):
+            errors.append("Platform fee must not be negative")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.status == "Completed") and not (self.completed_at is not None):
+            errors.append("Completed transaction must have a completed_at timestamp")
+        return errors
     def __repr__(self) -> str:
         return f"<TradeTransaction id={{self.id}}>"
 
@@ -184,6 +339,18 @@ class CardPriceHistory(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def price_change_percent(self, previous_avg: float) -> float:
+        raise NotImplementedError("price_change_percent not implemented")
+
+    def is_price_spike(self, threshold_percent: int) -> bool:
+        raise NotImplementedError("is_price_spike not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not (((self.min_price is None or (self.avg_price is not None and self.min_price <= self.avg_price)) and (self.avg_price is None or (self.max_price is not None and self.avg_price <= self.max_price)))):
+            errors.append("min_price <= avg_price <= max_price must hold")
+        return errors
     def __repr__(self) -> str:
         return f"<CardPriceHistory id={{self.id}}>"
 
@@ -210,5 +377,20 @@ class TradeDispute(Base):
     resolved_by_id = Column(Integer, ForeignKey("player.id"), nullable=True)
     resolved_by = relationship("Player", foreign_keys=[resolved_by_id])
 
+    def escalate(self):
+        raise NotImplementedError("escalate not implemented")
+
+    def resolve(self, resolution_text: str):
+        raise NotImplementedError("resolve not implemented")
+
+    def review(self):
+        raise NotImplementedError("review not implemented")
+
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.resolved_at is not None) and not (self.status == "Resolved"):
+            errors.append("resolved_at_requires_terminal_status")
+        return errors
     def __repr__(self) -> str:
         return f"<TradeDispute id={{self.id}}>"

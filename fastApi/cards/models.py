@@ -59,6 +59,39 @@ class Card(Base):
     set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
     set = relationship("CardSet", foreign_keys=[set_id])
 
+    def ban(self):
+        raise NotImplementedError("ban not implemented")
+
+    def unban(self):
+        raise NotImplementedError("unban not implemented")
+
+    def restrict(self):
+        raise NotImplementedError("restrict not implemented")
+
+    def unrestrict(self):
+        raise NotImplementedError("unrestrict not implemented")
+
+    def calculate_value(self) -> float:
+        raise NotImplementedError("calculate_value not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.mana_cost is None or (self.mana_cost >= 0 and self.mana_cost <= 20))):
+            errors.append("mana_cost must be between 0 and 20")
+        if not ((self.power_level is None or (self.power_level >= 1 and self.power_level <= 10))):
+            errors.append("power_level must be between 1 and 10")
+        if not (not ((self.is_banned is True and self.is_restricted is True))):
+            errors.append("Card cannot be both banned and restricted at the same time")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.card_type == "Creature") and not ((self.attack is not None and self.defense is not None)):
+            errors.append("Creature card must have attack and defense")
+        if (self.card_type == "Planeswalker") and not (self.loyalty is not None):
+            errors.append("Planeswalker card must have loyalty")
+        return errors
     def __repr__(self) -> str:
         return f"<Card id={{self.id}}>"
 
@@ -79,6 +112,9 @@ class CardSet(Base):
     description = Column(Text, nullable=True)
     logo_url = Column(String(200), nullable=True)
 
+    def is_legal_in_standard(self) -> bool:
+        raise NotImplementedError("is_legal_in_standard not implemented")
+
     def __repr__(self) -> str:
         return f"<CardSet id={{self.id}}>"
 
@@ -92,6 +128,12 @@ class CardRuling(Base):
     source = Column(String(200))
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
+
+    def is_current(self) -> bool:
+        raise NotImplementedError("is_current not implemented")
+
+    def supersedes_previous(self) -> bool:
+        raise NotImplementedError("supersedes_previous not implemented")
 
     def __repr__(self) -> str:
         return f"<CardRuling id={{self.id}}>"
@@ -113,6 +155,18 @@ class CardAbility(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def is_usable_at(self, timing: str) -> bool:
+        raise NotImplementedError("is_usable_at not implemented")
+
+    def describe(self) -> str:
+        raise NotImplementedError("describe not implemented")
+
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.ability_type == "Keyword") and not (self.keyword is not None):
+            errors.append("Keyword ability must have a keyword name")
+        return errors
     def __repr__(self) -> str:
         return f"<CardAbility id={{self.id}}>"
 
@@ -142,6 +196,21 @@ class Deck(Base):
     sideboard_cards = relationship("Card", secondary=deck_sideboard_cards_assoc)
     tags = relationship("DeckTag", secondary=deck_tags_assoc)
 
+    def validate_size(self) -> bool:
+        raise NotImplementedError("validate_size not implemented")
+
+    def clone(self) -> None:
+        raise NotImplementedError("clone not implemented")
+
+    def publish(self):
+        raise NotImplementedError("publish not implemented")
+
+    def unpublish(self):
+        raise NotImplementedError("unpublish not implemented")
+
+    def certify_tournament_legal(self) -> bool:
+        raise NotImplementedError("certify_tournament_legal not implemented")
+
     def __repr__(self) -> str:
         return f"<Deck id={{self.id}}>"
 
@@ -157,6 +226,11 @@ class DeckCard(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 4))):
+            errors.append("A deck can contain between 1 and 4 copies of a card")
+        return errors
     def __repr__(self) -> str:
         return f"<DeckCard id={{self.id}}>"
 
@@ -171,6 +245,12 @@ class DeckSideboardCard(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def increment(self, amount: int):
+        raise NotImplementedError("increment not implemented")
+
+    def decrement(self, amount: int):
+        raise NotImplementedError("decrement not implemented")
+
     def __repr__(self) -> str:
         return f"<DeckSideboardCard id={{self.id}}>"
 
@@ -181,6 +261,12 @@ class DeckTag(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50))
     color = Column(String(7), nullable=True)
+
+    def rename(self, new_name: str):
+        raise NotImplementedError("rename not implemented")
+
+    def merge_into(self, target_tag_id: int):
+        raise NotImplementedError("merge_into not implemented")
 
     def __repr__(self) -> str:
         return f"<DeckTag id={{self.id}}>"
@@ -194,6 +280,5 @@ class DeckTagAssignment(Base):
     deck = relationship("Deck", foreign_keys=[deck_id])
     tag_id = Column(Integer, ForeignKey("deck_tag.id"), nullable=False)
     tag = relationship("DeckTag", foreign_keys=[tag_id])
-
     def __repr__(self) -> str:
         return f"<DeckTagAssignment id={{self.id}}>"

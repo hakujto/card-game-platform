@@ -58,6 +58,37 @@ class Player(Base):
         secondaryjoin=id == player_friends_assoc.c.right_id,
     )
 
+    def promote(self) -> bool:
+        raise NotImplementedError("promote not implemented")
+
+    def demote(self) -> bool:
+        raise NotImplementedError("demote not implemented")
+
+    def record_win(self):
+        raise NotImplementedError("record_win not implemented")
+
+    def record_loss(self):
+        raise NotImplementedError("record_loss not implemented")
+
+    def win_rate(self) -> float:
+        raise NotImplementedError("win_rate not implemented")
+
+    def verify(self):
+        raise NotImplementedError("verify not implemented")
+
+    def update_rating(self, delta: int):
+        raise NotImplementedError("update_rating not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.rating is None or (self.rating >= 0 and self.rating <= 9999))):
+            errors.append("Rating must be between 0 and 9999")
+        if not ((self.peak_rating is None or (self.rating is not None and self.peak_rating >= self.rating))):
+            errors.append("Peak rating must be greater than or equal to current rating")
+        if not (self.display_name is not None):
+            errors.append("Display name must not be empty")
+        return errors
     def __repr__(self) -> str:
         return f"<Player id={{self.id}}>"
 
@@ -80,6 +111,15 @@ class PlayerSeasonStats(Base):
     player = relationship("Player", foreign_keys=[player_id])
     season_id = Column(Integer, ForeignKey("season.id"), nullable=False)
     season = relationship("Season", foreign_keys=[season_id])
+
+    def win_rate(self) -> float:
+        raise NotImplementedError("win_rate not implemented")
+
+    def add_points(self, points: int):
+        raise NotImplementedError("add_points not implemented")
+
+    def record_tournament_win(self):
+        raise NotImplementedError("record_tournament_win not implemented")
 
     def __repr__(self) -> str:
         return f"<PlayerSeasonStats id={{self.id}}>"
@@ -104,6 +144,15 @@ class PlayerCollection(Base):
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
 
+    def add(self, quantity: int):
+        raise NotImplementedError("add not implemented")
+
+    def remove(self, quantity: int):
+        raise NotImplementedError("remove not implemented")
+
+    def estimated_value(self) -> float:
+        raise NotImplementedError("estimated_value not implemented")
+
     def __repr__(self) -> str:
         return f"<PlayerCollection id={{self.id}}>"
 
@@ -123,6 +172,15 @@ class Friendship(Base):
     receiver_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     receiver = relationship("Player", foreign_keys=[receiver_id])
 
+    def accept(self):
+        raise NotImplementedError("accept not implemented")
+
+    def decline(self):
+        raise NotImplementedError("decline not implemented")
+
+    def block(self):
+        raise NotImplementedError("block not implemented")
+
     def __repr__(self) -> str:
         return f"<Friendship id={{self.id}}>"
 
@@ -141,7 +199,6 @@ class Achievement(Base):
     points = Column(Integer, default="10")
     rarity = Column(String(20), default="Common")
     is_hidden = Column(Boolean, default="false")
-
     def __repr__(self) -> str:
         return f"<Achievement id={{self.id}}>"
 
@@ -158,6 +215,11 @@ class PlayerAchievement(Base):
     achievement_id = Column(Integer, ForeignKey("achievement.id"), nullable=False)
     achievement = relationship("Achievement", foreign_keys=[achievement_id])
 
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.is_completed is True) and not ((self.progress is None or self.progress > 0)):
+            errors.append("Completed achievement must have progress greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<PlayerAchievement id={{self.id}}>"
 
@@ -172,6 +234,18 @@ class CraftingRecipe(Base):
     result_card = relationship("Card", foreign_keys=[result_card_id])
     required_cards = relationship("Card", secondary=crafting_recipe_required_cards_assoc)
 
+    def disable(self):
+        raise NotImplementedError("disable not implemented")
+
+    def enable(self):
+        raise NotImplementedError("enable not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.dust_cost is None or self.dust_cost > 0)):
+            errors.append("Crafting recipe must have a dust cost greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<CraftingRecipe id={{self.id}}>"
 
@@ -185,6 +259,5 @@ class CraftingIngredient(Base):
     recipe = relationship("CraftingRecipe", foreign_keys=[recipe_id])
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
-
     def __repr__(self) -> str:
         return f"<CraftingIngredient id={{self.id}}>"

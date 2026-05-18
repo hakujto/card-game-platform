@@ -53,6 +53,47 @@ def delete_product(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_product.post("/{item_id}/activate", status_code=status.HTTP_204_NO_CONTENT)
+def activate_product(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Product).filter(Product.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    obj.activate()
+    db.commit()
+
+@router_product.post("/{item_id}/deactivate", status_code=status.HTTP_204_NO_CONTENT)
+def deactivate_product(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Product).filter(Product.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    obj.deactivate()
+    db.commit()
+
+@router_product.patch("/{item_id}/discount", response_model=float)
+def apply_discount_product(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Product).filter(Product.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    result = obj.apply_discount(body.get("percent"))
+    db.commit()
+    return result
+
+@router_product.post("/{item_id}/restock", status_code=status.HTTP_204_NO_CONTENT)
+def restock_product(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Product).filter(Product.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    obj.restock(body.get("quantity"))
+    db.commit()
+
+def _validate_order(obj: Order) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_order = APIRouter(prefix="/api/orders", tags=["Order"])
 
 @router_order.get("", response_model=list[OrderRead])
@@ -64,6 +105,7 @@ def list_orders(
 @router_order.post("", response_model=OrderRead, status_code=status.HTTP_201_CREATED)
 def create_order(data: OrderCreate, db: Session = Depends(get_db)) -> Order:
     obj = Order(**data.model_dump(exclude_unset=True))
+    _validate_order(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -83,6 +125,7 @@ def update_order(item_id: int, data: OrderUpdate, db: Session = Depends(get_db))
         raise HTTPException(status_code=404, detail="Order not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_order(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -99,6 +142,56 @@ def delete_order(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_order.delete("/{item_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
+def cancel_order(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    obj.cancel()
+    db.commit()
+
+@router_order.post("/{item_id}/pay", response_model=bool)
+def pay_order(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    result = obj.pay(body.get("payment_ref"))
+    db.commit()
+    return result
+
+@router_order.get("/{item_id}/total", response_model=float)
+def calculate_total_order(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    result = obj.calculate_total()
+    db.commit()
+    return result
+
+@router_order.patch("/{item_id}/discount", response_model=float)
+def apply_discount_order(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    result = obj.apply_discount(body.get("percent"))
+    db.commit()
+    return result
+
+@router_order.post("/{item_id}/refund", status_code=status.HTTP_204_NO_CONTENT)
+def refund_order(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    obj.refund()
+    db.commit()
+
+def _validate_order_item(obj: OrderItem) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_order_item = APIRouter(prefix="/api/order_items", tags=["Order Item"])
 
 @router_order_item.get("", response_model=list[OrderItemRead])
@@ -110,6 +203,7 @@ def list_order_items(
 @router_order_item.post("", response_model=OrderItemRead, status_code=status.HTTP_201_CREATED)
 def create_order_item(data: OrderItemCreate, db: Session = Depends(get_db)) -> OrderItem:
     obj = OrderItem(**data.model_dump(exclude_unset=True))
+    _validate_order_item(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -129,6 +223,7 @@ def update_order_item(item_id: int, data: OrderItemUpdate, db: Session = Depends
         raise HTTPException(status_code=404, detail="OrderItem not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_order_item(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -145,6 +240,14 @@ def delete_order_item(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+def _validate_coupon(obj: Coupon) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_coupon = APIRouter(prefix="/api/coupons", tags=["Coupon"])
 
 @router_coupon.get("", response_model=list[CouponRead])
@@ -156,6 +259,7 @@ def list_coupons(
 @router_coupon.post("", response_model=CouponRead, status_code=status.HTTP_201_CREATED)
 def create_coupon(data: CouponCreate, db: Session = Depends(get_db)) -> Coupon:
     obj = Coupon(**data.model_dump(exclude_unset=True))
+    _validate_coupon(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -175,6 +279,7 @@ def update_coupon(item_id: int, data: CouponUpdate, db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail="Coupon not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_coupon(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -191,6 +296,30 @@ def delete_coupon(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_coupon.post("/{item_id}/redeem", status_code=status.HTTP_204_NO_CONTENT)
+def redeem_coupon(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Coupon).filter(Coupon.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    obj.redeem()
+    db.commit()
+
+@router_coupon.post("/{item_id}/deactivate", status_code=status.HTTP_204_NO_CONTENT)
+def deactivate_coupon(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Coupon).filter(Coupon.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    obj.deactivate()
+    db.commit()
+
+def _validate_tradelisting(obj: Tradelisting) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_tradelisting = APIRouter(prefix="/api/tradelistings", tags=["Tradelisting"])
 
 @router_tradelisting.get("", response_model=list[TradelistingRead])
@@ -202,6 +331,7 @@ def list_tradelistings(
 @router_tradelisting.post("", response_model=TradelistingRead, status_code=status.HTTP_201_CREATED)
 def create_tradelisting(data: TradelistingCreate, db: Session = Depends(get_db)) -> Tradelisting:
     obj = Tradelisting(**data.model_dump(exclude_unset=True))
+    _validate_tradelisting(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -221,6 +351,7 @@ def update_tradelisting(item_id: int, data: TradelistingUpdate, db: Session = De
         raise HTTPException(status_code=404, detail="Tradelisting not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_tradelisting(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -237,6 +368,37 @@ def delete_tradelisting(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_tradelisting.post("/{item_id}/api/trade-listings/{id}/close", status_code=status.HTTP_204_NO_CONTENT)
+def close_tradelisting(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Tradelisting).filter(Tradelisting.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tradelisting not found")
+    obj.close()
+    db.commit()
+
+@router_tradelisting.patch("/{item_id}/api/trade-listings/{id}/extend", status_code=status.HTTP_204_NO_CONTENT)
+def extend_tradelisting(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Tradelisting).filter(Tradelisting.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tradelisting not found")
+    obj.extend(body.get("days"))
+    db.commit()
+
+@router_tradelisting.delete("/{item_id}/api/trade-listings/{id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
+def cancel_tradelisting(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Tradelisting).filter(Tradelisting.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tradelisting not found")
+    obj.cancel()
+    db.commit()
+
+def _validate_trade_bid(obj: TradeBid) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_trade_bid = APIRouter(prefix="/api/trade_bids", tags=["Trade Bid"])
 
 @router_trade_bid.get("", response_model=list[TradeBidRead])
@@ -248,6 +410,7 @@ def list_trade_bids(
 @router_trade_bid.post("", response_model=TradeBidRead, status_code=status.HTTP_201_CREATED)
 def create_trade_bid(data: TradeBidCreate, db: Session = Depends(get_db)) -> TradeBid:
     obj = TradeBid(**data.model_dump(exclude_unset=True))
+    _validate_trade_bid(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -267,6 +430,7 @@ def update_trade_bid(item_id: int, data: TradeBidUpdate, db: Session = Depends(g
         raise HTTPException(status_code=404, detail="TradeBid not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_trade_bid(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -283,6 +447,14 @@ def delete_trade_bid(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+def _validate_trade_transaction(obj: TradeTransaction) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_trade_transaction = APIRouter(prefix="/api/trade_transactions", tags=["Trade Transaction"])
 
 @router_trade_transaction.get("", response_model=list[TradeTransactionRead])
@@ -294,6 +466,7 @@ def list_trade_transactions(
 @router_trade_transaction.post("", response_model=TradeTransactionRead, status_code=status.HTTP_201_CREATED)
 def create_trade_transaction(data: TradeTransactionCreate, db: Session = Depends(get_db)) -> TradeTransaction:
     obj = TradeTransaction(**data.model_dump(exclude_unset=True))
+    _validate_trade_transaction(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -313,6 +486,7 @@ def update_trade_transaction(item_id: int, data: TradeTransactionUpdate, db: Ses
         raise HTTPException(status_code=404, detail="TradeTransaction not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_trade_transaction(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -329,6 +503,37 @@ def delete_trade_transaction(item_id: int, db: Session = Depends(get_db)) -> Non
     db.delete(obj)
     db.commit()
 
+@router_trade_transaction.post("/{item_id}/api/transactions/{id}/complete", status_code=status.HTTP_204_NO_CONTENT)
+def complete_trade_transaction(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TradeTransaction).filter(TradeTransaction.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeTransaction not found")
+    obj.complete()
+    db.commit()
+
+@router_trade_transaction.post("/{item_id}/api/transactions/{id}/refund", status_code=status.HTTP_204_NO_CONTENT)
+def refund_trade_transaction(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TradeTransaction).filter(TradeTransaction.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeTransaction not found")
+    obj.refund()
+    db.commit()
+
+@router_trade_transaction.post("/{item_id}/api/transactions/{id}/dispute", status_code=status.HTTP_204_NO_CONTENT)
+def open_dispute_trade_transaction(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(TradeTransaction).filter(TradeTransaction.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeTransaction not found")
+    obj.open_dispute(body.get("reason"))
+    db.commit()
+
+def _validate_card_price_history(obj: CardPriceHistory) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_card_price_history = APIRouter(prefix="/api/card_price_histories", tags=["Card Price History"])
 
 @router_card_price_history.get("", response_model=list[CardPriceHistoryRead])
@@ -340,6 +545,7 @@ def list_card_price_histories(
 @router_card_price_history.post("", response_model=CardPriceHistoryRead, status_code=status.HTTP_201_CREATED)
 def create_card_price_history(data: CardPriceHistoryCreate, db: Session = Depends(get_db)) -> CardPriceHistory:
     obj = CardPriceHistory(**data.model_dump(exclude_unset=True))
+    _validate_card_price_history(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -359,6 +565,7 @@ def update_card_price_history(item_id: int, data: CardPriceHistoryUpdate, db: Se
         raise HTTPException(status_code=404, detail="CardPriceHistory not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_card_price_history(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -375,6 +582,13 @@ def delete_card_price_history(item_id: int, db: Session = Depends(get_db)) -> No
     db.delete(obj)
     db.commit()
 
+def _validate_trade_dispute(obj: TradeDispute) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_trade_dispute = APIRouter(prefix="/api/trade_disputes", tags=["Trade Dispute"])
 
 @router_trade_dispute.get("", response_model=list[TradeDisputeRead])
@@ -386,6 +600,7 @@ def list_trade_disputes(
 @router_trade_dispute.post("", response_model=TradeDisputeRead, status_code=status.HTTP_201_CREATED)
 def create_trade_dispute(data: TradeDisputeCreate, db: Session = Depends(get_db)) -> TradeDispute:
     obj = TradeDispute(**data.model_dump(exclude_unset=True))
+    _validate_trade_dispute(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -405,6 +620,7 @@ def update_trade_dispute(item_id: int, data: TradeDisputeUpdate, db: Session = D
         raise HTTPException(status_code=404, detail="TradeDispute not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_trade_dispute(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -419,4 +635,28 @@ def delete_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
     db.delete(obj)
+    db.commit()
+
+@router_trade_dispute.post("/{item_id}/api/disputes/{id}/escalate", status_code=status.HTTP_204_NO_CONTENT)
+def escalate_trade_dispute(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    obj.escalate()
+    db.commit()
+
+@router_trade_dispute.post("/{item_id}/api/disputes/{id}/resolve", status_code=status.HTTP_204_NO_CONTENT)
+def resolve_trade_dispute(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    obj.resolve(body.get("resolution_text"))
+    db.commit()
+
+@router_trade_dispute.post("/{item_id}/api/disputes/{id}/review", status_code=status.HTTP_204_NO_CONTENT)
+def review_trade_dispute(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    obj.review()
     db.commit()

@@ -53,6 +53,30 @@ def delete_draft_session(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_draft_session.post("/{item_id}/api/draft-sessions/{id}/start", status_code=status.HTTP_204_NO_CONTENT)
+def start_draft_session(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    obj.start()
+    db.commit()
+
+@router_draft_session.post("/{item_id}/api/draft-sessions/{id}/abandon", status_code=status.HTTP_204_NO_CONTENT)
+def abandon_draft_session(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    obj.abandon()
+    db.commit()
+
+@router_draft_session.post("/{item_id}/api/draft-sessions/{id}/complete", status_code=status.HTTP_204_NO_CONTENT)
+def complete_draft_session(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    obj.complete()
+    db.commit()
+
 router_draft_participant = APIRouter(prefix="/api/draft_participants", tags=["Draft Participant"])
 
 @router_draft_participant.get("", response_model=list[DraftParticipantRead])
@@ -97,6 +121,14 @@ def delete_draft_participant(item_id: int, db: Session = Depends(get_db)) -> Non
     if obj is None:
         raise HTTPException(status_code=404, detail="DraftParticipant not found")
     db.delete(obj)
+    db.commit()
+
+@router_draft_participant.post("/{item_id}/api/draft-participants/{id}/pick", status_code=status.HTTP_204_NO_CONTENT)
+def pick_card_draft_participant(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DraftParticipant).filter(DraftParticipant.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftParticipant not found")
+    obj.pick_card(body.get("card_id"), body.get("pack_number"))
     db.commit()
 
 router_draft_pick = APIRouter(prefix="/api/draft_picks", tags=["Draft Pick"])
@@ -145,6 +177,13 @@ def delete_draft_pick(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+def _validate_article(obj: Article) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_article = APIRouter(prefix="/api/articles", tags=["Article"])
 
 @router_article.get("", response_model=list[ArticleRead])
@@ -156,6 +195,7 @@ def list_articles(
 @router_article.post("", response_model=ArticleRead, status_code=status.HTTP_201_CREATED)
 def create_article(data: ArticleCreate, db: Session = Depends(get_db)) -> Article:
     obj = Article(**data.model_dump(exclude_unset=True))
+    _validate_article(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -175,6 +215,7 @@ def update_article(item_id: int, data: ArticleUpdate, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="Article not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_article(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -189,6 +230,30 @@ def delete_article(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="Article not found")
     db.delete(obj)
+    db.commit()
+
+@router_article.post("/{item_id}/publish", status_code=status.HTTP_204_NO_CONTENT)
+def publish_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    obj.publish()
+    db.commit()
+
+@router_article.post("/{item_id}/archive", status_code=status.HTTP_204_NO_CONTENT)
+def archive_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    obj.archive()
+    db.commit()
+
+@router_article.post("/{item_id}/view", status_code=status.HTTP_204_NO_CONTENT)
+def increment_view_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    obj.increment_view()
     db.commit()
 
 router_article_tag = APIRouter(prefix="/api/article_tags", tags=["Article Tag"])
@@ -329,6 +394,29 @@ def delete_article_comment(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_article_comment.post("/{item_id}/api/comments/{id}/hide", status_code=status.HTTP_204_NO_CONTENT)
+def hide_article_comment(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(ArticleComment).filter(ArticleComment.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="ArticleComment not found")
+    obj.hide()
+    db.commit()
+
+@router_article_comment.post("/{item_id}/api/comments/{id}/unhide", status_code=status.HTTP_204_NO_CONTENT)
+def unhide_article_comment(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(ArticleComment).filter(ArticleComment.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="ArticleComment not found")
+    obj.unhide()
+    db.commit()
+
+def _validate_stream(obj: Stream) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_stream = APIRouter(prefix="/api/streams", tags=["Stream"])
 
 @router_stream.get("", response_model=list[StreamRead])
@@ -340,6 +428,7 @@ def list_streams(
 @router_stream.post("", response_model=StreamRead, status_code=status.HTTP_201_CREATED)
 def create_stream(data: StreamCreate, db: Session = Depends(get_db)) -> Stream:
     obj = Stream(**data.model_dump(exclude_unset=True))
+    _validate_stream(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -359,6 +448,7 @@ def update_stream(item_id: int, data: StreamUpdate, db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail="Stream not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_stream(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -373,4 +463,28 @@ def delete_stream(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="Stream not found")
     db.delete(obj)
+    db.commit()
+
+@router_stream.post("/{item_id}/live", status_code=status.HTTP_204_NO_CONTENT)
+def go_live_stream(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    obj.go_live()
+    db.commit()
+
+@router_stream.post("/{item_id}/end", status_code=status.HTTP_204_NO_CONTENT)
+def end_stream(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    obj.end()
+    db.commit()
+
+@router_stream.patch("/{item_id}/viewers", status_code=status.HTTP_204_NO_CONTENT)
+def update_viewer_peak_stream(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    obj.update_viewer_peak(body.get("count"))
     db.commit()

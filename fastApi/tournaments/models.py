@@ -30,6 +30,24 @@ class Season(Base):
     is_active = Column(Boolean, default="false")
     reward_description = Column(Text, nullable=True)
 
+    def activate(self):
+        raise NotImplementedError("activate not implemented")
+
+    def deactivate(self):
+        raise NotImplementedError("deactivate not implemented")
+
+    def finalize_rewards(self):
+        raise NotImplementedError("finalize_rewards not implemented")
+
+    def is_ongoing(self) -> bool:
+        raise NotImplementedError("is_ongoing not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.end_date is None or (self.start_date is not None and self.end_date > self.start_date))):
+            errors.append("Season end date must be after start date")
+        return errors
     def __repr__(self) -> str:
         return f"<Season id={{self.id}}>"
 
@@ -64,6 +82,40 @@ class Tournament(Base):
     organizer = relationship("Player", foreign_keys=[organizer_id])
     judges = relationship("Player", secondary=tournament_judges_assoc)
 
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def cancel(self):
+        raise NotImplementedError("cancel not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def generate_round(self):
+        raise NotImplementedError("generate_round not implemented")
+
+    def calculate_prize_distribution(self) -> float:
+        raise NotImplementedError("calculate_prize_distribution not implemented")
+
+    def is_full(self) -> bool:
+        raise NotImplementedError("is_full not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.max_players is None or (self.max_players >= 2 and self.max_players <= 512))):
+            errors.append("Tournament must allow between 2 and 512 players")
+        if not ((self.entry_fee is None or self.entry_fee >= 0)):
+            errors.append("Entry fee must not be negative")
+        if not ((self.prize_pool is None or self.prize_pool >= 0)):
+            errors.append("Prize pool must not be negative")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.end_time is not None) and not ((self.end_time is None or (self.start_time is not None and self.end_time > self.start_time))):
+            errors.append("End time must be after start time")
+        return errors
     def __repr__(self) -> str:
         return f"<Tournament id={{self.id}}>"
 
@@ -81,7 +133,6 @@ class TournamentJudge(Base):
     tournament = relationship("Tournament", foreign_keys=[tournament_id])
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
-
     def __repr__(self) -> str:
         return f"<TournamentJudge id={{self.id}}>"
 
@@ -106,6 +157,15 @@ class TournamentRegistration(Base):
     deck_id = Column(Integer, ForeignKey("deck.id"), nullable=False)
     deck = relationship("Deck", foreign_keys=[deck_id])
 
+    def withdraw(self):
+        raise NotImplementedError("withdraw not implemented")
+
+    def disqualify(self, reason: str):
+        raise NotImplementedError("disqualify not implemented")
+
+    def promote_from_waitlist(self):
+        raise NotImplementedError("promote_from_waitlist not implemented")
+
     def __repr__(self) -> str:
         return f"<TournamentRegistration id={{self.id}}>"
 
@@ -126,6 +186,24 @@ class TournamentRound(Base):
     tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
     tournament = relationship("Tournament", foreign_keys=[tournament_id])
 
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def generate_pairings(self):
+        raise NotImplementedError("generate_pairings not implemented")
+
+    def is_time_expired(self) -> bool:
+        raise NotImplementedError("is_time_expired not implemented")
+
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.ended_at is not None) and not ((self.ended_at is None or (self.started_at is not None and self.ended_at > self.started_at))):
+            errors.append("Round end time must be after start time")
+        return errors
     def __repr__(self) -> str:
         return f"<TournamentRound id={{self.id}}>"
 
@@ -152,6 +230,29 @@ class Match(Base):
     player2_id = Column(Integer, ForeignKey("player.id"), nullable=True)
     player2 = relationship("Player", foreign_keys=[player2_id])
 
+    def record_result(self, p1_wins: int, p2_wins: int):
+        raise NotImplementedError("record_result not implemented")
+
+    def determine_winner(self) -> bool:
+        raise NotImplementedError("determine_winner not implemented")
+
+    def draw(self):
+        raise NotImplementedError("draw not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not (((self.player1_wins is None or self.player1_wins >= 0) and (self.player2_wins is None or self.player2_wins >= 0))):
+            errors.append("Win counts must not be negative")
+        if not (((self.player1_wins is None or (self.player1_wins >= 0 and self.player1_wins <= 2)) and (self.player2_wins is None or (self.player2_wins >= 0 and self.player2_wins <= 2)))):
+            errors.append("Win counts cannot exceed 2 in a best-of-3 match")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.status == "BYE") and not (self.player2_id is None):
+            errors.append("BYE match must not have a second player")
+        return errors
     def __repr__(self) -> str:
         return f"<Match id={{self.id}}>"
 
@@ -176,6 +277,26 @@ class Game(Base):
     winner_id = Column(Integer, ForeignKey("player.id"), nullable=True)
     winner = relationship("Player", foreign_keys=[winner_id])
 
+    def record_winner(self, winner_side: str):
+        raise NotImplementedError("record_winner not implemented")
+
+    def duration_minutes(self) -> float:
+        raise NotImplementedError("duration_minutes not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.game_number is None or (self.game_number >= 1 and self.game_number <= 3))):
+            errors.append("Game number must be between 1 and 3 (best-of-3)")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.turns_played is not None) and not ((self.turns_played is None or self.turns_played > 0)):
+            errors.append("Turns played must be greater than zero")
+        if (self.duration_seconds is not None) and not ((self.duration_seconds is None or self.duration_seconds > 0)):
+            errors.append("Game duration must be greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<Game id={{self.id}}>"
 
@@ -198,6 +319,19 @@ class TournamentPrize(Base):
     tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
     tournament = relationship("Tournament", foreign_keys=[tournament_id])
 
+    def applies_to_placement(self, placement: int) -> bool:
+        raise NotImplementedError("applies_to_placement not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.placement_to is None or (self.placement_from is not None and self.placement_to >= self.placement_from))):
+            errors.append("placement_to must be greater than or equal to placement_from")
+        if not ((self.placement_from is None or self.placement_from > 0)):
+            errors.append("placement_from must be greater than zero")
+        if not ((self.amount is None or self.amount >= 0)):
+            errors.append("Prize amount must not be negative")
+        return errors
     def __repr__(self) -> str:
         return f"<TournamentPrize id={{self.id}}>"
 
@@ -215,5 +349,16 @@ class AwardedPrize(Base):
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
 
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.final_placement is None or self.final_placement > 0)):
+            errors.append("Final placement must be greater than zero")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.claimed is True) and not (self.claimed_at is not None):
+            errors.append("Claimed prize must have a claimed_at timestamp")
+        return errors
     def __repr__(self) -> str:
         return f"<AwardedPrize id={{self.id}}>"

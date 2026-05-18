@@ -32,6 +32,18 @@ class DraftSession(Base):
     card_set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
     card_set = relationship("CardSet", foreign_keys=[card_set_id])
 
+    def start(self):
+        raise NotImplementedError("start not implemented")
+
+    def abandon(self):
+        raise NotImplementedError("abandon not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def is_full(self) -> bool:
+        raise NotImplementedError("is_full not implemented")
+
     def __repr__(self) -> str:
         return f"<DraftSession id={{self.id}}>"
 
@@ -46,6 +58,12 @@ class DraftParticipant(Base):
     session = relationship("DraftSession", foreign_keys=[session_id])
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
+
+    def pick_card(self, card_id: int, pack_number: int):
+        raise NotImplementedError("pick_card not implemented")
+
+    def drafted_card_count(self) -> int:
+        raise NotImplementedError("drafted_card_count not implemented")
 
     def __repr__(self) -> str:
         return f"<DraftParticipant id={{self.id}}>"
@@ -62,6 +80,9 @@ class DraftPick(Base):
     participant = relationship("DraftParticipant", foreign_keys=[participant_id])
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
+
+    def is_first_pick(self) -> bool:
+        raise NotImplementedError("is_first_pick not implemented")
 
     def __repr__(self) -> str:
         return f"<DraftPick id={{self.id}}>"
@@ -93,6 +114,24 @@ class Article(Base):
     featured_deck = relationship("Deck", foreign_keys=[featured_deck_id])
     tags = relationship("ArticleTag", secondary=article_tags_assoc)
 
+    def publish(self):
+        raise NotImplementedError("publish not implemented")
+
+    def archive(self):
+        raise NotImplementedError("archive not implemented")
+
+    def increment_view(self):
+        raise NotImplementedError("increment_view not implemented")
+
+    def reading_time_minutes(self) -> int:
+        raise NotImplementedError("reading_time_minutes not implemented")
+
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.status == "Published") and not (self.published_at is not None):
+            errors.append("Published article must have a published_at timestamp")
+        return errors
     def __repr__(self) -> str:
         return f"<Article id={{self.id}}>"
 
@@ -103,6 +142,12 @@ class ArticleTag(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))
     slug = Column(String(100))
+
+    def rename(self, new_name: str):
+        raise NotImplementedError("rename not implemented")
+
+    def article_count(self) -> int:
+        raise NotImplementedError("article_count not implemented")
 
     def __repr__(self) -> str:
         return f"<ArticleTag id={{self.id}}>"
@@ -116,7 +161,6 @@ class ArticleTagAssignment(Base):
     article = relationship("Article", foreign_keys=[article_id])
     tag_id = Column(Integer, ForeignKey("article_tag.id"), nullable=False)
     tag = relationship("ArticleTag", foreign_keys=[tag_id])
-
     def __repr__(self) -> str:
         return f"<ArticleTagAssignment id={{self.id}}>"
 
@@ -134,6 +178,15 @@ class ArticleComment(Base):
     author = relationship("Player", foreign_keys=[author_id])
     parent_comment_id = Column(Integer, ForeignKey("article_comment.id"), nullable=True)
     parent_comment = relationship("ArticleComment", foreign_keys=[parent_comment_id])
+
+    def hide(self):
+        raise NotImplementedError("hide not implemented")
+
+    def unhide(self):
+        raise NotImplementedError("unhide not implemented")
+
+    def is_reply(self) -> bool:
+        raise NotImplementedError("is_reply not implemented")
 
     def __repr__(self) -> str:
         return f"<ArticleComment id={{self.id}}>"
@@ -162,5 +215,23 @@ class Stream(Base):
     streamer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     streamer = relationship("Player", foreign_keys=[streamer_id])
 
+    def go_live(self):
+        raise NotImplementedError("go_live not implemented")
+
+    def end(self):
+        raise NotImplementedError("end not implemented")
+
+    def update_viewer_peak(self, count: int):
+        raise NotImplementedError("update_viewer_peak not implemented")
+
+    def duration_minutes(self) -> int:
+        raise NotImplementedError("duration_minutes not implemented")
+
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.actual_start is not None) and not (self.status == "Live"):
+            errors.append("actual_start_requires_live_or_ended")
+        return errors
     def __repr__(self) -> str:
         return f"<Stream id={{self.id}}>"
