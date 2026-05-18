@@ -63,4 +63,47 @@ public class CardSetController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/standard-legal")]
+    public async System.Threading.Tasks.Task<IActionResult> IsLegalInStandard(int id)
+    {
+        try
+        {
+            var result = await _svc.IsLegalInStandardAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/legal")]
+    public async System.Threading.Tasks.Task<IActionResult> IsLegalInFormat(int id, [FromQuery] string format)
+    {
+        try
+        {
+            var result = await _svc.IsLegalInFormatAsync(id, format);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/rarity-count")]
+    public async System.Threading.Tasks.Task<IActionResult> CardCountByRarity(int id, [FromQuery] string rarity)
+    {
+        try
+        {
+            var result = await _svc.CardCountByRarityAsync(id, rarity);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/rotate")]
+    public async System.Threading.Tasks.Task<IActionResult> RotateOut(int id)
+    {
+        try
+        {
+            await _svc.RotateOutAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

@@ -71,6 +71,22 @@ public class CouponService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IsValidAsync(int id)
+    {
+        var entity = await _db.Coupons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Coupon not found: " + id);
+        var result = entity.IsValid();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> IsApplicableToOrderAsync(int id, decimal orderTotal)
+    {
+        var entity = await _db.Coupons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Coupon not found: " + id);
+        var result = entity.IsApplicableToOrder(orderTotal);
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public async System.Threading.Tasks.Task<bool> RedeemAsync(int id)
     {
         var entity = await _db.Coupons.FindAsync(id);

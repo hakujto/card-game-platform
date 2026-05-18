@@ -63,4 +63,26 @@ public class PlayerAchievementController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:int}/progress")]
+    public async System.Threading.Tasks.Task<IActionResult> IncrementProgress(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var amount = (int)body["amount"];
+            await _svc.IncrementProgressAsync(id, amount);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/complete")]
+    public async System.Threading.Tasks.Task<IActionResult> Complete(int id)
+    {
+        try
+        {
+            await _svc.CompleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

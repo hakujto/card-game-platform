@@ -10,7 +10,7 @@ using Xunit;
 
 namespace CardsProject.Tests.Marketplace;
 
-public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFactory>
+public class TradeListingApiTests : IClassFixture<TradeListingApiTests.TestFactory>
 {
     public class TestFactory : WebApplicationFactory<Program>, IDisposable
     {
@@ -46,7 +46,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
 
     private readonly HttpClient _client;
 
-    public TradelistingApiTests(TestFactory factory)
+    public TradeListingApiTests(TestFactory factory)
     {
         _client = factory.CreateClient();
     }
@@ -54,7 +54,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     [Fact]
     public async Task List_Returns200()
     {
-        var response = await _client.GetAsync("/api/tradelistings");
+        var response = await _client.GetAsync("/api/trade_listings");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -70,14 +70,14 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
             SellerId = 1,
             CardId = 1
         };
-        var response = await _client.PostAsJsonAsync("/api/tradelistings", payload);
+        var response = await _client.PostAsJsonAsync("/api/trade_listings", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
     [Fact]
     public async Task Show_Returns200OrNotFound()
     {
-        var response = await _client.GetAsync("/api/tradelistings/1");
+        var response = await _client.GetAsync("/api/trade_listings/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -87,7 +87,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     public async Task Update_Returns200OrNotFound()
     {
         var payload = new { AskingPrice = 0.00m };
-        var response = await _client.PatchAsJsonAsync("/api/tradelistings/1", payload);
+        var response = await _client.PatchAsJsonAsync("/api/trade_listings/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -96,7 +96,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     [Fact]
     public async Task Delete_Returns204OrNotFound()
     {
-        var response = await _client.DeleteAsync("/api/tradelistings/1");
+        var response = await _client.DeleteAsync("/api/trade_listings/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -106,7 +106,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     {
         // Fixed price listing must have an asking price: antecedent true, consequent missing → 400
         var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""Foil"": true, ""Condition"": ""test"", ""Quantity"": 1, ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""ListingType"": ""FixedPrice"", ""AskingPrice"": null }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/tradelistings", content);
+        var response = await _client.PostAsync("/api/trade_listings", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -115,7 +115,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     {
         // Auction listing must have a start price and end time: antecedent true, consequent missing → 400
         var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""Foil"": true, ""Condition"": ""test"", ""Quantity"": 1, ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""ListingType"": ""Auction"", ""AuctionStartPrice"": null }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/tradelistings", content);
+        var response = await _client.PostAsync("/api/trade_listings", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -124,7 +124,7 @@ public class TradelistingApiTests : IClassFixture<TradelistingApiTests.TestFacto
     {
         // Listing quantity must be between 1 and 9999 → 400 (IValidatableObject)
         var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""ListingType"": ""FixedPrice"", ""AskingPrice"": 0.00, ""AuctionStartPrice"": 0.00, ""AuctionEndTime"": ""2024-01-01T00:00:00"", ""Foil"": true, ""Condition"": ""test"", ""Status"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Quantity"": 10000 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/tradelistings", content);
+        var response = await _client.PostAsync("/api/trade_listings", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

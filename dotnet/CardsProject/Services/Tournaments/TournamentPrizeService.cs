@@ -67,4 +67,20 @@ public class TournamentPrizeService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> AppliesToPlacementAsync(int id, int placement)
+    {
+        var entity = await _db.TournamentPrizes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TournamentPrize not found: " + id);
+        var result = entity.AppliesToPlacement(placement);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> AwardToPlayerAsync(int id, int playerId)
+    {
+        var entity = await _db.TournamentPrizes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TournamentPrize not found: " + id);
+        entity.AwardToPlayer(playerId);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

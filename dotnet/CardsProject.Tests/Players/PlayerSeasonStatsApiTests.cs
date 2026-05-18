@@ -97,4 +97,39 @@ public class PlayerSeasonStatsApiTests : IClassFixture<PlayerSeasonStatsApiTests
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task Create_Fails_When_WinsNotNegative_Violated()
+    {
+        // Season wins must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Losses"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": 1, ""Wins"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_season_statses", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_LossesNotNegative_Violated()
+    {
+        // Season losses must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": 1, ""Losses"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_season_statses", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_TournamentWinsNotNegative_Violated()
+    {
+        // Season tournament wins must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Losses"": 1, ""Draws"": 1, ""SeasonPoints"": 1, ""TournamentWins"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_season_statses", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_SeasonPointsNotNegative_Violated()
+    {
+        // Season points must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Losses"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_season_statses", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Cards;
 
@@ -23,7 +24,7 @@ public enum DeckArchetypeType
     Tempo
 }
 
-public class Deck
+public class Deck : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -35,6 +36,7 @@ public class Deck
     public DeckArchetypeType? Archetype { get; set; }
     public int Wins { get; set; } = 0;
     public int Losses { get; set; } = 0;
+    public int Draws { get; set; } = 0;
     public DateTime? CreatedAt { get; set; } = null;
     public DateTime? UpdatedAt { get; set; } = null;
 
@@ -51,6 +53,21 @@ public class Deck
     public bool ValidateSize()
     {
         throw new NotImplementedException("validate_size not implemented");
+    }
+
+    public void AddCard(int cardId, int quantity)
+    {
+        throw new NotImplementedException("add_card not implemented");
+    }
+
+    public void RemoveCard(int cardId)
+    {
+        throw new NotImplementedException("remove_card not implemented");
+    }
+
+    public decimal WinRate()
+    {
+        throw new NotImplementedException("win_rate not implemented");
     }
 
     public object Clone()
@@ -71,5 +88,16 @@ public class Deck
     public bool CertifyTournamentLegal()
     {
         throw new NotImplementedException("certify_tournament_legal not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Wins >= 0 ))
+            yield return new ValidationResult("Deck wins count must not be negative", new[] { nameof(Id) });
+        if (!( Losses >= 0 ))
+            yield return new ValidationResult("Deck losses count must not be negative", new[] { nameof(Id) });
+        if (!( Draws >= 0 ))
+            yield return new ValidationResult("Deck draws count must not be negative", new[] { nameof(Id) });
     }
 }

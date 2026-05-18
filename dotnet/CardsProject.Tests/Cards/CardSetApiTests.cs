@@ -63,10 +63,11 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
     {
         var payload = new
         {
+            TotalCards = 1,
+            IsRotated = false,
             Name = "test",
             Code = "test",
-            ReleaseDate = "2024-01-01",
-            TotalCards = 1
+            ReleaseDate = "2024-01-01"
         };
         var response = await _client.PostAsJsonAsync("/api/card_sets", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -98,5 +99,31 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_TotalCardsPositive_Violated()
+    {
+        // Card set must have at least one card → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""RotationDate"": ""2024-01-01"", ""IsRotated"": true, ""Name"": ""test"", ""Code"": ""test"", ""ReleaseDate"": ""2024-01-01"", ""SetType"": ""test"", ""TotalCards"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_sets", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_RotationDateAfterRelease_Violated()
+    {
+        // Rotation date must be after release date: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""Name"": ""test"", ""Code"": ""test"", ""ReleaseDate"": ""2024-01-01"", ""SetType"": ""test"", ""TotalCards"": 1, ""IsRotated"": true, ""RotationDate"": ""2024-01-01"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_sets", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_RotatedSetHasRotationDate_Violated()
+    {
+        // Rotated set must have a rotation date: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""Name"": ""test"", ""Code"": ""test"", ""ReleaseDate"": ""2024-01-01"", ""SetType"": ""test"", ""TotalCards"": 1, ""IsRotated"": true, ""RotationDate"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_sets", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

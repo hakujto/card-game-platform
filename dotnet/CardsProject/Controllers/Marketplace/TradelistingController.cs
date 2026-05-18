@@ -5,13 +5,13 @@ using CardsProject.Services.Marketplace;
 namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
-[Route("api/tradelistings")]
+[Route("api/trade_listings")]
 [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-public class TradelistingController : ControllerBase
+public class TradeListingController : ControllerBase
 {
-    private readonly TradelistingService _svc;
+    private readonly TradeListingService _svc;
 
-    public TradelistingController(TradelistingService svc) => _svc = svc;
+    public TradeListingController(TradeListingService svc) => _svc = svc;
 
     [HttpGet]
     public async Task<IActionResult> List()
@@ -21,7 +21,7 @@ public class TradelistingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] TradelistingDto dto)
+    public async Task<IActionResult> Create([FromBody] TradeListingDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         try
@@ -43,7 +43,7 @@ public class TradelistingController : ControllerBase
 
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] TradelistingDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] TradeListingDto dto)
     {
         try
         {
@@ -92,6 +92,28 @@ public class TradelistingController : ControllerBase
         try
         {
             await _svc.CancelAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/expired")]
+    public async System.Threading.Tasks.Task<IActionResult> IsExpired(int id)
+    {
+        try
+        {
+            var result = await _svc.IsExpiredAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/finalize")]
+    public async System.Threading.Tasks.Task<IActionResult> FinalizeAuction(int id)
+    {
+        try
+        {
+            await _svc.FinalizeAuctionAsync(id);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }

@@ -14,7 +14,7 @@ public class TradeBid : IValidatableObject
 
     public int? ListingId { get; set; }
     [ForeignKey(nameof(ListingId))]
-    public Tradelisting? Listing { get; set; }
+    public TradeListing? Listing { get; set; }
     public int? BidderId { get; set; }
     [ForeignKey(nameof(BidderId))]
     public Player? Bidder { get; set; }
@@ -24,6 +24,11 @@ public class TradeBid : IValidatableObject
     public bool OutbidBy(decimal newAmount)
     {
         throw new NotImplementedException("outbid_by not implemented");
+    }
+
+    public void Retract()
+    {
+        throw new NotImplementedException("retract not implemented");
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

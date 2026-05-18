@@ -63,6 +63,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     {
         var payload = new
         {
+            Seats = 2,
             CreatedAt = "2024-01-01T00:00:00",
             CardSetId = 1
         };
@@ -82,7 +83,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Seats = 1 };
+        var payload = new { Seats = 2 };
         var response = await _client.PatchAsJsonAsync("/api/draft_sessions/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -96,5 +97,22 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_SeatsRange_Violated()
+    {
+        // Draft session must have between 2 and 16 seats → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""CardSetId"": 1, ""CompletedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""DraftType"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Seats"": 17 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/draft_sessions", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_CompletedAtRequiresCompletedStatus_Violated()
+    {
+        // completed_at can only be set when draft status is Completed: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""CardSetId"": 1, ""Status"": ""test"", ""DraftType"": ""test"", ""Seats"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""CompletedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/draft_sessions", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

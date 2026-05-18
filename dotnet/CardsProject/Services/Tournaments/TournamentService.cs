@@ -125,6 +125,22 @@ public class TournamentService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async System.Threading.Tasks.Task<bool> RegisterPlayerAsync(int id, int playerId, int deckId)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.RegisterPlayer(playerId, deckId);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> IsFullAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Tournament not found: " + id);
+        var result = entity.IsFull();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(Tournament entity)
     {
         if (entity.EndTime != null && !((entity.EndTime == null || (entity.StartTime != null && entity.EndTime > entity.StartTime)))) throw new InvalidOperationException("End time must be after start time");

@@ -63,7 +63,7 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
     {
         var payload = new
         {
-            ClaimedAt = "2024-01-01T00:00:00",
+            Claimed = false,
             FinalPlacement = 1,
             AwardedAt = "2024-01-01T00:00:00",
             PrizeId = 1,

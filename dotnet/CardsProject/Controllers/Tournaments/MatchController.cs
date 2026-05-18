@@ -87,6 +87,18 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/concede")]
+    public async System.Threading.Tasks.Task<IActionResult> Concede(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var playerId = (int)body["player_id"];
+            await _svc.ConcedeAsync(id, playerId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("{id:int}/draw")]
     public async System.Threading.Tasks.Task<IActionResult> Draw(int id)
     {

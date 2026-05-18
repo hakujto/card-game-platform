@@ -63,4 +63,25 @@ public class CardAbilityController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/usable")]
+    public async System.Threading.Tasks.Task<IActionResult> IsUsableAt(int id, [FromQuery] string timing)
+    {
+        try
+        {
+            var result = await _svc.IsUsableAtAsync(id, timing);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/describe")]
+    public async System.Threading.Tasks.Task<IActionResult> Describe(int id)
+    {
+        try
+        {
+            var result = await _svc.DescribeAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

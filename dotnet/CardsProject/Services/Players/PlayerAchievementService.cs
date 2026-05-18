@@ -63,6 +63,34 @@ public class PlayerAchievementService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IncrementProgressAsync(int id, int amount)
+    {
+        var entity = await _db.PlayerAchievements.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerAchievement not found: " + id);
+        entity.IncrementProgress(amount);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> CompleteAsync(int id)
+    {
+        var entity = await _db.PlayerAchievements.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerAchievement not found: " + id);
+        entity.Complete();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    // triggered by @on(is_completed = true)
+    public async System.Threading.Tasks.Task SetIsCompletedAsync(int id, bool value)
+    {
+        var entity = await _db.PlayerAchievements.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerAchievement not found: " + id);
+        entity.IsCompleted = value;
+        if (value)
+        {
+            entity.Complete();
+        }
+        await _db.SaveChangesAsync();
+    }
     public void Validate(PlayerAchievement entity)
     {
         if (entity.IsCompleted == true && !(entity.Progress > 0)) throw new InvalidOperationException("Completed achievement must have progress greater than zero");

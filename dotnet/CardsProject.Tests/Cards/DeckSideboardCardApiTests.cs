@@ -97,4 +97,12 @@ public class DeckSideboardCardApiTests : IClassFixture<DeckSideboardCardApiTests
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task Create_Fails_When_QuantityRange_Violated()
+    {
+        // Sideboard card quantity must be between 1 and 4 copies → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""DeckId"": 1, ""CardId"": 1, ""Quantity"": 5 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/deck_sideboard_cards", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

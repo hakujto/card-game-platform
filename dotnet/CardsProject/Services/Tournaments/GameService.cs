@@ -77,9 +77,19 @@ public class GameService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<decimal> DurationMinutesAsync(int id)
+    {
+        var entity = await _db.Games.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Game not found: " + id);
+        var result = entity.DurationMinutes();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(Game entity)
     {
         if (entity.TurnsPlayed != null && !((entity.TurnsPlayed == null || entity.TurnsPlayed > 0))) throw new InvalidOperationException("Turns played must be greater than zero");
         if (entity.DurationSeconds != null && !((entity.DurationSeconds == null || entity.DurationSeconds > 0))) throw new InvalidOperationException("Game duration must be greater than zero");
+        if (entity.WinnerSide == GameWinnerSideType.Draw && entity.WinnerId != null) throw new InvalidOperationException("A draw cannot have a winner");
+        if ((entity.WinnerSide != null && entity.WinnerSide != GameWinnerSideType.Draw) && entity.WinnerId == null) throw new InvalidOperationException("A decisive game must have a winner player set");
     }
 }

@@ -23,7 +23,7 @@ public class TradeTransaction : IValidatableObject
 
     public int? ListingId { get; set; }
     [ForeignKey(nameof(ListingId))]
-    public Tradelisting? Listing { get; set; }
+    public TradeListing? Listing { get; set; }
     public int? BuyerId { get; set; }
     [ForeignKey(nameof(BuyerId))]
     public Player? Buyer { get; set; }
@@ -56,9 +56,11 @@ public class TradeTransaction : IValidatableObject
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!( (FinalPrice != null && PlatformFee <= FinalPrice) ))
+        if (!( PlatformFee <= FinalPrice ))
             yield return new ValidationResult("Platform fee cannot exceed the final price", new[] { nameof(Id) });
         if (!( PlatformFee >= 0m ))
             yield return new ValidationResult("Platform fee must not be negative", new[] { nameof(Id) });
+        if (!( FinalPrice > 0m ))
+            yield return new ValidationResult("Transaction final price must be greater than zero", new[] { nameof(Id) });
     }
 }

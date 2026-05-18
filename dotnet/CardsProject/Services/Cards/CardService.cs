@@ -127,9 +127,27 @@ public class CardService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async System.Threading.Tasks.Task<decimal> ApplyRarityBonusAsync(int id, int multiplier)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Card not found: " + id);
+        var result = entity.ApplyRarityBonus(multiplier);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> IsLegalInFormatAsync(int id, string format)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Card not found: " + id);
+        var result = entity.IsLegalInFormat(format);
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(Card entity)
     {
         if (entity.CardType == CardCardTypeType.Creature && !(entity.Attack != null && entity.Defense != null)) throw new InvalidOperationException("Creature card must have attack and defense");
         if (entity.CardType == CardCardTypeType.Planeswalker && entity.Loyalty == null) throw new InvalidOperationException("Planeswalker card must have loyalty");
+        if (entity.CardType != CardCardTypeType.Planeswalker && entity.Loyalty != null) throw new InvalidOperationException("Only Planeswalker cards can have loyalty");
+        if (entity.IsBanned == true && true) throw new InvalidOperationException("banned_card_not_in_legal_formats");
     }
 }

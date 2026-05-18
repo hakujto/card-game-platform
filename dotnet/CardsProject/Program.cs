@@ -72,7 +72,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<OrderItemService>();
 builder.Services.AddScoped<CouponService>();
-builder.Services.AddScoped<TradelistingService>();
+builder.Services.AddScoped<TradeListingService>();
 builder.Services.AddScoped<TradeBidService>();
 builder.Services.AddScoped<TradeTransactionService>();
 builder.Services.AddScoped<CardPriceHistoryService>();

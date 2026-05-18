@@ -65,4 +65,20 @@ public class CardPriceHistoryService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<decimal> PriceChangePercentAsync(int id, decimal previousAvg)
+    {
+        var entity = await _db.CardPriceHistories.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardPriceHistory not found: " + id);
+        var result = entity.PriceChangePercent(previousAvg);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> IsPriceSpikeAsync(int id, int thresholdPercent)
+    {
+        var entity = await _db.CardPriceHistories.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardPriceHistory not found: " + id);
+        var result = entity.IsPriceSpike(thresholdPercent);
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

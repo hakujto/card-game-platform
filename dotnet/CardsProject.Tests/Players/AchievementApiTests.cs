@@ -63,6 +63,7 @@ public class AchievementApiTests : IClassFixture<AchievementApiTests.TestFactory
     {
         var payload = new
         {
+            Points = 1,
             Name = "test",
             Description = "test"
         };
@@ -96,5 +97,13 @@ public class AchievementApiTests : IClassFixture<AchievementApiTests.TestFactory
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_PointsPositive_Violated()
+    {
+        // Achievement must award at least one point → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""Name"": ""test"", ""Description"": ""test"", ""Rarity"": ""test"", ""IsHidden"": true, ""Points"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/achievements", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

@@ -63,6 +63,18 @@ public class DeckTagController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:int}/rename")]
+    public async System.Threading.Tasks.Task<IActionResult> Rename(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var newName = (string)body["new_name"];
+            await _svc.RenameAsync(id, newName);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("{id:int}/merge")]
     public async System.Threading.Tasks.Task<IActionResult> MergeInto(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
     {

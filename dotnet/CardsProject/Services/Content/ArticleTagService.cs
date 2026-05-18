@@ -55,4 +55,20 @@ public class ArticleTagService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> RenameAsync(int id, string newName)
+    {
+        var entity = await _db.ArticleTags.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("ArticleTag not found: " + id);
+        entity.Rename(newName);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<int> ArticleCountAsync(int id)
+    {
+        var entity = await _db.ArticleTags.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("ArticleTag not found: " + id);
+        var result = entity.ArticleCount();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

@@ -135,5 +135,6 @@ public class OrderService
     {
         if (entity.Status == OrderStatusType.Paid && entity.PaidAt == null) throw new InvalidOperationException("Paid order must have paid_at set");
         if (entity.Status == OrderStatusType.Shipped && entity.TrackingNumber == null) throw new InvalidOperationException("Shipped order must have a tracking number");
+        if (entity.ShippedAt != null && !(entity.Status == OrderStatusType.Shipped)) throw new InvalidOperationException("shipped_at_requires_shipped_status");
     }
 }

@@ -57,4 +57,20 @@ public class DeckSideboardCardService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IncrementAsync(int id, int amount)
+    {
+        var entity = await _db.DeckSideboardCards.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DeckSideboardCard not found: " + id);
+        entity.Increment(amount);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> DecrementAsync(int id, int amount)
+    {
+        var entity = await _db.DeckSideboardCards.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DeckSideboardCard not found: " + id);
+        entity.Decrement(amount);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

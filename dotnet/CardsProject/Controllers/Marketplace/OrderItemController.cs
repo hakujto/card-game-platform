@@ -63,4 +63,14 @@ public class OrderItemController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/total")]
+    public async System.Threading.Tasks.Task<IActionResult> LineTotal(int id)
+    {
+        try
+        {
+            var result = await _svc.LineTotalAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

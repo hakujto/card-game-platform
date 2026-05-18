@@ -63,6 +63,7 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
     {
         var payload = new
         {
+            Quantity = 1,
             AcquiredAt = "2024-01-01T00:00:00",
             PlayerId = 1,
             CardId = 1
@@ -97,5 +98,13 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_QuantityPositive_Violated()
+    {
+        // Collection quantity must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""CardId"": 1, ""Foil"": true, ""Condition"": ""test"", ""AcquiredAt"": ""2024-01-01T00:00:00"", ""AcquiredVia"": ""test"", ""Quantity"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_collections", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

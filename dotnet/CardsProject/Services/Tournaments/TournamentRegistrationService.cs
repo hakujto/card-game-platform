@@ -35,6 +35,7 @@ public class TournamentRegistrationService
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
+        Validate(entity);
         ValidateEntity(entity);
         _db.TournamentRegistrations.Add(entity);
         await _db.SaveChangesAsync();
@@ -53,6 +54,7 @@ public class TournamentRegistrationService
         if (dto.TournamentId is not null) entity.TournamentId = dto.TournamentId;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
+        Validate(entity);
         ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
@@ -90,5 +92,10 @@ public class TournamentRegistrationService
         entity.PromoteFromWaitlist();
         await _db.SaveChangesAsync();
         return true;
+    }
+    public void Validate(TournamentRegistration entity)
+    {
+        if (entity.FinalStanding != null && !((entity.FinalStanding == null || entity.FinalStanding > 0))) throw new InvalidOperationException("Final standing must be greater than zero");
+        if (entity.Seed != null && !((entity.Seed == null || entity.Seed > 0))) throw new InvalidOperationException("Seed must be greater than zero");
     }
 }

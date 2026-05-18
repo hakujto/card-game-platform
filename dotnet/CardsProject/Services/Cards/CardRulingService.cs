@@ -59,4 +59,20 @@ public class CardRulingService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IsCurrentAsync(int id)
+    {
+        var entity = await _db.CardRulings.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardRuling not found: " + id);
+        var result = entity.IsCurrent();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> SupersedesPreviousAsync(int id)
+    {
+        var entity = await _db.CardRulings.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardRuling not found: " + id);
+        var result = entity.SupersedesPrevious();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

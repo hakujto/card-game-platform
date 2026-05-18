@@ -5,14 +5,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Marketplace;
 
-public enum TradelistingListingTypeType
+public enum TradeListingListingTypeType
 {
     FixedPrice,
     Auction,
     TradeOffer
 }
 
-public enum TradelistingConditionType
+public enum TradeListingConditionType
 {
     Mint,
     NearMint,
@@ -21,7 +21,7 @@ public enum TradelistingConditionType
     Played
 }
 
-public enum TradelistingStatusType
+public enum TradeListingStatusType
 {
     Active,
     Sold,
@@ -30,19 +30,19 @@ public enum TradelistingStatusType
     Pending
 }
 
-public class Tradelisting : IValidatableObject
+public class TradeListing : IValidatableObject
 {
     public int Id { get; set; }
 
-    public TradelistingListingTypeType ListingType { get; set; }
+    public TradeListingListingTypeType ListingType { get; set; }
     public decimal? AskingPrice { get; set; } = null;
     public decimal? AuctionStartPrice { get; set; } = null;
     public decimal? AuctionCurrentBid { get; set; } = null;
     public DateTime? AuctionEndTime { get; set; } = null;
     public bool Foil { get; set; } = false;
-    public TradelistingConditionType Condition { get; set; }
+    public TradeListingConditionType Condition { get; set; }
     public int Quantity { get; set; } = 1;
-    public TradelistingStatusType Status { get; set; }
+    public TradeListingStatusType Status { get; set; }
     public string? Description { get; set; }
     public DateTime? CreatedAt { get; set; } = null;
     public DateTime? ExpiresAt { get; set; } = null;

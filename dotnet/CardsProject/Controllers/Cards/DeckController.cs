@@ -74,6 +74,41 @@ public class DeckController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/cards")]
+    public async System.Threading.Tasks.Task<IActionResult> AddCard(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var cardId = (int)body["card_id"];
+            var quantity = (int)body["quantity"];
+            await _svc.AddCardAsync(id, cardId, quantity);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:int}/cards/{card_id}")]
+    public async System.Threading.Tasks.Task<IActionResult> RemoveCard(int id, int cardId)
+    {
+        try
+        {
+            await _svc.RemoveCardAsync(id, cardId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/win-rate")]
+    public async System.Threading.Tasks.Task<IActionResult> WinRate(int id)
+    {
+        try
+        {
+            var result = await _svc.WinRateAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("{id:int}/clone")]
     public async System.Threading.Tasks.Task<IActionResult> Clone(int id)
     {

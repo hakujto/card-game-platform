@@ -110,4 +110,13 @@ public class ArticleApiTests : IClassFixture<ArticleApiTests.TestFactory>
         var response = await _client.PostAsync("/api/articles", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Create_Fails_When_ViewCountNotNegative_Violated()
+    {
+        // Article view count must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""AuthorId"": 1, ""Status"": ""Published"", ""PublishedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""ViewCount"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/articles", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

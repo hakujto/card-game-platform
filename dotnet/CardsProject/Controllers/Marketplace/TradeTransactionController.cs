@@ -96,4 +96,15 @@ public class TradeTransactionController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/seller-net")]
+    public async System.Threading.Tasks.Task<IActionResult> SellerNet(int id)
+    {
+        try
+        {
+            var result = await _svc.SellerNetAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

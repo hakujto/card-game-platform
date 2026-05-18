@@ -63,4 +63,14 @@ public class AwardedPrizeController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:int}/claim")]
+    public async System.Threading.Tasks.Task<IActionResult> Claim(int id)
+    {
+        try
+        {
+            await _svc.ClaimAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

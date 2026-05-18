@@ -47,6 +47,11 @@ public class Match : IValidatableObject
         throw new NotImplementedException("determine_winner not implemented");
     }
 
+    public void Concede(int playerId)
+    {
+        throw new NotImplementedException("concede not implemented");
+    }
+
     public void Draw()
     {
         throw new NotImplementedException("draw not implemented");

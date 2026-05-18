@@ -1,5 +1,6 @@
 using CardsProject.Domain.Tournaments;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Players;
 
@@ -14,7 +15,7 @@ public enum PlayerSeasonStatsHighestRankType
     Grandmaster
 }
 
-public class PlayerSeasonStats
+public class PlayerSeasonStats : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -47,5 +48,18 @@ public class PlayerSeasonStats
     public void RecordTournamentWin()
     {
         throw new NotImplementedException("record_tournament_win not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Wins >= 0 ))
+            yield return new ValidationResult("Season wins must not be negative", new[] { nameof(Id) });
+        if (!( Losses >= 0 ))
+            yield return new ValidationResult("Season losses must not be negative", new[] { nameof(Id) });
+        if (!( TournamentWins >= 0 ))
+            yield return new ValidationResult("Season tournament wins must not be negative", new[] { nameof(Id) });
+        if (!( SeasonPoints >= 0 ))
+            yield return new ValidationResult("Season points must not be negative", new[] { nameof(Id) });
     }
 }

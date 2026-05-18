@@ -63,7 +63,7 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
     {
         var payload = new
         {
-            Progress = 1,
+            IsCompleted = false,
             EarnedAt = "2024-01-01T00:00:00",
             PlayerId = 1,
             AchievementId = 1
@@ -104,6 +104,15 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
     {
         // Completed achievement must have progress greater than zero: antecedent true, consequent missing → 400
         var content = new StringContent(@"{ ""PlayerId"": 1, ""AchievementId"": 1, ""EarnedAt"": ""2024-01-01T00:00:00"", ""IsCompleted"": true, ""Progress"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/player_achievements", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_ProgressNotNegative_Violated()
+    {
+        // Achievement progress must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""AchievementId"": 1, ""IsCompleted"": true, ""EarnedAt"": ""2024-01-01T00:00:00"", ""Progress"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/player_achievements", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

@@ -99,4 +99,12 @@ public class DraftParticipantApiTests : IClassFixture<DraftParticipantApiTests.T
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task Create_Fails_When_SeatNumberPositive_Violated()
+    {
+        // Seat number must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""SessionId"": 1, ""PlayerId"": 1, ""JoinedAt"": ""2024-01-01T00:00:00"", ""SeatNumber"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/draft_participants", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

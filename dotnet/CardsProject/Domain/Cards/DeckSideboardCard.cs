@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Cards;
 
-public class DeckSideboardCard
+public class DeckSideboardCard : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -25,5 +26,12 @@ public class DeckSideboardCard
     public void Decrement(int amount)
     {
         throw new NotImplementedException("decrement not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Quantity >= 1 && Quantity <= 4 ))
+            yield return new ValidationResult("Sideboard card quantity must be between 1 and 4 copies", new[] { nameof(Id) });
     }
 }

@@ -63,6 +63,22 @@ public class CardAbilityService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IsUsableAtAsync(int id, string timing)
+    {
+        var entity = await _db.CardAbilities.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardAbility not found: " + id);
+        var result = entity.IsUsableAt(timing);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<string> DescribeAsync(int id)
+    {
+        var entity = await _db.CardAbilities.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CardAbility not found: " + id);
+        var result = entity.Describe();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(CardAbility entity)
     {
         if (entity.AbilityType == CardAbilityAbilityTypeType.Keyword && entity.Keyword == null) throw new InvalidOperationException("Keyword ability must have a keyword name");

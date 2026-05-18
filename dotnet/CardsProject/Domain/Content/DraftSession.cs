@@ -1,5 +1,6 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Content;
 
@@ -18,7 +19,7 @@ public enum DraftSessionDraftTypeType
     Rochester
 }
 
-public class DraftSession
+public class DraftSession : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -52,5 +53,12 @@ public class DraftSession
     public bool IsFull()
     {
         throw new NotImplementedException("is_full not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Seats >= 2 && Seats <= 16 ))
+            yield return new ValidationResult("Draft session must have between 2 and 16 seats", new[] { nameof(Id) });
     }
 }

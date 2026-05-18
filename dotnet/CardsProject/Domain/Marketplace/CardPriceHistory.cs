@@ -34,7 +34,11 @@ public class CardPriceHistory : IValidatableObject
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!( ((AvgPrice != null && MinPrice <= AvgPrice) && (MaxPrice != null && AvgPrice <= MaxPrice)) ))
+        if (!( (MinPrice <= AvgPrice && AvgPrice <= MaxPrice) ))
             yield return new ValidationResult("min_price <= avg_price <= max_price must hold", new[] { nameof(Id) });
+        if (!( Volume >= 0 ))
+            yield return new ValidationResult("Price history volume must not be negative", new[] { nameof(Id) });
+        if (!( MinPrice >= 0m ))
+            yield return new ValidationResult("Prices must not be negative", new[] { nameof(Id) });
     }
 }

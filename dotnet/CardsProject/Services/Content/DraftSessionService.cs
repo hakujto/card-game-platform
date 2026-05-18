@@ -33,6 +33,7 @@ public class DraftSessionService
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        Validate(entity);
         ValidateEntity(entity);
         _db.DraftSessions.Add(entity);
         await _db.SaveChangesAsync();
@@ -49,6 +50,7 @@ public class DraftSessionService
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
+        Validate(entity);
         ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
@@ -86,5 +88,17 @@ public class DraftSessionService
         entity.Complete();
         await _db.SaveChangesAsync();
         return true;
+    }
+    public async System.Threading.Tasks.Task<bool> IsFullAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DraftSession not found: " + id);
+        var result = entity.IsFull();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public void Validate(DraftSession entity)
+    {
+        if (entity.CompletedAt != null && !(entity.Status == DraftSessionStatusType.Completed)) throw new InvalidOperationException("completed_at can only be set when draft status is Completed");
     }
 }

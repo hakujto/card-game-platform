@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Content;
 
@@ -21,7 +22,7 @@ public enum ArticleArticleTypeType
     Decklist
 }
 
-public class Article
+public class Article : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -66,5 +67,12 @@ public class Article
     public int ReadingTimeMinutes()
     {
         throw new NotImplementedException("reading_time_minutes not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( ViewCount >= 0 ))
+            yield return new ValidationResult("Article view count must not be negative", new[] { nameof(Id) });
     }
 }

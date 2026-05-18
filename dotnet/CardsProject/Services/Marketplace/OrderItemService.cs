@@ -61,4 +61,12 @@ public class OrderItemService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<decimal> LineTotalAsync(int id)
+    {
+        var entity = await _db.OrderItems.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("OrderItem not found: " + id);
+        var result = entity.LineTotal();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

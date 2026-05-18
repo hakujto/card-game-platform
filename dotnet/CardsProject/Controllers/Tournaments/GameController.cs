@@ -74,4 +74,15 @@ public class GameController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/duration")]
+    public async System.Threading.Tasks.Task<IActionResult> DurationMinutes(int id)
+    {
+        try
+        {
+            var result = await _svc.DurationMinutesAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

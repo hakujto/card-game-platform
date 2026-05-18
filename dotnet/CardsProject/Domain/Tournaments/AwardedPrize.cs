@@ -20,6 +20,13 @@ public class AwardedPrize : IValidatableObject
     [ForeignKey(nameof(PlayerId))]
     public Player? Player { get; set; }
 
+    // Business operations
+
+    public void Claim()
+    {
+        throw new NotImplementedException("claim not implemented");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

@@ -10,6 +10,7 @@ public class DeckDto
     public string? Archetype { get; set; }
     public int? Wins { get; set; }
     public int? Losses { get; set; }
+    public int? Draws { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public int? PlayerId { get; set; }

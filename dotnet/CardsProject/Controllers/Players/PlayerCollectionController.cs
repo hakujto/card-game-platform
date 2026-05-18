@@ -63,6 +63,30 @@ public class PlayerCollectionController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:int}/add")]
+    public async System.Threading.Tasks.Task<IActionResult> Add(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var quantity = (int)body["quantity"];
+            await _svc.AddAsync(id, quantity);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/remove")]
+    public async System.Threading.Tasks.Task<IActionResult> Remove(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var quantity = (int)body["quantity"];
+            await _svc.RemoveAsync(id, quantity);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpGet("{id:int}/value")]
     public async System.Threading.Tasks.Task<IActionResult> EstimatedValue(int id)
     {

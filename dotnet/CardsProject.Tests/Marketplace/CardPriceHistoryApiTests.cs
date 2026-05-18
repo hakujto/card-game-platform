@@ -101,4 +101,21 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task Create_Fails_When_VolumeNotNegative_Violated()
+    {
+        // Price history volume must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""CardId"": 1, ""PriceDate"": ""2024-01-01"", ""AvgPrice"": 0.00, ""MinPrice"": 0.00, ""MaxPrice"": 0.00, ""Foil"": true, ""Volume"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_price_histories", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_PricesNotNegative_Violated()
+    {
+        // Prices must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""CardId"": 1, ""PriceDate"": ""2024-01-01"", ""AvgPrice"": 0.00, ""MaxPrice"": 0.00, ""Volume"": 1, ""Foil"": true, ""MinPrice"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/card_price_histories", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

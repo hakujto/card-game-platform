@@ -95,4 +95,15 @@ public class TournamentRoundController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/time-expired")]
+    public async System.Threading.Tasks.Task<IActionResult> IsTimeExpired(int id)
+    {
+        try
+        {
+            var result = await _svc.IsTimeExpiredAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

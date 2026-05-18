@@ -63,4 +63,27 @@ public class DeckCardController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:int}/increment")]
+    public async System.Threading.Tasks.Task<IActionResult> Increment(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var amount = (int)body["amount"];
+            await _svc.IncrementAsync(id, amount);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/decrement")]
+    public async System.Threading.Tasks.Task<IActionResult> Decrement(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var amount = (int)body["amount"];
+            await _svc.DecrementAsync(id, amount);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

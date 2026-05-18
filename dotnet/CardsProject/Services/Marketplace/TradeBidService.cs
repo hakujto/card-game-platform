@@ -61,4 +61,20 @@ public class TradeBidService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> OutbidByAsync(int id, decimal newAmount)
+    {
+        var entity = await _db.TradeBids.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TradeBid not found: " + id);
+        var result = entity.OutbidBy(newAmount);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> RetractAsync(int id)
+    {
+        var entity = await _db.TradeBids.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TradeBid not found: " + id);
+        entity.Retract();
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

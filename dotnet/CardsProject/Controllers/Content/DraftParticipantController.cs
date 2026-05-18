@@ -75,4 +75,15 @@ public class DraftParticipantController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/card-count")]
+    public async System.Threading.Tasks.Task<IActionResult> DraftedCardCount(int id)
+    {
+        try
+        {
+            var result = await _svc.DraftedCardCountAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

@@ -19,6 +19,16 @@ public class CraftingRecipe : IValidatableObject
 
     // Business operations
 
+    public bool CanCraft(int playerId)
+    {
+        throw new NotImplementedException("can_craft not implemented");
+    }
+
+    public void ExecuteCraft(int playerId)
+    {
+        throw new NotImplementedException("execute_craft not implemented");
+    }
+
     public void Disable()
     {
         throw new NotImplementedException("disable not implemented");

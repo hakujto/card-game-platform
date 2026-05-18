@@ -44,7 +44,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Coupon> Coupons { get; set; }
-    public DbSet<Tradelisting> Tradelistings { get; set; }
+    public DbSet<TradeListing> TradeListings { get; set; }
     public DbSet<TradeBid> TradeBids { get; set; }
     public DbSet<TradeTransaction> TradeTransactions { get; set; }
     public DbSet<CardPriceHistory> CardPriceHistories { get; set; }

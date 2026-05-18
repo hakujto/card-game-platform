@@ -1,6 +1,6 @@
 namespace CardsProject.Controllers.Marketplace;
 
-public class TradelistingDto
+public class TradeListingDto
 {
     public string? ListingType { get; set; }
     public decimal? AskingPrice { get; set; }

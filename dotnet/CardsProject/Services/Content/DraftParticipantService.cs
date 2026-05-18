@@ -67,4 +67,12 @@ public class DraftParticipantService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<int> DraftedCardCountAsync(int id)
+    {
+        var entity = await _db.DraftParticipants.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DraftParticipant not found: " + id);
+        var result = entity.DraftedCardCount();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

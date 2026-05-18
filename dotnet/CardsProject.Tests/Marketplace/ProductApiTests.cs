@@ -63,8 +63,8 @@ public class ProductApiTests : IClassFixture<ProductApiTests.TestFactory>
     {
         var payload = new
         {
-            Name = "test",
-            Price = 0.00m
+            Price = 0.01m,
+            Name = "test"
         };
         var response = await _client.PostAsJsonAsync("/api/products", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -96,5 +96,31 @@ public class ProductApiTests : IClassFixture<ProductApiTests.TestFactory>
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_PricePositive_Violated()
+    {
+        // Product price must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""Name"": ""test"", ""ProductType"": ""test"", ""Stock"": 1, ""Active"": true, ""DiscountPercent"": 1, ""Featured"": true, ""Price"": 0.00 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/products", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_StockNotNegative_Violated()
+    {
+        // Product stock must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""Name"": ""test"", ""ProductType"": ""test"", ""Price"": 0.00, ""Active"": true, ""DiscountPercent"": 1, ""Featured"": true, ""Stock"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/products", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_DiscountPercentRange_Violated()
+    {
+        // Product discount percent must be between 0 and 100 → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""Name"": ""test"", ""ProductType"": ""test"", ""Price"": 0.00, ""Stock"": 1, ""Active"": true, ""Featured"": true, ""DiscountPercent"": 101 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/products", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

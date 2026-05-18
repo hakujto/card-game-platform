@@ -65,6 +65,26 @@ public class AwardedPrizeService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> ClaimAsync(int id)
+    {
+        var entity = await _db.AwardedPrizes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("AwardedPrize not found: " + id);
+        entity.Claim();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    // triggered by @on(claimed = true)
+    public async System.Threading.Tasks.Task SetClaimedAsync(int id, bool value)
+    {
+        var entity = await _db.AwardedPrizes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("AwardedPrize not found: " + id);
+        entity.Claimed = value;
+        if (value)
+        {
+            entity.Claim();
+        }
+        await _db.SaveChangesAsync();
+    }
     public void Validate(AwardedPrize entity)
     {
         if (entity.Claimed == true && entity.ClaimedAt == null) throw new InvalidOperationException("Claimed prize must have a claimed_at timestamp");

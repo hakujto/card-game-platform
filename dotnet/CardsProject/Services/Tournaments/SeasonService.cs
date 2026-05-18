@@ -87,4 +87,12 @@ public class SeasonService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<bool> IsOngoingAsync(int id)
+    {
+        var entity = await _db.Seasons.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Season not found: " + id);
+        var result = entity.IsOngoing();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

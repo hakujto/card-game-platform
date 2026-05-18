@@ -63,4 +63,14 @@ public class DraftPickController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/first-pick")]
+    public async System.Threading.Tasks.Task<IActionResult> IsFirstPick(int id)
+    {
+        try
+        {
+            var result = await _svc.IsFirstPickAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

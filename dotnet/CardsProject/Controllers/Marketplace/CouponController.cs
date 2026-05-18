@@ -63,6 +63,28 @@ public class CouponController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/valid")]
+    public async System.Threading.Tasks.Task<IActionResult> IsValid(int id)
+    {
+        try
+        {
+            var result = await _svc.IsValidAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/applicable")]
+    public async System.Threading.Tasks.Task<IActionResult> IsApplicableToOrder(int id, [FromQuery] decimal orderTotal)
+    {
+        try
+        {
+            var result = await _svc.IsApplicableToOrderAsync(id, orderTotal);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("{id:int}/redeem")]
     public async System.Threading.Tasks.Task<IActionResult> Redeem(int id)
     {

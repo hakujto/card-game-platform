@@ -105,4 +105,20 @@ public class ProductService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<decimal> EffectivePriceAsync(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        var result = entity.EffectivePrice();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> IsInStockAsync(int id)
+    {
+        var entity = await _db.Products.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Product not found: " + id);
+        var result = entity.IsInStock();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

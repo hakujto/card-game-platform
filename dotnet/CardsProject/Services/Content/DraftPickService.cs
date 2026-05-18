@@ -61,4 +61,12 @@ public class DraftPickService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> IsFirstPickAsync(int id)
+    {
+        var entity = await _db.DraftPicks.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DraftPick not found: " + id);
+        var result = entity.IsFirstPick();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

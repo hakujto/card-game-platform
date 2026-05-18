@@ -63,4 +63,25 @@ public class CardPriceHistoryController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/change")]
+    public async System.Threading.Tasks.Task<IActionResult> PriceChangePercent(int id, [FromQuery] decimal previousAvg)
+    {
+        try
+        {
+            var result = await _svc.PriceChangePercentAsync(id, previousAvg);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/spike")]
+    public async System.Threading.Tasks.Task<IActionResult> IsPriceSpike(int id, [FromQuery] int thresholdPercent)
+    {
+        try
+        {
+            var result = await _svc.IsPriceSpikeAsync(id, thresholdPercent);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

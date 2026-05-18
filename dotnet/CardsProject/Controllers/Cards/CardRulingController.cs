@@ -63,4 +63,25 @@ public class CardRulingController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/current")]
+    public async System.Threading.Tasks.Task<IActionResult> IsCurrent(int id)
+    {
+        try
+        {
+            var result = await _svc.IsCurrentAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/supersedes")]
+    public async System.Threading.Tasks.Task<IActionResult> SupersedesPrevious(int id)
+    {
+        try
+        {
+            var result = await _svc.SupersedesPreviousAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

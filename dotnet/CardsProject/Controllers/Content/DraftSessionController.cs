@@ -95,4 +95,15 @@ public class DraftSessionController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/full")]
+    public async System.Threading.Tasks.Task<IActionResult> IsFull(int id)
+    {
+        try
+        {
+            var result = await _svc.IsFullAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

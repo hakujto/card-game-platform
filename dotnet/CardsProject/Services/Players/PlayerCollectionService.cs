@@ -65,6 +65,22 @@ public class PlayerCollectionService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> AddAsync(int id, int quantity)
+    {
+        var entity = await _db.PlayerCollections.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerCollection not found: " + id);
+        entity.Add(quantity);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> RemoveAsync(int id, int quantity)
+    {
+        var entity = await _db.PlayerCollections.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerCollection not found: " + id);
+        entity.Remove(quantity);
+        await _db.SaveChangesAsync();
+        return true;
+    }
     public async System.Threading.Tasks.Task<decimal> EstimatedValueAsync(int id)
     {
         var entity = await _db.PlayerCollections.FindAsync(id);

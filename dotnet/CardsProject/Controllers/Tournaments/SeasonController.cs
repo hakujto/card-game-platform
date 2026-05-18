@@ -95,4 +95,15 @@ public class SeasonController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/ongoing")]
+    public async System.Threading.Tasks.Task<IActionResult> IsOngoing(int id)
+    {
+        try
+        {
+            var result = await _svc.IsOngoingAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

@@ -117,4 +117,27 @@ public class CardController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpPost("{id:int}/rarity-bonus")]
+    public async System.Threading.Tasks.Task<IActionResult> ApplyRarityBonus(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var multiplier = (int)body["multiplier"];
+            var result = await _svc.ApplyRarityBonusAsync(id, multiplier);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/legal")]
+    public async System.Threading.Tasks.Task<IActionResult> IsLegalInFormat(int id, [FromQuery] string format)
+    {
+        try
+        {
+            var result = await _svc.IsLegalInFormatAsync(id, format);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

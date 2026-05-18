@@ -63,4 +63,26 @@ public class TournamentPrizeController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/applies")]
+    public async System.Threading.Tasks.Task<IActionResult> AppliesToPlacement(int id, [FromQuery] int placement)
+    {
+        try
+        {
+            var result = await _svc.AppliesToPlacementAsync(id, placement);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/award")]
+    public async System.Threading.Tasks.Task<IActionResult> AwardToPlayer(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var playerId = (int)body["player_id"];
+            await _svc.AwardToPlayerAsync(id, playerId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

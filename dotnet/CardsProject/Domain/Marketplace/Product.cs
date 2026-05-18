@@ -1,5 +1,6 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -12,7 +13,7 @@ public enum ProductProductTypeType
     Accessory
 }
 
-public class Product
+public class Product : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -63,5 +64,16 @@ public class Product
     public bool IsInStock()
     {
         throw new NotImplementedException("is_in_stock not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Price > 0m ))
+            yield return new ValidationResult("Product price must be greater than zero", new[] { nameof(Id) });
+        if (!( Stock >= 0 ))
+            yield return new ValidationResult("Product stock must not be negative", new[] { nameof(Id) });
+        if (!( DiscountPercent >= 0 && DiscountPercent <= 100 ))
+            yield return new ValidationResult("Product discount percent must be between 0 and 100", new[] { nameof(Id) });
     }
 }

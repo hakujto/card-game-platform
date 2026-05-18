@@ -100,4 +100,21 @@ public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
+    [Fact]
+    public async Task Create_Fails_When_PickNumberPositive_Violated()
+    {
+        // Pick number must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ParticipantId"": 1, ""CardId"": 1, ""PackNumber"": 1, ""PickedAt"": ""2024-01-01T00:00:00"", ""PickNumber"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/draft_picks", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_PackNumberRange_Violated()
+    {
+        // Pack number must be between 1 and 3 → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ParticipantId"": 1, ""CardId"": 1, ""PickNumber"": 1, ""PickedAt"": ""2024-01-01T00:00:00"", ""PackNumber"": 4 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/draft_picks", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

@@ -63,4 +63,26 @@ public class ArticleTagController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:int}/rename")]
+    public async System.Threading.Tasks.Task<IActionResult> Rename(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var newName = (string)body["new_name"];
+            await _svc.RenameAsync(id, newName);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/article-count")]
+    public async System.Threading.Tasks.Task<IActionResult> ArticleCount(int id)
+    {
+        try
+        {
+            var result = await _svc.ArticleCountAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

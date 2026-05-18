@@ -90,9 +90,9 @@ public class Player : IValidatableObject
     {
         if (!( Rating >= 0 && Rating <= 9999 ))
             yield return new ValidationResult("Rating must be between 0 and 9999", new[] { nameof(Id) });
-        if (!( (Rating != null && PeakRating >= Rating) ))
+        if (!( PeakRating >= Rating ))
             yield return new ValidationResult("Peak rating must be greater than or equal to current rating", new[] { nameof(Id) });
-        if (!( DisplayName != null ))
+        if (!( true ))
             yield return new ValidationResult("Display name must not be empty", new[] { nameof(Id) });
     }
 }

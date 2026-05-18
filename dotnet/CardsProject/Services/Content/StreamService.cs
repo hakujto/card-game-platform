@@ -100,8 +100,17 @@ public class StreamService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<int> DurationMinutesAsync(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Stream not found: " + id);
+        var result = entity.DurationMinutes();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(Stream entity)
     {
         if (entity.ActualStart != null && !(entity.Status == StreamStatusType.Live)) throw new InvalidOperationException("actual_start_requires_live_or_ended");
+        if (entity.EndedAt != null && !(entity.Status == StreamStatusType.Ended)) throw new InvalidOperationException("ended_at can only be set when stream status is Ended");
     }
 }

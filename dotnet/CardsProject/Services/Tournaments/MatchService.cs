@@ -90,6 +90,14 @@ public class MatchService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async System.Threading.Tasks.Task<bool> ConcedeAsync(int id, int playerId)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Match not found: " + id);
+        entity.Concede(playerId);
+        await _db.SaveChangesAsync();
+        return true;
+    }
     public async System.Threading.Tasks.Task<bool> DrawAsync(int id)
     {
         var entity = await _db.Matches.FindAsync(id);
@@ -101,5 +109,7 @@ public class MatchService
     public void Validate(Match entity)
     {
         if (entity.Status == MatchStatusType.BYE && entity.Player2Id != null) throw new InvalidOperationException("BYE match must not have a second player");
+        if (entity.EndedAt != null && !((entity.EndedAt == null || (entity.StartedAt != null && entity.EndedAt > entity.StartedAt)))) throw new InvalidOperationException("Match end time must be after start time");
+        if (entity.Status == MatchStatusType.Completed && entity.StartedAt == null) throw new InvalidOperationException("Completed match must have a start time");
     }
 }

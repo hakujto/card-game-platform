@@ -63,4 +63,37 @@ public class PlayerSeasonStatsController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/win-rate")]
+    public async System.Threading.Tasks.Task<IActionResult> WinRate(int id)
+    {
+        try
+        {
+            var result = await _svc.WinRateAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/points")]
+    public async System.Threading.Tasks.Task<IActionResult> AddPoints(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var points = (int)body["points"];
+            await _svc.AddPointsAsync(id, points);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/tournament-win")]
+    public async System.Threading.Tasks.Task<IActionResult> RecordTournamentWin(int id)
+    {
+        try
+        {
+            await _svc.RecordTournamentWinAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

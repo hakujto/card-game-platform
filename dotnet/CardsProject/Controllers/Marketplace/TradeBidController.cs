@@ -63,4 +63,25 @@ public class TradeBidController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/outbid")]
+    public async System.Threading.Tasks.Task<IActionResult> OutbidBy(int id, [FromQuery] decimal newAmount)
+    {
+        try
+        {
+            var result = await _svc.OutbidByAsync(id, newAmount);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:int}/retract")]
+    public async System.Threading.Tasks.Task<IActionResult> Retract(int id)
+    {
+        try
+        {
+            await _svc.RetractAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

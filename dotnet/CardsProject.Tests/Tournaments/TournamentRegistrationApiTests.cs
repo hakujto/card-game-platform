@@ -84,7 +84,7 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { Seed = 1 };
+        var payload = new { PointsEarned = 1 };
         var response = await _client.PatchAsJsonAsync("/api/tournament_registrations/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -98,5 +98,31 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task Create_Fails_When_PointsEarnedNotNegative_Violated()
+    {
+        // Points earned must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""PlayerId"": 1, ""DeckId"": 1, ""FinalStanding"": 1, ""Seed"": 1, ""Status"": ""test"", ""RegisteredAt"": ""2024-01-01T00:00:00"", ""PointsEarned"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_registrations", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_FinalStandingPositive_Violated()
+    {
+        // Final standing must be greater than zero: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""PlayerId"": 1, ""DeckId"": 1, ""Status"": ""test"", ""PointsEarned"": 1, ""RegisteredAt"": ""2024-01-01T00:00:00"", ""FinalStanding"": 1, ""FinalStanding"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_registrations", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_SeedPositive_Violated()
+    {
+        // Seed must be greater than zero: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""PlayerId"": 1, ""DeckId"": 1, ""Status"": ""test"", ""PointsEarned"": 1, ""RegisteredAt"": ""2024-01-01T00:00:00"", ""Seed"": 1, ""Seed"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_registrations", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

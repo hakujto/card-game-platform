@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -9,7 +10,7 @@ public enum TournamentRoundStatusType
     Completed
 }
 
-public class TournamentRound
+public class TournamentRound : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -43,5 +44,14 @@ public class TournamentRound
     public bool IsTimeExpired()
     {
         throw new NotImplementedException("is_time_expired not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( RoundNumber > 0 ))
+            yield return new ValidationResult("Round number must be greater than zero", new[] { nameof(Id) });
+        if (!( TimeLimitMinutes > 0 ))
+            yield return new ValidationResult("Round time limit must be greater than zero", new[] { nameof(Id) });
     }
 }

@@ -101,7 +101,7 @@ public class GameApiTests : IClassFixture<GameApiTests.TestFactory>
     public async Task Create_Fails_When_GameNumberRange_Violated()
     {
         // Game number must be between 1 and 3 (best-of-3) → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""MatchId"": 1, ""TurnsPlayed"": 1, ""DurationSeconds"": 1, ""GameNumber"": 4 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""MatchId"": 1, ""TurnsPlayed"": 1, ""DurationSeconds"": 1, ""WinnerSide"": ""Draw"", ""Winner"": null, ""GameNumber"": 4 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/games", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -120,6 +120,24 @@ public class GameApiTests : IClassFixture<GameApiTests.TestFactory>
     {
         // Game duration must be greater than zero: antecedent true, consequent missing → 400
         var content = new StringContent(@"{ ""MatchId"": 1, ""GameNumber"": 1, ""DurationSeconds"": 1, ""DurationSeconds"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/games", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_DrawHasNoWinner_Violated()
+    {
+        // A draw cannot have a winner: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""MatchId"": 1, ""GameNumber"": 1, ""WinnerSide"": ""Draw"", ""WinnerId"": 1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/games", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_NonDrawRequiresWinner_Violated()
+    {
+        // A decisive game must have a winner player set: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""MatchId"": 1, ""GameNumber"": 1, ""WinnerSide"": ""Player1"", ""Winner"": null }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/games", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

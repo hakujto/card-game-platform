@@ -63,9 +63,9 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
     {
         var payload = new
         {
+            FinalPrice = 0.01m,
             CompletedAt = "2024-01-01T00:00:00",
-            PlatformFee = 0.00m,
-            FinalPrice = 0.00m,
+            PlatformFee = 0.01m,
             ListingId = 1,
             BuyerId = 1,
             SellerId = 1
@@ -86,7 +86,7 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
     [Fact]
     public async Task Update_Returns200OrNotFound()
     {
-        var payload = new { FinalPrice = 0.00m };
+        var payload = new { FinalPrice = 0.01m };
         var response = await _client.PatchAsJsonAsync("/api/trade_transactions/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -106,6 +106,15 @@ public class TradeTransactionApiTests : IClassFixture<TradeTransactionApiTests.T
     {
         // Platform fee must not be negative → 400 (IValidatableObject)
         var content = new StringContent(@"{ ""ListingId"": 1, ""BuyerId"": 1, ""SellerId"": 1, ""Status"": ""Completed"", ""CompletedAt"": ""2024-01-01T00:00:00"", ""FinalPrice"": 0.00, ""PlatformFee"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/trade_transactions", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_FinalPricePositive_Violated()
+    {
+        // Transaction final price must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""ListingId"": 1, ""BuyerId"": 1, ""SellerId"": 1, ""Status"": ""Completed"", ""CompletedAt"": ""2024-01-01T00:00:00"", ""PlatformFee"": 0.00, ""FinalPrice"": 0.00 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/trade_transactions", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

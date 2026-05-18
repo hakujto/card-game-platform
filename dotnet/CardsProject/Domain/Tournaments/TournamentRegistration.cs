@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -12,7 +13,7 @@ public enum TournamentRegistrationStatusType
     Disqualified
 }
 
-public class TournamentRegistration
+public class TournamentRegistration : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -47,5 +48,12 @@ public class TournamentRegistration
     public void PromoteFromWaitlist()
     {
         throw new NotImplementedException("promote_from_waitlist not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( PointsEarned >= 0 ))
+            yield return new ValidationResult("Points earned must not be negative", new[] { nameof(Id) });
     }
 }

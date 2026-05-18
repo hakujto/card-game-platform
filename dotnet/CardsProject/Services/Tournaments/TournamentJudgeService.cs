@@ -57,4 +57,20 @@ public class TournamentJudgeService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> PromoteToHeadAsync(int id)
+    {
+        var entity = await _db.TournamentJudges.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TournamentJudge not found: " + id);
+        entity.PromoteToHead();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> RemoveAsync(int id)
+    {
+        var entity = await _db.TournamentJudges.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TournamentJudge not found: " + id);
+        entity.Remove();
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

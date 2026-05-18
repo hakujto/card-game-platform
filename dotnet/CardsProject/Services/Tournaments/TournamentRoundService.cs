@@ -89,8 +89,17 @@ public class TournamentRoundService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<bool> IsTimeExpiredAsync(int id)
+    {
+        var entity = await _db.TournamentRounds.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TournamentRound not found: " + id);
+        var result = entity.IsTimeExpired();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(TournamentRound entity)
     {
         if (entity.EndedAt != null && !((entity.EndedAt == null || (entity.StartedAt != null && entity.EndedAt > entity.StartedAt)))) throw new InvalidOperationException("Round end time must be after start time");
+        if (entity.Status == TournamentRoundStatusType.Completed && entity.StartedAt == null) throw new InvalidOperationException("Completed round must have a start time");
     }
 }

@@ -95,4 +95,15 @@ public class ArticleController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/reading-time")]
+    public async System.Threading.Tasks.Task<IActionResult> ReadingTimeMinutes(int id)
+    {
+        try
+        {
+            var result = await _svc.ReadingTimeMinutesAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

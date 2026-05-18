@@ -103,6 +103,14 @@ public class ArticleService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<int> ReadingTimeMinutesAsync(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Article not found: " + id);
+        var result = entity.ReadingTimeMinutes();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(Article entity)
     {
         if (entity.Status == ArticleStatusType.Published && entity.PublishedAt == null) throw new InvalidOperationException("Published article must have a published_at timestamp");

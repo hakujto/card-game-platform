@@ -57,4 +57,36 @@ public class CraftingRecipeService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> CanCraftAsync(int id, int playerId)
+    {
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CraftingRecipe not found: " + id);
+        var result = entity.CanCraft(playerId);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> ExecuteCraftAsync(int id, int playerId)
+    {
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CraftingRecipe not found: " + id);
+        entity.ExecuteCraft(playerId);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> DisableAsync(int id)
+    {
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CraftingRecipe not found: " + id);
+        entity.Disable();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> EnableAsync(int id)
+    {
+        var entity = await _db.CraftingRecipes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("CraftingRecipe not found: " + id);
+        entity.Enable();
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

@@ -65,7 +65,6 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
         {
             Attack = 1,
             Defense = 1,
-            Loyalty = 1,
             IsBanned = false,
             IsRestricted = false,
             Name = "test",
@@ -124,10 +123,19 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
     }
 
     [Fact]
+    public async Task Create_Fails_When_SpellOrArtifactNoLoyalty_Violated()
+    {
+        // Only Planeswalker cards can have loyalty: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""SetId"": 1, ""Name"": ""test"", ""CardType"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""LegalFormats"": ""test"", ""IsBanned"": true, ""IsRestricted"": true, ""PowerLevel"": 1, ""Loyalty"": 1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/cards", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Create_Fails_When_ManaCostRange_Violated()
     {
         // mana_cost must be between 0 and 20 → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""Name"": ""test"", ""Rarity"": ""test"", ""ManaColors"": ""test"", ""Description"": ""test"", ""LegalFormats"": ""test"", ""IsBanned"": true, ""IsRestricted"": true, ""PowerLevel"": 1, ""ManaCost"": 21 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""IsBanned"": true, ""LegalFormats"": ""message"", ""Name"": ""test"", ""Rarity"": ""test"", ""ManaColors"": ""test"", ""Description"": ""test"", ""IsRestricted"": true, ""PowerLevel"": 1, ""ManaCost"": 21 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/cards", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -136,7 +144,7 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
     public async Task Create_Fails_When_PowerLevelRange_Violated()
     {
         // power_level must be between 1 and 10 → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""Name"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""LegalFormats"": ""test"", ""IsBanned"": true, ""IsRestricted"": true, ""PowerLevel"": 11 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""IsBanned"": true, ""LegalFormats"": ""message"", ""Name"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""IsRestricted"": true, ""PowerLevel"": 11 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/cards", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -145,7 +153,16 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
     public async Task Create_Fails_When_NotBannedAndRestricted_Violated()
     {
         // Card cannot be both banned and restricted at the same time → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""Name"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""LegalFormats"": ""test"", ""PowerLevel"": 1, ""IsBanned"": true, ""IsRestricted"": true }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SetId"": 1, ""CardType"": ""Creature"", ""Attack"": 1, ""Defense"": 1, ""Loyalty"": 1, ""LegalFormats"": ""message"", ""Name"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""PowerLevel"": 1, ""IsBanned"": true, ""IsRestricted"": true }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/cards", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_BannedCardNotInLegalFormats_Violated()
+    {
+        // banned_card_not_in_legal_formats: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""SetId"": 1, ""Name"": ""test"", ""CardType"": ""test"", ""Rarity"": ""test"", ""ManaCost"": 1, ""ManaColors"": ""test"", ""Description"": ""test"", ""LegalFormats"": ""test"", ""IsRestricted"": true, ""PowerLevel"": 1, ""IsBanned"": true }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/cards", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

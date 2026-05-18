@@ -22,4 +22,16 @@ public class TournamentJudge
     public int? PlayerId { get; set; }
     [ForeignKey(nameof(PlayerId))]
     public Player? Player { get; set; }
+
+    // Business operations
+
+    public void PromoteToHead()
+    {
+        throw new NotImplementedException("promote_to_head not implemented");
+    }
+
+    public void Remove()
+    {
+        throw new NotImplementedException("remove not implemented");
+    }
 }

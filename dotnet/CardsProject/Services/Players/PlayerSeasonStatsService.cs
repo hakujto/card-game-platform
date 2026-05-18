@@ -67,4 +67,28 @@ public class PlayerSeasonStatsService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<decimal> WinRateAsync(int id)
+    {
+        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerSeasonStats not found: " + id);
+        var result = entity.WinRate();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> AddPointsAsync(int id, int points)
+    {
+        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerSeasonStats not found: " + id);
+        entity.AddPoints(points);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> RecordTournamentWinAsync(int id)
+    {
+        var entity = await _db.PlayerSeasonStatses.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("PlayerSeasonStats not found: " + id);
+        entity.RecordTournamentWin();
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

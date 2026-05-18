@@ -86,6 +86,11 @@ public class Tournament : IValidatableObject
         throw new NotImplementedException("calculate_prize_distribution not implemented");
     }
 
+    public void RegisterPlayer(int playerId, int deckId)
+    {
+        throw new NotImplementedException("register_player not implemented");
+    }
+
     public bool IsFull()
     {
         throw new NotImplementedException("is_full not implemented");

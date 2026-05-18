@@ -1,9 +1,10 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Content;
 
-public class DraftParticipant
+public class DraftParticipant : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -27,5 +28,12 @@ public class DraftParticipant
     public int DraftedCardCount()
     {
         throw new NotImplementedException("drafted_card_count not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( SeatNumber > 0 ))
+            yield return new ValidationResult("Seat number must be greater than zero", new[] { nameof(Id) });
     }
 }

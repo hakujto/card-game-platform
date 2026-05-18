@@ -108,4 +108,26 @@ public class ProductController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    [HttpGet("{id:int}/effective-price")]
+    public async System.Threading.Tasks.Task<IActionResult> EffectivePrice(int id)
+    {
+        try
+        {
+            var result = await _svc.EffectivePriceAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpGet("{id:int}/in-stock")]
+    public async System.Threading.Tasks.Task<IActionResult> IsInStock(int id)
+    {
+        try
+        {
+            var result = await _svc.IsInStockAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

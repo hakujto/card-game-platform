@@ -63,4 +63,20 @@ public class AchievementService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<int> PointValueAsync(int id, int multiplier)
+    {
+        var entity = await _db.Achievements.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Achievement not found: " + id);
+        var result = entity.PointValue(multiplier);
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> RevealAsync(int id)
+    {
+        var entity = await _db.Achievements.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Achievement not found: " + id);
+        entity.Reveal();
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

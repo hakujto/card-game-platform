@@ -1,5 +1,6 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Players;
 
@@ -21,7 +22,7 @@ public enum PlayerCollectionAcquiredViaType
     Craft
 }
 
-public class PlayerCollection
+public class PlayerCollection : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -53,5 +54,12 @@ public class PlayerCollection
     public decimal EstimatedValue()
     {
         throw new NotImplementedException("estimated_value not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( Quantity > 0 ))
+            yield return new ValidationResult("Collection quantity must be greater than zero", new[] { nameof(Id) });
     }
 }

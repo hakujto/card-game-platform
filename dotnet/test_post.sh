@@ -27,7 +27,7 @@ ID_CardRuling=""
 ID_CardAbility=""
 ID_PlayerCollection=""
 ID_CraftingRecipe=""
-ID_Tradelisting=""
+ID_TradeListing=""
 ID_CardPriceHistory=""
 ID_DraftParticipant=""
 ID_DeckCard=""
@@ -51,7 +51,7 @@ ID_Game=""
 
 ID_CardSet=$(curl -s -X POST "$BASE/card_sets" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"code\": \"foo_code\", \"releaseDate\": \"2024-01-01\", \"setType\": \"Core\", \"totalCards\": 1, \"description\": \"foo_description\", \"logoUrl\": \"https://example.com/foo\"}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"code\": \"foo_code\", \"releaseDate\": \"2024-01-01\", \"rotationDate\": null, \"setType\": \"Core\", \"totalCards\": 1, \"isRotated\": false, \"description\": \"foo_description\", \"logoUrl\": \"https://example.com/foo\"}" | extract_id)
 echo "CardSet id=$ID_CardSet"
 
 ID_DeckTag=$(curl -s -X POST "$BASE/deck_tags" \
@@ -76,7 +76,7 @@ echo "Season id=$ID_Season"
 
 ID_Product=$(curl -s -X POST "$BASE/products" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"productType\": \"SingleCard\", \"price\": \"1.00\", \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"cardId\": ${ID_Card:-null}, \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"productType\": \"SingleCard\", \"price\": 1, \"stock\": 0, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"cardId\": ${ID_Card:-null}, \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
 echo "Product id=$ID_Product"
 
 ID_Coupon=$(curl -s -X POST "$BASE/coupons" \
@@ -91,17 +91,17 @@ echo "ArticleTag id=$ID_ArticleTag"
 
 ID_Card=$(curl -s -X POST "$BASE/cards" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"cardType\": \"Creature\", \"rarity\": \"Common\", \"manaCost\": 1, \"manaColors\": \"White\", \"attack\": 1, \"defense\": 1, \"loyalty\": 1, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"Standard\", \"isBanned\": false, \"isRestricted\": false, \"powerLevel\": 1, \"setId\": ${ID_CardSet:-null}}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"cardType\": \"Creature\", \"rarity\": \"Common\", \"manaCost\": 1, \"manaColors\": \"White\", \"attack\": 1, \"defense\": 1, \"loyalty\": null, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"Standard\", \"isBanned\": false, \"isRestricted\": false, \"powerLevel\": 1, \"setId\": ${ID_CardSet:-null}}" | extract_id)
 echo "Card id=$ID_Card"
 
 ID_DraftSession=$(curl -s -X POST "$BASE/draft_sessions" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"WaitingForPlayers\", \"draftType\": \"Booster\", \"seats\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
+  -d "{\"status\": \"WaitingForPlayers\", \"draftType\": \"Booster\", \"seats\": 2, \"createdAt\": \"2024-01-01T00:00:00Z\", \"completedAt\": null, \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
 echo "DraftSession id=$ID_DraftSession"
 
 ID_Deck=$(curl -s -X POST "$BASE/decks" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"Standard\", \"isPublic\": true, \"isTournamentLegal\": true, \"archetype\": \"Aggro\", \"wins\": 1, \"losses\": 1, \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"format\": \"Standard\", \"isPublic\": true, \"isTournamentLegal\": false, \"archetype\": \"Aggro\", \"wins\": 0, \"losses\": 0, \"draws\": 0, \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": ${ID_Player:-null}}" | extract_id)
 echo "Deck id=$ID_Deck"
 
 ID_Friendship=$(curl -s -X POST "$BASE/friendships" \
@@ -111,27 +111,27 @@ echo "Friendship id=$ID_Friendship"
 
 ID_Order=$(curl -s -X POST "$BASE/orders" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Pending\", \"total\": 0, \"discountApplied\": \"0.00\", \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": \"2024-01-01T00:00:00Z\", \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | extract_id)
+  -d "{\"status\": \"Pending\", \"total\": 0, \"discountApplied\": \"0.00\", \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": null, \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | extract_id)
 echo "Order id=$ID_Order"
 
 ID_Article=$(curl -s -X POST "$BASE/articles" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"Draft\", \"articleType\": \"Guide\", \"viewCount\": 1, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"authorId\": ${ID_Player:-null}, \"featuredDeckId\": ${ID_Deck:-null}}" | extract_id)
+  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"Draft\", \"articleType\": \"Guide\", \"viewCount\": 0, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"authorId\": ${ID_Player:-null}, \"featuredDeckId\": ${ID_Deck:-null}}" | extract_id)
 echo "Article id=$ID_Article"
 
 ID_Stream=$(curl -s -X POST "$BASE/streams" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"platform\": \"Twitch\", \"status\": \"Scheduled\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": null, \"endedAt\": \"2024-01-01T00:00:00Z\", \"vodUrl\": \"https://example.com/foo\", \"tournamentId\": ${ID_Tournament:-null}, \"streamerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"platform\": \"Twitch\", \"status\": \"Scheduled\", \"viewerCountPeak\": 0, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": null, \"endedAt\": null, \"vodUrl\": \"https://example.com/foo\", \"tournamentId\": ${ID_Tournament:-null}, \"streamerId\": ${ID_Player:-null}}" | extract_id)
 echo "Stream id=$ID_Stream"
 
 ID_PlayerAchievement=$(curl -s -X POST "$BASE/player_achievements" \
   -H "Content-Type: application/json" \
-  -d "{\"earnedAt\": \"2024-01-01T00:00:00Z\", \"progress\": 1, \"isCompleted\": true, \"playerId\": ${ID_Player:-null}, \"achievementId\": ${ID_Achievement:-null}}" | extract_id)
+  -d "{\"earnedAt\": \"2024-01-01T00:00:00Z\", \"progress\": 0, \"isCompleted\": false, \"playerId\": ${ID_Player:-null}, \"achievementId\": ${ID_Achievement:-null}}" | extract_id)
 echo "PlayerAchievement id=$ID_PlayerAchievement"
 
 ID_PlayerSeasonStats=$(curl -s -X POST "$BASE/player_season_statses" \
   -H "Content-Type: application/json" \
-  -d "{\"wins\": 1, \"losses\": 1, \"draws\": 1, \"tournamentWins\": 1, \"highestRank\": \"Bronze\", \"seasonPoints\": 1, \"playerId\": ${ID_Player:-null}, \"seasonId\": ${ID_Season:-null}}" | extract_id)
+  -d "{\"wins\": 0, \"losses\": 0, \"draws\": 1, \"tournamentWins\": 0, \"highestRank\": \"Bronze\", \"seasonPoints\": 0, \"playerId\": ${ID_Player:-null}, \"seasonId\": ${ID_Season:-null}}" | extract_id)
 echo "PlayerSeasonStats id=$ID_PlayerSeasonStats"
 
 ID_Tournament=$(curl -s -X POST "$BASE/tournaments" \
@@ -159,14 +159,14 @@ ID_CraftingRecipe=$(curl -s -X POST "$BASE/crafting_recipes" \
   -d "{\"dustCost\": 1, \"isAvailable\": true, \"resultCardId\": ${ID_Card:-null}}" | extract_id)
 echo "CraftingRecipe id=$ID_CraftingRecipe"
 
-ID_Tradelisting=$(curl -s -X POST "$BASE/tradelistings" \
+ID_TradeListing=$(curl -s -X POST "$BASE/trade_listings" \
   -H "Content-Type: application/json" \
   -d "{\"listingType\": \"FixedPrice\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"status\": \"Active\", \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": ${ID_Player:-null}, \"cardId\": ${ID_Card:-null}}" | extract_id)
-echo "Tradelisting id=$ID_Tradelisting"
+echo "TradeListing id=$ID_TradeListing"
 
 ID_CardPriceHistory=$(curl -s -X POST "$BASE/card_price_histories" \
   -H "Content-Type: application/json" \
-  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"0.00\", \"minPrice\": \"0.00\", \"maxPrice\": \"1.00\", \"volume\": 1, \"foil\": true, \"cardId\": ${ID_Card:-null}}" | extract_id)
+  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"0.00\", \"minPrice\": 0, \"maxPrice\": \"1.00\", \"volume\": 0, \"foil\": true, \"cardId\": ${ID_Card:-null}}" | extract_id)
 echo "CardPriceHistory id=$ID_CardPriceHistory"
 
 ID_DraftParticipant=$(curl -s -X POST "$BASE/draft_participants" \
@@ -211,7 +211,7 @@ echo "TournamentJudge id=$ID_TournamentJudge"
 
 ID_TournamentRegistration=$(curl -s -X POST "$BASE/tournament_registrations" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Registered\", \"seed\": 1, \"finalStanding\": 1, \"pointsEarned\": 1, \"registeredAt\": \"2024-01-01T00:00:00Z\", \"tournamentId\": ${ID_Tournament:-null}, \"playerId\": ${ID_Player:-null}, \"deckId\": ${ID_Deck:-null}}" | extract_id)
+  -d "{\"status\": \"Registered\", \"seed\": null, \"finalStanding\": null, \"pointsEarned\": 0, \"registeredAt\": \"2024-01-01T00:00:00Z\", \"tournamentId\": ${ID_Tournament:-null}, \"playerId\": ${ID_Player:-null}, \"deckId\": ${ID_Deck:-null}}" | extract_id)
 echo "TournamentRegistration id=$ID_TournamentRegistration"
 
 ID_TournamentRound=$(curl -s -X POST "$BASE/tournament_rounds" \
@@ -231,12 +231,12 @@ echo "CraftingIngredient id=$ID_CraftingIngredient"
 
 ID_TradeBid=$(curl -s -X POST "$BASE/trade_bids" \
   -H "Content-Type: application/json" \
-  -d "{\"amount\": 1, \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listingId\": ${ID_Tradelisting:-null}, \"bidderId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"amount\": 1, \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listingId\": ${ID_TradeListing:-null}, \"bidderId\": ${ID_Player:-null}}" | extract_id)
 echo "TradeBid id=$ID_TradeBid"
 
 ID_TradeTransaction=$(curl -s -X POST "$BASE/trade_transactions" \
   -H "Content-Type: application/json" \
-  -d "{\"finalPrice\": \"1.00\", \"platformFee\": 0, \"status\": \"Pending\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"listingId\": ${ID_Tradelisting:-null}, \"buyerId\": ${ID_Player:-null}, \"sellerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"finalPrice\": 1, \"platformFee\": 0, \"status\": \"Pending\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"listingId\": ${ID_TradeListing:-null}, \"buyerId\": ${ID_Player:-null}, \"sellerId\": ${ID_Player:-null}}" | extract_id)
 echo "TradeTransaction id=$ID_TradeTransaction"
 
 ID_DraftPick=$(curl -s -X POST "$BASE/draft_picks" \
@@ -246,12 +246,12 @@ echo "DraftPick id=$ID_DraftPick"
 
 ID_Match=$(curl -s -X POST "$BASE/matches" \
   -H "Content-Type: application/json" \
-  -d "{\"tableNumber\": 1, \"status\": \"Pending\", \"player1Wins\": 0, \"player2Wins\": 0, \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": \"2024-01-01T00:00:00Z\", \"resultNotes\": \"foo_result_notes\", \"roundId\": ${ID_TournamentRound:-null}, \"player1Id\": ${ID_Player:-null}, \"player2Id\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"tableNumber\": 1, \"status\": \"Pending\", \"player1Wins\": 0, \"player2Wins\": 0, \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": null, \"resultNotes\": \"foo_result_notes\", \"roundId\": ${ID_TournamentRound:-null}, \"player1Id\": ${ID_Player:-null}, \"player2Id\": ${ID_Player:-null}}" | extract_id)
 echo "Match id=$ID_Match"
 
 ID_AwardedPrize=$(curl -s -X POST "$BASE/awarded_prizes" \
   -H "Content-Type: application/json" \
-  -d "{\"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00Z\", \"claimed\": true, \"claimedAt\": \"2024-01-01T00:00:00Z\", \"prizeId\": ${ID_TournamentPrize:-null}, \"playerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00Z\", \"claimed\": false, \"claimedAt\": \"2024-01-01T00:00:00Z\", \"prizeId\": ${ID_TournamentPrize:-null}, \"playerId\": ${ID_Player:-null}}" | extract_id)
 echo "AwardedPrize id=$ID_AwardedPrize"
 
 ID_TradeDispute=$(curl -s -X POST "$BASE/trade_disputes" \
@@ -261,5 +261,5 @@ echo "TradeDispute id=$ID_TradeDispute"
 
 ID_Game=$(curl -s -X POST "$BASE/games" \
   -H "Content-Type: application/json" \
-  -d "{\"gameNumber\": 1, \"winnerSide\": \"Player1\", \"turnsPlayed\": null, \"durationSeconds\": null, \"endedBy\": \"Normal\", \"replayUrl\": \"https://example.com/foo\", \"matchId\": ${ID_Match:-null}, \"winnerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"gameNumber\": 1, \"winnerSide\": null, \"turnsPlayed\": null, \"durationSeconds\": null, \"endedBy\": \"Normal\", \"replayUrl\": \"https://example.com/foo\", \"matchId\": ${ID_Match:-null}, \"winnerId\": ${ID_Player:-null}}" | extract_id)
 echo "Game id=$ID_Game"

@@ -35,9 +35,11 @@ public class DeckService
         if (dto.Archetype is not null && Enum.TryParse<DeckArchetypeType>(dto.Archetype, out var archetypeVal)) entity.Archetype = archetypeVal;
         if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
         if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
+        if (dto.Draws is not null) entity.Draws = dto.Draws.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        Validate(entity);
         ValidateEntity(entity);
         _db.Decks.Add(entity);
         await _db.SaveChangesAsync();
@@ -56,9 +58,11 @@ public class DeckService
         if (dto.Archetype is not null && Enum.TryParse<DeckArchetypeType>(dto.Archetype, out var archetypeVal)) entity.Archetype = archetypeVal;
         if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
         if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
+        if (dto.Draws is not null) entity.Draws = dto.Draws.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
+        Validate(entity);
         ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
@@ -78,6 +82,30 @@ public class DeckService
         var entity = await _db.Decks.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("Deck not found: " + id);
         var result = entity.ValidateSize();
+        await _db.SaveChangesAsync();
+        return result;
+    }
+    public async System.Threading.Tasks.Task<bool> AddCardAsync(int id, int cardId, int quantity)
+    {
+        var entity = await _db.Decks.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Deck not found: " + id);
+        entity.AddCard(cardId, quantity);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> RemoveCardAsync(int id, int cardId)
+    {
+        var entity = await _db.Decks.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Deck not found: " + id);
+        entity.RemoveCard(cardId);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<decimal> WinRateAsync(int id)
+    {
+        var entity = await _db.Decks.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Deck not found: " + id);
+        var result = entity.WinRate();
         await _db.SaveChangesAsync();
         return result;
     }
@@ -112,5 +140,9 @@ public class DeckService
         var result = entity.CertifyTournamentLegal();
         await _db.SaveChangesAsync();
         return result;
+    }
+    public void Validate(Deck entity)
+    {
+        if (entity.IsTournamentLegal == true && !(entity.IsPublic == true)) throw new InvalidOperationException("Tournament-legal deck must be made public");
     }
 }

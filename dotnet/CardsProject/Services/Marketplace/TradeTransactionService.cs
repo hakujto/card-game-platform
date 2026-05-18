@@ -91,6 +91,14 @@ public class TradeTransactionService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<decimal> SellerNetAsync(int id)
+    {
+        var entity = await _db.TradeTransactions.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TradeTransaction not found: " + id);
+        var result = entity.SellerNet();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public void Validate(TradeTransaction entity)
     {
         if (entity.Status == TradeTransactionStatusType.Completed && entity.CompletedAt == null) throw new InvalidOperationException("Completed transaction must have a completed_at timestamp");

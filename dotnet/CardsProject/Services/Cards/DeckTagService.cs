@@ -55,6 +55,14 @@ public class DeckTagService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<bool> RenameAsync(int id, string newName)
+    {
+        var entity = await _db.DeckTags.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("DeckTag not found: " + id);
+        entity.Rename(newName);
+        await _db.SaveChangesAsync();
+        return true;
+    }
     public async System.Threading.Tasks.Task<bool> MergeIntoAsync(int id, int targetTagId)
     {
         var entity = await _db.DeckTags.FindAsync(id);

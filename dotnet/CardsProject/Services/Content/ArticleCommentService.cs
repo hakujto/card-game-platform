@@ -79,4 +79,12 @@ public class ArticleCommentService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<bool> IsReplyAsync(int id)
+    {
+        var entity = await _db.ArticleComments.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("ArticleComment not found: " + id);
+        var result = entity.IsReply();
+        await _db.SaveChangesAsync();
+        return result;
+    }
 }

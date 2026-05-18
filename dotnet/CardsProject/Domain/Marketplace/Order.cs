@@ -83,7 +83,7 @@ public class Order : IValidatableObject
     {
         if (!( Total >= 0m ))
             yield return new ValidationResult("Order total must not be negative", new[] { nameof(Id) });
-        if (!( (Total != null && DiscountApplied <= Total) ))
+        if (!( DiscountApplied <= Total ))
             yield return new ValidationResult("Discount applied cannot exceed order total", new[] { nameof(Id) });
     }
 }

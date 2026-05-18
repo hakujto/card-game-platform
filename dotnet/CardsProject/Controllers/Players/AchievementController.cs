@@ -63,4 +63,25 @@ public class AchievementController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:int}/point-value")]
+    public async System.Threading.Tasks.Task<IActionResult> PointValue(int id, [FromQuery] int multiplier)
+    {
+        try
+        {
+            var result = await _svc.PointValueAsync(id, multiplier);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPost("{id:int}/reveal")]
+    public async System.Threading.Tasks.Task<IActionResult> Reveal(int id)
+    {
+        try
+        {
+            await _svc.RevealAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }

@@ -63,7 +63,9 @@ public class TournamentRoundApiTests : IClassFixture<TournamentRoundApiTests.Tes
     {
         var payload = new
         {
+            StartedAt = "2024-01-01T00:00:00",
             RoundNumber = 1,
+            TimeLimitMinutes = 1,
             TournamentId = 1
         };
         var response = await _client.PostAsJsonAsync("/api/tournament_rounds", payload);
@@ -102,6 +104,33 @@ public class TournamentRoundApiTests : IClassFixture<TournamentRoundApiTests.Tes
     {
         // Round end time must be after start time: antecedent true, consequent missing → 400
         var content = new StringContent(@"{ ""TournamentId"": 1, ""RoundNumber"": 1, ""Status"": ""test"", ""TimeLimitMinutes"": 1, ""EndedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_rounds", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_CompletedRequiresStartedAt_Violated()
+    {
+        // Completed round must have a start time: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""RoundNumber"": 1, ""TimeLimitMinutes"": 1, ""Status"": ""Completed"", ""StartedAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_rounds", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_RoundNumberPositive_Violated()
+    {
+        // Round number must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""EndedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""StartedAt"": ""2024-01-01T00:00:00"", ""TimeLimitMinutes"": 1, ""RoundNumber"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/tournament_rounds", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_TimeLimitPositive_Violated()
+    {
+        // Round time limit must be greater than zero → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""TournamentId"": 1, ""EndedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""StartedAt"": ""2024-01-01T00:00:00"", ""RoundNumber"": 1, ""TimeLimitMinutes"": 0 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/tournament_rounds", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

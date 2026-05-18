@@ -94,6 +94,16 @@ public class Card : IValidatableObject
         throw new NotImplementedException("calculate_value not implemented");
     }
 
+    public decimal ApplyRarityBonus(int multiplier)
+    {
+        throw new NotImplementedException("apply_rarity_bonus not implemented");
+    }
+
+    public bool IsLegalInFormat(string format)
+    {
+        throw new NotImplementedException("is_legal_in_format not implemented");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

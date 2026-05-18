@@ -1,6 +1,7 @@
 using CardsProject.Domain.Tournaments;
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Content;
 
@@ -19,7 +20,7 @@ public enum StreamStatusType
     Ended
 }
 
-public class Stream
+public class Stream : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -60,5 +61,12 @@ public class Stream
     public int DurationMinutes()
     {
         throw new NotImplementedException("duration_minutes not implemented");
+    }
+
+    // ── Domain invariants (simple rules) ──────────────────────────────
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!( ViewerCountPeak >= 0 ))
+            yield return new ValidationResult("Peak viewer count must not be negative", new[] { nameof(Id) });
     }
 }

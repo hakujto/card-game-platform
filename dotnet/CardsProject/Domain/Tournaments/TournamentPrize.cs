@@ -36,10 +36,15 @@ public class TournamentPrize : IValidatableObject
         throw new NotImplementedException("applies_to_placement not implemented");
     }
 
+    public void AwardToPlayer(int playerId)
+    {
+        throw new NotImplementedException("award_to_player not implemented");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!( (PlacementFrom != null && PlacementTo >= PlacementFrom) ))
+        if (!( PlacementTo >= PlacementFrom ))
             yield return new ValidationResult("placement_to must be greater than or equal to placement_from", new[] { nameof(Id) });
         if (!( PlacementFrom > 0 ))
             yield return new ValidationResult("placement_from must be greater than zero", new[] { nameof(Id) });

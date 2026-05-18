@@ -63,4 +63,25 @@ public class TournamentJudgeController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:int}/promote")]
+    public async System.Threading.Tasks.Task<IActionResult> PromoteToHead(int id)
+    {
+        try
+        {
+            await _svc.PromoteToHeadAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:int}/remove")]
+    public async System.Threading.Tasks.Task<IActionResult> Remove(int id)
+    {
+        try
+        {
+            await _svc.RemoveAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
 }
