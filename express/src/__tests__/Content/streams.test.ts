@@ -42,4 +42,14 @@ describe('Stream API', () => {
     const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z' });
     expect(res.status).toBe(400);
   });
+
+  it("POST /api/streams returns 400 when ended_at_requires_ended_status violated", async () => {
+    const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, endedAt: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/streams returns 400 when viewer_count_not_negative violated", async () => {
+    const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z', status: 'ENDED', endedAt: '2024-01-01T00:00:00.000Z', viewerCountPeak: -1 });
+    expect(res.status).toBe(400);
+  });
 });

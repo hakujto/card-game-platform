@@ -37,4 +37,13 @@ describe('DraftPick API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/draft_picks returns 400 when pick_number_positive violated", async () => {
+    const res = await request(app).post('/api/draft_picks').send({ packNumber: 1, pickedAt: '2024-01-01T00:00:00.000Z', participantId: 1, cardId: 1, pickNumber: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/draft_picks returns 400 when pack_number_range violated", async () => {
+    const res = await request(app).post('/api/draft_picks').send({ pickNumber: 1, pickedAt: '2024-01-01T00:00:00.000Z', participantId: 1, cardId: 1, packNumber: 4 });
+    expect(res.status).toBe(400);
+  });
 });

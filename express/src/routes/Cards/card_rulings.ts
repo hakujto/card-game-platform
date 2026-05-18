@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { CardRulingService } from '../../services/Cards/card_ruling_service.js';
 
 const router = Router();
+const service = new CardRulingService();
 
 
 router.get('/', async (_req, res) => {
@@ -71,4 +73,23 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/current', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_current(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/supersedes', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.supersedes_previous(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

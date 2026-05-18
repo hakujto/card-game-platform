@@ -5,6 +5,11 @@ import { ProductService } from '../../services/Marketplace/product_service.js';
 const router = Router();
 const service = new ProductService();
 
+function validate(data: any): void {
+  if (!((data.price == null || Number(data.price) > 0))) throw new Error(`Product price must be greater than zero`);
+  if (!((data.stock == null || data.stock >= 0))) throw new Error(`Product stock must not be negative`);
+  if (!((data.discountPercent == null || (data.discountPercent >= 0 && data.discountPercent <= 100)))) throw new Error(`Product discount percent must be between 0 and 100`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.product.findMany();
@@ -26,6 +31,7 @@ router.post('/', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
   try {
+  validate(data);
     const entity = await prisma.product.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -54,6 +60,7 @@ router.put('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
   try {
+  validate(data);
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -77,6 +84,7 @@ router.patch('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
   try {
+  validate(data);
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -131,6 +139,26 @@ router.post('/:id/restock', async (req, res) => {
   try {
     await service.restock(id, quantity);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/effective-price', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.effective_price(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/in-stock', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_in_stock(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

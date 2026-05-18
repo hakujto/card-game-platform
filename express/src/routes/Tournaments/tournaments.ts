@@ -167,4 +167,26 @@ router.get('/:id/prizes', async (req, res) => {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }
 });
+
+router.post('/:id/register', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const playerId = req.body.playerId;
+  const deckId = req.body.deckId;
+  try {
+    await service.register_player(id, playerId, deckId);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/full', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_full(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

@@ -21,13 +21,6 @@ export class ProductService {
     return prisma.product.delete({ where: { id } });
   }
 
-  async effective_price(): Promise<number> {
-    throw new Error('effective_price not implemented');
-  }
-
-  async is_in_stock(): Promise<boolean> {
-    throw new Error('is_in_stock not implemented');
-  }
   async activate(id: number): Promise<void> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
@@ -54,5 +47,19 @@ export class ProductService {
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement restock domain logic
     throw new Error('restock not implemented');
+  }
+
+  async effective_price(id: number): Promise<number> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement effective_price domain logic
+    throw new Error('effective_price not implemented');
+  }
+
+  async is_in_stock(id: number): Promise<boolean> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement is_in_stock domain logic
+    throw new Error('is_in_stock not implemented');
   }
 }

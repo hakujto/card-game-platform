@@ -21,9 +21,6 @@ export class SeasonService {
     return prisma.season.delete({ where: { id } });
   }
 
-  async is_ongoing(): Promise<boolean> {
-    throw new Error('is_ongoing not implemented');
-  }
   async activate(id: number): Promise<void> {
     const entity = await prisma.season.findUnique({ where: { id } });
     if (!entity) throw new Error('Season not found: ' + id);
@@ -43,5 +40,12 @@ export class SeasonService {
     if (!entity) throw new Error('Season not found: ' + id);
     // TODO: implement finalize_rewards domain logic
     throw new Error('finalize_rewards not implemented');
+  }
+
+  async is_ongoing(id: number): Promise<boolean> {
+    const entity = await prisma.season.findUnique({ where: { id } });
+    if (!entity) throw new Error('Season not found: ' + id);
+    // TODO: implement is_ongoing domain logic
+    throw new Error('is_ongoing not implemented');
   }
 }

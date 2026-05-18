@@ -6,6 +6,7 @@ const router = Router();
 const service = new ArticleService();
 
 function validate(data: any): void {
+  if (!((data.viewCount == null || data.viewCount >= 0))) throw new Error(`Article view count must not be negative`);
   if ((data.status === 'PUBLISHED') && !((data.publishedAt === undefined || data.publishedAt != null))) throw new Error(`Published article must have a published_at timestamp`);
 }
 
@@ -131,6 +132,16 @@ router.post('/:id/view', async (req, res) => {
   try {
     await service.increment_view(id);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/reading-time', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.reading_time_minutes(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

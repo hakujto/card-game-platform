@@ -21,15 +21,24 @@ export class PlayerSeasonStatsService {
     return prisma.playerSeasonStats.delete({ where: { id } });
   }
 
-  async win_rate(): Promise<number> {
+  async win_rate(id: number): Promise<number> {
+    const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
+    if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
+    // TODO: implement win_rate domain logic
     throw new Error('win_rate not implemented');
   }
 
-  async add_points(points: number): Promise<void> {
+  async add_points(id: number, points: number): Promise<void> {
+    const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
+    if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
+    // TODO: implement add_points domain logic
     throw new Error('add_points not implemented');
   }
 
-  async record_tournament_win(): Promise<void> {
+  async record_tournament_win(id: number): Promise<void> {
+    const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
+    if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
+    // TODO: implement record_tournament_win domain logic
     throw new Error('record_tournament_win not implemented');
   }
 }

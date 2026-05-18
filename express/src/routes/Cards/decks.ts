@@ -5,6 +5,12 @@ import { DeckService } from '../../services/Cards/deck_service.js';
 const router = Router();
 const service = new DeckService();
 
+function validate(data: any): void {
+  if (!((data.wins == null || data.wins >= 0))) throw new Error(`Deck wins count must not be negative`);
+  if (!((data.losses == null || data.losses >= 0))) throw new Error(`Deck losses count must not be negative`);
+  if (!((data.draws == null || data.draws >= 0))) throw new Error(`Deck draws count must not be negative`);
+  if ((data.isTournamentLegal === true) && !(data.isPublic === true)) throw new Error(`Tournament-legal deck must be made public`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.deck.findMany();
@@ -22,10 +28,12 @@ router.post('/', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
+    if (body.draws !== undefined) data.draws = body.draws;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.deck.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -50,10 +58,12 @@ router.put('/:id', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
+    if (body.draws !== undefined) data.draws = body.draws;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -73,10 +83,12 @@ router.patch('/:id', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
+    if (body.draws !== undefined) data.draws = body.draws;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -98,6 +110,39 @@ router.get('/:id/validate', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
     const result = await service.validate_size(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/cards', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const cardId = req.body.cardId;
+  const quantity = req.body.quantity;
+  try {
+    await service.add_card(id, cardId, quantity);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.delete('/:id/cards/:card_id', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const cardId = (req.params as any).card_id;
+  try {
+    await service.remove_card(id, cardId);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/win-rate', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.win_rate(id);
     res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });

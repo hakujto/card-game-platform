@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
-import { TradelistingService } from '../../services/Marketplace/tradelisting_service.js';
+import { TradeListingService } from '../../services/Marketplace/trade_listing_service.js';
 
 const router = Router();
-const service = new TradelistingService();
+const service = new TradeListingService();
 
 function validate(data: any): void {
   if (!((data.quantity == null || (data.quantity >= 1 && data.quantity <= 9999)))) throw new Error(`Listing quantity must be between 1 and 9999`);
@@ -12,7 +12,7 @@ function validate(data: any): void {
 }
 
 router.get('/', async (_req, res) => {
-  const items = await prisma.tradelisting.findMany();
+  const items = await prisma.tradeListing.findMany();
   res.json(items);
 });
 
@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
   validate(data);
-    const entity = await prisma.tradelisting.create({ data });
+    const entity = await prisma.tradeListing.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
     res.status(400).json({ error: err?.message ?? 'Validation error' });
@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const entity = await prisma.tradelisting.findUnique({ where: { id: Number(req.params.id) } });
+  const entity = await prisma.tradeListing.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
   res.json(entity);
 });
@@ -67,7 +67,7 @@ router.put('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
   validate(data);
-    const entity = await prisma.tradelisting.update({ where: { id: Number(req.params.id) }, data });
+    const entity = await prisma.tradeListing.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
     const status = err?.code === 'P2025' ? 404 : 400;
@@ -94,7 +94,7 @@ router.patch('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
   validate(data);
-    const entity = await prisma.tradelisting.update({ where: { id: Number(req.params.id) }, data });
+    const entity = await prisma.tradeListing.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
     const status = err?.code === 'P2025' ? 404 : 400;
@@ -104,7 +104,7 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await prisma.tradelisting.delete({ where: { id: Number(req.params.id) } });
+    await prisma.tradeListing.delete({ where: { id: Number(req.params.id) } });
     res.status(204).send();
   } catch {
     res.status(404).json({ error: 'Not found' });
@@ -136,6 +136,26 @@ router.delete('/:id/cancel', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
     await service.cancel(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/expired', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_expired(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/finalize', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.finalize_auction(id);
     res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });

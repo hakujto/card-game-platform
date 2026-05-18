@@ -21,13 +21,20 @@ export class CouponService {
     return prisma.coupon.delete({ where: { id } });
   }
 
-  async is_valid(): Promise<boolean> {
+  async is_valid(id: number): Promise<boolean> {
+    const entity = await prisma.coupon.findUnique({ where: { id } });
+    if (!entity) throw new Error('Coupon not found: ' + id);
+    // TODO: implement is_valid domain logic
     throw new Error('is_valid not implemented');
   }
 
-  async is_applicable_to_order(orderTotal: number): Promise<boolean> {
+  async is_applicable_to_order(id: number, orderTotal: number): Promise<boolean> {
+    const entity = await prisma.coupon.findUnique({ where: { id } });
+    if (!entity) throw new Error('Coupon not found: ' + id);
+    // TODO: implement is_applicable_to_order domain logic
     throw new Error('is_applicable_to_order not implemented');
   }
+
   async redeem(id: number): Promise<void> {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);

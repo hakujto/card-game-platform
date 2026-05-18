@@ -36,4 +36,8 @@ describe('DraftParticipant API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/draft_participants returns 400 when seat_number_positive violated", async () => {
+    const res = await request(app).post('/api/draft_participants').send({ joinedAt: '2024-01-01T00:00:00.000Z', sessionId: 1, playerId: 1, seatNumber: 0 });
+    expect(res.status).toBe(400);
+  });
 });

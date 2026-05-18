@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { TournamentJudgeService } from '../../services/Tournaments/tournament_judge_service.js';
 
 const router = Router();
+const service = new TournamentJudgeService();
 
 
 router.get('/', async (_req, res) => {
@@ -68,4 +70,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/promote', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.promote_to_head(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

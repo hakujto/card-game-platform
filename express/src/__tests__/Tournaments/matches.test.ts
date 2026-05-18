@@ -37,17 +37,27 @@ describe('Match API', () => {
   });
 
   it("POST /api/matches returns 400 when wins_not_negative violated", async () => {
-    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: null, player1Wins: -1 });
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'COMPLETED', player2Id: null, endedAt: '2024-01-01T00:00:00.000Z', startedAt: '2024-01-01T00:00:00.000Z', player1Wins: -1 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/matches returns 400 when max_three_games violated", async () => {
-    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: null, player1Wins: 3 });
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'COMPLETED', player2Id: null, endedAt: '2024-01-01T00:00:00.000Z', startedAt: '2024-01-01T00:00:00.000Z', player1Wins: 3 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/matches returns 400 when bye_has_no_player2 violated", async () => {
     const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: 1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/matches returns 400 when ended_after_started violated", async () => {
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, endedAt: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/matches returns 400 when completed_requires_started_at violated", async () => {
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'COMPLETED', startedAt: null });
     expect(res.status).toBe(400);
   });
 });

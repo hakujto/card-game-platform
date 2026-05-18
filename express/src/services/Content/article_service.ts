@@ -21,9 +21,6 @@ export class ArticleService {
     return prisma.article.delete({ where: { id } });
   }
 
-  async reading_time_minutes(): Promise<number> {
-    throw new Error('reading_time_minutes not implemented');
-  }
   async publish(id: number): Promise<void> {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);
@@ -43,5 +40,12 @@ export class ArticleService {
     if (!entity) throw new Error('Article not found: ' + id);
     // TODO: implement increment_view domain logic
     throw new Error('increment_view not implemented');
+  }
+
+  async reading_time_minutes(id: number): Promise<number> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement reading_time_minutes domain logic
+    throw new Error('reading_time_minutes not implemented');
   }
 }

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { ArticleTagService } from '../../services/Content/article_tag_service.js';
 
 const router = Router();
+const service = new ArticleTagService();
 
 
 router.get('/', async (_req, res) => {
@@ -65,4 +67,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.patch('/:id/rename', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const newName = req.body.newName;
+  try {
+    await service.rename(id, newName);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/article-count', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.article_count(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

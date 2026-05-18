@@ -39,4 +39,23 @@ describe('PlayerSeasonStats API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/player_season_statses returns 400 when wins_not_negative violated", async () => {
+    const res = await request(app).post('/api/player_season_statses').send({ playerId: 1, seasonId: 1, wins: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/player_season_statses returns 400 when losses_not_negative violated", async () => {
+    const res = await request(app).post('/api/player_season_statses').send({ playerId: 1, seasonId: 1, losses: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/player_season_statses returns 400 when tournament_wins_not_negative violated", async () => {
+    const res = await request(app).post('/api/player_season_statses').send({ playerId: 1, seasonId: 1, tournamentWins: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/player_season_statses returns 400 when season_points_not_negative violated", async () => {
+    const res = await request(app).post('/api/player_season_statses').send({ playerId: 1, seasonId: 1, seasonPoints: -1 });
+    expect(res.status).toBe(400);
+  });
 });

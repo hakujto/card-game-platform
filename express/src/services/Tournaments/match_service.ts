@@ -35,6 +35,13 @@ export class MatchService {
     throw new Error('determine_winner not implemented');
   }
 
+  async concede(id: number, playerId: number): Promise<void> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    // TODO: implement concede domain logic
+    throw new Error('concede not implemented');
+  }
+
   async draw(id: number): Promise<void> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);

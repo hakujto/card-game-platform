@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { AwardedPrizeService } from '../../services/Tournaments/awarded_prize_service.js';
 
 const router = Router();
+const service = new AwardedPrizeService();
 
 function validate(data: any): void {
   if (!((data.finalPlacement == null || data.finalPlacement > 0))) throw new Error(`Final placement must be greater than zero`);
@@ -84,4 +86,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/claim', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.claim(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

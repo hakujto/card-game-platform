@@ -55,4 +55,18 @@ export class CardService {
     // TODO: implement calculate_value domain logic
     throw new Error('calculate_value not implemented');
   }
+
+  async apply_rarity_bonus(id: number, multiplier: number): Promise<number> {
+    const entity = await prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement apply_rarity_bonus domain logic
+    throw new Error('apply_rarity_bonus not implemented');
+  }
+
+  async is_legal_in_format(id: number, format: string): Promise<boolean> {
+    const entity = await prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement is_legal_in_format domain logic
+    throw new Error('is_legal_in_format not implemented');
+  }
 }

@@ -18,7 +18,8 @@ describe('CardSet API', () => {
       name: 'test',
       code: 'test',
       releaseDate: '2024-01-01',
-      totalCards: 1
+      totalCards: 1,
+      isRotated: true
     });
     expect([200, 201]).toContain(res.status);
   });
@@ -38,4 +39,18 @@ describe('CardSet API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/card_sets returns 400 when total_cards_positive violated", async () => {
+    const res = await request(app).post('/api/card_sets').send({ name: 'test', code: 'test', releaseDate: '2024-01-01', rotationDate: '2024-01-01', isRotated: true, totalCards: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/card_sets returns 400 when rotation_date_after_release violated", async () => {
+    const res = await request(app).post('/api/card_sets').send({ name: 'test', code: 'test', releaseDate: '2024-01-01', totalCards: 1, rotationDate: '2024-01-01' });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/card_sets returns 400 when rotated_set_has_rotation_date violated", async () => {
+    const res = await request(app).post('/api/card_sets').send({ name: 'test', code: 'test', releaseDate: '2024-01-01', totalCards: 1, isRotated: true, rotationDate: null });
+    expect(res.status).toBe(400);
+  });
 });

@@ -44,4 +44,14 @@ describe('CardPriceHistory API', () => {
     const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, maxPrice: 0.00, volume: 1, cardId: 1, minPrice: 1 });
     expect(res.status).toBe(400);
   });
+
+  it("POST /api/card_price_histories returns 400 when volume_not_negative violated", async () => {
+    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, minPrice: 0.00, maxPrice: 0.00, cardId: 1, volume: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/card_price_histories returns 400 when prices_not_negative violated", async () => {
+    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, maxPrice: 0.00, volume: 1, cardId: 1, minPrice: -1 });
+    expect(res.status).toBe(400);
+  });
 });

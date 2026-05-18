@@ -67,6 +67,17 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.patch('/:id/rename', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const newName = req.body.newName;
+  try {
+    await service.rename(id, newName);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
 router.post('/:id/merge', async (req, res) => {
   const id = Number((req.params as any).id);
   const targetTagId = req.body.targetTagId;

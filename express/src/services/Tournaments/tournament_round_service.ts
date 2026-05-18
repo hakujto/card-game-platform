@@ -21,9 +21,6 @@ export class TournamentRoundService {
     return prisma.tournamentRound.delete({ where: { id } });
   }
 
-  async is_time_expired(): Promise<boolean> {
-    throw new Error('is_time_expired not implemented');
-  }
   async start(id: number): Promise<void> {
     const entity = await prisma.tournamentRound.findUnique({ where: { id } });
     if (!entity) throw new Error('TournamentRound not found: ' + id);
@@ -43,5 +40,12 @@ export class TournamentRoundService {
     if (!entity) throw new Error('TournamentRound not found: ' + id);
     // TODO: implement generate_pairings domain logic
     throw new Error('generate_pairings not implemented');
+  }
+
+  async is_time_expired(id: number): Promise<boolean> {
+    const entity = await prisma.tournamentRound.findUnique({ where: { id } });
+    if (!entity) throw new Error('TournamentRound not found: ' + id);
+    // TODO: implement is_time_expired domain logic
+    throw new Error('is_time_expired not implemented');
   }
 }

@@ -44,4 +44,9 @@ describe('Article API', () => {
     const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: null });
     expect(res.status).toBe(400);
   });
+
+  it("POST /api/articles returns 400 when view_count_not_negative violated", async () => {
+    const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: '2024-01-01T00:00:00.000Z', viewCount: -1 });
+    expect(res.status).toBe(400);
+  });
 });

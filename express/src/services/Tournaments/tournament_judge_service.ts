@@ -21,4 +21,10 @@ export class TournamentJudgeService {
     return prisma.tournamentJudge.delete({ where: { id } });
   }
 
+  async promote_to_head(id: number): Promise<void> {
+    const entity = await prisma.tournamentJudge.findUnique({ where: { id } });
+    if (!entity) throw new Error('TournamentJudge not found: ' + id);
+    // TODO: implement promote_to_head domain logic
+    throw new Error('promote_to_head not implemented');
+  }
 }

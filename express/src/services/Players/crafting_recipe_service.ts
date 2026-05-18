@@ -21,11 +21,31 @@ export class CraftingRecipeService {
     return prisma.craftingRecipe.delete({ where: { id } });
   }
 
-  async disable(): Promise<void> {
+  async can_craft(id: number, playerId: number): Promise<boolean> {
+    const entity = await prisma.craftingRecipe.findUnique({ where: { id } });
+    if (!entity) throw new Error('CraftingRecipe not found: ' + id);
+    // TODO: implement can_craft domain logic
+    throw new Error('can_craft not implemented');
+  }
+
+  async execute_craft(id: number, playerId: number): Promise<void> {
+    const entity = await prisma.craftingRecipe.findUnique({ where: { id } });
+    if (!entity) throw new Error('CraftingRecipe not found: ' + id);
+    // TODO: implement execute_craft domain logic
+    throw new Error('execute_craft not implemented');
+  }
+
+  async disable(id: number): Promise<void> {
+    const entity = await prisma.craftingRecipe.findUnique({ where: { id } });
+    if (!entity) throw new Error('CraftingRecipe not found: ' + id);
+    // TODO: implement disable domain logic
     throw new Error('disable not implemented');
   }
 
-  async enable(): Promise<void> {
+  async enable(id: number): Promise<void> {
+    const entity = await prisma.craftingRecipe.findUnique({ where: { id } });
+    if (!entity) throw new Error('CraftingRecipe not found: ' + id);
+    // TODO: implement enable domain logic
     throw new Error('enable not implemented');
   }
 }

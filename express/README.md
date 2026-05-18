@@ -173,11 +173,11 @@ POST   /api/coupons      — create
 GET    /api/coupons/:id  — get by id
 PUT    /api/coupons/:id  — update
 DELETE /api/coupons/:id  — delete
-GET    /api/tradelistings      — list all
-POST   /api/tradelistings      — create
-GET    /api/tradelistings/:id  — get by id
-PUT    /api/tradelistings/:id  — update
-DELETE /api/tradelistings/:id  — delete
+GET    /api/trade_listings      — list all
+POST   /api/trade_listings      — create
+GET    /api/trade_listings/:id  — get by id
+PUT    /api/trade_listings/:id  — update
+DELETE /api/trade_listings/:id  — delete
 GET    /api/trade_bids      — list all
 POST   /api/trade_bids      — create
 GET    /api/trade_bids/:id  — get by id

@@ -36,7 +36,7 @@ describe('Game API', () => {
   });
 
   it("POST /api/games returns 400 when game_number_range violated", async () => {
-    const res = await request(app).post('/api/games').send({ matchId: 1, turnsPlayed: 1, durationSeconds: 1, gameNumber: 4 });
+    const res = await request(app).post('/api/games').send({ matchId: 1, turnsPlayed: 1, durationSeconds: 1, winnerSide: 'PLAYER1', winnerId: 1, gameNumber: 4 });
     expect(res.status).toBe(400);
   });
 
@@ -47,6 +47,16 @@ describe('Game API', () => {
 
   it("POST /api/games returns 400 when duration_positive violated", async () => {
     const res = await request(app).post('/api/games').send({ gameNumber: 1, matchId: 1, durationSeconds: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/games returns 400 when draw_has_no_winner violated", async () => {
+    const res = await request(app).post('/api/games').send({ gameNumber: 1, matchId: 1, winnerSide: 'DRAW', winnerId: 1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/games returns 400 when non_draw_requires_winner violated", async () => {
+    const res = await request(app).post('/api/games').send({ gameNumber: 1, matchId: 1, winnerSide: 'PLAYER1', winnerId: null });
     expect(res.status).toBe(400);
   });
 });

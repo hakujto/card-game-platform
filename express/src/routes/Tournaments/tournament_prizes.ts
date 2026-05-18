@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { TournamentPrizeService } from '../../services/Tournaments/tournament_prize_service.js';
 
 const router = Router();
+const service = new TournamentPrizeService();
 
 function validate(data: any): void {
   if (!((data.placementTo == null || (data.placementFrom != null && data.placementTo >= data.placementFrom)))) throw new Error(`placement_to must be greater than or equal to placement_from`);
@@ -91,4 +93,25 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/applies', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const placement = (req.query as any).placement;
+  try {
+    const result = await service.applies_to_placement(id, placement);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/award', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const playerId = req.body.playerId;
+  try {
+    await service.award_to_player(id, playerId);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

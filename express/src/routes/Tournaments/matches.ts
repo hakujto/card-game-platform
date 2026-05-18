@@ -9,6 +9,8 @@ function validate(data: any): void {
   if (!(((data.player1Wins == null || data.player1Wins >= 0) && (data.player2Wins == null || data.player2Wins >= 0)))) throw new Error(`Win counts must not be negative`);
   if (!(((data.player1Wins == null || (data.player1Wins >= 0 && data.player1Wins <= 2)) && (data.player2Wins == null || (data.player2Wins >= 0 && data.player2Wins <= 2))))) throw new Error(`Win counts cannot exceed 2 in a best-of-3 match`);
   if ((data.status === 'BYE') && !(data.player2Id == null)) throw new Error(`BYE match must not have a second player`);
+  if ((data.endedAt != null) && !((data.endedAt == null || (data.startedAt != null && data.endedAt > data.startedAt)))) throw new Error(`Match end time must be after start time`);
+  if ((data.status === 'COMPLETED') && !((data.startedAt === undefined || data.startedAt != null))) throw new Error(`Completed match must have a start time`);
 }
 
 router.get('/', async (_req, res) => {
@@ -116,6 +118,17 @@ router.get('/:id/winner', async (req, res) => {
   try {
     const result = await service.determine_winner(id);
     res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/concede', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const playerId = req.body.playerId;
+  try {
+    await service.concede(id, playerId);
+    res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

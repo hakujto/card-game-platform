@@ -21,13 +21,17 @@ export class GameService {
     return prisma.game.delete({ where: { id } });
   }
 
-  async duration_minutes(): Promise<number> {
-    throw new Error('duration_minutes not implemented');
-  }
   async record_winner(id: number, winnerSide: string): Promise<void> {
     const entity = await prisma.game.findUnique({ where: { id } });
     if (!entity) throw new Error('Game not found: ' + id);
     // TODO: implement record_winner domain logic
     throw new Error('record_winner not implemented');
+  }
+
+  async duration_minutes(id: number): Promise<number> {
+    const entity = await prisma.game.findUnique({ where: { id } });
+    if (!entity) throw new Error('Game not found: ' + id);
+    // TODO: implement duration_minutes domain logic
+    throw new Error('duration_minutes not implemented');
   }
 }

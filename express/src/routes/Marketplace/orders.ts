@@ -10,6 +10,7 @@ function validate(data: any): void {
   if (!((data.discountApplied == null || (data.total != null && Number(data.discountApplied) <= Number(data.total))))) throw new Error(`Discount applied cannot exceed order total`);
   if ((data.status === 'PAID') && !((data.paidAt === undefined || data.paidAt != null))) throw new Error(`Paid order must have paid_at set`);
   if ((data.status === 'SHIPPED') && !((data.trackingNumber === undefined || data.trackingNumber != null))) throw new Error(`Shipped order must have a tracking number`);
+  if ((data.shippedAt != null) && !(data.status === 'SHIPPED')) throw new Error(`shipped_at_requires_shipped_status`);
 }
 
 router.get('/', async (_req, res) => {

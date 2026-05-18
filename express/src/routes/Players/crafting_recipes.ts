@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { CraftingRecipeService } from '../../services/Players/crafting_recipe_service.js';
 
 const router = Router();
+const service = new CraftingRecipeService();
 
 function validate(data: any): void {
   if (!((data.dustCost == null || data.dustCost > 0))) throw new Error(`Crafting recipe must have a dust cost greater than zero`);
@@ -74,4 +76,45 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/can-craft', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const playerId = (req.query as any).playerId;
+  try {
+    const result = await service.can_craft(id, playerId);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/craft', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const playerId = req.body.playerId;
+  try {
+    await service.execute_craft(id, playerId);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/disable', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.disable(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/enable', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.enable(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { DeckSideboardCardService } from '../../services/Cards/deck_sideboard_card_service.js';
 
 const router = Router();
+const service = new DeckSideboardCardService();
 
+function validate(data: any): void {
+  if (!((data.quantity == null || (data.quantity >= 1 && data.quantity <= 4)))) throw new Error(`Sideboard card quantity must be between 1 and 4 copies`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.deckSideboardCard.findMany();
@@ -16,6 +21,7 @@ router.post('/', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckSideboardCard.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -36,6 +42,7 @@ router.put('/:id', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckSideboardCard.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -51,6 +58,7 @@ router.patch('/:id', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckSideboardCard.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -68,4 +76,25 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.patch('/:id/increment', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const amount = req.body.amount;
+  try {
+    await service.increment(id, amount);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/decrement', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const amount = req.body.amount;
+  try {
+    await service.decrement(id, amount);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

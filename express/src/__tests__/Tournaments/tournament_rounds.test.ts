@@ -40,4 +40,19 @@ describe('TournamentRound API', () => {
     const res = await request(app).post('/api/tournament_rounds').send({ roundNumber: 1, tournamentId: 1, endedAt: '2024-01-01T00:00:00.000Z' });
     expect(res.status).toBe(400);
   });
+
+  it("POST /api/tournament_rounds returns 400 when completed_requires_started_at violated", async () => {
+    const res = await request(app).post('/api/tournament_rounds').send({ roundNumber: 1, tournamentId: 1, status: 'COMPLETED', startedAt: null });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournament_rounds returns 400 when round_number_positive violated", async () => {
+    const res = await request(app).post('/api/tournament_rounds').send({ tournamentId: 1, endedAt: '2024-01-01T00:00:00.000Z', status: 'COMPLETED', startedAt: '2024-01-01T00:00:00.000Z', roundNumber: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournament_rounds returns 400 when time_limit_positive violated", async () => {
+    const res = await request(app).post('/api/tournament_rounds').send({ roundNumber: 1, tournamentId: 1, endedAt: '2024-01-01T00:00:00.000Z', status: 'COMPLETED', startedAt: '2024-01-01T00:00:00.000Z', timeLimitMinutes: 0 });
+    expect(res.status).toBe(400);
+  });
 });

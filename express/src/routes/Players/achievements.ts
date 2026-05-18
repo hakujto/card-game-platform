@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { AchievementService } from '../../services/Players/achievement_service.js';
 
 const router = Router();
+const service = new AchievementService();
 
+function validate(data: any): void {
+  if (!((data.points == null || data.points > 0))) throw new Error(`Achievement must award at least one point`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.achievement.findMany();
@@ -19,6 +24,7 @@ router.post('/', async (req, res) => {
     if (body.rarity !== undefined) data.rarity = body.rarity;
     if (body.isHidden !== undefined) data.isHidden = body.isHidden;
   try {
+  validate(data);
     const entity = await prisma.achievement.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -42,6 +48,7 @@ router.put('/:id', async (req, res) => {
     if (body.rarity !== undefined) data.rarity = body.rarity;
     if (body.isHidden !== undefined) data.isHidden = body.isHidden;
   try {
+  validate(data);
     const entity = await prisma.achievement.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -60,6 +67,7 @@ router.patch('/:id', async (req, res) => {
     if (body.rarity !== undefined) data.rarity = body.rarity;
     if (body.isHidden !== undefined) data.isHidden = body.isHidden;
   try {
+  validate(data);
     const entity = await prisma.achievement.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -77,4 +85,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/point-value', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const multiplier = (req.query as any).multiplier;
+  try {
+    const result = await service.point_value(id, multiplier);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/reveal', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.reveal(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

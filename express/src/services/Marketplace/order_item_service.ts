@@ -21,7 +21,10 @@ export class OrderItemService {
     return prisma.orderItem.delete({ where: { id } });
   }
 
-  async line_total(): Promise<number> {
+  async line_total(id: number): Promise<number> {
+    const entity = await prisma.orderItem.findUnique({ where: { id } });
+    if (!entity) throw new Error('OrderItem not found: ' + id);
+    // TODO: implement line_total domain logic
     throw new Error('line_total not implemented');
   }
 }

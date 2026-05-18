@@ -21,9 +21,6 @@ export class DraftSessionService {
     return prisma.draftSession.delete({ where: { id } });
   }
 
-  async is_full(): Promise<boolean> {
-    throw new Error('is_full not implemented');
-  }
   async start(id: number): Promise<void> {
     const entity = await prisma.draftSession.findUnique({ where: { id } });
     if (!entity) throw new Error('DraftSession not found: ' + id);
@@ -43,5 +40,12 @@ export class DraftSessionService {
     if (!entity) throw new Error('DraftSession not found: ' + id);
     // TODO: implement complete domain logic
     throw new Error('complete not implemented');
+  }
+
+  async is_full(id: number): Promise<boolean> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    // TODO: implement is_full domain logic
+    throw new Error('is_full not implemented');
   }
 }

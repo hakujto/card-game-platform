@@ -21,11 +21,17 @@ export class ArticleTagService {
     return prisma.articleTag.delete({ where: { id } });
   }
 
-  async rename(newName: string): Promise<void> {
+  async rename(id: number, newName: string): Promise<void> {
+    const entity = await prisma.articleTag.findUnique({ where: { id } });
+    if (!entity) throw new Error('ArticleTag not found: ' + id);
+    // TODO: implement rename domain logic
     throw new Error('rename not implemented');
   }
 
-  async article_count(): Promise<number> {
+  async article_count(id: number): Promise<number> {
+    const entity = await prisma.articleTag.findUnique({ where: { id } });
+    if (!entity) throw new Error('ArticleTag not found: ' + id);
+    // TODO: implement article_count domain logic
     throw new Error('article_count not implemented');
   }
 }

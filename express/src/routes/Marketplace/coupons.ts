@@ -97,6 +97,27 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/valid', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_valid(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/applicable', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const orderTotal = (req.query as any).orderTotal;
+  try {
+    const result = await service.is_applicable_to_order(id, orderTotal);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
 router.post('/:id/redeem', async (req, res) => {
   const id = Number((req.params as any).id);
   try {

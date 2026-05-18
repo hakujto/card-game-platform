@@ -41,4 +41,9 @@ describe('PlayerAchievement API', () => {
     const res = await request(app).post('/api/player_achievements').send({ earnedAt: '2024-01-01T00:00:00.000Z', playerId: 1, achievementId: 1, isCompleted: true, progress: 0 });
     expect(res.status).toBe(400);
   });
+
+  it("POST /api/player_achievements returns 400 when progress_not_negative violated", async () => {
+    const res = await request(app).post('/api/player_achievements').send({ earnedAt: '2024-01-01T00:00:00.000Z', playerId: 1, achievementId: 1, isCompleted: true, progress: -1 });
+    expect(res.status).toBe(400);
+  });
 });

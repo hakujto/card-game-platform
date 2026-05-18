@@ -1,8 +1,14 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { DraftPickService } from '../../services/Content/draft_pick_service.js';
 
 const router = Router();
+const service = new DraftPickService();
 
+function validate(data: any): void {
+  if (!((data.pickNumber == null || data.pickNumber > 0))) throw new Error(`Pick number must be greater than zero`);
+  if (!((data.packNumber == null || (data.packNumber >= 1 && data.packNumber <= 3)))) throw new Error(`Pack number must be between 1 and 3`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.draftPick.findMany();
@@ -18,6 +24,7 @@ router.post('/', async (req, res) => {
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.draftPick.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -40,6 +47,7 @@ router.put('/:id', async (req, res) => {
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.draftPick.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -57,6 +65,7 @@ router.patch('/:id', async (req, res) => {
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.draftPick.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -74,4 +83,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/first-pick', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_first_pick(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

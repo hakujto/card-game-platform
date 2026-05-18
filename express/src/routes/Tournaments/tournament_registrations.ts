@@ -5,6 +5,11 @@ import { TournamentRegistrationService } from '../../services/Tournaments/tourna
 const router = Router();
 const service = new TournamentRegistrationService();
 
+function validate(data: any): void {
+  if (!((data.pointsEarned == null || data.pointsEarned >= 0))) throw new Error(`Points earned must not be negative`);
+  if ((data.finalStanding != null) && !((data.finalStanding == null || data.finalStanding > 0))) throw new Error(`Final standing must be greater than zero`);
+  if ((data.seed != null) && !((data.seed == null || data.seed > 0))) throw new Error(`Seed must be greater than zero`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.tournamentRegistration.findMany();
@@ -23,6 +28,7 @@ router.post('/', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.deckId !== undefined) data.deckId = body.deckId;
   try {
+  validate(data);
     const entity = await prisma.tournamentRegistration.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -48,6 +54,7 @@ router.put('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.deckId !== undefined) data.deckId = body.deckId;
   try {
+  validate(data);
     const entity = await prisma.tournamentRegistration.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -68,6 +75,7 @@ router.patch('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.deckId !== undefined) data.deckId = body.deckId;
   try {
+  validate(data);
     const entity = await prisma.tournamentRegistration.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {

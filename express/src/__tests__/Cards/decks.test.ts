@@ -20,6 +20,7 @@ describe('Deck API', () => {
       isTournamentLegal: true,
       wins: 1,
       losses: 1,
+      draws: 1,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     });
@@ -41,4 +42,23 @@ describe('Deck API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/decks returns 400 when wins_not_negative violated", async () => {
+    const res = await request(app).post('/api/decks').send({ name: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', playerId: 1, isTournamentLegal: true, isPublic: true, wins: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/decks returns 400 when losses_not_negative violated", async () => {
+    const res = await request(app).post('/api/decks').send({ name: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', playerId: 1, isTournamentLegal: true, isPublic: true, losses: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/decks returns 400 when draws_not_negative violated", async () => {
+    const res = await request(app).post('/api/decks').send({ name: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', playerId: 1, isTournamentLegal: true, isPublic: true, draws: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/decks returns 400 when tournament_legal_deck_must_be_validated violated", async () => {
+    const res = await request(app).post('/api/decks').send({ name: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', playerId: 1, isTournamentLegal: true, isPublic: false });
+    expect(res.status).toBe(400);
+  });
 });

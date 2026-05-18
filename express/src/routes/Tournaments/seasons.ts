@@ -114,4 +114,14 @@ router.post('/:id/finalize', async (req, res) => {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }
 });
+
+router.get('/:id/ongoing', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_ongoing(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

@@ -15,7 +15,7 @@ describe('TradeTransaction API', () => {
     const res = await request(app)
       .post('/api/trade_transactions')
       .send({
-      finalPrice: 0.00,
+      finalPrice: 1,
       platformFee: 0.00
     });
     expect([200, 201]).toContain(res.status);
@@ -37,17 +37,22 @@ describe('TradeTransaction API', () => {
   });
 
   it("POST /api/trade_transactions returns 400 when fee_not_exceed_price violated", async () => {
-    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 0.00, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: 1 });
+    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 1, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: 1 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/trade_transactions returns 400 when fee_not_negative violated", async () => {
-    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 0.00, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: -1 });
+    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 1, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/trade_transactions returns 400 when final_price_positive violated", async () => {
+    const res = await request(app).post('/api/trade_transactions').send({ platformFee: 0.00, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', finalPrice: 0 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/trade_transactions returns 400 when completed_requires_completed_at violated", async () => {
-    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 0.00, platformFee: 0.00, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: null });
+    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 1, platformFee: 0.00, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: null });
     expect(res.status).toBe(400);
   });
 });

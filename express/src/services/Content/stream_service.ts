@@ -21,9 +21,6 @@ export class StreamService {
     return prisma.stream.delete({ where: { id } });
   }
 
-  async duration_minutes(): Promise<number> {
-    throw new Error('duration_minutes not implemented');
-  }
   async go_live(id: number): Promise<void> {
     const entity = await prisma.stream.findUnique({ where: { id } });
     if (!entity) throw new Error('Stream not found: ' + id);
@@ -43,5 +40,12 @@ export class StreamService {
     if (!entity) throw new Error('Stream not found: ' + id);
     // TODO: implement update_viewer_peak domain logic
     throw new Error('update_viewer_peak not implemented');
+  }
+
+  async duration_minutes(id: number): Promise<number> {
+    const entity = await prisma.stream.findUnique({ where: { id } });
+    if (!entity) throw new Error('Stream not found: ' + id);
+    // TODO: implement duration_minutes domain logic
+    throw new Error('duration_minutes not implemented');
   }
 }

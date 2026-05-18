@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { OrderItemService } from '../../services/Marketplace/order_item_service.js';
 
 const router = Router();
+const service = new OrderItemService();
 
 function validate(data: any): void {
   if (!((data.quantity == null || data.quantity > 0))) throw new Error(`Order item quantity must be greater than zero`);
@@ -81,4 +83,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/total', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.line_total(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

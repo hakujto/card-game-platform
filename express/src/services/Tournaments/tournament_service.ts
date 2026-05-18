@@ -21,9 +21,6 @@ export class TournamentService {
     return prisma.tournament.delete({ where: { id } });
   }
 
-  async is_full(): Promise<boolean> {
-    throw new Error('is_full not implemented');
-  }
   async start(id: number): Promise<void> {
     const entity = await prisma.tournament.findUnique({ where: { id } });
     if (!entity) throw new Error('Tournament not found: ' + id);
@@ -57,5 +54,19 @@ export class TournamentService {
     if (!entity) throw new Error('Tournament not found: ' + id);
     // TODO: implement calculate_prize_distribution domain logic
     throw new Error('calculate_prize_distribution not implemented');
+  }
+
+  async register_player(id: number, playerId: number, deckId: number): Promise<void> {
+    const entity = await prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement register_player domain logic
+    throw new Error('register_player not implemented');
+  }
+
+  async is_full(id: number): Promise<boolean> {
+    const entity = await prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement is_full domain logic
+    throw new Error('is_full not implemented');
   }
 }

@@ -16,7 +16,7 @@ describe('Product API', () => {
       .post('/api/products')
       .send({
       name: 'test',
-      price: 0.00,
+      price: 1,
       stock: 1,
       active: true,
       discountPercent: 1,
@@ -40,4 +40,18 @@ describe('Product API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/products returns 400 when price_positive violated", async () => {
+    const res = await request(app).post('/api/products').send({ name: 'test', price: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/products returns 400 when stock_not_negative violated", async () => {
+    const res = await request(app).post('/api/products').send({ name: 'test', price: 1, stock: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/products returns 400 when discount_percent_range violated", async () => {
+    const res = await request(app).post('/api/products').send({ name: 'test', price: 1, discountPercent: 101 });
+    expect(res.status).toBe(400);
+  });
 });

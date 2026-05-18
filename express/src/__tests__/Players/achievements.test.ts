@@ -38,4 +38,8 @@ describe('Achievement API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/achievements returns 400 when points_positive violated", async () => {
+    const res = await request(app).post('/api/achievements').send({ name: 'test', description: 'test', points: 0 });
+    expect(res.status).toBe(400);
+  });
 });

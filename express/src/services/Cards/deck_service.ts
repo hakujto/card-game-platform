@@ -28,6 +28,27 @@ export class DeckService {
     throw new Error('validate_size not implemented');
   }
 
+  async add_card(id: number, cardId: number, quantity: number): Promise<void> {
+    const entity = await prisma.deck.findUnique({ where: { id } });
+    if (!entity) throw new Error('Deck not found: ' + id);
+    // TODO: implement add_card domain logic
+    throw new Error('add_card not implemented');
+  }
+
+  async remove_card(id: number, cardId: number): Promise<void> {
+    const entity = await prisma.deck.findUnique({ where: { id } });
+    if (!entity) throw new Error('Deck not found: ' + id);
+    // TODO: implement remove_card domain logic
+    throw new Error('remove_card not implemented');
+  }
+
+  async win_rate(id: number): Promise<number> {
+    const entity = await prisma.deck.findUnique({ where: { id } });
+    if (!entity) throw new Error('Deck not found: ' + id);
+    // TODO: implement win_rate domain logic
+    throw new Error('win_rate not implemented');
+  }
+
   async clone(id: number): Promise<unknown> {
     const entity = await prisma.deck.findUnique({ where: { id } });
     if (!entity) throw new Error('Deck not found: ' + id);

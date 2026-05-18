@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { PlayerAchievementService } from '../../services/Players/player_achievement_service.js';
 
 const router = Router();
+const service = new PlayerAchievementService();
 
 function validate(data: any): void {
+  if (!((data.progress == null || data.progress >= 0))) throw new Error(`Achievement progress must not be negative`);
   if ((data.isCompleted === true) && !((data.progress == null || data.progress > 0))) throw new Error(`Completed achievement must have progress greater than zero`);
 }
 
@@ -80,4 +83,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.patch('/:id/progress', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const amount = req.body.amount;
+  try {
+    await service.increment_progress(id, amount);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/complete', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.complete(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

@@ -21,4 +21,17 @@ export class AchievementService {
     return prisma.achievement.delete({ where: { id } });
   }
 
+  async point_value(id: number, multiplier: number): Promise<number> {
+    const entity = await prisma.achievement.findUnique({ where: { id } });
+    if (!entity) throw new Error('Achievement not found: ' + id);
+    // TODO: implement point_value domain logic
+    throw new Error('point_value not implemented');
+  }
+
+  async reveal(id: number): Promise<void> {
+    const entity = await prisma.achievement.findUnique({ where: { id } });
+    if (!entity) throw new Error('Achievement not found: ' + id);
+    // TODO: implement reveal domain logic
+    throw new Error('reveal not implemented');
+  }
 }

@@ -5,6 +5,9 @@ import { DraftParticipantService } from '../../services/Content/draft_participan
 const router = Router();
 const service = new DraftParticipantService();
 
+function validate(data: any): void {
+  if (!((data.seatNumber == null || data.seatNumber > 0))) throw new Error(`Seat number must be greater than zero`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.draftParticipant.findMany();
@@ -19,6 +22,7 @@ router.post('/', async (req, res) => {
     if (body.sessionId !== undefined) data.sessionId = body.sessionId;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.draftParticipant.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -40,6 +44,7 @@ router.put('/:id', async (req, res) => {
     if (body.sessionId !== undefined) data.sessionId = body.sessionId;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.draftParticipant.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -56,6 +61,7 @@ router.patch('/:id', async (req, res) => {
     if (body.sessionId !== undefined) data.sessionId = body.sessionId;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
+  validate(data);
     const entity = await prisma.draftParticipant.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -80,6 +86,16 @@ router.post('/:id/pick', async (req, res) => {
   try {
     await service.pick_card(id, cardId, packNumber);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/card-count', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.drafted_card_count(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { CardAbilityService } from '../../services/Cards/card_ability_service.js';
 
 const router = Router();
+const service = new CardAbilityService();
 
 function validate(data: any): void {
   if ((data.abilityType === 'KEYWORD') && !((data.keyword === undefined || data.keyword != null))) throw new Error(`Keyword ability must have a keyword name`);
@@ -80,4 +82,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/usable', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const timing = (req.query as any).timing;
+  try {
+    const result = await service.is_usable_at(id, timing);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/describe', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.describe(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

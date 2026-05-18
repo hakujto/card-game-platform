@@ -21,4 +21,20 @@ export class AwardedPrizeService {
     return prisma.awardedPrize.delete({ where: { id } });
   }
 
+  async claim(id: number): Promise<void> {
+    const entity = await prisma.awardedPrize.findUnique({ where: { id } });
+    if (!entity) throw new Error('AwardedPrize not found: ' + id);
+    // TODO: implement claim domain logic
+    throw new Error('claim not implemented');
+  }
+
+  // triggered by @on(claimed = true)
+  async setClaimed(id: number, value: string): Promise<void> {
+    const entity = await prisma.awardedPrize.findUnique({ where: { id } });
+    if (!entity) throw new Error('AwardedPrize not found: ' + id);
+    await prisma.awardedPrize.update({ where: { id }, data: { claimed: value as any } });
+    if (value === 'TRUE') {
+      // TODO: call entity.claim() after implementing domain model
+    }
+  }
 }

@@ -98,4 +98,14 @@ router.post('/:id/unhide', async (req, res) => {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }
 });
+
+router.get('/:id/is-reply', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_reply(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

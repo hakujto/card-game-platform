@@ -21,9 +21,6 @@ export class TradeTransactionService {
     return prisma.tradeTransaction.delete({ where: { id } });
   }
 
-  async seller_net(): Promise<number> {
-    throw new Error('seller_net not implemented');
-  }
   async complete(id: number): Promise<void> {
     const entity = await prisma.tradeTransaction.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeTransaction not found: ' + id);
@@ -43,5 +40,12 @@ export class TradeTransactionService {
     if (!entity) throw new Error('TradeTransaction not found: ' + id);
     // TODO: implement open_dispute domain logic
     throw new Error('open_dispute not implemented');
+  }
+
+  async seller_net(id: number): Promise<number> {
+    const entity = await prisma.tradeTransaction.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeTransaction not found: ' + id);
+    // TODO: implement seller_net domain logic
+    throw new Error('seller_net not implemented');
   }
 }

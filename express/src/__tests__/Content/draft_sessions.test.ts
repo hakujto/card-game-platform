@@ -15,7 +15,7 @@ describe('DraftSession API', () => {
     const res = await request(app)
       .post('/api/draft_sessions')
       .send({
-      seats: 1,
+      seats: 2,
       createdAt: '2024-01-01T00:00:00.000Z'
     });
     expect([200, 201]).toContain(res.status);
@@ -36,4 +36,13 @@ describe('DraftSession API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/draft_sessions returns 400 when seats_range violated", async () => {
+    const res = await request(app).post('/api/draft_sessions').send({ createdAt: '2024-01-01T00:00:00.000Z', cardSetId: 1, completedAt: '2024-01-01T00:00:00.000Z', status: 'COMPLETED', seats: 17 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/draft_sessions returns 400 when completed_at_requires_completed_status violated", async () => {
+    const res = await request(app).post('/api/draft_sessions').send({ createdAt: '2024-01-01T00:00:00.000Z', cardSetId: 1, completedAt: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
+  });
 });

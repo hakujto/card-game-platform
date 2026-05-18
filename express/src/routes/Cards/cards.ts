@@ -11,6 +11,8 @@ function validate(data: any): void {
   if (!(!((data.isBanned === true && data.isRestricted === true)))) throw new Error(`Card cannot be both banned and restricted at the same time`);
   if ((data.cardType === 'CREATURE') && !((data.attack === undefined || data.attack != null) && (data.defense === undefined || data.defense != null))) throw new Error(`Creature card must have attack and defense`);
   if ((data.cardType === 'PLANESWALKER') && !((data.loyalty === undefined || data.loyalty != null))) throw new Error(`Planeswalker card must have loyalty`);
+  if ((data.cardType !== 'PLANESWALKER') && !(data.loyalty == null)) throw new Error(`Only Planeswalker cards can have loyalty`);
+  if ((data.isBanned === true) && !(data.legalFormats === "message")) throw new Error(`banned_card_not_in_legal_formats`);
 }
 
 router.get('/', async (_req, res) => {
@@ -166,6 +168,28 @@ router.get('/:id/value', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
     const result = await service.calculate_value(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/rarity-bonus', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const multiplier = req.body.multiplier;
+  try {
+    const result = await service.apply_rarity_bonus(id, multiplier);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/legal', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const format = (req.query as any).format;
+  try {
+    const result = await service.is_legal_in_format(id, format);
     res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });

@@ -6,7 +6,9 @@ const router = Router();
 const service = new StreamService();
 
 function validate(data: any): void {
+  if (!((data.viewerCountPeak == null || data.viewerCountPeak >= 0))) throw new Error(`Peak viewer count must not be negative`);
   if ((data.actualStart != null) && !(data.status === 'LIVE')) throw new Error(`actual_start_requires_live_or_ended`);
+  if ((data.endedAt != null) && !(data.status === 'ENDED')) throw new Error(`ended_at can only be set when stream status is Ended`);
 }
 
 router.get('/', async (_req, res) => {
@@ -126,6 +128,16 @@ router.patch('/:id/viewers', async (req, res) => {
   try {
     await service.update_viewer_peak(id, count);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/duration', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.duration_minutes(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

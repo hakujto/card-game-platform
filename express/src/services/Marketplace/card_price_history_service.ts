@@ -21,11 +21,17 @@ export class CardPriceHistoryService {
     return prisma.cardPriceHistory.delete({ where: { id } });
   }
 
-  async price_change_percent(previousAvg: number): Promise<number> {
+  async price_change_percent(id: number, previousAvg: number): Promise<number> {
+    const entity = await prisma.cardPriceHistory.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardPriceHistory not found: ' + id);
+    // TODO: implement price_change_percent domain logic
     throw new Error('price_change_percent not implemented');
   }
 
-  async is_price_spike(thresholdPercent: number): Promise<boolean> {
+  async is_price_spike(id: number, thresholdPercent: number): Promise<boolean> {
+    const entity = await prisma.cardPriceHistory.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardPriceHistory not found: ' + id);
+    // TODO: implement is_price_spike domain logic
     throw new Error('is_price_spike not implemented');
   }
 }

@@ -46,7 +46,7 @@ model Card {
   craftingRecipesViaCraftingRecipeRequiredCards  CraftingRecipe[]  @relation("CraftingRecipeRequiredCards")
   craftingIngredients  CraftingIngredient[]  @relation("CraftingIngredientCard")
   products  Product[]  @relation("ProductCard")
-  tradelistings  Tradelisting[]  @relation("TradelistingCard")
+  tradeListings  TradeListing[]  @relation("TradeListingCard")
   cardPriceHistories  CardPriceHistory[]  @relation("CardPriceHistoryCard")
   draftPicks  DraftPick[]  @relation("DraftPickCard")
 }
@@ -57,7 +57,9 @@ model CardSet {
   name  String
   code  String
   releaseDate  DateTime
+  rotationDate  DateTime?
   totalCards  Int @default(0)
+  isRotated  Boolean @default(false)
   description  String?
   logoUrl  String?
   cards  Card[]  @relation("CardSet")
@@ -94,6 +96,7 @@ model Deck {
   isTournamentLegal  Boolean @default(false)
   wins  Int @default(0)
   losses  Int @default(0)
+  draws  Int @default(0)
   createdAt  DateTime
   updatedAt  DateTime
   playerId  Int?
@@ -176,7 +179,7 @@ model Player {
   games  Game[]  @relation("GameWinner")
   awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePlayer")
   orders  Order[]  @relation("OrderPlayer")
-  tradelistings  Tradelisting[]  @relation("TradelistingSeller")
+  tradeListings  TradeListing[]  @relation("TradeListingSeller")
   tradeBids  TradeBid[]  @relation("TradeBidBidder")
   tradeTransactions  TradeTransaction[]  @relation("TradeTransactionBuyer")
   tradeTransactionsViaTradeTransactionSeller  TradeTransaction[]  @relation("TradeTransactionSeller")
@@ -464,11 +467,11 @@ model Coupon {
   orders  Order[]  @relation("OrderCoupon")
 }
 
-model Tradelisting {
+model TradeListing {
   id  Int  @id @default(autoincrement())
-  listingType  TradelistingListingTypeEnum?
-  condition  TradelistingConditionEnum?
-  status  TradelistingStatusEnum?
+  listingType  TradeListingListingTypeEnum?
+  condition  TradeListingConditionEnum?
+  status  TradeListingStatusEnum?
   askingPrice  Decimal?
   auctionStartPrice  Decimal?
   auctionCurrentBid  Decimal?
@@ -479,9 +482,9 @@ model Tradelisting {
   createdAt  DateTime
   expiresAt  DateTime?
   sellerId  Int?
-  seller    Player?  @relation("TradelistingSeller", fields: [sellerId], references: [id])
+  seller    Player?  @relation("TradeListingSeller", fields: [sellerId], references: [id])
   cardId  Int?
-  card    Card?  @relation("TradelistingCard", fields: [cardId], references: [id])
+  card    Card?  @relation("TradeListingCard", fields: [cardId], references: [id])
   tradeBids  TradeBid[]  @relation("TradeBidListing")
   tradeTransactions  TradeTransaction[]  @relation("TradeTransactionListing")
 }
@@ -492,7 +495,7 @@ model TradeBid {
   placedAt  DateTime
   isWinning  Boolean @default(false)
   listingId  Int?
-  listing    Tradelisting?  @relation("TradeBidListing", fields: [listingId], references: [id])
+  listing    TradeListing?  @relation("TradeBidListing", fields: [listingId], references: [id])
   bidderId  Int?
   bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id])
 }
@@ -504,7 +507,7 @@ model TradeTransaction {
   platformFee  Decimal @default(0)
   completedAt  DateTime?
   listingId  Int?
-  listing    Tradelisting?  @relation("TradeTransactionListing", fields: [listingId], references: [id])
+  listing    TradeListing?  @relation("TradeTransactionListing", fields: [listingId], references: [id])
   buyerId  Int?
   buyer    Player?  @relation("TradeTransactionBuyer", fields: [buyerId], references: [id])
   sellerId  Int?
@@ -889,13 +892,13 @@ enum CouponDiscountTypeEnum {
   FIXED
 }
 
-enum TradelistingListingTypeEnum {
+enum TradeListingListingTypeEnum {
   FIXEDPRICE
   AUCTION
   TRADEOFFER
 }
 
-enum TradelistingConditionEnum {
+enum TradeListingConditionEnum {
   MINT
   NEARMINT
   EXCELLENT
@@ -903,7 +906,7 @@ enum TradelistingConditionEnum {
   PLAYED
 }
 
-enum TradelistingStatusEnum {
+enum TradeListingStatusEnum {
   ACTIVE
   SOLD
   EXPIRED

@@ -37,4 +37,8 @@ describe('PlayerCollection API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/player_collections returns 400 when quantity_positive violated", async () => {
+    const res = await request(app).post('/api/player_collections').send({ acquiredAt: '2024-01-01T00:00:00.000Z', playerId: 1, cardId: 1, quantity: 0 });
+    expect(res.status).toBe(400);
+  });
 });

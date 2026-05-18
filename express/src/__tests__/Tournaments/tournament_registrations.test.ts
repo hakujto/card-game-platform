@@ -36,4 +36,18 @@ describe('TournamentRegistration API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+  it("POST /api/tournament_registrations returns 400 when points_earned_not_negative violated", async () => {
+    const res = await request(app).post('/api/tournament_registrations').send({ registeredAt: '2024-01-01T00:00:00.000Z', tournamentId: 1, playerId: 1, deckId: 1, finalStanding: 1, seed: 1, pointsEarned: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournament_registrations returns 400 when final_standing_positive violated", async () => {
+    const res = await request(app).post('/api/tournament_registrations').send({ registeredAt: '2024-01-01T00:00:00.000Z', tournamentId: 1, playerId: 1, deckId: 1, finalStanding: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournament_registrations returns 400 when seed_positive violated", async () => {
+    const res = await request(app).post('/api/tournament_registrations').send({ registeredAt: '2024-01-01T00:00:00.000Z', tournamentId: 1, playerId: 1, deckId: 1, seed: 0 });
+    expect(res.status).toBe(400);
+  });
 });

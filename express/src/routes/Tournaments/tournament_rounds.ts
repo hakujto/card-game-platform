@@ -6,7 +6,10 @@ const router = Router();
 const service = new TournamentRoundService();
 
 function validate(data: any): void {
+  if (!((data.roundNumber == null || data.roundNumber > 0))) throw new Error(`Round number must be greater than zero`);
+  if (!((data.timeLimitMinutes == null || data.timeLimitMinutes > 0))) throw new Error(`Round time limit must be greater than zero`);
   if ((data.endedAt != null) && !((data.endedAt == null || (data.startedAt != null && data.endedAt > data.startedAt)))) throw new Error(`Round end time must be after start time`);
+  if ((data.status === 'COMPLETED') && !((data.startedAt === undefined || data.startedAt != null))) throw new Error(`Completed round must have a start time`);
 }
 
 router.get('/', async (_req, res) => {
@@ -110,6 +113,16 @@ router.post('/:id/pairings', async (req, res) => {
   try {
     await service.generate_pairings(id);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/time-expired', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.is_time_expired(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

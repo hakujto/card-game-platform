@@ -9,6 +9,8 @@ function validate(data: any): void {
   if (!((data.gameNumber == null || (data.gameNumber >= 1 && data.gameNumber <= 3)))) throw new Error(`Game number must be between 1 and 3 (best-of-3)`);
   if ((data.turnsPlayed != null) && !((data.turnsPlayed == null || data.turnsPlayed > 0))) throw new Error(`Turns played must be greater than zero`);
   if ((data.durationSeconds != null) && !((data.durationSeconds == null || data.durationSeconds > 0))) throw new Error(`Game duration must be greater than zero`);
+  if ((data.winnerSide === 'DRAW') && !(data.winnerId == null)) throw new Error(`A draw cannot have a winner`);
+  if (((data.winnerSide != null && data.winnerSide !== 'DRAW')) && !((data.winnerId === undefined || data.winnerId != null))) throw new Error(`A decisive game must have a winner player set`);
 }
 
 router.get('/', async (_req, res) => {
@@ -99,6 +101,16 @@ router.post('/:id/winner', async (req, res) => {
   try {
     await service.record_winner(id, winnerSide);
     res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/duration', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.duration_minutes(id);
+    res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
   }

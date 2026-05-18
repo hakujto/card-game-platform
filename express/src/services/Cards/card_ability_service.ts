@@ -21,11 +21,17 @@ export class CardAbilityService {
     return prisma.cardAbility.delete({ where: { id } });
   }
 
-  async is_usable_at(timing: string): Promise<boolean> {
+  async is_usable_at(id: number, timing: string): Promise<boolean> {
+    const entity = await prisma.cardAbility.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardAbility not found: ' + id);
+    // TODO: implement is_usable_at domain logic
     throw new Error('is_usable_at not implemented');
   }
 
-  async describe(): Promise<string> {
+  async describe(id: number): Promise<string> {
+    const entity = await prisma.cardAbility.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardAbility not found: ' + id);
+    // TODO: implement describe domain logic
     throw new Error('describe not implemented');
   }
 }

@@ -5,6 +5,9 @@ import { PlayerCollectionService } from '../../services/Players/player_collectio
 const router = Router();
 const service = new PlayerCollectionService();
 
+function validate(data: any): void {
+  if (!((data.quantity == null || data.quantity > 0))) throw new Error(`Collection quantity must be greater than zero`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.playerCollection.findMany();
@@ -22,6 +25,7 @@ router.post('/', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.playerCollection.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -46,6 +50,7 @@ router.put('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -65,6 +70,7 @@ router.patch('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -79,6 +85,17 @@ router.delete('/:id', async (req, res) => {
     res.status(204).send();
   } catch {
     res.status(404).json({ error: 'Not found' });
+  }
+});
+
+router.post('/:id/add', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const quantity = req.body.quantity;
+  try {
+    await service.add(id, quantity);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
   }
 });
 
