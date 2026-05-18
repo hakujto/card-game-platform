@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.PlayerService as PlayerSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type PlayerAPI
   =    "api" :> "players" :> Get '[JSON] [Player]
@@ -17,9 +20,28 @@ type PlayerAPI
   :<|> "api" :> "players" :> Capture "id" Int :> ReqBody '[JSON] NewPlayer :> Put '[JSON] Player
   :<|> "api" :> "players" :> Capture "id" Int :> ReqBody '[JSON] NewPlayer :> Patch '[JSON] Player
   :<|> "api" :> "players" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "players" :> Capture "id" Int :> "promote" :> Post '[JSON] Bool
+  :<|> "api" :> "players" :> Capture "id" Int :> "demote" :> Post '[JSON] Bool
+  :<|> "api" :> "players" :> Capture "id" Int :> "win" :> Post '[JSON] NoContent
+  :<|> "api" :> "players" :> Capture "id" Int :> "loss" :> Post '[JSON] NoContent
+  :<|> "api" :> "players" :> Capture "id" Int :> "win-rate" :> Get '[JSON] Text
+  :<|> "api" :> "players" :> Capture "id" Int :> "verify" :> Post '[JSON] NoContent
+  :<|> "api" :> "players" :> Capture "id" Int :> "rating" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
 
 playerServer :: Server PlayerAPI
-playerServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+playerServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorPromote
+  :<|> behaviorDemote
+  :<|> behaviorRecordWin
+  :<|> behaviorRecordLoss
+  :<|> behaviorWinRate
+  :<|> behaviorVerify
+  :<|> behaviorUpdateRating
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players" :: IO [Player]
@@ -56,4 +78,67 @@ playerServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM players WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorPromote eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ PlayerSvc.promote eid
+          return result
+
+    behaviorDemote eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ PlayerSvc.demote eid
+          return result
+
+    behaviorRecordWin eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSvc.record_win eid
+          return NoContent
+
+    behaviorRecordLoss eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSvc.record_loss eid
+          return NoContent
+
+    behaviorWinRate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ PlayerSvc.win_rate eid
+          return result
+
+    behaviorVerify eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSvc.verify eid
+          return NoContent
+
+    behaviorUpdateRating eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id, season_stats_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSvc.update_rating eid
+          return NoContent
 

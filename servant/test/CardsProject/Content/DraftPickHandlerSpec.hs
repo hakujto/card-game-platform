@@ -1,39 +1,39 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 module CardsProject.Content.DraftPickHandlerSpec where
 
 import Test.Hspec
 import Test.Hspec.Wai
 import Test.Hspec.Wai.JSON (json)
-import Network.Wai (Application)
-import Data.Aeson (encode, object, (.=))
+import Network.HTTP.Types (statusCode)
 import CardsProject.App (app)
 import CardsProject.Content.Types
 
-spec :: SpecWith Application
-spec = do
+spec :: Spec
+spec = with (return app) $ do
   describe "GET /api/draft_picks" $ do
     it "returns 200" $ do
       get "/api/draft_picks" `shouldRespondWith` 200
 
   describe "POST /api/draft_picks" $ do
     it "creates and returns 201" $ do
-      let body = encode (object ["pickNumber" .= (0), "packNumber" .= (0), "pickedAt" .= ("2024-01-01T00:00:00"), "participantId" .= ("test"), "cardId" .= ("test")])
+      let body = [json|{"pickNumber": 0, "packNumber": 0, "pickedAt": "2024-01-01T00:00:00", "participantId": 1, "cardId": 1}|]
       request "POST" "/api/draft_picks" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/draft_picks/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/draft_picks/1"
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "PUT /api/draft_picks/1" $ do
     it "returns 200 or 404" $ do
-      let body = encode (object ["pickNumber" .= (0), "packNumber" .= (0), "pickedAt" .= ("2024-01-01T00:00:00"), "participantId" .= ("test"), "cardId" .= ("test")])
+      let body = [json|{"pickNumber": 0, "packNumber": 0, "pickedAt": "2024-01-01T00:00:00", "participantId": 1, "cardId": 1}|]
       resp <- request "PUT" "/api/draft_picks/1" [("Content-Type","application/json")] body
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/draft_picks/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/draft_picks/1" [] ""
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 204 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 

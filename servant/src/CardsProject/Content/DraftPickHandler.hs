@@ -19,7 +19,12 @@ type DraftPickAPI
   :<|> "api" :> "draft_picks" :> Capture "id" Int :> DeleteNoContent
 
 draftPickServer :: Server DraftPickAPI
-draftPickServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+draftPickServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, pick_number, pack_number, picked_at, participant_id, card_id FROM draft_picks" :: IO [DraftPick]

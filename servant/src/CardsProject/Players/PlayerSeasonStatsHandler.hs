@@ -19,7 +19,12 @@ type PlayerSeasonStatsAPI
   :<|> "api" :> "player_season_statses" :> Capture "id" Int :> DeleteNoContent
 
 playerSeasonStatsServer :: Server PlayerSeasonStatsAPI
-playerSeasonStatsServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+playerSeasonStatsServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, wins, losses, draws, tournament_wins, highest_rank, season_points, player_id, season_id FROM player_season_statses" :: IO [PlayerSeasonStats]

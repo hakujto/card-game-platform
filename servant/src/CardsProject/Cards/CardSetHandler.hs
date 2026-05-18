@@ -19,7 +19,12 @@ type CardSetAPI
   :<|> "api" :> "card_sets" :> Capture "id" Int :> DeleteNoContent
 
 cardSetServer :: Server CardSetAPI
-cardSetServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+cardSetServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, code, release_date, set_type, total_cards, description, logo_url FROM card_sets" :: IO [CardSet]

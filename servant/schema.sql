@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS cards (
   is_banned INTEGER NOT NULL,
   is_restricted INTEGER NOT NULL,
   power_level INTEGER NOT NULL,
-  set_id INTEGER NOT NULL,
+  set_id INTEGER,
   rulings_id INTEGER,
   abilities_id INTEGER,
   FOREIGN KEY (set_id) REFERENCES card_sets(id),
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS card_rulings (
   ruling_text TEXT NOT NULL,
   published_at TEXT NOT NULL,
   source TEXT NOT NULL,
-  card_id INTEGER NOT NULL,
+  card_id INTEGER,
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS card_abilities (
   keyword TEXT,
   ability_text TEXT NOT NULL,
   timing TEXT,
-  card_id INTEGER NOT NULL,
+  card_id INTEGER,
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
 
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS decks (
   losses INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  player_id INTEGER NOT NULL,
+  player_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id)
 );
 
@@ -102,8 +102,8 @@ CREATE TABLE IF NOT EXISTS deck_cards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   quantity INTEGER NOT NULL,
   is_commander INTEGER NOT NULL,
-  deck_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  deck_id INTEGER,
+  card_id INTEGER,
   FOREIGN KEY (deck_id) REFERENCES decks(id),
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS deck_cards (
 CREATE TABLE IF NOT EXISTS deck_sideboard_cards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   quantity INTEGER NOT NULL,
-  deck_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  deck_id INTEGER,
+  card_id INTEGER,
   FOREIGN KEY (deck_id) REFERENCES decks(id),
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
@@ -125,8 +125,8 @@ CREATE TABLE IF NOT EXISTS deck_tags (
 
 CREATE TABLE IF NOT EXISTS deck_tag_assignments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  deck_id INTEGER NOT NULL,
-  tag_id INTEGER NOT NULL,
+  deck_id INTEGER,
+  tag_id INTEGER,
   FOREIGN KEY (deck_id) REFERENCES decks(id),
   FOREIGN KEY (tag_id) REFERENCES deck_tags(id)
 );
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS players (
   created_at TEXT NOT NULL,
   last_active_at TEXT,
   user_id INTEGER,
-  season_stats_id INTEGER NOT NULL,
+  season_stats_id INTEGER,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (season_stats_id) REFERENCES player_season_statses(id)
 );
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS player_season_statses (
   highest_rank TEXT,
   season_points INTEGER NOT NULL,
   player_id INTEGER,
-  season_id INTEGER NOT NULL,
+  season_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (season_id) REFERENCES seasons(id)
 );
@@ -183,8 +183,8 @@ CREATE TABLE IF NOT EXISTS player_collections (
   condition TEXT NOT NULL,
   acquired_at TEXT NOT NULL,
   acquired_via TEXT NOT NULL,
-  player_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  player_id INTEGER,
+  card_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
@@ -193,8 +193,8 @@ CREATE TABLE IF NOT EXISTS friendships (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   status TEXT NOT NULL,
   created_at TEXT NOT NULL,
-  requester_id INTEGER NOT NULL,
-  receiver_id INTEGER NOT NULL,
+  requester_id INTEGER,
+  receiver_id INTEGER,
   FOREIGN KEY (requester_id) REFERENCES players(id),
   FOREIGN KEY (receiver_id) REFERENCES players(id)
 );
@@ -214,8 +214,8 @@ CREATE TABLE IF NOT EXISTS player_achievements (
   earned_at TEXT NOT NULL,
   progress INTEGER NOT NULL,
   is_completed INTEGER NOT NULL,
-  player_id INTEGER NOT NULL,
-  achievement_id INTEGER NOT NULL,
+  player_id INTEGER,
+  achievement_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (achievement_id) REFERENCES achievements(id)
 );
@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS crafting_recipes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   dust_cost INTEGER NOT NULL,
   is_available INTEGER NOT NULL,
-  result_card_id INTEGER NOT NULL,
+  result_card_id INTEGER,
   FOREIGN KEY (result_card_id) REFERENCES cards(id)
 );
 
@@ -237,8 +237,8 @@ CREATE TABLE IF NOT EXISTS crafting_recipes_required_cards_m2m (
 CREATE TABLE IF NOT EXISTS crafting_ingredients (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   quantity INTEGER NOT NULL,
-  recipe_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  recipe_id INTEGER,
+  card_id INTEGER,
   FOREIGN KEY (recipe_id) REFERENCES crafting_recipes(id),
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
@@ -269,8 +269,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
   location TEXT,
   rules_text TEXT,
   created_at TEXT NOT NULL,
-  season_id INTEGER NOT NULL,
-  organizer_id INTEGER NOT NULL,
+  season_id INTEGER,
+  organizer_id INTEGER,
   registrations_id INTEGER,
   rounds_id INTEGER,
   prizes_id INTEGER,
@@ -290,8 +290,8 @@ CREATE TABLE IF NOT EXISTS tournaments_judges_m2m (
 CREATE TABLE IF NOT EXISTS tournament_judges (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   role TEXT NOT NULL,
-  tournament_id INTEGER NOT NULL,
-  player_id INTEGER NOT NULL,
+  tournament_id INTEGER,
+  player_id INTEGER,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
   FOREIGN KEY (player_id) REFERENCES players(id)
 );
@@ -303,9 +303,9 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
   final_standing INTEGER,
   points_earned INTEGER NOT NULL,
   registered_at TEXT NOT NULL,
-  tournament_id INTEGER NOT NULL,
-  player_id INTEGER NOT NULL,
-  deck_id INTEGER NOT NULL,
+  tournament_id INTEGER,
+  player_id INTEGER,
+  deck_id INTEGER,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (deck_id) REFERENCES decks(id)
@@ -318,8 +318,8 @@ CREATE TABLE IF NOT EXISTS tournament_rounds (
   started_at TEXT,
   ended_at TEXT,
   time_limit_minutes INTEGER NOT NULL,
-  tournament_id INTEGER NOT NULL,
-  matches_id INTEGER NOT NULL,
+  tournament_id INTEGER,
+  matches_id INTEGER,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
   FOREIGN KEY (matches_id) REFERENCES matches(id)
 );
@@ -334,7 +334,7 @@ CREATE TABLE IF NOT EXISTS matches (
   ended_at TEXT,
   result_notes TEXT,
   round_id INTEGER,
-  player1_id INTEGER NOT NULL,
+  player1_id INTEGER,
   player2_id INTEGER,
   games_id INTEGER,
   FOREIGN KEY (round_id) REFERENCES tournament_rounds(id),
@@ -351,7 +351,7 @@ CREATE TABLE IF NOT EXISTS games (
   duration_seconds INTEGER,
   ended_by TEXT,
   replay_url TEXT,
-  match_id INTEGER NOT NULL,
+  match_id INTEGER,
   winner_id INTEGER,
   FOREIGN KEY (match_id) REFERENCES matches(id),
   FOREIGN KEY (winner_id) REFERENCES players(id)
@@ -366,7 +366,7 @@ CREATE TABLE IF NOT EXISTS tournament_prizes (
   description TEXT,
   packs_count INTEGER,
   season_points INTEGER NOT NULL,
-  tournament_id INTEGER NOT NULL,
+  tournament_id INTEGER,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
 );
 
@@ -376,8 +376,8 @@ CREATE TABLE IF NOT EXISTS awarded_prizes (
   awarded_at TEXT NOT NULL,
   claimed INTEGER NOT NULL,
   claimed_at TEXT,
-  prize_id INTEGER NOT NULL,
-  player_id INTEGER NOT NULL,
+  prize_id INTEGER,
+  player_id INTEGER,
   FOREIGN KEY (prize_id) REFERENCES tournament_prizes(id),
   FOREIGN KEY (player_id) REFERENCES players(id)
 );
@@ -412,8 +412,8 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TEXT NOT NULL,
   paid_at TEXT,
   shipped_at TEXT,
-  player_id INTEGER NOT NULL,
-  items_id INTEGER NOT NULL,
+  player_id INTEGER,
+  items_id INTEGER,
   coupon_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (items_id) REFERENCES order_items(id),
@@ -426,7 +426,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   price_at_purchase TEXT NOT NULL,
   foil INTEGER NOT NULL,
   order_id INTEGER,
-  product_id INTEGER NOT NULL,
+  product_id INTEGER,
   FOREIGN KEY (order_id) REFERENCES orders(id),
   FOREIGN KEY (product_id) REFERENCES products(id)
 );
@@ -458,8 +458,8 @@ CREATE TABLE IF NOT EXISTS tradelistings (
   description TEXT,
   created_at TEXT NOT NULL,
   expires_at TEXT,
-  seller_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  seller_id INTEGER,
+  card_id INTEGER,
   bids_id INTEGER,
   FOREIGN KEY (seller_id) REFERENCES players(id),
   FOREIGN KEY (card_id) REFERENCES cards(id),
@@ -471,8 +471,8 @@ CREATE TABLE IF NOT EXISTS trade_bids (
   amount TEXT NOT NULL,
   placed_at TEXT NOT NULL,
   is_winning INTEGER NOT NULL,
-  listing_id INTEGER NOT NULL,
-  bidder_id INTEGER NOT NULL,
+  listing_id INTEGER,
+  bidder_id INTEGER,
   FOREIGN KEY (listing_id) REFERENCES tradelistings(id),
   FOREIGN KEY (bidder_id) REFERENCES players(id)
 );
@@ -483,9 +483,9 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
   platform_fee TEXT NOT NULL,
   status TEXT NOT NULL,
   completed_at TEXT,
-  listing_id INTEGER NOT NULL,
-  buyer_id INTEGER NOT NULL,
-  seller_id INTEGER NOT NULL,
+  listing_id INTEGER,
+  buyer_id INTEGER,
+  seller_id INTEGER,
   FOREIGN KEY (listing_id) REFERENCES tradelistings(id),
   FOREIGN KEY (buyer_id) REFERENCES players(id),
   FOREIGN KEY (seller_id) REFERENCES players(id)
@@ -499,7 +499,7 @@ CREATE TABLE IF NOT EXISTS card_price_histories (
   max_price TEXT NOT NULL,
   volume INTEGER NOT NULL,
   foil INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  card_id INTEGER,
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
 
@@ -511,8 +511,8 @@ CREATE TABLE IF NOT EXISTS trade_disputes (
   resolution TEXT,
   opened_at TEXT NOT NULL,
   resolved_at TEXT,
-  transaction_id INTEGER NOT NULL,
-  opened_by_id INTEGER NOT NULL,
+  transaction_id INTEGER,
+  opened_by_id INTEGER,
   resolved_by_id INTEGER,
   FOREIGN KEY (transaction_id) REFERENCES trade_transactions(id),
   FOREIGN KEY (opened_by_id) REFERENCES players(id),
@@ -526,8 +526,8 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
   seats INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   completed_at TEXT,
-  card_set_id INTEGER NOT NULL,
-  participants_id INTEGER NOT NULL,
+  card_set_id INTEGER,
+  participants_id INTEGER,
   FOREIGN KEY (card_set_id) REFERENCES card_sets(id),
   FOREIGN KEY (participants_id) REFERENCES draft_participants(id)
 );
@@ -537,7 +537,7 @@ CREATE TABLE IF NOT EXISTS draft_participants (
   seat_number INTEGER NOT NULL,
   joined_at TEXT NOT NULL,
   session_id INTEGER,
-  player_id INTEGER NOT NULL,
+  player_id INTEGER,
   drafted_cards_id INTEGER,
   FOREIGN KEY (session_id) REFERENCES draft_sessions(id),
   FOREIGN KEY (player_id) REFERENCES players(id),
@@ -549,8 +549,8 @@ CREATE TABLE IF NOT EXISTS draft_picks (
   pick_number INTEGER NOT NULL,
   pack_number INTEGER NOT NULL,
   picked_at TEXT NOT NULL,
-  participant_id INTEGER NOT NULL,
-  card_id INTEGER NOT NULL,
+  participant_id INTEGER,
+  card_id INTEGER,
   FOREIGN KEY (participant_id) REFERENCES draft_participants(id),
   FOREIGN KEY (card_id) REFERENCES cards(id)
 );
@@ -568,9 +568,9 @@ CREATE TABLE IF NOT EXISTS articles (
   published_at TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  author_id INTEGER NOT NULL,
+  author_id INTEGER,
   featured_deck_id INTEGER,
-  comments_id INTEGER NOT NULL,
+  comments_id INTEGER,
   FOREIGN KEY (author_id) REFERENCES players(id),
   FOREIGN KEY (featured_deck_id) REFERENCES decks(id),
   FOREIGN KEY (comments_id) REFERENCES article_comments(id)
@@ -590,8 +590,8 @@ CREATE TABLE IF NOT EXISTS article_tags (
 
 CREATE TABLE IF NOT EXISTS article_tag_assignments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  article_id INTEGER NOT NULL,
-  tag_id INTEGER NOT NULL,
+  article_id INTEGER,
+  tag_id INTEGER,
   FOREIGN KEY (article_id) REFERENCES articles(id),
   FOREIGN KEY (tag_id) REFERENCES article_tags(id)
 );
@@ -602,7 +602,7 @@ CREATE TABLE IF NOT EXISTS article_comments (
   is_hidden INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   article_id INTEGER,
-  author_id INTEGER NOT NULL,
+  author_id INTEGER,
   parent_comment_id INTEGER,
   FOREIGN KEY (article_id) REFERENCES articles(id),
   FOREIGN KEY (author_id) REFERENCES players(id),
@@ -621,7 +621,7 @@ CREATE TABLE IF NOT EXISTS streams (
   ended_at TEXT,
   vod_url TEXT,
   tournament_id INTEGER,
-  streamer_id INTEGER NOT NULL,
+  streamer_id INTEGER,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
   FOREIGN KEY (streamer_id) REFERENCES players(id)
 );

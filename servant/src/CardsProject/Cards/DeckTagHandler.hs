@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.DeckTagService as DeckTagSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type DeckTagAPI
   =    "api" :> "deck_tags" :> Get '[JSON] [DeckTag]
@@ -17,9 +20,16 @@ type DeckTagAPI
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTag :> Put '[JSON] DeckTag
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTag :> Patch '[JSON] DeckTag
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "deck_tags" :> Capture "id" Int :> "merge" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 deckTagServer :: Server DeckTagAPI
-deckTagServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+deckTagServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorMergeInto
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, color FROM deck_tags" :: IO [DeckTag]
@@ -56,4 +66,13 @@ deckTagServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM deck_tags WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorMergeInto eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckTagSvc.merge_into eid
+          return NoContent
 

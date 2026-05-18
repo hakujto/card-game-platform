@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Marketplace.TradeTransactionService as TradeTransactionSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type TradeTransactionAPI
   =    "api" :> "trade_transactions" :> Get '[JSON] [TradeTransaction]
@@ -17,9 +20,20 @@ type TradeTransactionAPI
   :<|> "api" :> "trade_transactions" :> Capture "id" Int :> ReqBody '[JSON] NewTradeTransaction :> Put '[JSON] TradeTransaction
   :<|> "api" :> "trade_transactions" :> Capture "id" Int :> ReqBody '[JSON] NewTradeTransaction :> Patch '[JSON] TradeTransaction
   :<|> "api" :> "trade_transactions" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "trade_transactions" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
+  :<|> "api" :> "trade_transactions" :> Capture "id" Int :> "refund" :> Post '[JSON] NoContent
+  :<|> "api" :> "trade_transactions" :> Capture "id" Int :> "dispute" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 tradeTransactionServer :: Server TradeTransactionAPI
-tradeTransactionServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tradeTransactionServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorComplete
+  :<|> behaviorRefund
+  :<|> behaviorOpenDispute
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, final_price, platform_fee, status, completed_at, listing_id, buyer_id, seller_id FROM trade_transactions" :: IO [TradeTransaction]
@@ -56,4 +70,31 @@ tradeTransactionServer = listAll :<|> create :<|> getOne :<|> update :<|> partia
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM trade_transactions WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorComplete eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, final_price, platform_fee, status, completed_at, listing_id, buyer_id, seller_id FROM trade_transactions WHERE id = ?" (Only eid) :: IO [TradeTransaction]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TradeTransactionSvc.complete eid
+          return NoContent
+
+    behaviorRefund eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, final_price, platform_fee, status, completed_at, listing_id, buyer_id, seller_id FROM trade_transactions WHERE id = ?" (Only eid) :: IO [TradeTransaction]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TradeTransactionSvc.refund eid
+          return NoContent
+
+    behaviorOpenDispute eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, final_price, platform_fee, status, completed_at, listing_id, buyer_id, seller_id FROM trade_transactions WHERE id = ?" (Only eid) :: IO [TradeTransaction]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TradeTransactionSvc.open_dispute eid
+          return NoContent
 

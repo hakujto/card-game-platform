@@ -19,7 +19,12 @@ type AwardedPrizeAPI
   :<|> "api" :> "awarded_prizes" :> Capture "id" Int :> DeleteNoContent
 
 awardedPrizeServer :: Server AwardedPrizeAPI
-awardedPrizeServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+awardedPrizeServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, final_placement, awarded_at, claimed, claimed_at, prize_id, player_id FROM awarded_prizes" :: IO [AwardedPrize]

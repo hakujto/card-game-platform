@@ -213,8 +213,8 @@ data Order = Order
   , orderCreatedAt :: Text
   , orderPaidAt :: Maybe Text
   , orderShippedAt :: Maybe Text
-  , orderPlayerId :: Int
-  , orderItemsId :: Int
+  , orderPlayerId :: Maybe Int
+  , orderItemsId :: Maybe Int
   , orderCouponId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -242,8 +242,8 @@ data NewOrder = NewOrder
   , bOrderCreatedAt :: Text
   , bOrderPaidAt :: Maybe Text
   , bOrderShippedAt :: Maybe Text
-  , bOrderPlayerId :: Int
-  , bOrderItemsId :: Int
+  , bOrderPlayerId :: Maybe Int
+  , bOrderItemsId :: Maybe Int
   , bOrderCouponId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -265,7 +265,7 @@ data OrderItem = OrderItem
   , orderItemPriceAtPurchase :: Text
   , orderItemFoil :: Bool
   , orderItemOrderId :: Maybe Int
-  , orderItemProductId :: Int
+  , orderItemProductId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON OrderItem where
@@ -285,7 +285,7 @@ data NewOrderItem = NewOrderItem
   , bOrderItemPriceAtPurchase :: Text
   , bOrderItemFoil :: Bool
   , bOrderItemOrderId :: Maybe Int
-  , bOrderItemProductId :: Int
+  , bOrderItemProductId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewOrderItem where
@@ -502,8 +502,8 @@ data Tradelisting = Tradelisting
   , tradelistingDescription :: Maybe Text
   , tradelistingCreatedAt :: Text
   , tradelistingExpiresAt :: Maybe Text
-  , tradelistingSellerId :: Int
-  , tradelistingCardId :: Int
+  , tradelistingSellerId :: Maybe Int
+  , tradelistingCardId :: Maybe Int
   , tradelistingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -532,8 +532,8 @@ data NewTradelisting = NewTradelisting
   , bTradelistingDescription :: Maybe Text
   , bTradelistingCreatedAt :: Text
   , bTradelistingExpiresAt :: Maybe Text
-  , bTradelistingSellerId :: Int
-  , bTradelistingCardId :: Int
+  , bTradelistingSellerId :: Maybe Int
+  , bTradelistingCardId :: Maybe Int
   , bTradelistingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -554,8 +554,8 @@ data TradeBid = TradeBid
   , tradeBidAmount :: Text
   , tradeBidPlacedAt :: Text
   , tradeBidIsWinning :: Bool
-  , tradeBidListingId :: Int
-  , tradeBidBidderId :: Int
+  , tradeBidListingId :: Maybe Int
+  , tradeBidBidderId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TradeBid where
@@ -574,8 +574,8 @@ data NewTradeBid = NewTradeBid
   { bTradeBidAmount :: Text
   , bTradeBidPlacedAt :: Text
   , bTradeBidIsWinning :: Bool
-  , bTradeBidListingId :: Int
-  , bTradeBidBidderId :: Int
+  , bTradeBidListingId :: Maybe Int
+  , bTradeBidBidderId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTradeBid where
@@ -632,9 +632,9 @@ data TradeTransaction = TradeTransaction
   , tradeTransactionPlatformFee :: Text
   , tradeTransactionStatus :: TradeTransactionStatusType
   , tradeTransactionCompletedAt :: Maybe Text
-  , tradeTransactionListingId :: Int
-  , tradeTransactionBuyerId :: Int
-  , tradeTransactionSellerId :: Int
+  , tradeTransactionListingId :: Maybe Int
+  , tradeTransactionBuyerId :: Maybe Int
+  , tradeTransactionSellerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TradeTransaction where
@@ -654,9 +654,9 @@ data NewTradeTransaction = NewTradeTransaction
   , bTradeTransactionPlatformFee :: Text
   , bTradeTransactionStatus :: TradeTransactionStatusType
   , bTradeTransactionCompletedAt :: Maybe Text
-  , bTradeTransactionListingId :: Int
-  , bTradeTransactionBuyerId :: Int
-  , bTradeTransactionSellerId :: Int
+  , bTradeTransactionListingId :: Maybe Int
+  , bTradeTransactionBuyerId :: Maybe Int
+  , bTradeTransactionSellerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTradeTransaction where
@@ -679,7 +679,7 @@ data CardPriceHistory = CardPriceHistory
   , cardPriceHistoryMaxPrice :: Text
   , cardPriceHistoryVolume :: Int
   , cardPriceHistoryFoil :: Bool
-  , cardPriceHistoryCardId :: Int
+  , cardPriceHistoryCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON CardPriceHistory where
@@ -701,7 +701,7 @@ data NewCardPriceHistory = NewCardPriceHistory
   , bCardPriceHistoryMaxPrice :: Text
   , bCardPriceHistoryVolume :: Int
   , bCardPriceHistoryFoil :: Bool
-  , bCardPriceHistoryCardId :: Int
+  , bCardPriceHistoryCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCardPriceHistory where
@@ -796,8 +796,8 @@ data TradeDispute = TradeDispute
   , tradeDisputeResolution :: Maybe Text
   , tradeDisputeOpenedAt :: Text
   , tradeDisputeResolvedAt :: Maybe Text
-  , tradeDisputeTransactionId :: Int
-  , tradeDisputeOpenedById :: Int
+  , tradeDisputeTransactionId :: Maybe Int
+  , tradeDisputeOpenedById :: Maybe Int
   , tradeDisputeResolvedById :: Maybe Int
   } deriving (Show, Generic)
 
@@ -820,8 +820,8 @@ data NewTradeDispute = NewTradeDispute
   , bTradeDisputeResolution :: Maybe Text
   , bTradeDisputeOpenedAt :: Text
   , bTradeDisputeResolvedAt :: Maybe Text
-  , bTradeDisputeTransactionId :: Int
-  , bTradeDisputeOpenedById :: Int
+  , bTradeDisputeTransactionId :: Maybe Int
+  , bTradeDisputeOpenedById :: Maybe Int
   , bTradeDisputeResolvedById :: Maybe Int
   } deriving (Show, Generic)
 

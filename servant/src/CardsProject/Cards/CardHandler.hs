@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.CardService as CardSvc
+import Data.Text (Text)
 
 type CardAPI
   =    "api" :> "cards" :> Get '[JSON] [Card]
@@ -17,9 +19,24 @@ type CardAPI
   :<|> "api" :> "cards" :> Capture "id" Int :> ReqBody '[JSON] NewCard :> Put '[JSON] Card
   :<|> "api" :> "cards" :> Capture "id" Int :> ReqBody '[JSON] NewCard :> Patch '[JSON] Card
   :<|> "api" :> "cards" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "cards" :> Capture "id" Int :> "ban" :> Post '[JSON] NoContent
+  :<|> "api" :> "cards" :> Capture "id" Int :> "unban" :> Post '[JSON] NoContent
+  :<|> "api" :> "cards" :> Capture "id" Int :> "restrict" :> Post '[JSON] NoContent
+  :<|> "api" :> "cards" :> Capture "id" Int :> "unrestrict" :> Post '[JSON] NoContent
+  :<|> "api" :> "cards" :> Capture "id" Int :> "value" :> Get '[JSON] Text
 
 cardServer :: Server CardAPI
-cardServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+cardServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorBan
+  :<|> behaviorUnban
+  :<|> behaviorRestrict
+  :<|> behaviorUnrestrict
+  :<|> behaviorCalculateValue
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards" :: IO [Card]
@@ -56,4 +73,49 @@ cardServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|>
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM cards WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorBan eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CardSvc.ban eid
+          return NoContent
+
+    behaviorUnban eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CardSvc.unban eid
+          return NoContent
+
+    behaviorRestrict eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CardSvc.restrict eid
+          return NoContent
+
+    behaviorUnrestrict eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CardSvc.unrestrict eid
+          return NoContent
+
+    behaviorCalculateValue eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSvc.calculate_value eid
+          return result
 

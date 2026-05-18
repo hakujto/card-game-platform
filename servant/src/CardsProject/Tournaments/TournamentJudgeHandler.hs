@@ -19,7 +19,12 @@ type TournamentJudgeAPI
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> DeleteNoContent
 
 tournamentJudgeServer :: Server TournamentJudgeAPI
-tournamentJudgeServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tournamentJudgeServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, role, tournament_id, player_id FROM tournament_judges" :: IO [TournamentJudge]

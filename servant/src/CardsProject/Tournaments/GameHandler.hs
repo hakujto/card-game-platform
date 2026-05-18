@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.GameService as GameSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type GameAPI
   =    "api" :> "games" :> Get '[JSON] [Game]
@@ -17,9 +20,16 @@ type GameAPI
   :<|> "api" :> "games" :> Capture "id" Int :> ReqBody '[JSON] NewGame :> Put '[JSON] Game
   :<|> "api" :> "games" :> Capture "id" Int :> ReqBody '[JSON] NewGame :> Patch '[JSON] Game
   :<|> "api" :> "games" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "games" :> Capture "id" Int :> "winner" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 gameServer :: Server GameAPI
-gameServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+gameServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorRecordWinner
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id FROM games" :: IO [Game]
@@ -56,4 +66,13 @@ gameServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|>
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM games WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorRecordWinner eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id FROM games WHERE id = ?" (Only eid) :: IO [Game]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ GameSvc.record_winner eid
+          return NoContent
 

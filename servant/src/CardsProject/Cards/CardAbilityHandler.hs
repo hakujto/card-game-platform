@@ -19,7 +19,12 @@ type CardAbilityAPI
   :<|> "api" :> "card_abilities" :> Capture "id" Int :> DeleteNoContent
 
 cardAbilityServer :: Server CardAbilityAPI
-cardAbilityServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+cardAbilityServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, ability_type, keyword, ability_text, timing, card_id FROM card_abilities" :: IO [CardAbility]

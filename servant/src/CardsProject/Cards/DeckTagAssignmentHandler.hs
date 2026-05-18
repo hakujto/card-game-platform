@@ -19,7 +19,12 @@ type DeckTagAssignmentAPI
   :<|> "api" :> "deck_tag_assignments" :> Capture "id" Int :> DeleteNoContent
 
 deckTagAssignmentServer :: Server DeckTagAssignmentAPI
-deckTagAssignmentServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+deckTagAssignmentServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, deck_id, tag_id FROM deck_tag_assignments" :: IO [DeckTagAssignment]

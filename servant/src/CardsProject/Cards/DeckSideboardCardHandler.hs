@@ -19,7 +19,12 @@ type DeckSideboardCardAPI
   :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> DeleteNoContent
 
 deckSideboardCardServer :: Server DeckSideboardCardAPI
-deckSideboardCardServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+deckSideboardCardServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, deck_id, card_id FROM deck_sideboard_cards" :: IO [DeckSideboardCard]

@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Content.StreamService as StreamSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type StreamAPI
   =    "api" :> "streams" :> Get '[JSON] [Stream]
@@ -17,9 +20,20 @@ type StreamAPI
   :<|> "api" :> "streams" :> Capture "id" Int :> ReqBody '[JSON] NewStream :> Put '[JSON] Stream
   :<|> "api" :> "streams" :> Capture "id" Int :> ReqBody '[JSON] NewStream :> Patch '[JSON] Stream
   :<|> "api" :> "streams" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "streams" :> Capture "id" Int :> "live" :> Post '[JSON] NoContent
+  :<|> "api" :> "streams" :> Capture "id" Int :> "end" :> Post '[JSON] NoContent
+  :<|> "api" :> "streams" :> Capture "id" Int :> "viewers" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
 
 streamServer :: Server StreamAPI
-streamServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+streamServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorGoLive
+  :<|> behaviorEnd
+  :<|> behaviorUpdateViewerPeak
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams" :: IO [Stream]
@@ -56,4 +70,31 @@ streamServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM streams WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorGoLive eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams WHERE id = ?" (Only eid) :: IO [Stream]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ StreamSvc.go_live eid
+          return NoContent
+
+    behaviorEnd eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams WHERE id = ?" (Only eid) :: IO [Stream]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ StreamSvc.end eid
+          return NoContent
+
+    behaviorUpdateViewerPeak eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams WHERE id = ?" (Only eid) :: IO [Stream]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ StreamSvc.update_viewer_peak eid
+          return NoContent
 

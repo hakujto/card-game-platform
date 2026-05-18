@@ -1,39 +1,39 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 module CardsProject.Cards.DeckCardHandlerSpec where
 
 import Test.Hspec
 import Test.Hspec.Wai
 import Test.Hspec.Wai.JSON (json)
-import Network.Wai (Application)
-import Data.Aeson (encode, object, (.=))
+import Network.HTTP.Types (statusCode)
 import CardsProject.App (app)
 import CardsProject.Cards.Types
 
-spec :: SpecWith Application
-spec = do
+spec :: Spec
+spec = with (return app) $ do
   describe "GET /api/deck_cards" $ do
     it "returns 200" $ do
       get "/api/deck_cards" `shouldRespondWith` 200
 
   describe "POST /api/deck_cards" $ do
     it "creates and returns 201" $ do
-      let body = encode (object ["quantity" .= (0), "isCommander" .= (true), "deckId" .= ("test"), "cardId" .= ("test")])
+      let body = [json|{"quantity": 0, "isCommander": true, "deckId": 1, "cardId": 1}|]
       request "POST" "/api/deck_cards" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/deck_cards/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/deck_cards/1"
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "PUT /api/deck_cards/1" $ do
     it "returns 200 or 404" $ do
-      let body = encode (object ["quantity" .= (0), "isCommander" .= (true), "deckId" .= ("test"), "cardId" .= ("test")])
+      let body = [json|{"quantity": 0, "isCommander": true, "deckId": 1, "cardId": 1}|]
       resp <- request "PUT" "/api/deck_cards/1" [("Content-Type","application/json")] body
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/deck_cards/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/deck_cards/1" [] ""
-      liftIO $ simpleStatus resp `shouldSatisfy` \s -> s == 204 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 

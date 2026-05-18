@@ -19,7 +19,12 @@ type CraftingIngredientAPI
   :<|> "api" :> "crafting_ingredients" :> Capture "id" Int :> DeleteNoContent
 
 craftingIngredientServer :: Server CraftingIngredientAPI
-craftingIngredientServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+craftingIngredientServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, recipe_id, card_id FROM crafting_ingredients" :: IO [CraftingIngredient]

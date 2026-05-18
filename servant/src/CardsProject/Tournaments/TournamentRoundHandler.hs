@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.TournamentRoundService as TournamentRoundSvc
+import Data.Text (Text)
 
 type TournamentRoundAPI
   =    "api" :> "tournament_rounds" :> Get '[JSON] [TournamentRound]
@@ -17,9 +19,20 @@ type TournamentRoundAPI
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentRound :> Put '[JSON] TournamentRound
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentRound :> Patch '[JSON] TournamentRound
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "start" :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "pairings" :> Post '[JSON] NoContent
 
 tournamentRoundServer :: Server TournamentRoundAPI
-tournamentRoundServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tournamentRoundServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorStart
+  :<|> behaviorComplete
+  :<|> behaviorGeneratePairings
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds" :: IO [TournamentRound]
@@ -56,4 +69,31 @@ tournamentRoundServer = listAll :<|> create :<|> getOne :<|> update :<|> partial
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM tournament_rounds WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorStart eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds WHERE id = ?" (Only eid) :: IO [TournamentRound]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRoundSvc.start eid
+          return NoContent
+
+    behaviorComplete eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds WHERE id = ?" (Only eid) :: IO [TournamentRound]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRoundSvc.complete eid
+          return NoContent
+
+    behaviorGeneratePairings eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds WHERE id = ?" (Only eid) :: IO [TournamentRound]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRoundSvc.generate_pairings eid
+          return NoContent
 

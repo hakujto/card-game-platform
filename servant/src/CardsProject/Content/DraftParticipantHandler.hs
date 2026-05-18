@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Content.DraftParticipantService as DraftParticipantSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type DraftParticipantAPI
   =    "api" :> "draft_participants" :> Get '[JSON] [DraftParticipant]
@@ -17,9 +20,16 @@ type DraftParticipantAPI
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> ReqBody '[JSON] NewDraftParticipant :> Put '[JSON] DraftParticipant
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> ReqBody '[JSON] NewDraftParticipant :> Patch '[JSON] DraftParticipant
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "draft_participants" :> Capture "id" Int :> "pick" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 draftParticipantServer :: Server DraftParticipantAPI
-draftParticipantServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+draftParticipantServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorPickCard
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, seat_number, joined_at, session_id, player_id, drafted_cards_id FROM draft_participants" :: IO [DraftParticipant]
@@ -56,4 +66,13 @@ draftParticipantServer = listAll :<|> create :<|> getOne :<|> update :<|> partia
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM draft_participants WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorPickCard eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, seat_number, joined_at, session_id, player_id, drafted_cards_id FROM draft_participants WHERE id = ?" (Only eid) :: IO [DraftParticipant]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DraftParticipantSvc.pick_card eid
+          return NoContent
 

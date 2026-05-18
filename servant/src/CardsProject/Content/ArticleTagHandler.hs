@@ -19,7 +19,12 @@ type ArticleTagAPI
   :<|> "api" :> "article_tags" :> Capture "id" Int :> DeleteNoContent
 
 articleTagServer :: Server ArticleTagAPI
-articleTagServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+articleTagServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, slug FROM article_tags" :: IO [ArticleTag]

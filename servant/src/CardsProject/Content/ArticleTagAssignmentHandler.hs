@@ -19,7 +19,12 @@ type ArticleTagAssignmentAPI
   :<|> "api" :> "article_tag_assignments" :> Capture "id" Int :> DeleteNoContent
 
 articleTagAssignmentServer :: Server ArticleTagAssignmentAPI
-articleTagAssignmentServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+articleTagAssignmentServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, article_id, tag_id FROM article_tag_assignments" :: IO [ArticleTagAssignment]

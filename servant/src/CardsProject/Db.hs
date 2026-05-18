@@ -12,12 +12,10 @@ withDb :: (Connection -> IO a) -> IO a
 withDb action = do
   path <- dbPath
   conn <- open path
-  execute_ conn "PRAGMA foreign_keys = ON"
   result <- action conn
   close conn
   return result
 
 initDb :: IO ()
 initDb = withDb $ \conn -> do
-  execute_ conn "PRAGMA foreign_keys = ON"
   putStrLn "Database initialized."

@@ -132,6 +132,7 @@ test-suite cards-project-test
   type: exitcode-stdio-1.0
   hs-source-dirs: test
   main-is: Spec.hs
+  build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       cards-project
     , hspec

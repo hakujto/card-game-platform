@@ -1,0 +1,19 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12'
+          cabal-version: 'latest'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cabal
+          key: cabal-${{ hashFiles('*.cabal') }}
+      - run: cabal update
+      - run: cabal build --only-dependencies
+      - run: mkdir -p db && sqlite3 db/test.db < schema.sql
+      - run: cabal test

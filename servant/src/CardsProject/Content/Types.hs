@@ -93,8 +93,8 @@ data DraftSession = DraftSession
   , draftSessionSeats :: Int
   , draftSessionCreatedAt :: Text
   , draftSessionCompletedAt :: Maybe Text
-  , draftSessionCardSetId :: Int
-  , draftSessionParticipantsId :: Int
+  , draftSessionCardSetId :: Maybe Int
+  , draftSessionParticipantsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DraftSession where
@@ -115,8 +115,8 @@ data NewDraftSession = NewDraftSession
   , bDraftSessionSeats :: Int
   , bDraftSessionCreatedAt :: Text
   , bDraftSessionCompletedAt :: Maybe Text
-  , bDraftSessionCardSetId :: Int
-  , bDraftSessionParticipantsId :: Int
+  , bDraftSessionCardSetId :: Maybe Int
+  , bDraftSessionParticipantsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDraftSession where
@@ -136,7 +136,7 @@ data DraftParticipant = DraftParticipant
   , draftParticipantSeatNumber :: Int
   , draftParticipantJoinedAt :: Text
   , draftParticipantSessionId :: Maybe Int
-  , draftParticipantPlayerId :: Int
+  , draftParticipantPlayerId :: Maybe Int
   , draftParticipantDraftedCardsId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -156,7 +156,7 @@ data NewDraftParticipant = NewDraftParticipant
   { bDraftParticipantSeatNumber :: Int
   , bDraftParticipantJoinedAt :: Text
   , bDraftParticipantSessionId :: Maybe Int
-  , bDraftParticipantPlayerId :: Int
+  , bDraftParticipantPlayerId :: Maybe Int
   , bDraftParticipantDraftedCardsId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -177,8 +177,8 @@ data DraftPick = DraftPick
   , draftPickPickNumber :: Int
   , draftPickPackNumber :: Int
   , draftPickPickedAt :: Text
-  , draftPickParticipantId :: Int
-  , draftPickCardId :: Int
+  , draftPickParticipantId :: Maybe Int
+  , draftPickCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DraftPick where
@@ -197,8 +197,8 @@ data NewDraftPick = NewDraftPick
   { bDraftPickPickNumber :: Int
   , bDraftPickPackNumber :: Int
   , bDraftPickPickedAt :: Text
-  , bDraftPickParticipantId :: Int
-  , bDraftPickCardId :: Int
+  , bDraftPickParticipantId :: Maybe Int
+  , bDraftPickCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDraftPick where
@@ -303,9 +303,9 @@ data Article = Article
   , articlePublishedAt :: Maybe Text
   , articleCreatedAt :: Text
   , articleUpdatedAt :: Text
-  , articleAuthorId :: Int
+  , articleAuthorId :: Maybe Int
   , articleFeaturedDeckId :: Maybe Int
-  , articleCommentsId :: Int
+  , articleCommentsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Article where
@@ -332,9 +332,9 @@ data NewArticle = NewArticle
   , bArticlePublishedAt :: Maybe Text
   , bArticleCreatedAt :: Text
   , bArticleUpdatedAt :: Text
-  , bArticleAuthorId :: Int
+  , bArticleAuthorId :: Maybe Int
   , bArticleFeaturedDeckId :: Maybe Int
-  , bArticleCommentsId :: Int
+  , bArticleCommentsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewArticle where
@@ -386,8 +386,8 @@ _articleTagAssignmentOpts = defaultOptions
 
 data ArticleTagAssignment = ArticleTagAssignment
   { articleTagAssignmentId :: Int
-  , articleTagAssignmentArticleId :: Int
-  , articleTagAssignmentTagId :: Int
+  , articleTagAssignmentArticleId :: Maybe Int
+  , articleTagAssignmentTagId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON ArticleTagAssignment where
@@ -403,8 +403,8 @@ _newArticleTagAssignmentOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 21 }
 
 data NewArticleTagAssignment = NewArticleTagAssignment
-  { bArticleTagAssignmentArticleId :: Int
-  , bArticleTagAssignmentTagId :: Int
+  { bArticleTagAssignmentArticleId :: Maybe Int
+  , bArticleTagAssignmentTagId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewArticleTagAssignment where
@@ -425,7 +425,7 @@ data ArticleComment = ArticleComment
   , articleCommentIsHidden :: Bool
   , articleCommentCreatedAt :: Text
   , articleCommentArticleId :: Maybe Int
-  , articleCommentAuthorId :: Int
+  , articleCommentAuthorId :: Maybe Int
   , articleCommentParentCommentId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -446,7 +446,7 @@ data NewArticleComment = NewArticleComment
   , bArticleCommentIsHidden :: Bool
   , bArticleCommentCreatedAt :: Text
   , bArticleCommentArticleId :: Maybe Int
-  , bArticleCommentAuthorId :: Int
+  , bArticleCommentAuthorId :: Maybe Int
   , bArticleCommentParentCommentId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -541,7 +541,7 @@ data Stream = Stream
   , streamEndedAt :: Maybe Text
   , streamVodUrl :: Maybe Text
   , streamTournamentId :: Maybe Int
-  , streamStreamerId :: Int
+  , streamStreamerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Stream where
@@ -567,7 +567,7 @@ data NewStream = NewStream
   , bStreamEndedAt :: Maybe Text
   , bStreamVodUrl :: Maybe Text
   , bStreamTournamentId :: Maybe Int
-  , bStreamStreamerId :: Int
+  , bStreamStreamerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewStream where

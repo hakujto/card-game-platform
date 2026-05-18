@@ -19,7 +19,12 @@ type CardPriceHistoryAPI
   :<|> "api" :> "card_price_histories" :> Capture "id" Int :> DeleteNoContent
 
 cardPriceHistoryServer :: Server CardPriceHistoryAPI
-cardPriceHistoryServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+cardPriceHistoryServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, price_date, avg_price, min_price, max_price, volume, foil, card_id FROM card_price_histories" :: IO [CardPriceHistory]

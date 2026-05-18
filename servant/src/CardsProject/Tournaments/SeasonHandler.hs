@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.SeasonService as SeasonSvc
+import Data.Text (Text)
 
 type SeasonAPI
   =    "api" :> "seasons" :> Get '[JSON] [Season]
@@ -17,9 +19,20 @@ type SeasonAPI
   :<|> "api" :> "seasons" :> Capture "id" Int :> ReqBody '[JSON] NewSeason :> Put '[JSON] Season
   :<|> "api" :> "seasons" :> Capture "id" Int :> ReqBody '[JSON] NewSeason :> Patch '[JSON] Season
   :<|> "api" :> "seasons" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "activate" :> Post '[JSON] NoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "deactivate" :> Post '[JSON] NoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "finalize" :> Post '[JSON] NoContent
 
 seasonServer :: Server SeasonAPI
-seasonServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+seasonServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorActivate
+  :<|> behaviorDeactivate
+  :<|> behaviorFinalizeRewards
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons" :: IO [Season]
@@ -56,4 +69,31 @@ seasonServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM seasons WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorActivate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ SeasonSvc.activate eid
+          return NoContent
+
+    behaviorDeactivate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ SeasonSvc.deactivate eid
+          return NoContent
+
+    behaviorFinalizeRewards eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ SeasonSvc.finalize_rewards eid
+          return NoContent
 

@@ -247,8 +247,8 @@ data Tournament = Tournament
   , tournamentLocation :: Maybe Text
   , tournamentRulesText :: Maybe Text
   , tournamentCreatedAt :: Text
-  , tournamentSeasonId :: Int
-  , tournamentOrganizerId :: Int
+  , tournamentSeasonId :: Maybe Int
+  , tournamentOrganizerId :: Maybe Int
   , tournamentRegistrationsId :: Maybe Int
   , tournamentRoundsId :: Maybe Int
   , tournamentPrizesId :: Maybe Int
@@ -281,8 +281,8 @@ data NewTournament = NewTournament
   , bTournamentLocation :: Maybe Text
   , bTournamentRulesText :: Maybe Text
   , bTournamentCreatedAt :: Text
-  , bTournamentSeasonId :: Int
-  , bTournamentOrganizerId :: Int
+  , bTournamentSeasonId :: Maybe Int
+  , bTournamentOrganizerId :: Maybe Int
   , bTournamentRegistrationsId :: Maybe Int
   , bTournamentRoundsId :: Maybe Int
   , bTournamentPrizesId :: Maybe Int
@@ -334,8 +334,8 @@ _tournamentJudgeOpts = defaultOptions
 data TournamentJudge = TournamentJudge
   { tournamentJudgeId :: Int
   , tournamentJudgeRole :: TournamentJudgeRoleType
-  , tournamentJudgeTournamentId :: Int
-  , tournamentJudgePlayerId :: Int
+  , tournamentJudgeTournamentId :: Maybe Int
+  , tournamentJudgePlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TournamentJudge where
@@ -352,8 +352,8 @@ _newTournamentJudgeOpts = defaultOptions
 
 data NewTournamentJudge = NewTournamentJudge
   { bTournamentJudgeRole :: TournamentJudgeRoleType
-  , bTournamentJudgeTournamentId :: Int
-  , bTournamentJudgePlayerId :: Int
+  , bTournamentJudgeTournamentId :: Maybe Int
+  , bTournamentJudgePlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournamentJudge where
@@ -411,9 +411,9 @@ data TournamentRegistration = TournamentRegistration
   , tournamentRegistrationFinalStanding :: Maybe Int
   , tournamentRegistrationPointsEarned :: Int
   , tournamentRegistrationRegisteredAt :: Text
-  , tournamentRegistrationTournamentId :: Int
-  , tournamentRegistrationPlayerId :: Int
-  , tournamentRegistrationDeckId :: Int
+  , tournamentRegistrationTournamentId :: Maybe Int
+  , tournamentRegistrationPlayerId :: Maybe Int
+  , tournamentRegistrationDeckId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TournamentRegistration where
@@ -434,9 +434,9 @@ data NewTournamentRegistration = NewTournamentRegistration
   , bTournamentRegistrationFinalStanding :: Maybe Int
   , bTournamentRegistrationPointsEarned :: Int
   , bTournamentRegistrationRegisteredAt :: Text
-  , bTournamentRegistrationTournamentId :: Int
-  , bTournamentRegistrationPlayerId :: Int
-  , bTournamentRegistrationDeckId :: Int
+  , bTournamentRegistrationTournamentId :: Maybe Int
+  , bTournamentRegistrationPlayerId :: Maybe Int
+  , bTournamentRegistrationDeckId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournamentRegistration where
@@ -489,8 +489,8 @@ data TournamentRound = TournamentRound
   , tournamentRoundStartedAt :: Maybe Text
   , tournamentRoundEndedAt :: Maybe Text
   , tournamentRoundTimeLimitMinutes :: Int
-  , tournamentRoundTournamentId :: Int
-  , tournamentRoundMatchesId :: Int
+  , tournamentRoundTournamentId :: Maybe Int
+  , tournamentRoundMatchesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TournamentRound where
@@ -511,8 +511,8 @@ data NewTournamentRound = NewTournamentRound
   , bTournamentRoundStartedAt :: Maybe Text
   , bTournamentRoundEndedAt :: Maybe Text
   , bTournamentRoundTimeLimitMinutes :: Int
-  , bTournamentRoundTournamentId :: Int
-  , bTournamentRoundMatchesId :: Int
+  , bTournamentRoundTournamentId :: Maybe Int
+  , bTournamentRoundMatchesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournamentRound where
@@ -578,7 +578,7 @@ data Match = Match
   , matchEndedAt :: Maybe Text
   , matchResultNotes :: Maybe Text
   , matchRoundId :: Maybe Int
-  , matchPlayer1Id :: Int
+  , matchPlayer1Id :: Maybe Int
   , matchPlayer2Id :: Maybe Int
   , matchGamesId :: Maybe Int
   } deriving (Show, Generic)
@@ -604,7 +604,7 @@ data NewMatch = NewMatch
   , bMatchEndedAt :: Maybe Text
   , bMatchResultNotes :: Maybe Text
   , bMatchRoundId :: Maybe Int
-  , bMatchPlayer1Id :: Int
+  , bMatchPlayer1Id :: Maybe Int
   , bMatchPlayer2Id :: Maybe Int
   , bMatchGamesId :: Maybe Int
   } deriving (Show, Generic)
@@ -696,7 +696,7 @@ data Game = Game
   , gameDurationSeconds :: Maybe Int
   , gameEndedBy :: Maybe GameEndedByType
   , gameReplayUrl :: Maybe Text
-  , gameMatchId :: Int
+  , gameMatchId :: Maybe Int
   , gameWinnerId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -719,7 +719,7 @@ data NewGame = NewGame
   , bGameDurationSeconds :: Maybe Int
   , bGameEndedBy :: Maybe GameEndedByType
   , bGameReplayUrl :: Maybe Text
-  , bGameMatchId :: Int
+  , bGameMatchId :: Maybe Int
   , bGameWinnerId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -790,7 +790,7 @@ data TournamentPrize = TournamentPrize
   , tournamentPrizeDescription :: Maybe Text
   , tournamentPrizePacksCount :: Maybe Int
   , tournamentPrizeSeasonPoints :: Int
-  , tournamentPrizeTournamentId :: Int
+  , tournamentPrizeTournamentId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TournamentPrize where
@@ -813,7 +813,7 @@ data NewTournamentPrize = NewTournamentPrize
   , bTournamentPrizeDescription :: Maybe Text
   , bTournamentPrizePacksCount :: Maybe Int
   , bTournamentPrizeSeasonPoints :: Int
-  , bTournamentPrizeTournamentId :: Int
+  , bTournamentPrizeTournamentId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournamentPrize where
@@ -834,8 +834,8 @@ data AwardedPrize = AwardedPrize
   , awardedPrizeAwardedAt :: Text
   , awardedPrizeClaimed :: Bool
   , awardedPrizeClaimedAt :: Maybe Text
-  , awardedPrizePrizeId :: Int
-  , awardedPrizePlayerId :: Int
+  , awardedPrizePrizeId :: Maybe Int
+  , awardedPrizePlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON AwardedPrize where
@@ -855,8 +855,8 @@ data NewAwardedPrize = NewAwardedPrize
   , bAwardedPrizeAwardedAt :: Text
   , bAwardedPrizeClaimed :: Bool
   , bAwardedPrizeClaimedAt :: Maybe Text
-  , bAwardedPrizePrizeId :: Int
-  , bAwardedPrizePlayerId :: Int
+  , bAwardedPrizePrizeId :: Maybe Int
+  , bAwardedPrizePlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewAwardedPrize where

@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Marketplace.CouponService as CouponSvc
+import Data.Text (Text)
 
 type CouponAPI
   =    "api" :> "coupons" :> Get '[JSON] [Coupon]
@@ -17,9 +19,18 @@ type CouponAPI
   :<|> "api" :> "coupons" :> Capture "id" Int :> ReqBody '[JSON] NewCoupon :> Put '[JSON] Coupon
   :<|> "api" :> "coupons" :> Capture "id" Int :> ReqBody '[JSON] NewCoupon :> Patch '[JSON] Coupon
   :<|> "api" :> "coupons" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "coupons" :> Capture "id" Int :> "redeem" :> Post '[JSON] NoContent
+  :<|> "api" :> "coupons" :> Capture "id" Int :> "deactivate" :> Post '[JSON] NoContent
 
 couponServer :: Server CouponAPI
-couponServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+couponServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorRedeem
+  :<|> behaviorDeactivate
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons" :: IO [Coupon]
@@ -56,4 +67,22 @@ couponServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM coupons WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorRedeem eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CouponSvc.redeem eid
+          return NoContent
+
+    behaviorDeactivate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CouponSvc.deactivate eid
+          return NoContent
 

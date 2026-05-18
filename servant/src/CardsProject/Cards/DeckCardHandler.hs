@@ -19,7 +19,12 @@ type DeckCardAPI
   :<|> "api" :> "deck_cards" :> Capture "id" Int :> DeleteNoContent
 
 deckCardServer :: Server DeckCardAPI
-deckCardServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+deckCardServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, is_commander, deck_id, card_id FROM deck_cards" :: IO [DeckCard]

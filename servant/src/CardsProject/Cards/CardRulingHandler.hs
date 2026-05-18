@@ -19,7 +19,12 @@ type CardRulingAPI
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> DeleteNoContent
 
 cardRulingServer :: Server CardRulingAPI
-cardRulingServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+cardRulingServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, ruling_text, published_at, source, card_id FROM card_rulings" :: IO [CardRuling]

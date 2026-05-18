@@ -216,7 +216,7 @@ data Card = Card
   , cardIsBanned :: Bool
   , cardIsRestricted :: Bool
   , cardPowerLevel :: Int
-  , cardSetId :: Int
+  , cardSetId :: Maybe Int
   , cardRulingsId :: Maybe Int
   , cardAbilitiesId :: Maybe Int
   } deriving (Show, Generic)
@@ -250,7 +250,7 @@ data NewCard = NewCard
   , bCardIsBanned :: Bool
   , bCardIsRestricted :: Bool
   , bCardPowerLevel :: Int
-  , bCardSetId :: Int
+  , bCardSetId :: Maybe Int
   , bCardRulingsId :: Maybe Int
   , bCardAbilitiesId :: Maybe Int
   } deriving (Show, Generic)
@@ -358,7 +358,7 @@ data CardRuling = CardRuling
   , cardRulingRulingText :: Text
   , cardRulingPublishedAt :: Text
   , cardRulingSource :: Text
-  , cardRulingCardId :: Int
+  , cardRulingCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON CardRuling where
@@ -377,7 +377,7 @@ data NewCardRuling = NewCardRuling
   { bCardRulingRulingText :: Text
   , bCardRulingPublishedAt :: Text
   , bCardRulingSource :: Text
-  , bCardRulingCardId :: Int
+  , bCardRulingCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCardRuling where
@@ -470,7 +470,7 @@ data CardAbility = CardAbility
   , cardAbilityKeyword :: Maybe Text
   , cardAbilityAbilityText :: Text
   , cardAbilityTiming :: Maybe CardAbilityTimingType
-  , cardAbilityCardId :: Int
+  , cardAbilityCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON CardAbility where
@@ -490,7 +490,7 @@ data NewCardAbility = NewCardAbility
   , bCardAbilityKeyword :: Maybe Text
   , bCardAbilityAbilityText :: Text
   , bCardAbilityTiming :: Maybe CardAbilityTimingType
-  , bCardAbilityCardId :: Int
+  , bCardAbilityCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCardAbility where
@@ -609,7 +609,7 @@ data Deck = Deck
   , deckLosses :: Int
   , deckCreatedAt :: Text
   , deckUpdatedAt :: Text
-  , deckPlayerId :: Int
+  , deckPlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Deck where
@@ -635,7 +635,7 @@ data NewDeck = NewDeck
   , bDeckLosses :: Int
   , bDeckCreatedAt :: Text
   , bDeckUpdatedAt :: Text
-  , bDeckPlayerId :: Int
+  , bDeckPlayerId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDeck where
@@ -654,8 +654,8 @@ data DeckCard = DeckCard
   { deckCardId :: Int
   , deckCardQuantity :: Int
   , deckCardIsCommander :: Bool
-  , deckCardDeckId :: Int
-  , deckCardCardId :: Int
+  , deckCardDeckId :: Maybe Int
+  , deckCardCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DeckCard where
@@ -673,8 +673,8 @@ _newDeckCardOpts = defaultOptions
 data NewDeckCard = NewDeckCard
   { bDeckCardQuantity :: Int
   , bDeckCardIsCommander :: Bool
-  , bDeckCardDeckId :: Int
-  , bDeckCardCardId :: Int
+  , bDeckCardDeckId :: Maybe Int
+  , bDeckCardCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDeckCard where
@@ -692,8 +692,8 @@ _deckSideboardCardOpts = defaultOptions
 data DeckSideboardCard = DeckSideboardCard
   { deckSideboardCardId :: Int
   , deckSideboardCardQuantity :: Int
-  , deckSideboardCardDeckId :: Int
-  , deckSideboardCardCardId :: Int
+  , deckSideboardCardDeckId :: Maybe Int
+  , deckSideboardCardCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DeckSideboardCard where
@@ -710,8 +710,8 @@ _newDeckSideboardCardOpts = defaultOptions
 
 data NewDeckSideboardCard = NewDeckSideboardCard
   { bDeckSideboardCardQuantity :: Int
-  , bDeckSideboardCardDeckId :: Int
-  , bDeckSideboardCardCardId :: Int
+  , bDeckSideboardCardDeckId :: Maybe Int
+  , bDeckSideboardCardCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDeckSideboardCard where
@@ -763,8 +763,8 @@ _deckTagAssignmentOpts = defaultOptions
 
 data DeckTagAssignment = DeckTagAssignment
   { deckTagAssignmentId :: Int
-  , deckTagAssignmentDeckId :: Int
-  , deckTagAssignmentTagId :: Int
+  , deckTagAssignmentDeckId :: Maybe Int
+  , deckTagAssignmentTagId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DeckTagAssignment where
@@ -780,8 +780,8 @@ _newDeckTagAssignmentOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 18 }
 
 data NewDeckTagAssignment = NewDeckTagAssignment
-  { bDeckTagAssignmentDeckId :: Int
-  , bDeckTagAssignmentTagId :: Int
+  { bDeckTagAssignmentDeckId :: Maybe Int
+  , bDeckTagAssignmentTagId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDeckTagAssignment where

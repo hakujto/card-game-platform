@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Content.ArticleCommentService as ArticleCommentSvc
+import Data.Text (Text)
 
 type ArticleCommentAPI
   =    "api" :> "article_comments" :> Get '[JSON] [ArticleComment]
@@ -17,9 +19,18 @@ type ArticleCommentAPI
   :<|> "api" :> "article_comments" :> Capture "id" Int :> ReqBody '[JSON] NewArticleComment :> Put '[JSON] ArticleComment
   :<|> "api" :> "article_comments" :> Capture "id" Int :> ReqBody '[JSON] NewArticleComment :> Patch '[JSON] ArticleComment
   :<|> "api" :> "article_comments" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "article_comments" :> Capture "id" Int :> "hide" :> Post '[JSON] NoContent
+  :<|> "api" :> "article_comments" :> Capture "id" Int :> "unhide" :> Post '[JSON] NoContent
 
 articleCommentServer :: Server ArticleCommentAPI
-articleCommentServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+articleCommentServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorHide
+  :<|> behaviorUnhide
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments" :: IO [ArticleComment]
@@ -56,4 +67,22 @@ articleCommentServer = listAll :<|> create :<|> getOne :<|> update :<|> partialU
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM article_comments WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorHide eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments WHERE id = ?" (Only eid) :: IO [ArticleComment]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ ArticleCommentSvc.hide eid
+          return NoContent
+
+    behaviorUnhide eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments WHERE id = ?" (Only eid) :: IO [ArticleComment]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ ArticleCommentSvc.unhide eid
+          return NoContent
 

@@ -141,3 +141,15 @@ Bounded Contexts:
 - **Tournaments BC** (`src/CardsProject/Tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`src/CardsProject/Marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`src/CardsProject/Content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+
+## Docker
+
+```bash
+docker build -t app .
+docker run -p 8080:8080 app
+```
+
+## CI
+
+GitHub Actions workflow in `.github/workflows/ci.yml` — runs on push and pull_request:
+sets up GHC 9.12 + cabal, applies the SQLite schema, builds, and runs hspec tests.

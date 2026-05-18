@@ -19,7 +19,12 @@ type TradeBidAPI
   :<|> "api" :> "trade_bids" :> Capture "id" Int :> DeleteNoContent
 
 tradeBidServer :: Server TradeBidAPI
-tradeBidServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tradeBidServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, amount, placed_at, is_winning, listing_id, bidder_id FROM trade_bids" :: IO [TradeBid]

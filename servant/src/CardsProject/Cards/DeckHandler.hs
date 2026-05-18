@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.DeckService as DeckSvc
+import Data.Text (Text)
 
 type DeckAPI
   =    "api" :> "decks" :> Get '[JSON] [Deck]
@@ -17,9 +19,24 @@ type DeckAPI
   :<|> "api" :> "decks" :> Capture "id" Int :> ReqBody '[JSON] NewDeck :> Put '[JSON] Deck
   :<|> "api" :> "decks" :> Capture "id" Int :> ReqBody '[JSON] NewDeck :> Patch '[JSON] Deck
   :<|> "api" :> "decks" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "decks" :> Capture "id" Int :> "validate" :> Get '[JSON] Bool
+  :<|> "api" :> "decks" :> Capture "id" Int :> "clone" :> Post '[JSON] Text
+  :<|> "api" :> "decks" :> Capture "id" Int :> "publish" :> Post '[JSON] NoContent
+  :<|> "api" :> "decks" :> Capture "id" Int :> "unpublish" :> Post '[JSON] NoContent
+  :<|> "api" :> "decks" :> Capture "id" Int :> "certify" :> Post '[JSON] Bool
 
 deckServer :: Server DeckAPI
-deckServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+deckServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorValidateSize
+  :<|> behaviorClone
+  :<|> behaviorPublish
+  :<|> behaviorUnpublish
+  :<|> behaviorCertifyTournamentLegal
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks" :: IO [Deck]
@@ -56,4 +73,49 @@ deckServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|>
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM decks WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorValidateSize eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DeckSvc.validate_size eid
+          return result
+
+    behaviorClone eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DeckSvc.clone eid
+          return result
+
+    behaviorPublish eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSvc.publish eid
+          return NoContent
+
+    behaviorUnpublish eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSvc.unpublish eid
+          return NoContent
+
+    behaviorCertifyTournamentLegal eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DeckSvc.certify_tournament_legal eid
+          return result
 

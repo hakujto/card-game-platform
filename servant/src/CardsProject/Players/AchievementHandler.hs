@@ -19,7 +19,12 @@ type AchievementAPI
   :<|> "api" :> "achievements" :> Capture "id" Int :> DeleteNoContent
 
 achievementServer :: Server AchievementAPI
-achievementServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+achievementServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, description, icon_url, points, rarity, is_hidden FROM achievements" :: IO [Achievement]

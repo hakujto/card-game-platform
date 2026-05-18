@@ -130,7 +130,7 @@ data Player = Player
   , playerCreatedAt :: Text
   , playerLastActiveAt :: Maybe Text
   , playerUserId :: Maybe Int
-  , playerSeasonStatsId :: Int
+  , playerSeasonStatsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Player where
@@ -158,7 +158,7 @@ data NewPlayer = NewPlayer
   , bPlayerCreatedAt :: Text
   , bPlayerLastActiveAt :: Maybe Text
   , bPlayerUserId :: Maybe Int
-  , bPlayerSeasonStatsId :: Int
+  , bPlayerSeasonStatsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewPlayer where
@@ -233,7 +233,7 @@ data PlayerSeasonStats = PlayerSeasonStats
   , playerSeasonStatsHighestRank :: Maybe PlayerSeasonStatsHighestRankType
   , playerSeasonStatsSeasonPoints :: Int
   , playerSeasonStatsPlayerId :: Maybe Int
-  , playerSeasonStatsSeasonId :: Int
+  , playerSeasonStatsSeasonId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON PlayerSeasonStats where
@@ -256,7 +256,7 @@ data NewPlayerSeasonStats = NewPlayerSeasonStats
   , bPlayerSeasonStatsHighestRank :: Maybe PlayerSeasonStatsHighestRankType
   , bPlayerSeasonStatsSeasonPoints :: Int
   , bPlayerSeasonStatsPlayerId :: Maybe Int
-  , bPlayerSeasonStatsSeasonId :: Int
+  , bPlayerSeasonStatsSeasonId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewPlayerSeasonStats where
@@ -360,8 +360,8 @@ data PlayerCollection = PlayerCollection
   , playerCollectionCondition :: PlayerCollectionConditionType
   , playerCollectionAcquiredAt :: Text
   , playerCollectionAcquiredVia :: PlayerCollectionAcquiredViaType
-  , playerCollectionPlayerId :: Int
-  , playerCollectionCardId :: Int
+  , playerCollectionPlayerId :: Maybe Int
+  , playerCollectionCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON PlayerCollection where
@@ -382,8 +382,8 @@ data NewPlayerCollection = NewPlayerCollection
   , bPlayerCollectionCondition :: PlayerCollectionConditionType
   , bPlayerCollectionAcquiredAt :: Text
   , bPlayerCollectionAcquiredVia :: PlayerCollectionAcquiredViaType
-  , bPlayerCollectionPlayerId :: Int
-  , bPlayerCollectionCardId :: Int
+  , bPlayerCollectionPlayerId :: Maybe Int
+  , bPlayerCollectionCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewPlayerCollection where
@@ -433,8 +433,8 @@ data Friendship = Friendship
   { friendshipId :: Int
   , friendshipStatus :: FriendshipStatusType
   , friendshipCreatedAt :: Text
-  , friendshipRequesterId :: Int
-  , friendshipReceiverId :: Int
+  , friendshipRequesterId :: Maybe Int
+  , friendshipReceiverId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Friendship where
@@ -452,8 +452,8 @@ _newFriendshipOpts = defaultOptions
 data NewFriendship = NewFriendship
   { bFriendshipStatus :: FriendshipStatusType
   , bFriendshipCreatedAt :: Text
-  , bFriendshipRequesterId :: Int
-  , bFriendshipReceiverId :: Int
+  , bFriendshipRequesterId :: Maybe Int
+  , bFriendshipReceiverId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewFriendship where
@@ -557,8 +557,8 @@ data PlayerAchievement = PlayerAchievement
   , playerAchievementEarnedAt :: Text
   , playerAchievementProgress :: Int
   , playerAchievementIsCompleted :: Bool
-  , playerAchievementPlayerId :: Int
-  , playerAchievementAchievementId :: Int
+  , playerAchievementPlayerId :: Maybe Int
+  , playerAchievementAchievementId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON PlayerAchievement where
@@ -577,8 +577,8 @@ data NewPlayerAchievement = NewPlayerAchievement
   { bPlayerAchievementEarnedAt :: Text
   , bPlayerAchievementProgress :: Int
   , bPlayerAchievementIsCompleted :: Bool
-  , bPlayerAchievementPlayerId :: Int
-  , bPlayerAchievementAchievementId :: Int
+  , bPlayerAchievementPlayerId :: Maybe Int
+  , bPlayerAchievementAchievementId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewPlayerAchievement where
@@ -597,7 +597,7 @@ data CraftingRecipe = CraftingRecipe
   { craftingRecipeId :: Int
   , craftingRecipeDustCost :: Int
   , craftingRecipeIsAvailable :: Bool
-  , craftingRecipeResultCardId :: Int
+  , craftingRecipeResultCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON CraftingRecipe where
@@ -615,7 +615,7 @@ _newCraftingRecipeOpts = defaultOptions
 data NewCraftingRecipe = NewCraftingRecipe
   { bCraftingRecipeDustCost :: Int
   , bCraftingRecipeIsAvailable :: Bool
-  , bCraftingRecipeResultCardId :: Int
+  , bCraftingRecipeResultCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCraftingRecipe where
@@ -633,8 +633,8 @@ _craftingIngredientOpts = defaultOptions
 data CraftingIngredient = CraftingIngredient
   { craftingIngredientId :: Int
   , craftingIngredientQuantity :: Int
-  , craftingIngredientRecipeId :: Int
-  , craftingIngredientCardId :: Int
+  , craftingIngredientRecipeId :: Maybe Int
+  , craftingIngredientCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON CraftingIngredient where
@@ -651,8 +651,8 @@ _newCraftingIngredientOpts = defaultOptions
 
 data NewCraftingIngredient = NewCraftingIngredient
   { bCraftingIngredientQuantity :: Int
-  , bCraftingIngredientRecipeId :: Int
-  , bCraftingIngredientCardId :: Int
+  , bCraftingIngredientRecipeId :: Maybe Int
+  , bCraftingIngredientCardId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCraftingIngredient where

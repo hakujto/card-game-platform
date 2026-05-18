@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.FriendshipService as FriendshipSvc
+import Data.Text (Text)
 
 type FriendshipAPI
   =    "api" :> "friendships" :> Get '[JSON] [Friendship]
@@ -17,9 +19,20 @@ type FriendshipAPI
   :<|> "api" :> "friendships" :> Capture "id" Int :> ReqBody '[JSON] NewFriendship :> Put '[JSON] Friendship
   :<|> "api" :> "friendships" :> Capture "id" Int :> ReqBody '[JSON] NewFriendship :> Patch '[JSON] Friendship
   :<|> "api" :> "friendships" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "accept" :> Post '[JSON] NoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "decline" :> Post '[JSON] NoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "block" :> Post '[JSON] NoContent
 
 friendshipServer :: Server FriendshipAPI
-friendshipServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+friendshipServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorAccept
+  :<|> behaviorDecline
+  :<|> behaviorBlock
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, status, created_at, requester_id, receiver_id FROM friendships" :: IO [Friendship]
@@ -56,4 +69,31 @@ friendshipServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdat
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM friendships WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorAccept eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, created_at, requester_id, receiver_id FROM friendships WHERE id = ?" (Only eid) :: IO [Friendship]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ FriendshipSvc.accept eid
+          return NoContent
+
+    behaviorDecline eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, created_at, requester_id, receiver_id FROM friendships WHERE id = ?" (Only eid) :: IO [Friendship]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ FriendshipSvc.decline eid
+          return NoContent
+
+    behaviorBlock eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, created_at, requester_id, receiver_id FROM friendships WHERE id = ?" (Only eid) :: IO [Friendship]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ FriendshipSvc.block eid
+          return NoContent
 

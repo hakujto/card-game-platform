@@ -19,7 +19,12 @@ type CraftingRecipeAPI
   :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> DeleteNoContent
 
 craftingRecipeServer :: Server CraftingRecipeAPI
-craftingRecipeServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+craftingRecipeServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes" :: IO [CraftingRecipe]

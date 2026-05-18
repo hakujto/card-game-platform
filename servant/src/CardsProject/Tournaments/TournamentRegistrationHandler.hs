@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.TournamentRegistrationService as TournamentRegistrationSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type TournamentRegistrationAPI
   =    "api" :> "tournament_registrations" :> Get '[JSON] [TournamentRegistration]
@@ -17,9 +20,20 @@ type TournamentRegistrationAPI
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentRegistration :> Put '[JSON] TournamentRegistration
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentRegistration :> Patch '[JSON] TournamentRegistration
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "withdraw" :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "disqualify" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "promote" :> Post '[JSON] NoContent
 
 tournamentRegistrationServer :: Server TournamentRegistrationAPI
-tournamentRegistrationServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tournamentRegistrationServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
+  :<|> behaviorWithdraw
+  :<|> behaviorDisqualify
+  :<|> behaviorPromoteFromWaitlist
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, status, seed, final_standing, points_earned, registered_at, tournament_id, player_id, deck_id FROM tournament_registrations" :: IO [TournamentRegistration]
@@ -56,4 +70,31 @@ tournamentRegistrationServer = listAll :<|> create :<|> getOne :<|> update :<|> 
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM tournament_registrations WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorWithdraw eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, seed, final_standing, points_earned, registered_at, tournament_id, player_id, deck_id FROM tournament_registrations WHERE id = ?" (Only eid) :: IO [TournamentRegistration]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRegistrationSvc.withdraw eid
+          return NoContent
+
+    behaviorDisqualify eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, seed, final_standing, points_earned, registered_at, tournament_id, player_id, deck_id FROM tournament_registrations WHERE id = ?" (Only eid) :: IO [TournamentRegistration]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRegistrationSvc.disqualify eid
+          return NoContent
+
+    behaviorPromoteFromWaitlist eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, seed, final_standing, points_earned, registered_at, tournament_id, player_id, deck_id FROM tournament_registrations WHERE id = ?" (Only eid) :: IO [TournamentRegistration]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentRegistrationSvc.promote_from_waitlist eid
+          return NoContent
 

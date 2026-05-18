@@ -19,7 +19,12 @@ type TournamentPrizeAPI
   :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> DeleteNoContent
 
 tournamentPrizeServer :: Server TournamentPrizeAPI
-tournamentPrizeServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+tournamentPrizeServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, placement_from, placement_to, prize_type, amount, description, packs_count, season_points, tournament_id FROM tournament_prizes" :: IO [TournamentPrize]

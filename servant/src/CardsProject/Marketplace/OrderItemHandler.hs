@@ -19,7 +19,12 @@ type OrderItemAPI
   :<|> "api" :> "order_items" :> Capture "id" Int :> DeleteNoContent
 
 orderItemServer :: Server OrderItemAPI
-orderItemServer = listAll :<|> create :<|> getOne :<|> update :<|> partialUpdate :<|> delete
+orderItemServer = listAll
+  :<|> create
+  :<|> getOne
+  :<|> update
+  :<|> partialUpdate
+  :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, price_at_purchase, foil, order_id, product_id FROM order_items" :: IO [OrderItem]
