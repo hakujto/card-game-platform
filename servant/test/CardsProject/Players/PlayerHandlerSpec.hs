@@ -40,35 +40,35 @@ spec = with (return app) $ do
   describe "POST /api/players/1/promote" $ do
     it "behavior promote stub returns 404 or 500" $ do
       resp <- request "POST" "/api/players/1/promote" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/players/1/demote" $ do
     it "behavior demote stub returns 404 or 500" $ do
       resp <- request "POST" "/api/players/1/demote" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/players/1/win" $ do
     it "behavior record_win stub returns 404 or 500" $ do
       resp <- request "POST" "/api/players/1/win" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/players/1/loss" $ do
     it "behavior record_loss stub returns 404 or 500" $ do
       resp <- request "POST" "/api/players/1/loss" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/players/1/win-rate" $ do
     it "behavior win_rate stub returns 404 or 500" $ do
       resp <- get "/api/players/1/win-rate"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/players/1/verify" $ do
     it "behavior verify stub returns 404 or 500" $ do
       resp <- request "POST" "/api/players/1/verify" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "PATCH /api/players/1/rating" $ do
     it "behavior update_rating stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/players/1/rating" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

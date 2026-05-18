@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.AwardedPrizeService as AwardedPrizeSvc
+import Data.Text (Text)
 
 type AwardedPrizeAPI
   =    "api" :> "awarded_prizes" :> Get '[JSON] [AwardedPrize]
@@ -17,6 +19,7 @@ type AwardedPrizeAPI
   :<|> "api" :> "awarded_prizes" :> Capture "id" Int :> ReqBody '[JSON] NewAwardedPrize :> Put '[JSON] AwardedPrize
   :<|> "api" :> "awarded_prizes" :> Capture "id" Int :> ReqBody '[JSON] NewAwardedPrize :> Patch '[JSON] AwardedPrize
   :<|> "api" :> "awarded_prizes" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "awarded_prizes" :> Capture "id" Int :> "claim" :> Post '[JSON] NoContent
 
 awardedPrizeServer :: Server AwardedPrizeAPI
 awardedPrizeServer = listAll
@@ -25,6 +28,7 @@ awardedPrizeServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorClaim
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, final_placement, awarded_at, claimed, claimed_at, prize_id, player_id FROM awarded_prizes" :: IO [AwardedPrize]
@@ -61,4 +65,13 @@ awardedPrizeServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM awarded_prizes WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorClaim eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, final_placement, awarded_at, claimed, claimed_at, prize_id, player_id FROM awarded_prizes WHERE id = ?" (Only eid) :: IO [AwardedPrize]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ AwardedPrizeSvc.claim eid
+          return NoContent
 

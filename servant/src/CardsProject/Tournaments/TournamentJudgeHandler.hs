@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.TournamentJudgeService as TournamentJudgeSvc
+import Data.Text (Text)
 
 type TournamentJudgeAPI
   =    "api" :> "tournament_judges" :> Get '[JSON] [TournamentJudge]
@@ -16,6 +18,8 @@ type TournamentJudgeAPI
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> Get '[JSON] TournamentJudge
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentJudge :> Put '[JSON] TournamentJudge
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentJudge :> Patch '[JSON] TournamentJudge
+  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> "promote" :> Post '[JSON] NoContent
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> DeleteNoContent
 
 tournamentJudgeServer :: Server TournamentJudgeAPI
@@ -25,6 +29,8 @@ tournamentJudgeServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorPromoteToHead
+  :<|> behaviorRemove
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, role, tournament_id, player_id FROM tournament_judges" :: IO [TournamentJudge]
@@ -61,4 +67,22 @@ tournamentJudgeServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM tournament_judges WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorPromoteToHead eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, role, tournament_id, player_id FROM tournament_judges WHERE id = ?" (Only eid) :: IO [TournamentJudge]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentJudgeSvc.promote_to_head eid
+          return NoContent
+
+    behaviorRemove eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, role, tournament_id, player_id FROM tournament_judges WHERE id = ?" (Only eid) :: IO [TournamentJudge]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentJudgeSvc.remove eid
+          return NoContent
 

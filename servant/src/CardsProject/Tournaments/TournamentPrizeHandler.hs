@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Tournaments.TournamentPrizeService as TournamentPrizeSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type TournamentPrizeAPI
   =    "api" :> "tournament_prizes" :> Get '[JSON] [TournamentPrize]
@@ -17,6 +20,8 @@ type TournamentPrizeAPI
   :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentPrize :> Put '[JSON] TournamentPrize
   :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentPrize :> Patch '[JSON] TournamentPrize
   :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> "applies" :> Get '[JSON] Bool
+  :<|> "api" :> "tournament_prizes" :> Capture "id" Int :> "award" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 tournamentPrizeServer :: Server TournamentPrizeAPI
 tournamentPrizeServer = listAll
@@ -25,6 +30,8 @@ tournamentPrizeServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorAppliesToPlacement
+  :<|> behaviorAwardToPlayer
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, placement_from, placement_to, prize_type, amount, description, packs_count, season_points, tournament_id FROM tournament_prizes" :: IO [TournamentPrize]
@@ -61,4 +68,22 @@ tournamentPrizeServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM tournament_prizes WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorAppliesToPlacement eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, placement_from, placement_to, prize_type, amount, description, packs_count, season_points, tournament_id FROM tournament_prizes WHERE id = ?" (Only eid) :: IO [TournamentPrize]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ TournamentPrizeSvc.applies_to_placement eid
+          return result
+
+    behaviorAwardToPlayer eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, placement_from, placement_to, prize_type, amount, description, packs_count, season_points, tournament_id FROM tournament_prizes WHERE id = ?" (Only eid) :: IO [TournamentPrize]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentPrizeSvc.award_to_player eid
+          return NoContent
 

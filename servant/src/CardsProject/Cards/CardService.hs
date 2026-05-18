@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Cards.CardService
-  ( validateCard, ban, unban, restrict, unrestrict, calculate_value
+  ( validateCard, ban, unban, restrict, unrestrict, calculate_value, apply_rarity_bonus, is_legal_in_format
   ) where
 
 import CardsProject.Cards.Types
@@ -38,4 +38,16 @@ unrestrict eid = do
 calculate_value :: Int -> IO Text
 calculate_value eid = do
   throwIO (userError "calculate_value not implemented")
+
+-- @invoke behavior stub
+apply_rarity_bonus :: Int -> IO Text
+apply_rarity_bonus eid = do
+  -- params: multiplier: Int -- extract from body in handler when implementing
+  throwIO (userError "apply_rarity_bonus not implemented")
+
+-- @invoke behavior stub
+is_legal_in_format :: Int -> IO Bool
+is_legal_in_format eid = do
+  -- params: format: String -- extract from body in handler when implementing
+  throwIO (userError "is_legal_in_format not implemented")
 

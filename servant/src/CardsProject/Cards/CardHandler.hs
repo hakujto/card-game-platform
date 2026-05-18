@@ -10,6 +10,7 @@ import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Cards.CardService as CardSvc
+import Data.Aeson (Object)
 import Data.Text (Text)
 
 type CardAPI
@@ -24,6 +25,8 @@ type CardAPI
   :<|> "api" :> "cards" :> Capture "id" Int :> "restrict" :> Post '[JSON] NoContent
   :<|> "api" :> "cards" :> Capture "id" Int :> "unrestrict" :> Post '[JSON] NoContent
   :<|> "api" :> "cards" :> Capture "id" Int :> "value" :> Get '[JSON] Text
+  :<|> "api" :> "cards" :> Capture "id" Int :> "rarity-bonus" :> ReqBody '[JSON] Object :> Post '[JSON] Text
+  :<|> "api" :> "cards" :> Capture "id" Int :> "legal" :> Get '[JSON] Bool
 
 cardServer :: Server CardAPI
 cardServer = listAll
@@ -37,6 +40,8 @@ cardServer = listAll
   :<|> behaviorRestrict
   :<|> behaviorUnrestrict
   :<|> behaviorCalculateValue
+  :<|> behaviorApplyRarityBonus
+  :<|> behaviorIsLegalInFormat
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards" :: IO [Card]
@@ -117,5 +122,23 @@ cardServer = listAll
         []    -> throwError err404
         (_:_) -> do
           result <- liftIO $ CardSvc.calculate_value eid
+          return result
+
+    behaviorApplyRarityBonus eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSvc.apply_rarity_bonus eid
+          return result
+
+    behaviorIsLegalInFormat eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, rulings_id, abilities_id FROM cards WHERE id = ?" (Only eid) :: IO [Card]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSvc.is_legal_in_format eid
           return result
 

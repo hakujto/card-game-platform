@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Cards.DeckTagService
-  ( validateDeckTag, merge_into, rename
+  ( validateDeckTag, rename, merge_into
   ) where
 
 import CardsProject.Cards.Types
@@ -15,13 +15,14 @@ validateDeckTag :: NewDeckTag -> Either String NewDeckTag
 validateDeckTag body = Right body
 
 -- @invoke behavior stub
+rename :: Int -> IO ()
+rename eid = do
+  -- params: new_name: String -- extract from body in handler when implementing
+  throwIO (userError "rename not implemented")
+
+-- @invoke behavior stub
 merge_into :: Int -> IO ()
 merge_into eid = do
   -- params: target_tag_id: Int -- extract from body in handler when implementing
   throwIO (userError "merge_into not implemented")
-
--- domain behavior stub
-rename :: Text -> IO ()
-rename _newName =
-  throwIO (userError "rename not implemented")
 

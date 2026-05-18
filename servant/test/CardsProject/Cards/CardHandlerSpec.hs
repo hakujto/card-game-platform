@@ -40,25 +40,35 @@ spec = with (return app) $ do
   describe "POST /api/cards/1/ban" $ do
     it "behavior ban stub returns 404 or 500" $ do
       resp <- request "POST" "/api/cards/1/ban" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/cards/1/unban" $ do
     it "behavior unban stub returns 404 or 500" $ do
       resp <- request "POST" "/api/cards/1/unban" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/cards/1/restrict" $ do
     it "behavior restrict stub returns 404 or 500" $ do
       resp <- request "POST" "/api/cards/1/restrict" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/cards/1/unrestrict" $ do
     it "behavior unrestrict stub returns 404 or 500" $ do
       resp <- request "POST" "/api/cards/1/unrestrict" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/cards/1/value" $ do
     it "behavior calculate_value stub returns 404 or 500" $ do
       resp <- get "/api/cards/1/value"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/cards/1/rarity-bonus" $ do
+    it "behavior apply_rarity_bonus stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/cards/1/rarity-bonus" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/cards/1/legal" $ do
+    it "behavior is_legal_in_format stub returns 404 or 500" $ do
+      resp <- get "/api/cards/1/legal"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

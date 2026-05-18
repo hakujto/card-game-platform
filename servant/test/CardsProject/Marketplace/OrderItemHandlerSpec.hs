@@ -37,3 +37,8 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/order_items/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/order_items/1/total" $ do
+    it "behavior line_total stub returns 404 or 500" $ do
+      resp <- get "/api/order_items/1/total"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

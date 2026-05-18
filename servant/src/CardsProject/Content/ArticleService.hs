@@ -29,8 +29,8 @@ increment_view :: Int -> IO ()
 increment_view eid = do
   throwIO (userError "increment_view not implemented")
 
--- domain behavior stub
-reading_time_minutes :: IO Int
-reading_time_minutes  =
+-- @invoke behavior stub
+reading_time_minutes :: Int -> IO Int
+reading_time_minutes eid = do
   throwIO (userError "reading_time_minutes not implemented")
 

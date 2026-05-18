@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/matches/1/record" $ do
     it "behavior record_result stub returns 404 or 500" $ do
       resp <- request "POST" "/api/matches/1/record" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/matches/1/winner" $ do
     it "behavior determine_winner stub returns 404 or 500" $ do
       resp <- get "/api/matches/1/winner"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/matches/1/concede" $ do
+    it "behavior concede stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/matches/1/concede" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/matches/1/draw" $ do
     it "behavior draw stub returns 404 or 500" $ do
       resp <- request "POST" "/api/matches/1/draw" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

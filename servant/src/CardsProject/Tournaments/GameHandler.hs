@@ -21,6 +21,7 @@ type GameAPI
   :<|> "api" :> "games" :> Capture "id" Int :> ReqBody '[JSON] NewGame :> Patch '[JSON] Game
   :<|> "api" :> "games" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "games" :> Capture "id" Int :> "winner" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "games" :> Capture "id" Int :> "duration" :> Get '[JSON] Text
 
 gameServer :: Server GameAPI
 gameServer = listAll
@@ -30,6 +31,7 @@ gameServer = listAll
   :<|> partialUpdate
   :<|> delete
   :<|> behaviorRecordWinner
+  :<|> behaviorDurationMinutes
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id FROM games" :: IO [Game]
@@ -75,4 +77,13 @@ gameServer = listAll
         (_:_) -> do
           liftIO $ GameSvc.record_winner eid
           return NoContent
+
+    behaviorDurationMinutes eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id FROM games WHERE id = ?" (Only eid) :: IO [Game]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ GameSvc.duration_minutes eid
+          return result
 

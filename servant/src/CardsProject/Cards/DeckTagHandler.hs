@@ -20,6 +20,7 @@ type DeckTagAPI
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTag :> Put '[JSON] DeckTag
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTag :> Patch '[JSON] DeckTag
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "deck_tags" :> Capture "id" Int :> "rename" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
   :<|> "api" :> "deck_tags" :> Capture "id" Int :> "merge" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
 
 deckTagServer :: Server DeckTagAPI
@@ -29,6 +30,7 @@ deckTagServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorRename
   :<|> behaviorMergeInto
   where
     listAll = liftIO $ withDb $ \conn ->
@@ -66,6 +68,15 @@ deckTagServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM deck_tags WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorRename eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckTagSvc.rename eid
+          return NoContent
 
     behaviorMergeInto eid _body = do
       rows <- liftIO $ withDb $ \conn ->

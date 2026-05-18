@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.DeckCardService as DeckCardSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type DeckCardAPI
   =    "api" :> "deck_cards" :> Get '[JSON] [DeckCard]
@@ -17,6 +20,8 @@ type DeckCardAPI
   :<|> "api" :> "deck_cards" :> Capture "id" Int :> ReqBody '[JSON] NewDeckCard :> Put '[JSON] DeckCard
   :<|> "api" :> "deck_cards" :> Capture "id" Int :> ReqBody '[JSON] NewDeckCard :> Patch '[JSON] DeckCard
   :<|> "api" :> "deck_cards" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "deck_cards" :> Capture "id" Int :> "increment" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "deck_cards" :> Capture "id" Int :> "decrement" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
 
 deckCardServer :: Server DeckCardAPI
 deckCardServer = listAll
@@ -25,6 +30,8 @@ deckCardServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIncrement
+  :<|> behaviorDecrement
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, is_commander, deck_id, card_id FROM deck_cards" :: IO [DeckCard]
@@ -61,4 +68,22 @@ deckCardServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM deck_cards WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIncrement eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, is_commander, deck_id, card_id FROM deck_cards WHERE id = ?" (Only eid) :: IO [DeckCard]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckCardSvc.increment eid
+          return NoContent
+
+    behaviorDecrement eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, is_commander, deck_id, card_id FROM deck_cards WHERE id = ?" (Only eid) :: IO [DeckCard]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckCardSvc.decrement eid
+          return NoContent
 

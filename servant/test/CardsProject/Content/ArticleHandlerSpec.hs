@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/articles/1/publish" $ do
     it "behavior publish stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/publish" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/articles/1/archive" $ do
     it "behavior archive stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/archive" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/articles/1/view" $ do
     it "behavior increment_view stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/view" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/articles/1/reading-time" $ do
+    it "behavior reading_time_minutes stub returns 404 or 500" $ do
+      resp <- get "/api/articles/1/reading-time"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

@@ -21,6 +21,7 @@ type DraftParticipantAPI
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> ReqBody '[JSON] NewDraftParticipant :> Patch '[JSON] DraftParticipant
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "draft_participants" :> Capture "id" Int :> "pick" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "draft_participants" :> Capture "id" Int :> "card-count" :> Get '[JSON] Int
 
 draftParticipantServer :: Server DraftParticipantAPI
 draftParticipantServer = listAll
@@ -30,6 +31,7 @@ draftParticipantServer = listAll
   :<|> partialUpdate
   :<|> delete
   :<|> behaviorPickCard
+  :<|> behaviorDraftedCardCount
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, seat_number, joined_at, session_id, player_id, drafted_cards_id FROM draft_participants" :: IO [DraftParticipant]
@@ -75,4 +77,13 @@ draftParticipantServer = listAll
         (_:_) -> do
           liftIO $ DraftParticipantSvc.pick_card eid
           return NoContent
+
+    behaviorDraftedCardCount eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, seat_number, joined_at, session_id, player_id, drafted_cards_id FROM draft_participants WHERE id = ?" (Only eid) :: IO [DraftParticipant]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DraftParticipantSvc.drafted_card_count eid
+          return result
 

@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.PlayerAchievementService as PlayerAchievementSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type PlayerAchievementAPI
   =    "api" :> "player_achievements" :> Get '[JSON] [PlayerAchievement]
@@ -17,6 +20,8 @@ type PlayerAchievementAPI
   :<|> "api" :> "player_achievements" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerAchievement :> Put '[JSON] PlayerAchievement
   :<|> "api" :> "player_achievements" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerAchievement :> Patch '[JSON] PlayerAchievement
   :<|> "api" :> "player_achievements" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "progress" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
 
 playerAchievementServer :: Server PlayerAchievementAPI
 playerAchievementServer = listAll
@@ -25,6 +30,8 @@ playerAchievementServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIncrementProgress
+  :<|> behaviorComplete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements" :: IO [PlayerAchievement]
@@ -61,4 +68,22 @@ playerAchievementServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM player_achievements WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIncrementProgress eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements WHERE id = ?" (Only eid) :: IO [PlayerAchievement]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerAchievementSvc.increment_progress eid
+          return NoContent
+
+    behaviorComplete eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements WHERE id = ?" (Only eid) :: IO [PlayerAchievement]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerAchievementSvc.complete eid
+          return NoContent
 

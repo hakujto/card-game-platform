@@ -30,8 +30,8 @@ open_dispute eid = do
   -- params: reason: String -- extract from body in handler when implementing
   throwIO (userError "open_dispute not implemented")
 
--- domain behavior stub
-seller_net :: IO Text
-seller_net  =
+-- @invoke behavior stub
+seller_net :: Int -> IO Text
+seller_net eid = do
   throwIO (userError "seller_net not implemented")
 

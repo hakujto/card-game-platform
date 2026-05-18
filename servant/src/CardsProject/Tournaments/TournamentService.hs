@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Tournaments.TournamentService
-  ( validateTournament, start, cancel, complete, generate_round, calculate_prize_distribution, is_full
+  ( validateTournament, start, cancel, complete, generate_round, calculate_prize_distribution, register_player, is_full
   ) where
 
 import CardsProject.Tournaments.Types
@@ -39,8 +39,14 @@ calculate_prize_distribution :: Int -> IO Text
 calculate_prize_distribution eid = do
   throwIO (userError "calculate_prize_distribution not implemented")
 
--- domain behavior stub
-is_full :: IO Bool
-is_full  =
+-- @invoke behavior stub
+register_player :: Int -> IO ()
+register_player eid = do
+  -- params: player_id: Int, deck_id: Int -- extract from body in handler when implementing
+  throwIO (userError "register_player not implemented")
+
+-- @invoke behavior stub
+is_full :: Int -> IO Bool
+is_full eid = do
   throwIO (userError "is_full not implemented")
 

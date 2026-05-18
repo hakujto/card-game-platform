@@ -10,6 +10,7 @@ import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Players.PlayerCollectionService as PlayerCollectionSvc
+import Data.Aeson (Object)
 import Data.Text (Text)
 
 type PlayerCollectionAPI
@@ -19,6 +20,8 @@ type PlayerCollectionAPI
   :<|> "api" :> "player_collections" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerCollection :> Put '[JSON] PlayerCollection
   :<|> "api" :> "player_collections" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerCollection :> Patch '[JSON] PlayerCollection
   :<|> "api" :> "player_collections" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "player_collections" :> Capture "id" Int :> "add" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "player_collections" :> Capture "id" Int :> "remove" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
   :<|> "api" :> "player_collections" :> Capture "id" Int :> "value" :> Get '[JSON] Text
 
 playerCollectionServer :: Server PlayerCollectionAPI
@@ -28,6 +31,8 @@ playerCollectionServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorAdd
+  :<|> behaviorRemove
   :<|> behaviorEstimatedValue
   where
     listAll = liftIO $ withDb $ \conn ->
@@ -65,6 +70,24 @@ playerCollectionServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM player_collections WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorAdd eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only eid) :: IO [PlayerCollection]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerCollectionSvc.add eid
+          return NoContent
+
+    behaviorRemove eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only eid) :: IO [PlayerCollection]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerCollectionSvc.remove eid
+          return NoContent
 
     behaviorEstimatedValue eid = do
       rows <- liftIO $ withDb $ \conn ->

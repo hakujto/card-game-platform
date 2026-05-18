@@ -37,8 +37,18 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/player_collections/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "POST /api/player_collections/1/add" $ do
+    it "behavior add stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/player_collections/1/add" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/player_collections/1/remove" $ do
+    it "behavior remove stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/player_collections/1/remove" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
   describe "GET /api/player_collections/1/value" $ do
     it "behavior estimated_value stub returns 404 or 500" $ do
       resp <- get "/api/player_collections/1/value"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

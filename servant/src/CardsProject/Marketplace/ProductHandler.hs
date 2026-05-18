@@ -24,6 +24,8 @@ type ProductAPI
   :<|> "api" :> "products" :> Capture "id" Int :> "deactivate" :> Post '[JSON] NoContent
   :<|> "api" :> "products" :> Capture "id" Int :> "discount" :> ReqBody '[JSON] Object :> Patch '[JSON] Text
   :<|> "api" :> "products" :> Capture "id" Int :> "restock" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "products" :> Capture "id" Int :> "effective-price" :> Get '[JSON] Text
+  :<|> "api" :> "products" :> Capture "id" Int :> "in-stock" :> Get '[JSON] Bool
 
 productServer :: Server ProductAPI
 productServer = listAll
@@ -36,6 +38,8 @@ productServer = listAll
   :<|> behaviorDeactivate
   :<|> behaviorApplyDiscount
   :<|> behaviorRestock
+  :<|> behaviorEffectivePrice
+  :<|> behaviorIsInStock
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, product_type, price, stock, active, discount_percent, description, image_url, featured, card_id, card_set_id FROM products" :: IO [Product]
@@ -108,4 +112,22 @@ productServer = listAll
         (_:_) -> do
           liftIO $ ProductSvc.restock eid
           return NoContent
+
+    behaviorEffectivePrice eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, product_type, price, stock, active, discount_percent, description, image_url, featured, card_id, card_set_id FROM products WHERE id = ?" (Only eid) :: IO [Product]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ ProductSvc.effective_price eid
+          return result
+
+    behaviorIsInStock eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, product_type, price, stock, active, discount_percent, description, image_url, featured, card_id, card_set_id FROM products WHERE id = ?" (Only eid) :: IO [Product]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ ProductSvc.is_in_stock eid
+          return result
 

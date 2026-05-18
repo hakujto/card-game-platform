@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/tournament_judges/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "POST /api/tournament_judges/1/promote" $ do
+    it "behavior promote_to_head stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/tournament_judges/1/promote" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "DELETE /api/tournament_judges/1" $ do
+    it "behavior remove stub returns 404 or 500" $ do
+      resp <- request "DELETE" "/api/tournament_judges/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

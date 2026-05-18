@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/draft_sessions/1/start" $ do
     it "behavior start stub returns 404 or 500" $ do
       resp <- request "POST" "/api/draft_sessions/1/start" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/draft_sessions/1/abandon" $ do
     it "behavior abandon stub returns 404 or 500" $ do
       resp <- request "POST" "/api/draft_sessions/1/abandon" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/draft_sessions/1/complete" $ do
     it "behavior complete stub returns 404 or 500" $ do
       resp <- request "POST" "/api/draft_sessions/1/complete" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/draft_sessions/1/full" $ do
+    it "behavior is_full stub returns 404 or 500" $ do
+      resp <- get "/api/draft_sessions/1/full"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

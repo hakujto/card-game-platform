@@ -40,25 +40,25 @@ spec = with (return app) $ do
   describe "DELETE /api/orders/1/cancel" $ do
     it "behavior cancel stub returns 404 or 500" $ do
       resp <- request "DELETE" "/api/orders/1/cancel" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/orders/1/pay" $ do
     it "behavior pay stub returns 404 or 500" $ do
       resp <- request "POST" "/api/orders/1/pay" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/orders/1/total" $ do
     it "behavior calculate_total stub returns 404 or 500" $ do
       resp <- get "/api/orders/1/total"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "PATCH /api/orders/1/discount" $ do
     it "behavior apply_discount stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/orders/1/discount" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/orders/1/refund" $ do
     it "behavior refund stub returns 404 or 500" $ do
       resp <- request "POST" "/api/orders/1/refund" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

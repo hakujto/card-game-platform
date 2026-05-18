@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/card_price_histories/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/card_price_histories/1/change" $ do
+    it "behavior price_change_percent stub returns 404 or 500" $ do
+      resp <- get "/api/card_price_histories/1/change"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/card_price_histories/1/spike" $ do
+    it "behavior is_price_spike stub returns 404 or 500" $ do
+      resp <- get "/api/card_price_histories/1/spike"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

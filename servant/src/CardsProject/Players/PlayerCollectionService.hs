@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Players.PlayerCollectionService
-  ( validatePlayerCollection, estimated_value, add, remove
+  ( validatePlayerCollection, add, remove, estimated_value
   ) where
 
 import CardsProject.Players.Types
@@ -15,17 +15,19 @@ validatePlayerCollection :: NewPlayerCollection -> Either String NewPlayerCollec
 validatePlayerCollection body = Right body
 
 -- @invoke behavior stub
+add :: Int -> IO ()
+add eid = do
+  -- params: quantity: Int -- extract from body in handler when implementing
+  throwIO (userError "add not implemented")
+
+-- @invoke behavior stub
+remove :: Int -> IO ()
+remove eid = do
+  -- params: quantity: Int -- extract from body in handler when implementing
+  throwIO (userError "remove not implemented")
+
+-- @invoke behavior stub
 estimated_value :: Int -> IO Text
 estimated_value eid = do
   throwIO (userError "estimated_value not implemented")
-
--- domain behavior stub
-add :: Int -> IO ()
-add _quantity =
-  throwIO (userError "add not implemented")
-
--- domain behavior stub
-remove :: Int -> IO ()
-remove _quantity =
-  throwIO (userError "remove not implemented")
 

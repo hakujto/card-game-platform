@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Content.DraftPickService as DraftPickSvc
 
 type DraftPickAPI
   =    "api" :> "draft_picks" :> Get '[JSON] [DraftPick]
@@ -17,6 +18,7 @@ type DraftPickAPI
   :<|> "api" :> "draft_picks" :> Capture "id" Int :> ReqBody '[JSON] NewDraftPick :> Put '[JSON] DraftPick
   :<|> "api" :> "draft_picks" :> Capture "id" Int :> ReqBody '[JSON] NewDraftPick :> Patch '[JSON] DraftPick
   :<|> "api" :> "draft_picks" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "draft_picks" :> Capture "id" Int :> "first-pick" :> Get '[JSON] Bool
 
 draftPickServer :: Server DraftPickAPI
 draftPickServer = listAll
@@ -25,6 +27,7 @@ draftPickServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIsFirstPick
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, pick_number, pack_number, picked_at, participant_id, card_id FROM draft_picks" :: IO [DraftPick]
@@ -61,4 +64,13 @@ draftPickServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM draft_picks WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIsFirstPick eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, pick_number, pack_number, picked_at, participant_id, card_id FROM draft_picks WHERE id = ?" (Only eid) :: IO [DraftPick]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DraftPickSvc.is_first_pick eid
+          return result
 

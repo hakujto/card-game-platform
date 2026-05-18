@@ -29,8 +29,8 @@ finalize_rewards :: Int -> IO ()
 finalize_rewards eid = do
   throwIO (userError "finalize_rewards not implemented")
 
--- domain behavior stub
-is_ongoing :: IO Bool
-is_ongoing  =
+-- @invoke behavior stub
+is_ongoing :: Int -> IO Bool
+is_ongoing eid = do
   throwIO (userError "is_ongoing not implemented")
 

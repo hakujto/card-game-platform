@@ -36,13 +36,13 @@ restock eid = do
   -- params: quantity: Int -- extract from body in handler when implementing
   throwIO (userError "restock not implemented")
 
--- domain behavior stub
-effective_price :: IO Text
-effective_price  =
+-- @invoke behavior stub
+effective_price :: Int -> IO Text
+effective_price eid = do
   throwIO (userError "effective_price not implemented")
 
--- domain behavior stub
-is_in_stock :: IO Bool
-is_in_stock  =
+-- @invoke behavior stub
+is_in_stock :: Int -> IO Bool
+is_in_stock eid = do
   throwIO (userError "is_in_stock not implemented")
 

@@ -7,23 +7,26 @@ import CardsProject.Players.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Database.SQLite.Simple
+import CardsProject.Db (withDb)
 
 -- Domain service stub for PlayerSeasonStats
 validatePlayerSeasonStats :: NewPlayerSeasonStats -> Either String NewPlayerSeasonStats
 validatePlayerSeasonStats body = Right body
 
--- domain behavior stub
-win_rate :: IO Text
-win_rate  =
+-- @invoke behavior stub
+win_rate :: Int -> IO Text
+win_rate eid = do
   throwIO (userError "win_rate not implemented")
 
--- domain behavior stub
+-- @invoke behavior stub
 add_points :: Int -> IO ()
-add_points _points =
+add_points eid = do
+  -- params: points: Int -- extract from body in handler when implementing
   throwIO (userError "add_points not implemented")
 
--- domain behavior stub
-record_tournament_win :: IO ()
-record_tournament_win  =
+-- @invoke behavior stub
+record_tournament_win :: Int -> IO ()
+record_tournament_win eid = do
   throwIO (userError "record_tournament_win not implemented")
 

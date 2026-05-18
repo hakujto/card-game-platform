@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/trade_bids/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/trade_bids/1/outbid" $ do
+    it "behavior outbid_by stub returns 404 or 500" $ do
+      resp <- get "/api/trade_bids/1/outbid"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "DELETE /api/trade_bids/1" $ do
+    it "behavior retract stub returns 404 or 500" $ do
+      resp <- request "DELETE" "/api/trade_bids/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

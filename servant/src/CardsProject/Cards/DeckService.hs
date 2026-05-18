@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Cards.DeckService
-  ( validateDeck, validate_size, clone, publish, unpublish, certify_tournament_legal
+  ( validateDeck, validate_size, add_card, remove_card, win_rate, clone, publish, unpublish, certify_tournament_legal
   ) where
 
 import CardsProject.Cards.Types
@@ -18,6 +18,23 @@ validateDeck body = Right body
 validate_size :: Int -> IO Bool
 validate_size eid = do
   throwIO (userError "validate_size not implemented")
+
+-- @invoke behavior stub
+add_card :: Int -> IO ()
+add_card eid = do
+  -- params: card_id: Int, quantity: Int -- extract from body in handler when implementing
+  throwIO (userError "add_card not implemented")
+
+-- @invoke behavior stub
+remove_card :: Int -> IO ()
+remove_card eid = do
+  -- params: card_id: Int -- extract from body in handler when implementing
+  throwIO (userError "remove_card not implemented")
+
+-- @invoke behavior stub
+win_rate :: Int -> IO Text
+win_rate eid = do
+  throwIO (userError "win_rate not implemented")
 
 -- @invoke behavior stub
 clone :: Int -> IO Text

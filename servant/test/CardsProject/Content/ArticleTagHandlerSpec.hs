@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/article_tags/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "PATCH /api/article_tags/1/rename" $ do
+    it "behavior rename stub returns 404 or 500" $ do
+      resp <- request "PATCH" "/api/article_tags/1/rename" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/article_tags/1/article-count" $ do
+    it "behavior article_count stub returns 404 or 500" $ do
+      resp <- get "/api/article_tags/1/article-count"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

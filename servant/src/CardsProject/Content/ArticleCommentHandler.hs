@@ -21,6 +21,7 @@ type ArticleCommentAPI
   :<|> "api" :> "article_comments" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "article_comments" :> Capture "id" Int :> "hide" :> Post '[JSON] NoContent
   :<|> "api" :> "article_comments" :> Capture "id" Int :> "unhide" :> Post '[JSON] NoContent
+  :<|> "api" :> "article_comments" :> Capture "id" Int :> "is-reply" :> Get '[JSON] Bool
 
 articleCommentServer :: Server ArticleCommentAPI
 articleCommentServer = listAll
@@ -31,6 +32,7 @@ articleCommentServer = listAll
   :<|> delete
   :<|> behaviorHide
   :<|> behaviorUnhide
+  :<|> behaviorIsReply
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments" :: IO [ArticleComment]
@@ -85,4 +87,13 @@ articleCommentServer = listAll
         (_:_) -> do
           liftIO $ ArticleCommentSvc.unhide eid
           return NoContent
+
+    behaviorIsReply eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments WHERE id = ?" (Only eid) :: IO [ArticleComment]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ ArticleCommentSvc.is_reply eid
+          return result
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Tournaments.MatchService
-  ( validateMatch, record_result, determine_winner, draw
+  ( validateMatch, record_result, determine_winner, concede, draw
   ) where
 
 import CardsProject.Tournaments.Types
@@ -25,6 +25,12 @@ record_result eid = do
 determine_winner :: Int -> IO Bool
 determine_winner eid = do
   throwIO (userError "determine_winner not implemented")
+
+-- @invoke behavior stub
+concede :: Int -> IO ()
+concede eid = do
+  -- params: player_id: Int -- extract from body in handler when implementing
+  throwIO (userError "concede not implemented")
 
 -- @invoke behavior stub
 draw :: Int -> IO ()

@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/achievements/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/achievements/1/point-value" $ do
+    it "behavior point_value stub returns 404 or 500" $ do
+      resp <- get "/api/achievements/1/point-value"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/achievements/1/reveal" $ do
+    it "behavior reveal stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/achievements/1/reveal" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.DeckSideboardCardService as DeckSideboardCardSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type DeckSideboardCardAPI
   =    "api" :> "deck_sideboard_cards" :> Get '[JSON] [DeckSideboardCard]
@@ -17,6 +20,8 @@ type DeckSideboardCardAPI
   :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> ReqBody '[JSON] NewDeckSideboardCard :> Put '[JSON] DeckSideboardCard
   :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> ReqBody '[JSON] NewDeckSideboardCard :> Patch '[JSON] DeckSideboardCard
   :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> "increment" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "deck_sideboard_cards" :> Capture "id" Int :> "decrement" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
 
 deckSideboardCardServer :: Server DeckSideboardCardAPI
 deckSideboardCardServer = listAll
@@ -25,6 +30,8 @@ deckSideboardCardServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIncrement
+  :<|> behaviorDecrement
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, quantity, deck_id, card_id FROM deck_sideboard_cards" :: IO [DeckSideboardCard]
@@ -61,4 +68,22 @@ deckSideboardCardServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM deck_sideboard_cards WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIncrement eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, deck_id, card_id FROM deck_sideboard_cards WHERE id = ?" (Only eid) :: IO [DeckSideboardCard]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSideboardCardSvc.increment eid
+          return NoContent
+
+    behaviorDecrement eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, quantity, deck_id, card_id FROM deck_sideboard_cards WHERE id = ?" (Only eid) :: IO [DeckSideboardCard]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSideboardCardSvc.decrement eid
+          return NoContent
 

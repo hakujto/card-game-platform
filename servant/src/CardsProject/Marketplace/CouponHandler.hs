@@ -19,6 +19,8 @@ type CouponAPI
   :<|> "api" :> "coupons" :> Capture "id" Int :> ReqBody '[JSON] NewCoupon :> Put '[JSON] Coupon
   :<|> "api" :> "coupons" :> Capture "id" Int :> ReqBody '[JSON] NewCoupon :> Patch '[JSON] Coupon
   :<|> "api" :> "coupons" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "coupons" :> Capture "id" Int :> "valid" :> Get '[JSON] Bool
+  :<|> "api" :> "coupons" :> Capture "id" Int :> "applicable" :> Get '[JSON] Bool
   :<|> "api" :> "coupons" :> Capture "id" Int :> "redeem" :> Post '[JSON] NoContent
   :<|> "api" :> "coupons" :> Capture "id" Int :> "deactivate" :> Post '[JSON] NoContent
 
@@ -29,6 +31,8 @@ couponServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIsValid
+  :<|> behaviorIsApplicableToOrder
   :<|> behaviorRedeem
   :<|> behaviorDeactivate
   where
@@ -67,6 +71,24 @@ couponServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM coupons WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIsValid eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CouponSvc.is_valid eid
+          return result
+
+    behaviorIsApplicableToOrder eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CouponSvc.is_applicable_to_order eid
+          return result
 
     behaviorRedeem eid = do
       rows <- liftIO $ withDb $ \conn ->

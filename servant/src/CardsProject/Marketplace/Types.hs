@@ -371,179 +371,179 @@ instance FromJSON NewCoupon where
 instance ToRow NewCoupon where
   toRow b = [toField (bCouponCode b), toField (bCouponDiscountType b), toField (bCouponDiscountValue b), toField (bCouponMinOrderValue b), toField (bCouponMaxUses b), toField (bCouponUsesCount b), toField (bCouponValidFrom b), toField (bCouponValidUntil b), toField (bCouponIsActive b)]
 
-data TradelistingListingTypeType
-  = TradelistingListingTypeType_FixedPrice
-  | TradelistingListingTypeType_Auction
-  | TradelistingListingTypeType_TradeOffer
+data TradeListingListingTypeType
+  = TradeListingListingTypeType_FixedPrice
+  | TradeListingListingTypeType_Auction
+  | TradeListingListingTypeType_TradeOffer
   deriving (Show, Eq, Generic)
 
-instance ToJSON TradelistingListingTypeType where
+instance ToJSON TradeListingListingTypeType where
   toJSON v = case v of
-    TradelistingListingTypeType_FixedPrice -> toJSON ("FixedPrice" :: Text)
-    TradelistingListingTypeType_Auction -> toJSON ("Auction" :: Text)
-    TradelistingListingTypeType_TradeOffer -> toJSON ("TradeOffer" :: Text)
-instance FromJSON TradelistingListingTypeType where
-  parseJSON = withText "TradelistingListingTypeType" $ \txt ->
-    if txt == "FixedPrice" then pure TradelistingListingTypeType_FixedPrice
-    else if txt == "Auction" then pure TradelistingListingTypeType_Auction
-    else if txt == "TradeOffer" then pure TradelistingListingTypeType_TradeOffer
-    else fail ("Unknown TradelistingListingTypeType: " ++ show txt)
+    TradeListingListingTypeType_FixedPrice -> toJSON ("FixedPrice" :: Text)
+    TradeListingListingTypeType_Auction -> toJSON ("Auction" :: Text)
+    TradeListingListingTypeType_TradeOffer -> toJSON ("TradeOffer" :: Text)
+instance FromJSON TradeListingListingTypeType where
+  parseJSON = withText "TradeListingListingTypeType" $ \txt ->
+    if txt == "FixedPrice" then pure TradeListingListingTypeType_FixedPrice
+    else if txt == "Auction" then pure TradeListingListingTypeType_Auction
+    else if txt == "TradeOffer" then pure TradeListingListingTypeType_TradeOffer
+    else fail ("Unknown TradeListingListingTypeType: " ++ show txt)
 
-instance ToField TradelistingListingTypeType where
-  toField TradelistingListingTypeType_FixedPrice = toField ("FixedPrice" :: Text)
-  toField TradelistingListingTypeType_Auction = toField ("Auction" :: Text)
-  toField TradelistingListingTypeType_TradeOffer = toField ("TradeOffer" :: Text)
+instance ToField TradeListingListingTypeType where
+  toField TradeListingListingTypeType_FixedPrice = toField ("FixedPrice" :: Text)
+  toField TradeListingListingTypeType_Auction = toField ("Auction" :: Text)
+  toField TradeListingListingTypeType_TradeOffer = toField ("TradeOffer" :: Text)
 
-instance FromField TradelistingListingTypeType where
+instance FromField TradeListingListingTypeType where
   fromField f = do
     txt <- fromField f :: Ok Text
-    if txt == "FixedPrice" then return TradelistingListingTypeType_FixedPrice
-    else if txt == "Auction" then return TradelistingListingTypeType_Auction
-    else if txt == "TradeOffer" then return TradelistingListingTypeType_TradeOffer
-    else returnError ConversionFailed f ("Unknown TradelistingListingTypeType: " ++ show txt)
+    if txt == "FixedPrice" then return TradeListingListingTypeType_FixedPrice
+    else if txt == "Auction" then return TradeListingListingTypeType_Auction
+    else if txt == "TradeOffer" then return TradeListingListingTypeType_TradeOffer
+    else returnError ConversionFailed f ("Unknown TradeListingListingTypeType: " ++ show txt)
 
-data TradelistingConditionType
-  = TradelistingConditionType_Mint
-  | TradelistingConditionType_NearMint
-  | TradelistingConditionType_Excellent
-  | TradelistingConditionType_Good
-  | TradelistingConditionType_Played
+data TradeListingConditionType
+  = TradeListingConditionType_Mint
+  | TradeListingConditionType_NearMint
+  | TradeListingConditionType_Excellent
+  | TradeListingConditionType_Good
+  | TradeListingConditionType_Played
   deriving (Show, Eq, Generic)
 
-instance ToJSON TradelistingConditionType where
+instance ToJSON TradeListingConditionType where
   toJSON v = case v of
-    TradelistingConditionType_Mint -> toJSON ("Mint" :: Text)
-    TradelistingConditionType_NearMint -> toJSON ("NearMint" :: Text)
-    TradelistingConditionType_Excellent -> toJSON ("Excellent" :: Text)
-    TradelistingConditionType_Good -> toJSON ("Good" :: Text)
-    TradelistingConditionType_Played -> toJSON ("Played" :: Text)
-instance FromJSON TradelistingConditionType where
-  parseJSON = withText "TradelistingConditionType" $ \txt ->
-    if txt == "Mint" then pure TradelistingConditionType_Mint
-    else if txt == "NearMint" then pure TradelistingConditionType_NearMint
-    else if txt == "Excellent" then pure TradelistingConditionType_Excellent
-    else if txt == "Good" then pure TradelistingConditionType_Good
-    else if txt == "Played" then pure TradelistingConditionType_Played
-    else fail ("Unknown TradelistingConditionType: " ++ show txt)
+    TradeListingConditionType_Mint -> toJSON ("Mint" :: Text)
+    TradeListingConditionType_NearMint -> toJSON ("NearMint" :: Text)
+    TradeListingConditionType_Excellent -> toJSON ("Excellent" :: Text)
+    TradeListingConditionType_Good -> toJSON ("Good" :: Text)
+    TradeListingConditionType_Played -> toJSON ("Played" :: Text)
+instance FromJSON TradeListingConditionType where
+  parseJSON = withText "TradeListingConditionType" $ \txt ->
+    if txt == "Mint" then pure TradeListingConditionType_Mint
+    else if txt == "NearMint" then pure TradeListingConditionType_NearMint
+    else if txt == "Excellent" then pure TradeListingConditionType_Excellent
+    else if txt == "Good" then pure TradeListingConditionType_Good
+    else if txt == "Played" then pure TradeListingConditionType_Played
+    else fail ("Unknown TradeListingConditionType: " ++ show txt)
 
-instance ToField TradelistingConditionType where
-  toField TradelistingConditionType_Mint = toField ("Mint" :: Text)
-  toField TradelistingConditionType_NearMint = toField ("NearMint" :: Text)
-  toField TradelistingConditionType_Excellent = toField ("Excellent" :: Text)
-  toField TradelistingConditionType_Good = toField ("Good" :: Text)
-  toField TradelistingConditionType_Played = toField ("Played" :: Text)
+instance ToField TradeListingConditionType where
+  toField TradeListingConditionType_Mint = toField ("Mint" :: Text)
+  toField TradeListingConditionType_NearMint = toField ("NearMint" :: Text)
+  toField TradeListingConditionType_Excellent = toField ("Excellent" :: Text)
+  toField TradeListingConditionType_Good = toField ("Good" :: Text)
+  toField TradeListingConditionType_Played = toField ("Played" :: Text)
 
-instance FromField TradelistingConditionType where
+instance FromField TradeListingConditionType where
   fromField f = do
     txt <- fromField f :: Ok Text
-    if txt == "Mint" then return TradelistingConditionType_Mint
-    else if txt == "NearMint" then return TradelistingConditionType_NearMint
-    else if txt == "Excellent" then return TradelistingConditionType_Excellent
-    else if txt == "Good" then return TradelistingConditionType_Good
-    else if txt == "Played" then return TradelistingConditionType_Played
-    else returnError ConversionFailed f ("Unknown TradelistingConditionType: " ++ show txt)
+    if txt == "Mint" then return TradeListingConditionType_Mint
+    else if txt == "NearMint" then return TradeListingConditionType_NearMint
+    else if txt == "Excellent" then return TradeListingConditionType_Excellent
+    else if txt == "Good" then return TradeListingConditionType_Good
+    else if txt == "Played" then return TradeListingConditionType_Played
+    else returnError ConversionFailed f ("Unknown TradeListingConditionType: " ++ show txt)
 
-data TradelistingStatusType
-  = TradelistingStatusType_Active
-  | TradelistingStatusType_Sold
-  | TradelistingStatusType_Expired
-  | TradelistingStatusType_Cancelled
-  | TradelistingStatusType_Pending
+data TradeListingStatusType
+  = TradeListingStatusType_Active
+  | TradeListingStatusType_Sold
+  | TradeListingStatusType_Expired
+  | TradeListingStatusType_Cancelled
+  | TradeListingStatusType_Pending
   deriving (Show, Eq, Generic)
 
-instance ToJSON TradelistingStatusType where
+instance ToJSON TradeListingStatusType where
   toJSON v = case v of
-    TradelistingStatusType_Active -> toJSON ("Active" :: Text)
-    TradelistingStatusType_Sold -> toJSON ("Sold" :: Text)
-    TradelistingStatusType_Expired -> toJSON ("Expired" :: Text)
-    TradelistingStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
-    TradelistingStatusType_Pending -> toJSON ("Pending" :: Text)
-instance FromJSON TradelistingStatusType where
-  parseJSON = withText "TradelistingStatusType" $ \txt ->
-    if txt == "Active" then pure TradelistingStatusType_Active
-    else if txt == "Sold" then pure TradelistingStatusType_Sold
-    else if txt == "Expired" then pure TradelistingStatusType_Expired
-    else if txt == "Cancelled" then pure TradelistingStatusType_Cancelled
-    else if txt == "Pending" then pure TradelistingStatusType_Pending
-    else fail ("Unknown TradelistingStatusType: " ++ show txt)
+    TradeListingStatusType_Active -> toJSON ("Active" :: Text)
+    TradeListingStatusType_Sold -> toJSON ("Sold" :: Text)
+    TradeListingStatusType_Expired -> toJSON ("Expired" :: Text)
+    TradeListingStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
+    TradeListingStatusType_Pending -> toJSON ("Pending" :: Text)
+instance FromJSON TradeListingStatusType where
+  parseJSON = withText "TradeListingStatusType" $ \txt ->
+    if txt == "Active" then pure TradeListingStatusType_Active
+    else if txt == "Sold" then pure TradeListingStatusType_Sold
+    else if txt == "Expired" then pure TradeListingStatusType_Expired
+    else if txt == "Cancelled" then pure TradeListingStatusType_Cancelled
+    else if txt == "Pending" then pure TradeListingStatusType_Pending
+    else fail ("Unknown TradeListingStatusType: " ++ show txt)
 
-instance ToField TradelistingStatusType where
-  toField TradelistingStatusType_Active = toField ("Active" :: Text)
-  toField TradelistingStatusType_Sold = toField ("Sold" :: Text)
-  toField TradelistingStatusType_Expired = toField ("Expired" :: Text)
-  toField TradelistingStatusType_Cancelled = toField ("Cancelled" :: Text)
-  toField TradelistingStatusType_Pending = toField ("Pending" :: Text)
+instance ToField TradeListingStatusType where
+  toField TradeListingStatusType_Active = toField ("Active" :: Text)
+  toField TradeListingStatusType_Sold = toField ("Sold" :: Text)
+  toField TradeListingStatusType_Expired = toField ("Expired" :: Text)
+  toField TradeListingStatusType_Cancelled = toField ("Cancelled" :: Text)
+  toField TradeListingStatusType_Pending = toField ("Pending" :: Text)
 
-instance FromField TradelistingStatusType where
+instance FromField TradeListingStatusType where
   fromField f = do
     txt <- fromField f :: Ok Text
-    if txt == "Active" then return TradelistingStatusType_Active
-    else if txt == "Sold" then return TradelistingStatusType_Sold
-    else if txt == "Expired" then return TradelistingStatusType_Expired
-    else if txt == "Cancelled" then return TradelistingStatusType_Cancelled
-    else if txt == "Pending" then return TradelistingStatusType_Pending
-    else returnError ConversionFailed f ("Unknown TradelistingStatusType: " ++ show txt)
+    if txt == "Active" then return TradeListingStatusType_Active
+    else if txt == "Sold" then return TradeListingStatusType_Sold
+    else if txt == "Expired" then return TradeListingStatusType_Expired
+    else if txt == "Cancelled" then return TradeListingStatusType_Cancelled
+    else if txt == "Pending" then return TradeListingStatusType_Pending
+    else returnError ConversionFailed f ("Unknown TradeListingStatusType: " ++ show txt)
 
-_tradelistingOpts :: Options
-_tradelistingOpts = defaultOptions
+_tradeListingOpts :: Options
+_tradeListingOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 12 }
 
-data Tradelisting = Tradelisting
-  { tradelistingId :: Int
-  , tradelistingListingType :: TradelistingListingTypeType
-  , tradelistingAskingPrice :: Maybe Text
-  , tradelistingAuctionStartPrice :: Maybe Text
-  , tradelistingAuctionCurrentBid :: Maybe Text
-  , tradelistingAuctionEndTime :: Maybe Text
-  , tradelistingFoil :: Bool
-  , tradelistingCondition :: TradelistingConditionType
-  , tradelistingQuantity :: Int
-  , tradelistingStatus :: TradelistingStatusType
-  , tradelistingDescription :: Maybe Text
-  , tradelistingCreatedAt :: Text
-  , tradelistingExpiresAt :: Maybe Text
-  , tradelistingSellerId :: Maybe Int
-  , tradelistingCardId :: Maybe Int
-  , tradelistingBidsId :: Maybe Int
+data TradeListing = TradeListing
+  { tradeListingId :: Int
+  , tradeListingListingType :: TradeListingListingTypeType
+  , tradeListingAskingPrice :: Maybe Text
+  , tradeListingAuctionStartPrice :: Maybe Text
+  , tradeListingAuctionCurrentBid :: Maybe Text
+  , tradeListingAuctionEndTime :: Maybe Text
+  , tradeListingFoil :: Bool
+  , tradeListingCondition :: TradeListingConditionType
+  , tradeListingQuantity :: Int
+  , tradeListingStatus :: TradeListingStatusType
+  , tradeListingDescription :: Maybe Text
+  , tradeListingCreatedAt :: Text
+  , tradeListingExpiresAt :: Maybe Text
+  , tradeListingSellerId :: Maybe Int
+  , tradeListingCardId :: Maybe Int
+  , tradeListingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
-instance ToJSON Tradelisting where
-  toJSON = genericToJSON _tradelistingOpts
-instance FromJSON Tradelisting where
-  parseJSON = genericParseJSON _tradelistingOpts
+instance ToJSON TradeListing where
+  toJSON = genericToJSON _tradeListingOpts
+instance FromJSON TradeListing where
+  parseJSON = genericParseJSON _tradeListingOpts
 
-instance FromRow Tradelisting where
-  fromRow = Tradelisting <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+instance FromRow TradeListing where
+  fromRow = TradeListing <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
-_newTradelistingOpts :: Options
-_newTradelistingOpts = defaultOptions
+_newTradeListingOpts :: Options
+_newTradeListingOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 13 }
 
-data NewTradelisting = NewTradelisting
-  { bTradelistingListingType :: TradelistingListingTypeType
-  , bTradelistingAskingPrice :: Maybe Text
-  , bTradelistingAuctionStartPrice :: Maybe Text
-  , bTradelistingAuctionCurrentBid :: Maybe Text
-  , bTradelistingAuctionEndTime :: Maybe Text
-  , bTradelistingFoil :: Bool
-  , bTradelistingCondition :: TradelistingConditionType
-  , bTradelistingQuantity :: Int
-  , bTradelistingStatus :: TradelistingStatusType
-  , bTradelistingDescription :: Maybe Text
-  , bTradelistingCreatedAt :: Text
-  , bTradelistingExpiresAt :: Maybe Text
-  , bTradelistingSellerId :: Maybe Int
-  , bTradelistingCardId :: Maybe Int
-  , bTradelistingBidsId :: Maybe Int
+data NewTradeListing = NewTradeListing
+  { bTradeListingListingType :: TradeListingListingTypeType
+  , bTradeListingAskingPrice :: Maybe Text
+  , bTradeListingAuctionStartPrice :: Maybe Text
+  , bTradeListingAuctionCurrentBid :: Maybe Text
+  , bTradeListingAuctionEndTime :: Maybe Text
+  , bTradeListingFoil :: Bool
+  , bTradeListingCondition :: TradeListingConditionType
+  , bTradeListingQuantity :: Int
+  , bTradeListingStatus :: TradeListingStatusType
+  , bTradeListingDescription :: Maybe Text
+  , bTradeListingCreatedAt :: Text
+  , bTradeListingExpiresAt :: Maybe Text
+  , bTradeListingSellerId :: Maybe Int
+  , bTradeListingCardId :: Maybe Int
+  , bTradeListingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
-instance ToJSON NewTradelisting where
-  toJSON = genericToJSON _newTradelistingOpts
-instance FromJSON NewTradelisting where
-  parseJSON = genericParseJSON _newTradelistingOpts
+instance ToJSON NewTradeListing where
+  toJSON = genericToJSON _newTradeListingOpts
+instance FromJSON NewTradeListing where
+  parseJSON = genericParseJSON _newTradeListingOpts
 
-instance ToRow NewTradelisting where
-  toRow b = [toField (bTradelistingListingType b), toField (bTradelistingAskingPrice b), toField (bTradelistingAuctionStartPrice b), toField (bTradelistingAuctionCurrentBid b), toField (bTradelistingAuctionEndTime b), toField (bTradelistingFoil b), toField (bTradelistingCondition b), toField (bTradelistingQuantity b), toField (bTradelistingStatus b), toField (bTradelistingDescription b), toField (bTradelistingCreatedAt b), toField (bTradelistingExpiresAt b), toField (bTradelistingSellerId b), toField (bTradelistingCardId b), toField (bTradelistingBidsId b)]
+instance ToRow NewTradeListing where
+  toRow b = [toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingStatus b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b), toField (bTradeListingBidsId b)]
 
 _tradeBidOpts :: Options
 _tradeBidOpts = defaultOptions

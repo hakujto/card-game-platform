@@ -22,6 +22,7 @@ type ArticleAPI
   :<|> "api" :> "articles" :> Capture "id" Int :> "publish" :> Post '[JSON] NoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "archive" :> Post '[JSON] NoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "view" :> Post '[JSON] NoContent
+  :<|> "api" :> "articles" :> Capture "id" Int :> "reading-time" :> Get '[JSON] Int
 
 articleServer :: Server ArticleAPI
 articleServer = listAll
@@ -33,6 +34,7 @@ articleServer = listAll
   :<|> behaviorPublish
   :<|> behaviorArchive
   :<|> behaviorIncrementView
+  :<|> behaviorReadingTimeMinutes
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, view_count, published_at, created_at, updated_at, author_id, featured_deck_id, comments_id FROM articles" :: IO [Article]
@@ -96,4 +98,13 @@ articleServer = listAll
         (_:_) -> do
           liftIO $ ArticleSvc.increment_view eid
           return NoContent
+
+    behaviorReadingTimeMinutes eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, view_count, published_at, created_at, updated_at, author_id, featured_deck_id, comments_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ ArticleSvc.reading_time_minutes eid
+          return result
 

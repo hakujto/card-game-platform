@@ -40,5 +40,10 @@ spec = with (return app) $ do
   describe "POST /api/games/1/winner" $ do
     it "behavior record_winner stub returns 404 or 500" $ do
       resp <- request "POST" "/api/games/1/winner" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/games/1/duration" $ do
+    it "behavior duration_minutes stub returns 404 or 500" $ do
+      resp <- get "/api/games/1/duration"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

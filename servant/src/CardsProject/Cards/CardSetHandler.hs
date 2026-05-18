@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.CardSetService as CardSetSvc
+import Data.Text (Text)
 
 type CardSetAPI
   =    "api" :> "card_sets" :> Get '[JSON] [CardSet]
@@ -17,6 +19,10 @@ type CardSetAPI
   :<|> "api" :> "card_sets" :> Capture "id" Int :> ReqBody '[JSON] NewCardSet :> Put '[JSON] CardSet
   :<|> "api" :> "card_sets" :> Capture "id" Int :> ReqBody '[JSON] NewCardSet :> Patch '[JSON] CardSet
   :<|> "api" :> "card_sets" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "card_sets" :> Capture "id" Int :> "standard-legal" :> Get '[JSON] Bool
+  :<|> "api" :> "card_sets" :> Capture "id" Int :> "legal" :> Get '[JSON] Bool
+  :<|> "api" :> "card_sets" :> Capture "id" Int :> "rarity-count" :> Get '[JSON] Int
+  :<|> "api" :> "card_sets" :> Capture "id" Int :> "rotate" :> Post '[JSON] NoContent
 
 cardSetServer :: Server CardSetAPI
 cardSetServer = listAll
@@ -25,15 +31,19 @@ cardSetServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIsLegalInStandard
+  :<|> behaviorIsLegalInFormat
+  :<|> behaviorCardCountByRarity
+  :<|> behaviorRotateOut
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, name, code, release_date, set_type, total_cards, description, logo_url FROM card_sets" :: IO [CardSet]
+      query_ conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets" :: IO [CardSet]
 
     create body = do
       mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO card_sets (name, code, release_date, set_type, total_cards, description, logo_url) VALUES (?, ?, ?, ?, ?, ?, ?)" body
+        execute conn "INSERT INTO card_sets (name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" body
         rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, name, code, release_date, set_type, total_cards, description, logo_url FROM card_sets WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [CardSet]
+        rows <- query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [CardSet]
         return $ case rows of { (r:_) -> Just r; [] -> Nothing }
       case mRow of
         Just r  -> return r
@@ -41,7 +51,7 @@ cardSetServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, code, release_date, set_type, total_cards, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -49,8 +59,8 @@ cardSetServer = listAll
     update eid body = do
       rows <- liftIO $ withDb $ \conn -> do
         let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE card_sets SET name = ?, code = ?, release_date = ?, set_type = ?, total_cards = ?, description = ?, logo_url = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, name, code, release_date, set_type, total_cards, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+        execute conn "UPDATE card_sets SET name = ?, code = ?, release_date = ?, rotation_date = ?, set_type = ?, total_cards = ?, is_rotated = ?, description = ?, logo_url = ? WHERE id = ?" bodyRow
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -61,4 +71,40 @@ cardSetServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM card_sets WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIsLegalInStandard eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSetSvc.is_legal_in_standard eid
+          return result
+
+    behaviorIsLegalInFormat eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSetSvc.is_legal_in_format eid
+          return result
+
+    behaviorCardCountByRarity eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardSetSvc.card_count_by_rarity eid
+          return result
+
+    behaviorRotateOut eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, code, release_date, rotation_date, set_type, total_cards, is_rotated, description, logo_url FROM card_sets WHERE id = ?" (Only eid) :: IO [CardSet]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CardSetSvc.rotate_out eid
+          return NoContent
 

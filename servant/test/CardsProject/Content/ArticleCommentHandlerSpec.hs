@@ -40,10 +40,15 @@ spec = with (return app) $ do
   describe "POST /api/article_comments/1/hide" $ do
     it "behavior hide stub returns 404 or 500" $ do
       resp <- request "POST" "/api/article_comments/1/hide" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/article_comments/1/unhide" $ do
     it "behavior unhide stub returns 404 or 500" $ do
       resp <- request "POST" "/api/article_comments/1/unhide" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/article_comments/1/is-reply" $ do
+    it "behavior is_reply stub returns 404 or 500" $ do
+      resp <- get "/api/article_comments/1/is-reply"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

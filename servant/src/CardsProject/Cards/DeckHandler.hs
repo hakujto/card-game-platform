@@ -10,6 +10,7 @@ import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Cards.DeckService as DeckSvc
+import Data.Aeson (Object)
 import Data.Text (Text)
 
 type DeckAPI
@@ -20,6 +21,9 @@ type DeckAPI
   :<|> "api" :> "decks" :> Capture "id" Int :> ReqBody '[JSON] NewDeck :> Patch '[JSON] Deck
   :<|> "api" :> "decks" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "decks" :> Capture "id" Int :> "validate" :> Get '[JSON] Bool
+  :<|> "api" :> "decks" :> Capture "id" Int :> "cards" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "decks" :> Capture "id" Int :> "cards" :> Capture "card_id" Int :> DeleteNoContent
+  :<|> "api" :> "decks" :> Capture "id" Int :> "win-rate" :> Get '[JSON] Text
   :<|> "api" :> "decks" :> Capture "id" Int :> "clone" :> Post '[JSON] Text
   :<|> "api" :> "decks" :> Capture "id" Int :> "publish" :> Post '[JSON] NoContent
   :<|> "api" :> "decks" :> Capture "id" Int :> "unpublish" :> Post '[JSON] NoContent
@@ -33,19 +37,22 @@ deckServer = listAll
   :<|> partialUpdate
   :<|> delete
   :<|> behaviorValidateSize
+  :<|> behaviorAddCard
+  :<|> behaviorRemoveCard
+  :<|> behaviorWinRate
   :<|> behaviorClone
   :<|> behaviorPublish
   :<|> behaviorUnpublish
   :<|> behaviorCertifyTournamentLegal
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks" :: IO [Deck]
+      query_ conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks" :: IO [Deck]
 
     create body = do
       mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO decks (name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
+        execute conn "INSERT INTO decks (name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
         rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Deck]
+        rows <- query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Deck]
         return $ case rows of { (r:_) -> Just r; [] -> Nothing }
       case mRow of
         Just r  -> return r
@@ -53,7 +60,7 @@ deckServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -61,8 +68,8 @@ deckServer = listAll
     update eid body = do
       rows <- liftIO $ withDb $ \conn -> do
         let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, wins = ?, losses = ?, created_at = ?, updated_at = ?, player_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        execute conn "UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, wins = ?, losses = ?, draws = ?, created_at = ?, updated_at = ?, player_id = ? WHERE id = ?" bodyRow
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -76,16 +83,43 @@ deckServer = listAll
 
     behaviorValidateSize eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         []    -> throwError err404
         (_:_) -> do
           result <- liftIO $ DeckSvc.validate_size eid
           return result
 
+    behaviorAddCard eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSvc.add_card eid
+          return NoContent
+
+    behaviorRemoveCard eid _cardId = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ DeckSvc.remove_card eid
+          return NoContent
+
+    behaviorWinRate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DeckSvc.win_rate eid
+          return result
+
     behaviorClone eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -94,7 +128,7 @@ deckServer = listAll
 
     behaviorPublish eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -103,7 +137,7 @@ deckServer = listAll
 
     behaviorUnpublish eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -112,7 +146,7 @@ deckServer = listAll
 
     behaviorCertifyTournamentLegal eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
+        query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
       case rows of
         []    -> throwError err404
         (_:_) -> do

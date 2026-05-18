@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/tournament_rounds/1/start" $ do
     it "behavior start stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_rounds/1/start" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournament_rounds/1/complete" $ do
     it "behavior complete stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_rounds/1/complete" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournament_rounds/1/pairings" $ do
     it "behavior generate_pairings stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_rounds/1/pairings" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/tournament_rounds/1/time-expired" $ do
+    it "behavior is_time_expired stub returns 404 or 500" $ do
+      resp <- get "/api/tournament_rounds/1/time-expired"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

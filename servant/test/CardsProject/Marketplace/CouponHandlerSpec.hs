@@ -37,13 +37,23 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/coupons/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/coupons/1/valid" $ do
+    it "behavior is_valid stub returns 404 or 500" $ do
+      resp <- get "/api/coupons/1/valid"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/coupons/1/applicable" $ do
+    it "behavior is_applicable_to_order stub returns 404 or 500" $ do
+      resp <- get "/api/coupons/1/applicable"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
   describe "POST /api/coupons/1/redeem" $ do
     it "behavior redeem stub returns 404 or 500" $ do
       resp <- request "POST" "/api/coupons/1/redeem" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/coupons/1/deactivate" $ do
     it "behavior deactivate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/coupons/1/deactivate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

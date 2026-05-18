@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.PlayerSeasonStatsService as PlayerSeasonStatsSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type PlayerSeasonStatsAPI
   =    "api" :> "player_season_statses" :> Get '[JSON] [PlayerSeasonStats]
@@ -17,6 +20,9 @@ type PlayerSeasonStatsAPI
   :<|> "api" :> "player_season_statses" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerSeasonStats :> Put '[JSON] PlayerSeasonStats
   :<|> "api" :> "player_season_statses" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerSeasonStats :> Patch '[JSON] PlayerSeasonStats
   :<|> "api" :> "player_season_statses" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "player_season_statses" :> Capture "id" Int :> "win-rate" :> Get '[JSON] Text
+  :<|> "api" :> "player_season_statses" :> Capture "id" Int :> "points" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "player_season_statses" :> Capture "id" Int :> "tournament-win" :> Post '[JSON] NoContent
 
 playerSeasonStatsServer :: Server PlayerSeasonStatsAPI
 playerSeasonStatsServer = listAll
@@ -25,6 +31,9 @@ playerSeasonStatsServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorWinRate
+  :<|> behaviorAddPoints
+  :<|> behaviorRecordTournamentWin
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, wins, losses, draws, tournament_wins, highest_rank, season_points, player_id, season_id FROM player_season_statses" :: IO [PlayerSeasonStats]
@@ -61,4 +70,31 @@ playerSeasonStatsServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM player_season_statses WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorWinRate eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, wins, losses, draws, tournament_wins, highest_rank, season_points, player_id, season_id FROM player_season_statses WHERE id = ?" (Only eid) :: IO [PlayerSeasonStats]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ PlayerSeasonStatsSvc.win_rate eid
+          return result
+
+    behaviorAddPoints eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, wins, losses, draws, tournament_wins, highest_rank, season_points, player_id, season_id FROM player_season_statses WHERE id = ?" (Only eid) :: IO [PlayerSeasonStats]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSeasonStatsSvc.add_points eid
+          return NoContent
+
+    behaviorRecordTournamentWin eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, wins, losses, draws, tournament_wins, highest_rank, season_points, player_id, season_id FROM player_season_statses WHERE id = ?" (Only eid) :: IO [PlayerSeasonStats]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ PlayerSeasonStatsSvc.record_tournament_win eid
+          return NoContent
 

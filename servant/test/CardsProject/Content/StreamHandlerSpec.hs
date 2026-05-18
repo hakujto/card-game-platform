@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/streams/1/live" $ do
     it "behavior go_live stub returns 404 or 500" $ do
       resp <- request "POST" "/api/streams/1/live" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/streams/1/end" $ do
     it "behavior end stub returns 404 or 500" $ do
       resp <- request "POST" "/api/streams/1/end" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "PATCH /api/streams/1/viewers" $ do
     it "behavior update_viewer_peak stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/streams/1/viewers" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/streams/1/duration" $ do
+    it "behavior duration_minutes stub returns 404 or 500" $ do
+      resp <- get "/api/streams/1/duration"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

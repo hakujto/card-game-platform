@@ -22,6 +22,7 @@ type DraftSessionAPI
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "start" :> Post '[JSON] NoContent
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "abandon" :> Post '[JSON] NoContent
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
+  :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "full" :> Get '[JSON] Bool
 
 draftSessionServer :: Server DraftSessionAPI
 draftSessionServer = listAll
@@ -33,6 +34,7 @@ draftSessionServer = listAll
   :<|> behaviorStart
   :<|> behaviorAbandon
   :<|> behaviorComplete
+  :<|> behaviorIsFull
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, status, draft_type, seats, created_at, completed_at, card_set_id, participants_id FROM draft_sessions" :: IO [DraftSession]
@@ -96,4 +98,13 @@ draftSessionServer = listAll
         (_:_) -> do
           liftIO $ DraftSessionSvc.complete eid
           return NoContent
+
+    behaviorIsFull eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, status, draft_type, seats, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ DraftSessionSvc.is_full eid
+          return result
 

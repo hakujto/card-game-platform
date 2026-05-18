@@ -29,8 +29,8 @@ complete :: Int -> IO ()
 complete eid = do
   throwIO (userError "complete not implemented")
 
--- domain behavior stub
-is_full :: IO Bool
-is_full  =
+-- @invoke behavior stub
+is_full :: Int -> IO Bool
+is_full eid = do
   throwIO (userError "is_full not implemented")
 

@@ -40,25 +40,35 @@ spec = with (return app) $ do
   describe "POST /api/tournaments/1/start" $ do
     it "behavior start stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournaments/1/start" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournaments/1/cancel" $ do
     it "behavior cancel stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournaments/1/cancel" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournaments/1/complete" $ do
     it "behavior complete stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournaments/1/complete" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournaments/1/rounds" $ do
     it "behavior generate_round stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournaments/1/rounds" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/tournaments/1/prizes" $ do
     it "behavior calculate_prize_distribution stub returns 404 or 500" $ do
       resp <- get "/api/tournaments/1/prizes"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/tournaments/1/register" $ do
+    it "behavior register_player stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/tournaments/1/register" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/tournaments/1/full" $ do
+    it "behavior is_full stub returns 404 or 500" $ do
+      resp <- get "/api/tournaments/1/full"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

@@ -313,8 +313,10 @@ data CardSet = CardSet
   , cardSetName :: Text
   , cardSetCode :: Text
   , cardSetReleaseDate :: Text
+  , cardSetRotationDate :: Maybe Text
   , cardSetSetType :: CardSetSetTypeType
   , cardSetTotalCards :: Int
+  , cardSetIsRotated :: Bool
   , cardSetDescription :: Maybe Text
   , cardSetLogoUrl :: Maybe Text
   } deriving (Show, Generic)
@@ -325,7 +327,7 @@ instance FromJSON CardSet where
   parseJSON = genericParseJSON _cardSetOpts
 
 instance FromRow CardSet where
-  fromRow = CardSet <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = CardSet <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newCardSetOpts :: Options
 _newCardSetOpts = defaultOptions
@@ -335,8 +337,10 @@ data NewCardSet = NewCardSet
   { bCardSetName :: Text
   , bCardSetCode :: Text
   , bCardSetReleaseDate :: Text
+  , bCardSetRotationDate :: Maybe Text
   , bCardSetSetType :: CardSetSetTypeType
   , bCardSetTotalCards :: Int
+  , bCardSetIsRotated :: Bool
   , bCardSetDescription :: Maybe Text
   , bCardSetLogoUrl :: Maybe Text
   } deriving (Show, Generic)
@@ -347,7 +351,7 @@ instance FromJSON NewCardSet where
   parseJSON = genericParseJSON _newCardSetOpts
 
 instance ToRow NewCardSet where
-  toRow b = [toField (bCardSetName b), toField (bCardSetCode b), toField (bCardSetReleaseDate b), toField (bCardSetSetType b), toField (bCardSetTotalCards b), toField (bCardSetDescription b), toField (bCardSetLogoUrl b)]
+  toRow b = [toField (bCardSetName b), toField (bCardSetCode b), toField (bCardSetReleaseDate b), toField (bCardSetRotationDate b), toField (bCardSetSetType b), toField (bCardSetTotalCards b), toField (bCardSetIsRotated b), toField (bCardSetDescription b), toField (bCardSetLogoUrl b)]
 
 _cardRulingOpts :: Options
 _cardRulingOpts = defaultOptions
@@ -607,6 +611,7 @@ data Deck = Deck
   , deckArchetype :: Maybe DeckArchetypeType
   , deckWins :: Int
   , deckLosses :: Int
+  , deckDraws :: Int
   , deckCreatedAt :: Text
   , deckUpdatedAt :: Text
   , deckPlayerId :: Maybe Int
@@ -618,7 +623,7 @@ instance FromJSON Deck where
   parseJSON = genericParseJSON _deckOpts
 
 instance FromRow Deck where
-  fromRow = Deck <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Deck <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newDeckOpts :: Options
 _newDeckOpts = defaultOptions
@@ -633,6 +638,7 @@ data NewDeck = NewDeck
   , bDeckArchetype :: Maybe DeckArchetypeType
   , bDeckWins :: Int
   , bDeckLosses :: Int
+  , bDeckDraws :: Int
   , bDeckCreatedAt :: Text
   , bDeckUpdatedAt :: Text
   , bDeckPlayerId :: Maybe Int
@@ -644,7 +650,7 @@ instance FromJSON NewDeck where
   parseJSON = genericParseJSON _newDeckOpts
 
 instance ToRow NewDeck where
-  toRow b = [toField (bDeckName b), toField (bDeckDescription b), toField (bDeckFormat b), toField (bDeckIsPublic b), toField (bDeckIsTournamentLegal b), toField (bDeckArchetype b), toField (bDeckWins b), toField (bDeckLosses b), toField (bDeckCreatedAt b), toField (bDeckUpdatedAt b), toField (bDeckPlayerId b)]
+  toRow b = [toField (bDeckName b), toField (bDeckDescription b), toField (bDeckFormat b), toField (bDeckIsPublic b), toField (bDeckIsTournamentLegal b), toField (bDeckArchetype b), toField (bDeckWins b), toField (bDeckLosses b), toField (bDeckDraws b), toField (bDeckCreatedAt b), toField (bDeckUpdatedAt b), toField (bDeckPlayerId b)]
 
 _deckCardOpts :: Options
 _deckCardOpts = defaultOptions

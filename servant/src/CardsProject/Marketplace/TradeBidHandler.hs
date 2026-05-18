@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Marketplace.TradeBidService as TradeBidSvc
+import Data.Text (Text)
 
 type TradeBidAPI
   =    "api" :> "trade_bids" :> Get '[JSON] [TradeBid]
@@ -16,6 +18,8 @@ type TradeBidAPI
   :<|> "api" :> "trade_bids" :> Capture "id" Int :> Get '[JSON] TradeBid
   :<|> "api" :> "trade_bids" :> Capture "id" Int :> ReqBody '[JSON] NewTradeBid :> Put '[JSON] TradeBid
   :<|> "api" :> "trade_bids" :> Capture "id" Int :> ReqBody '[JSON] NewTradeBid :> Patch '[JSON] TradeBid
+  :<|> "api" :> "trade_bids" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "trade_bids" :> Capture "id" Int :> "outbid" :> Get '[JSON] Bool
   :<|> "api" :> "trade_bids" :> Capture "id" Int :> DeleteNoContent
 
 tradeBidServer :: Server TradeBidAPI
@@ -25,6 +29,8 @@ tradeBidServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorOutbidBy
+  :<|> behaviorRetract
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, amount, placed_at, is_winning, listing_id, bidder_id FROM trade_bids" :: IO [TradeBid]
@@ -61,4 +67,22 @@ tradeBidServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM trade_bids WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorOutbidBy eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, amount, placed_at, is_winning, listing_id, bidder_id FROM trade_bids WHERE id = ?" (Only eid) :: IO [TradeBid]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ TradeBidSvc.outbid_by eid
+          return result
+
+    behaviorRetract eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, amount, placed_at, is_winning, listing_id, bidder_id FROM trade_bids WHERE id = ?" (Only eid) :: IO [TradeBid]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TradeBidSvc.retract eid
+          return NoContent
 

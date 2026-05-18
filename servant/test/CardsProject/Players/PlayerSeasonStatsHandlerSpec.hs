@@ -37,3 +37,18 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/player_season_statses/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/player_season_statses/1/win-rate" $ do
+    it "behavior win_rate stub returns 404 or 500" $ do
+      resp <- get "/api/player_season_statses/1/win-rate"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "PATCH /api/player_season_statses/1/points" $ do
+    it "behavior add_points stub returns 404 or 500" $ do
+      resp <- request "PATCH" "/api/player_season_statses/1/points" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/player_season_statses/1/tournament-win" $ do
+    it "behavior record_tournament_win stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/player_season_statses/1/tournament-win" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

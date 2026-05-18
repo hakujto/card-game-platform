@@ -20,8 +20,8 @@ pick_card eid = do
   -- params: card_id: Int, pack_number: Int -- extract from body in handler when implementing
   throwIO (userError "pick_card not implemented")
 
--- domain behavior stub
-drafted_card_count :: IO Int
-drafted_card_count  =
+-- @invoke behavior stub
+drafted_card_count :: Int -> IO Int
+drafted_card_count eid = do
   throwIO (userError "drafted_card_count not implemented")
 

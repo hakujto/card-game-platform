@@ -22,6 +22,7 @@ type MatchAPI
   :<|> "api" :> "matches" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "record" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "winner" :> Get '[JSON] Bool
+  :<|> "api" :> "matches" :> Capture "id" Int :> "concede" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "draw" :> Post '[JSON] NoContent
 
 matchServer :: Server MatchAPI
@@ -33,6 +34,7 @@ matchServer = listAll
   :<|> delete
   :<|> behaviorRecordResult
   :<|> behaviorDetermineWinner
+  :<|> behaviorConcede
   :<|> behaviorDraw
   where
     listAll = liftIO $ withDb $ \conn ->
@@ -88,6 +90,15 @@ matchServer = listAll
         (_:_) -> do
           result <- liftIO $ MatchSvc.determine_winner eid
           return result
+
+    behaviorConcede eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ MatchSvc.concede eid
+          return NoContent
 
     behaviorDraw eid = do
       rows <- liftIO $ withDb $ \conn ->

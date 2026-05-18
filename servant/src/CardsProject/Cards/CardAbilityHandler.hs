@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.CardAbilityService as CardAbilitySvc
+import Data.Text (Text)
 
 type CardAbilityAPI
   =    "api" :> "card_abilities" :> Get '[JSON] [CardAbility]
@@ -17,6 +19,8 @@ type CardAbilityAPI
   :<|> "api" :> "card_abilities" :> Capture "id" Int :> ReqBody '[JSON] NewCardAbility :> Put '[JSON] CardAbility
   :<|> "api" :> "card_abilities" :> Capture "id" Int :> ReqBody '[JSON] NewCardAbility :> Patch '[JSON] CardAbility
   :<|> "api" :> "card_abilities" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "card_abilities" :> Capture "id" Int :> "usable" :> Get '[JSON] Bool
+  :<|> "api" :> "card_abilities" :> Capture "id" Int :> "describe" :> Get '[JSON] Text
 
 cardAbilityServer :: Server CardAbilityAPI
 cardAbilityServer = listAll
@@ -25,6 +29,8 @@ cardAbilityServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIsUsableAt
+  :<|> behaviorDescribe
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, ability_type, keyword, ability_text, timing, card_id FROM card_abilities" :: IO [CardAbility]
@@ -61,4 +67,22 @@ cardAbilityServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM card_abilities WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIsUsableAt eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, ability_type, keyword, ability_text, timing, card_id FROM card_abilities WHERE id = ?" (Only eid) :: IO [CardAbility]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardAbilitySvc.is_usable_at eid
+          return result
+
+    behaviorDescribe eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, ability_type, keyword, ability_text, timing, card_id FROM card_abilities WHERE id = ?" (Only eid) :: IO [CardAbility]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardAbilitySvc.describe eid
+          return result
 

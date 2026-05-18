@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Marketplace.CouponService
-  ( validateCoupon, redeem, deactivate, is_valid, is_applicable_to_order
+  ( validateCoupon, is_valid, is_applicable_to_order, redeem, deactivate
   ) where
 
 import CardsProject.Marketplace.Types
@@ -15,6 +15,17 @@ validateCoupon :: NewCoupon -> Either String NewCoupon
 validateCoupon body = Right body
 
 -- @invoke behavior stub
+is_valid :: Int -> IO Bool
+is_valid eid = do
+  throwIO (userError "is_valid not implemented")
+
+-- @invoke behavior stub
+is_applicable_to_order :: Int -> IO Bool
+is_applicable_to_order eid = do
+  -- params: order_total: Decimal -- extract from body in handler when implementing
+  throwIO (userError "is_applicable_to_order not implemented")
+
+-- @invoke behavior stub
 redeem :: Int -> IO ()
 redeem eid = do
   throwIO (userError "redeem not implemented")
@@ -23,14 +34,4 @@ redeem eid = do
 deactivate :: Int -> IO ()
 deactivate eid = do
   throwIO (userError "deactivate not implemented")
-
--- domain behavior stub
-is_valid :: IO Bool
-is_valid  =
-  throwIO (userError "is_valid not implemented")
-
--- domain behavior stub
-is_applicable_to_order :: Text -> IO Bool
-is_applicable_to_order _orderTotal =
-  throwIO (userError "is_applicable_to_order not implemented")
 

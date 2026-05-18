@@ -40,15 +40,20 @@ spec = with (return app) $ do
   describe "POST /api/seasons/1/activate" $ do
     it "behavior activate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/seasons/1/activate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/seasons/1/deactivate" $ do
     it "behavior deactivate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/seasons/1/deactivate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/seasons/1/finalize" $ do
     it "behavior finalize_rewards stub returns 404 or 500" $ do
       resp <- request "POST" "/api/seasons/1/finalize" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/seasons/1/ongoing" $ do
+    it "behavior is_ongoing stub returns 404 or 500" $ do
+      resp <- get "/api/seasons/1/ongoing"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

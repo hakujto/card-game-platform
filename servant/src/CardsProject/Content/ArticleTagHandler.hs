@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Content.ArticleTagService as ArticleTagSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type ArticleTagAPI
   =    "api" :> "article_tags" :> Get '[JSON] [ArticleTag]
@@ -17,6 +20,8 @@ type ArticleTagAPI
   :<|> "api" :> "article_tags" :> Capture "id" Int :> ReqBody '[JSON] NewArticleTag :> Put '[JSON] ArticleTag
   :<|> "api" :> "article_tags" :> Capture "id" Int :> ReqBody '[JSON] NewArticleTag :> Patch '[JSON] ArticleTag
   :<|> "api" :> "article_tags" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "article_tags" :> Capture "id" Int :> "rename" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "article_tags" :> Capture "id" Int :> "article-count" :> Get '[JSON] Int
 
 articleTagServer :: Server ArticleTagAPI
 articleTagServer = listAll
@@ -25,6 +30,8 @@ articleTagServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorRename
+  :<|> behaviorArticleCount
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, slug FROM article_tags" :: IO [ArticleTag]
@@ -61,4 +68,22 @@ articleTagServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM article_tags WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorRename eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, slug FROM article_tags WHERE id = ?" (Only eid) :: IO [ArticleTag]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ ArticleTagSvc.rename eid
+          return NoContent
+
+    behaviorArticleCount eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, slug FROM article_tags WHERE id = ?" (Only eid) :: IO [ArticleTag]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ ArticleTagSvc.article_count eid
+          return result
 

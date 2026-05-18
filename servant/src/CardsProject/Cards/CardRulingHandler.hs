@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Cards.CardRulingService as CardRulingSvc
 
 type CardRulingAPI
   =    "api" :> "card_rulings" :> Get '[JSON] [CardRuling]
@@ -17,6 +18,8 @@ type CardRulingAPI
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> ReqBody '[JSON] NewCardRuling :> Put '[JSON] CardRuling
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> ReqBody '[JSON] NewCardRuling :> Patch '[JSON] CardRuling
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "card_rulings" :> Capture "id" Int :> "current" :> Get '[JSON] Bool
+  :<|> "api" :> "card_rulings" :> Capture "id" Int :> "supersedes" :> Get '[JSON] Bool
 
 cardRulingServer :: Server CardRulingAPI
 cardRulingServer = listAll
@@ -25,6 +28,8 @@ cardRulingServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorIsCurrent
+  :<|> behaviorSupersedesPrevious
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, ruling_text, published_at, source, card_id FROM card_rulings" :: IO [CardRuling]
@@ -61,4 +66,22 @@ cardRulingServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM card_rulings WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorIsCurrent eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, ruling_text, published_at, source, card_id FROM card_rulings WHERE id = ?" (Only eid) :: IO [CardRuling]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardRulingSvc.is_current eid
+          return result
+
+    behaviorSupersedesPrevious eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, ruling_text, published_at, source, card_id FROM card_rulings WHERE id = ?" (Only eid) :: IO [CardRuling]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CardRulingSvc.supersedes_previous eid
+          return result
 

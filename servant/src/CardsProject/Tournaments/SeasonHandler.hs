@@ -22,6 +22,7 @@ type SeasonAPI
   :<|> "api" :> "seasons" :> Capture "id" Int :> "activate" :> Post '[JSON] NoContent
   :<|> "api" :> "seasons" :> Capture "id" Int :> "deactivate" :> Post '[JSON] NoContent
   :<|> "api" :> "seasons" :> Capture "id" Int :> "finalize" :> Post '[JSON] NoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "ongoing" :> Get '[JSON] Bool
 
 seasonServer :: Server SeasonAPI
 seasonServer = listAll
@@ -33,6 +34,7 @@ seasonServer = listAll
   :<|> behaviorActivate
   :<|> behaviorDeactivate
   :<|> behaviorFinalizeRewards
+  :<|> behaviorIsOngoing
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons" :: IO [Season]
@@ -96,4 +98,13 @@ seasonServer = listAll
         (_:_) -> do
           liftIO $ SeasonSvc.finalize_rewards eid
           return NoContent
+
+    behaviorIsOngoing eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ SeasonSvc.is_ongoing eid
+          return result
 

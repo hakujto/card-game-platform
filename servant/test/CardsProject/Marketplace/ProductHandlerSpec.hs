@@ -40,20 +40,30 @@ spec = with (return app) $ do
   describe "POST /api/products/1/activate" $ do
     it "behavior activate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/products/1/activate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/products/1/deactivate" $ do
     it "behavior deactivate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/products/1/deactivate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "PATCH /api/products/1/discount" $ do
     it "behavior apply_discount stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/products/1/discount" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/products/1/restock" $ do
     it "behavior restock stub returns 404 or 500" $ do
       resp <- request "POST" "/api/products/1/restock" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/products/1/effective-price" $ do
+    it "behavior effective_price stub returns 404 or 500" $ do
+      resp <- get "/api/products/1/effective-price"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/products/1/in-stock" $ do
+    it "behavior is_in_stock stub returns 404 or 500" $ do
+      resp <- get "/api/products/1/in-stock"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

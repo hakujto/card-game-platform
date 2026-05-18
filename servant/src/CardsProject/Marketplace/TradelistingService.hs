@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module CardsProject.Marketplace.TradelistingService
-  ( validateTradelisting, close, extend, cancel, is_expired, setStatus
+module CardsProject.Marketplace.TradeListingService
+  ( validateTradeListing, close, extend, cancel, is_expired, finalize_auction, setStatus
   ) where
 
 import CardsProject.Marketplace.Types
@@ -10,9 +10,9 @@ import Data.Text (Text)
 import Database.SQLite.Simple hiding (close)
 import CardsProject.Db (withDb)
 
--- Domain service stub for Tradelisting
-validateTradelisting :: NewTradelisting -> Either String NewTradelisting
-validateTradelisting body = Right body
+-- Domain service stub for TradeListing
+validateTradeListing :: NewTradeListing -> Either String NewTradeListing
+validateTradeListing body = Right body
 
 -- @invoke behavior stub
 close :: Int -> IO ()
@@ -30,15 +30,20 @@ cancel :: Int -> IO ()
 cancel eid = do
   throwIO (userError "cancel not implemented")
 
--- domain behavior stub
-is_expired :: IO Bool
-is_expired  =
+-- @invoke behavior stub
+is_expired :: Int -> IO Bool
+is_expired eid = do
   throwIO (userError "is_expired not implemented")
+
+-- @invoke behavior stub
+finalize_auction :: Int -> IO ()
+finalize_auction eid = do
+  throwIO (userError "finalize_auction not implemented")
 
 -- triggered by @on(status = Sold)
 setStatus :: Int -> Text -> IO ()
 setStatus eid value = withDb $ \conn -> do
-  execute conn "UPDATE tradelistings SET status = ? WHERE id = ?" (value, eid)
+  execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" (value, eid)
   if value == "SOLD"
     then throwIO (userError "finalize_auction not implemented") -- @on trigger stub
     else return ()

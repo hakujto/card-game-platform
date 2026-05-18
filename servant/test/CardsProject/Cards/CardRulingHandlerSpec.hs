@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/card_rulings/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/card_rulings/1/current" $ do
+    it "behavior is_current stub returns 404 or 500" $ do
+      resp <- get "/api/card_rulings/1/current"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/card_rulings/1/supersedes" $ do
+    it "behavior supersedes_previous stub returns 404 or 500" $ do
+      resp <- get "/api/card_rulings/1/supersedes"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

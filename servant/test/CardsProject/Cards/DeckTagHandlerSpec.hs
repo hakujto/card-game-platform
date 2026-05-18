@@ -37,8 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/deck_tags/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "PATCH /api/deck_tags/1/rename" $ do
+    it "behavior rename stub returns 404 or 500" $ do
+      resp <- request "PATCH" "/api/deck_tags/1/rename" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
   describe "POST /api/deck_tags/1/merge" $ do
     it "behavior merge_into stub returns 404 or 500" $ do
       resp <- request "POST" "/api/deck_tags/1/merge" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

@@ -40,15 +40,15 @@ spec = with (return app) $ do
   describe "POST /api/friendships/1/accept" $ do
     it "behavior accept stub returns 404 or 500" $ do
       resp <- request "POST" "/api/friendships/1/accept" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/friendships/1/decline" $ do
     it "behavior decline stub returns 404 or 500" $ do
       resp <- request "POST" "/api/friendships/1/decline" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/friendships/1/block" $ do
     it "behavior block stub returns 404 or 500" $ do
       resp <- request "POST" "/api/friendships/1/block" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

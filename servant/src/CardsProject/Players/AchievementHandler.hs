@@ -9,6 +9,8 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.AchievementService as AchievementSvc
+import Data.Text (Text)
 
 type AchievementAPI
   =    "api" :> "achievements" :> Get '[JSON] [Achievement]
@@ -17,6 +19,8 @@ type AchievementAPI
   :<|> "api" :> "achievements" :> Capture "id" Int :> ReqBody '[JSON] NewAchievement :> Put '[JSON] Achievement
   :<|> "api" :> "achievements" :> Capture "id" Int :> ReqBody '[JSON] NewAchievement :> Patch '[JSON] Achievement
   :<|> "api" :> "achievements" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "achievements" :> Capture "id" Int :> "point-value" :> Get '[JSON] Int
+  :<|> "api" :> "achievements" :> Capture "id" Int :> "reveal" :> Post '[JSON] NoContent
 
 achievementServer :: Server AchievementAPI
 achievementServer = listAll
@@ -25,6 +29,8 @@ achievementServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorPointValue
+  :<|> behaviorReveal
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, description, icon_url, points, rarity, is_hidden FROM achievements" :: IO [Achievement]
@@ -61,4 +67,22 @@ achievementServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM achievements WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorPointValue eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, icon_url, points, rarity, is_hidden FROM achievements WHERE id = ?" (Only eid) :: IO [Achievement]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ AchievementSvc.point_value eid
+          return result
+
+    behaviorReveal eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, icon_url, points, rarity, is_hidden FROM achievements WHERE id = ?" (Only eid) :: IO [Achievement]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ AchievementSvc.reveal eid
+          return NoContent
 

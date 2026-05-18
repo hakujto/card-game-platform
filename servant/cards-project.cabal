@@ -62,7 +62,7 @@ library
     CardsProject.Marketplace.OrderHandler
     CardsProject.Marketplace.OrderItemHandler
     CardsProject.Marketplace.CouponHandler
-    CardsProject.Marketplace.TradelistingHandler
+    CardsProject.Marketplace.TradeListingHandler
     CardsProject.Marketplace.TradeBidHandler
     CardsProject.Marketplace.TradeTransactionHandler
     CardsProject.Marketplace.CardPriceHistoryHandler
@@ -105,7 +105,7 @@ library
     CardsProject.Marketplace.OrderService
     CardsProject.Marketplace.OrderItemService
     CardsProject.Marketplace.CouponService
-    CardsProject.Marketplace.TradelistingService
+    CardsProject.Marketplace.TradeListingService
     CardsProject.Marketplace.TradeBidService
     CardsProject.Marketplace.TradeTransactionService
     CardsProject.Marketplace.CardPriceHistoryService

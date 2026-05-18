@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/card_abilities/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "GET /api/card_abilities/1/usable" $ do
+    it "behavior is_usable_at stub returns 404 or 500" $ do
+      resp <- get "/api/card_abilities/1/usable"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "GET /api/card_abilities/1/describe" $ do
+    it "behavior describe stub returns 404 or 500" $ do
+      resp <- get "/api/card_abilities/1/describe"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

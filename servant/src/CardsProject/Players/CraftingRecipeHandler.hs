@@ -9,6 +9,9 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import qualified CardsProject.Players.CraftingRecipeService as CraftingRecipeSvc
+import Data.Aeson (Object)
+import Data.Text (Text)
 
 type CraftingRecipeAPI
   =    "api" :> "crafting_recipes" :> Get '[JSON] [CraftingRecipe]
@@ -17,6 +20,10 @@ type CraftingRecipeAPI
   :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> ReqBody '[JSON] NewCraftingRecipe :> Put '[JSON] CraftingRecipe
   :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> ReqBody '[JSON] NewCraftingRecipe :> Patch '[JSON] CraftingRecipe
   :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> DeleteNoContent
+  :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> "can-craft" :> Get '[JSON] Bool
+  :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> "craft" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> "disable" :> Post '[JSON] NoContent
+  :<|> "api" :> "crafting_recipes" :> Capture "id" Int :> "enable" :> Post '[JSON] NoContent
 
 craftingRecipeServer :: Server CraftingRecipeAPI
 craftingRecipeServer = listAll
@@ -25,6 +32,10 @@ craftingRecipeServer = listAll
   :<|> update
   :<|> partialUpdate
   :<|> delete
+  :<|> behaviorCanCraft
+  :<|> behaviorExecuteCraft
+  :<|> behaviorDisable
+  :<|> behaviorEnable
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes" :: IO [CraftingRecipe]
@@ -61,4 +72,40 @@ craftingRecipeServer = listAll
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM crafting_recipes WHERE id = ?" (Only eid)
       return NoContent
+
+    behaviorCanCraft eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes WHERE id = ?" (Only eid) :: IO [CraftingRecipe]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ CraftingRecipeSvc.can_craft eid
+          return result
+
+    behaviorExecuteCraft eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes WHERE id = ?" (Only eid) :: IO [CraftingRecipe]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CraftingRecipeSvc.execute_craft eid
+          return NoContent
+
+    behaviorDisable eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes WHERE id = ?" (Only eid) :: IO [CraftingRecipe]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CraftingRecipeSvc.disable eid
+          return NoContent
+
+    behaviorEnable eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes WHERE id = ?" (Only eid) :: IO [CraftingRecipe]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ CraftingRecipeSvc.enable eid
+          return NoContent
 

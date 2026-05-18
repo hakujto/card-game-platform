@@ -39,8 +39,10 @@ CREATE TABLE IF NOT EXISTS card_sets (
   name TEXT NOT NULL,
   code TEXT NOT NULL,
   release_date TEXT NOT NULL,
+  rotation_date TEXT,
   set_type TEXT NOT NULL,
   total_cards INTEGER NOT NULL,
+  is_rotated INTEGER NOT NULL,
   description TEXT,
   logo_url TEXT
 );
@@ -74,6 +76,7 @@ CREATE TABLE IF NOT EXISTS decks (
   archetype TEXT,
   wins INTEGER NOT NULL,
   losses INTEGER NOT NULL,
+  draws INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   player_id INTEGER,
@@ -444,7 +447,7 @@ CREATE TABLE IF NOT EXISTS coupons (
   is_active INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS tradelistings (
+CREATE TABLE IF NOT EXISTS trade_listings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   listing_type TEXT NOT NULL,
   asking_price TEXT,
@@ -473,7 +476,7 @@ CREATE TABLE IF NOT EXISTS trade_bids (
   is_winning INTEGER NOT NULL,
   listing_id INTEGER,
   bidder_id INTEGER,
-  FOREIGN KEY (listing_id) REFERENCES tradelistings(id),
+  FOREIGN KEY (listing_id) REFERENCES trade_listings(id),
   FOREIGN KEY (bidder_id) REFERENCES players(id)
 );
 
@@ -486,7 +489,7 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
   listing_id INTEGER,
   buyer_id INTEGER,
   seller_id INTEGER,
-  FOREIGN KEY (listing_id) REFERENCES tradelistings(id),
+  FOREIGN KEY (listing_id) REFERENCES trade_listings(id),
   FOREIGN KEY (buyer_id) REFERENCES players(id),
   FOREIGN KEY (seller_id) REFERENCES players(id)
 );

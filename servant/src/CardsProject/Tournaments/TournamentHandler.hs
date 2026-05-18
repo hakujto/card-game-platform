@@ -10,6 +10,7 @@ import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Tournaments.TournamentService as TournamentSvc
+import Data.Aeson (Object)
 import Data.Text (Text)
 
 type TournamentAPI
@@ -24,6 +25,8 @@ type TournamentAPI
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "rounds" :> Post '[JSON] NoContent
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "prizes" :> Get '[JSON] Text
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "register" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "full" :> Get '[JSON] Bool
 
 tournamentServer :: Server TournamentAPI
 tournamentServer = listAll
@@ -37,6 +40,8 @@ tournamentServer = listAll
   :<|> behaviorComplete
   :<|> behaviorGenerateRound
   :<|> behaviorCalculatePrizeDistribution
+  :<|> behaviorRegisterPlayer
+  :<|> behaviorIsFull
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments" :: IO [Tournament]
@@ -117,5 +122,23 @@ tournamentServer = listAll
         []    -> throwError err404
         (_:_) -> do
           result <- liftIO $ TournamentSvc.calculate_prize_distribution eid
+          return result
+
+    behaviorRegisterPlayer eid _body = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ TournamentSvc.register_player eid
+          return NoContent
+
+    behaviorIsFull eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ TournamentSvc.is_full eid
           return result
 

@@ -20,8 +20,8 @@ record_winner eid = do
   -- params: winner_side: String -- extract from body in handler when implementing
   throwIO (userError "record_winner not implemented")
 
--- domain behavior stub
-duration_minutes :: IO Text
-duration_minutes  =
+-- @invoke behavior stub
+duration_minutes :: Int -> IO Text
+duration_minutes eid = do
   throwIO (userError "duration_minutes not implemented")
 

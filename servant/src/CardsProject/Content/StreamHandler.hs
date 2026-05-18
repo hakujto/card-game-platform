@@ -23,6 +23,7 @@ type StreamAPI
   :<|> "api" :> "streams" :> Capture "id" Int :> "live" :> Post '[JSON] NoContent
   :<|> "api" :> "streams" :> Capture "id" Int :> "end" :> Post '[JSON] NoContent
   :<|> "api" :> "streams" :> Capture "id" Int :> "viewers" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
+  :<|> "api" :> "streams" :> Capture "id" Int :> "duration" :> Get '[JSON] Int
 
 streamServer :: Server StreamAPI
 streamServer = listAll
@@ -34,6 +35,7 @@ streamServer = listAll
   :<|> behaviorGoLive
   :<|> behaviorEnd
   :<|> behaviorUpdateViewerPeak
+  :<|> behaviorDurationMinutes
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams" :: IO [Stream]
@@ -97,4 +99,13 @@ streamServer = listAll
         (_:_) -> do
           liftIO $ StreamSvc.update_viewer_peak eid
           return NoContent
+
+    behaviorDurationMinutes eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, stream_url, platform, status, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams WHERE id = ?" (Only eid) :: IO [Stream]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ StreamSvc.duration_minutes eid
+          return result
 

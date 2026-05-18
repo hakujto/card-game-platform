@@ -22,6 +22,7 @@ type TournamentRoundAPI
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "start" :> Post '[JSON] NoContent
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
   :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "pairings" :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_rounds" :> Capture "id" Int :> "time-expired" :> Get '[JSON] Bool
 
 tournamentRoundServer :: Server TournamentRoundAPI
 tournamentRoundServer = listAll
@@ -33,6 +34,7 @@ tournamentRoundServer = listAll
   :<|> behaviorStart
   :<|> behaviorComplete
   :<|> behaviorGeneratePairings
+  :<|> behaviorIsTimeExpired
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds" :: IO [TournamentRound]
@@ -96,4 +98,13 @@ tournamentRoundServer = listAll
         (_:_) -> do
           liftIO $ TournamentRoundSvc.generate_pairings eid
           return NoContent
+
+    behaviorIsTimeExpired eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, round_number, status, started_at, ended_at, time_limit_minutes, tournament_id, matches_id FROM tournament_rounds WHERE id = ?" (Only eid) :: IO [TournamentRound]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          result <- liftIO $ TournamentRoundSvc.is_time_expired eid
+          return result
 

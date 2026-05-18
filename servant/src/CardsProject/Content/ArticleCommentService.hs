@@ -24,8 +24,8 @@ unhide :: Int -> IO ()
 unhide eid = do
   throwIO (userError "unhide not implemented")
 
--- domain behavior stub
-is_reply :: IO Bool
-is_reply  =
+-- @invoke behavior stub
+is_reply :: Int -> IO Bool
+is_reply eid = do
   throwIO (userError "is_reply not implemented")
 

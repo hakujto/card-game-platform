@@ -29,8 +29,8 @@ generate_pairings :: Int -> IO ()
 generate_pairings eid = do
   throwIO (userError "generate_pairings not implemented")
 
--- domain behavior stub
-is_time_expired :: IO Bool
-is_time_expired  =
+-- @invoke behavior stub
+is_time_expired :: Int -> IO Bool
+is_time_expired eid = do
   throwIO (userError "is_time_expired not implemented")
 

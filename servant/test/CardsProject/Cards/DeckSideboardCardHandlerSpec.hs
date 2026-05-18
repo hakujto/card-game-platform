@@ -37,3 +37,13 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/deck_sideboard_cards/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "PATCH /api/deck_sideboard_cards/1/increment" $ do
+    it "behavior increment stub returns 404 or 500" $ do
+      resp <- request "PATCH" "/api/deck_sideboard_cards/1/increment" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "PATCH /api/deck_sideboard_cards/1/decrement" $ do
+    it "behavior decrement stub returns 404 or 500" $ do
+      resp <- request "PATCH" "/api/deck_sideboard_cards/1/decrement" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+

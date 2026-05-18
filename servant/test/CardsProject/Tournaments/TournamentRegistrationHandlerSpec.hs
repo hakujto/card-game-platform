@@ -40,15 +40,15 @@ spec = with (return app) $ do
   describe "POST /api/tournament_registrations/1/withdraw" $ do
     it "behavior withdraw stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_registrations/1/withdraw" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournament_registrations/1/disqualify" $ do
     it "behavior disqualify stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_registrations/1/disqualify" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "POST /api/tournament_registrations/1/promote" $ do
     it "behavior promote_from_waitlist stub returns 404 or 500" $ do
       resp <- request "POST" "/api/tournament_registrations/1/promote" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 

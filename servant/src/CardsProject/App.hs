@@ -38,7 +38,7 @@ import CardsProject.Marketplace.ProductHandler (productServer, ProductAPI)
 import CardsProject.Marketplace.OrderHandler (orderServer, OrderAPI)
 import CardsProject.Marketplace.OrderItemHandler (orderItemServer, OrderItemAPI)
 import CardsProject.Marketplace.CouponHandler (couponServer, CouponAPI)
-import CardsProject.Marketplace.TradelistingHandler (tradelistingServer, TradelistingAPI)
+import CardsProject.Marketplace.TradeListingHandler (tradeListingServer, TradeListingAPI)
 import CardsProject.Marketplace.TradeBidHandler (tradeBidServer, TradeBidAPI)
 import CardsProject.Marketplace.TradeTransactionHandler (tradeTransactionServer, TradeTransactionAPI)
 import CardsProject.Marketplace.CardPriceHistoryHandler (cardPriceHistoryServer, CardPriceHistoryAPI)
@@ -82,7 +82,7 @@ type CombinedAPI = CardAPI
   :<|> OrderAPI
   :<|> OrderItemAPI
   :<|> CouponAPI
-  :<|> TradelistingAPI
+  :<|> TradeListingAPI
   :<|> TradeBidAPI
   :<|> TradeTransactionAPI
   :<|> CardPriceHistoryAPI
@@ -130,7 +130,7 @@ combinedServer = cardServer
   :<|> orderServer
   :<|> orderItemServer
   :<|> couponServer
-  :<|> tradelistingServer
+  :<|> tradeListingServer
   :<|> tradeBidServer
   :<|> tradeTransactionServer
   :<|> cardPriceHistoryServer
