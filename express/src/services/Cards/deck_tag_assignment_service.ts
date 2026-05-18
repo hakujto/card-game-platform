@@ -20,4 +20,5 @@ export class DeckTagAssignmentService {
   async remove(id: number) {
     return prisma.deckTagAssignment.delete({ where: { id } });
   }
+
 }

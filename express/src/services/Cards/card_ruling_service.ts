@@ -20,4 +20,12 @@ export class CardRulingService {
   async remove(id: number) {
     return prisma.cardRuling.delete({ where: { id } });
   }
+
+  async is_current(): Promise<boolean> {
+    throw new Error('is_current not implemented');
+  }
+
+  async supersedes_previous(): Promise<boolean> {
+    throw new Error('supersedes_previous not implemented');
+  }
 }

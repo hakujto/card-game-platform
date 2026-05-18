@@ -20,4 +20,5 @@ export class TournamentJudgeService {
   async remove(id: number) {
     return prisma.tournamentJudge.delete({ where: { id } });
   }
+
 }

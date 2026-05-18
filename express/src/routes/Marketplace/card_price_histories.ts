@@ -3,6 +3,10 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if (!(((data.minPrice == null || (data.avgPrice != null && Number(data.minPrice) <= Number(data.avgPrice))) && (data.avgPrice == null || (data.maxPrice != null && Number(data.avgPrice) <= Number(data.maxPrice)))))) throw new Error(`min_price <= avg_price <= max_price must hold`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.cardPriceHistory.findMany();
   res.json(items);
@@ -11,7 +15,7 @@ router.get('/', async (_req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
-    if (body.priceDate !== undefined) data.priceDate = new Date(body.priceDate);
+    if (body.priceDate !== undefined) data.priceDate = body.priceDate != null ? new Date(body.priceDate) : null;
     if (body.avgPrice !== undefined) data.avgPrice = body.avgPrice;
     if (body.minPrice !== undefined) data.minPrice = body.minPrice;
     if (body.maxPrice !== undefined) data.maxPrice = body.maxPrice;
@@ -19,6 +23,7 @@ router.post('/', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardPriceHistory.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -35,7 +40,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
-    if (body.priceDate !== undefined) data.priceDate = new Date(body.priceDate);
+    if (body.priceDate !== undefined) data.priceDate = body.priceDate != null ? new Date(body.priceDate) : null;
     if (body.avgPrice !== undefined) data.avgPrice = body.avgPrice;
     if (body.minPrice !== undefined) data.minPrice = body.minPrice;
     if (body.maxPrice !== undefined) data.maxPrice = body.maxPrice;
@@ -43,17 +48,19 @@ router.put('/:id', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardPriceHistory.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
-    if (body.priceDate !== undefined) data.priceDate = new Date(body.priceDate);
+    if (body.priceDate !== undefined) data.priceDate = body.priceDate != null ? new Date(body.priceDate) : null;
     if (body.avgPrice !== undefined) data.avgPrice = body.avgPrice;
     if (body.minPrice !== undefined) data.minPrice = body.minPrice;
     if (body.maxPrice !== undefined) data.maxPrice = body.maxPrice;
@@ -61,10 +68,12 @@ router.patch('/:id', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardPriceHistory.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

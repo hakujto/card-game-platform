@@ -38,4 +38,14 @@ describe('Player API', () => {
     const res = await request(app).delete('/api/players/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/players returns 400 when rating_range violated", async () => {
+    const res = await request(app).post('/api/players').send({ displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', rating: 10000 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/players returns 400 when peak_rating_gte_rating violated", async () => {
+    const res = await request(app).post('/api/players').send({ displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', peakRating: 0 });
+    expect(res.status).toBe(400);
+  });
 });

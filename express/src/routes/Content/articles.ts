@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { ArticleService } from '../../services/Content/article_service.js';
 
 const router = Router();
+const service = new ArticleService();
+
+function validate(data: any): void {
+  if ((data.status === 'PUBLISHED') && !((data.publishedAt === undefined || data.publishedAt != null))) throw new Error(`Published article must have a published_at timestamp`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.article.findMany();
@@ -19,13 +25,13 @@ router.post('/', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.articleType !== undefined) data.articleType = body.articleType;
     if (body.viewCount !== undefined) data.viewCount = body.viewCount;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.authorId !== undefined) data.authorId = body.authorId;
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
-    if (body.commentsId !== undefined) data.commentsId = body.commentsId;
   try {
+  validate(data);
     const entity = await prisma.article.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -50,17 +56,18 @@ router.put('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.articleType !== undefined) data.articleType = body.articleType;
     if (body.viewCount !== undefined) data.viewCount = body.viewCount;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.authorId !== undefined) data.authorId = body.authorId;
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
-    if (body.commentsId !== undefined) data.commentsId = body.commentsId;
   try {
+  validate(data);
     const entity = await prisma.article.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -75,17 +82,18 @@ router.patch('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.articleType !== undefined) data.articleType = body.articleType;
     if (body.viewCount !== undefined) data.viewCount = body.viewCount;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.authorId !== undefined) data.authorId = body.authorId;
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
-    if (body.commentsId !== undefined) data.commentsId = body.commentsId;
   try {
+  validate(data);
     const entity = await prisma.article.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -98,4 +106,33 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/publish', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.publish(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/archive', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.archive(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/view', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.increment_view(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

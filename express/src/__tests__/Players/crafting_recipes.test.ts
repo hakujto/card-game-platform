@@ -35,4 +35,9 @@ describe('CraftingRecipe API', () => {
     const res = await request(app).delete('/api/crafting_recipes/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/crafting_recipes returns 400 when dust_cost_positive violated", async () => {
+    const res = await request(app).post('/api/crafting_recipes').send({ resultCardId: 1, dustCost: 0 });
+    expect(res.status).toBe(400);
+  });
 });

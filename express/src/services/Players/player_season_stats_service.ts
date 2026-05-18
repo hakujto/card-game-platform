@@ -20,4 +20,16 @@ export class PlayerSeasonStatsService {
   async remove(id: number) {
     return prisma.playerSeasonStats.delete({ where: { id } });
   }
+
+  async win_rate(): Promise<number> {
+    throw new Error('win_rate not implemented');
+  }
+
+  async add_points(points: number): Promise<void> {
+    throw new Error('add_points not implemented');
+  }
+
+  async record_tournament_win(): Promise<void> {
+    throw new Error('record_tournament_win not implemented');
+  }
 }

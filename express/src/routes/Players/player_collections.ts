@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { PlayerCollectionService } from '../../services/Players/player_collection_service.js';
 
 const router = Router();
+const service = new PlayerCollectionService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.playerCollection.findMany();
@@ -14,7 +17,7 @@ router.post('/', async (req, res) => {
     if (body.quantity !== undefined) data.quantity = body.quantity;
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
-    if (body.acquiredAt !== undefined) data.acquiredAt = new Date(body.acquiredAt);
+    if (body.acquiredAt !== undefined) data.acquiredAt = body.acquiredAt != null ? new Date(body.acquiredAt) : null;
     if (body.acquiredVia !== undefined) data.acquiredVia = body.acquiredVia;
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
@@ -38,15 +41,16 @@ router.put('/:id', async (req, res) => {
     if (body.quantity !== undefined) data.quantity = body.quantity;
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
-    if (body.acquiredAt !== undefined) data.acquiredAt = new Date(body.acquiredAt);
+    if (body.acquiredAt !== undefined) data.acquiredAt = body.acquiredAt != null ? new Date(body.acquiredAt) : null;
     if (body.acquiredVia !== undefined) data.acquiredVia = body.acquiredVia;
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -56,15 +60,16 @@ router.patch('/:id', async (req, res) => {
     if (body.quantity !== undefined) data.quantity = body.quantity;
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
-    if (body.acquiredAt !== undefined) data.acquiredAt = new Date(body.acquiredAt);
+    if (body.acquiredAt !== undefined) data.acquiredAt = body.acquiredAt != null ? new Date(body.acquiredAt) : null;
     if (body.acquiredVia !== undefined) data.acquiredVia = body.acquiredVia;
     if (body.playerId !== undefined) data.playerId = body.playerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -77,4 +82,13 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/value', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.estimated_value(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

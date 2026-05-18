@@ -20,4 +20,12 @@ export class CraftingRecipeService {
   async remove(id: number) {
     return prisma.craftingRecipe.delete({ where: { id } });
   }
+
+  async disable(): Promise<void> {
+    throw new Error('disable not implemented');
+  }
+
+  async enable(): Promise<void> {
+    throw new Error('enable not implemented');
+  }
 }

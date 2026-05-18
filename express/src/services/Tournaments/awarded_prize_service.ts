@@ -20,4 +20,5 @@ export class AwardedPrizeService {
   async remove(id: number) {
     return prisma.awardedPrize.delete({ where: { id } });
   }
+
 }

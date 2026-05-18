@@ -20,4 +20,8 @@ export class TradeBidService {
   async remove(id: number) {
     return prisma.tradeBid.delete({ where: { id } });
   }
+
+  async outbid_by(newAmount: number): Promise<boolean> {
+    throw new Error('outbid_by not implemented');
+  }
 }

@@ -20,4 +20,12 @@ export class CardAbilityService {
   async remove(id: number) {
     return prisma.cardAbility.delete({ where: { id } });
   }
+
+  async is_usable_at(timing: string): Promise<boolean> {
+    throw new Error('is_usable_at not implemented');
+  }
+
+  async describe(): Promise<string> {
+    throw new Error('describe not implemented');
+  }
 }

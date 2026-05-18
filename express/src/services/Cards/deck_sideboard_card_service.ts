@@ -20,4 +20,12 @@ export class DeckSideboardCardService {
   async remove(id: number) {
     return prisma.deckSideboardCard.delete({ where: { id } });
   }
+
+  async increment(amount: number): Promise<void> {
+    throw new Error('increment not implemented');
+  }
+
+  async decrement(amount: number): Promise<void> {
+    throw new Error('decrement not implemented');
+  }
 }

@@ -20,4 +20,8 @@ export class OrderItemService {
   async remove(id: number) {
     return prisma.orderItem.delete({ where: { id } });
   }
+
+  async line_total(): Promise<number> {
+    throw new Error('line_total not implemented');
+  }
 }

@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+
 router.get('/', async (_req, res) => {
   const items = await prisma.draftPick.findMany();
   res.json(items);
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
   const data: any = {};
     if (body.pickNumber !== undefined) data.pickNumber = body.pickNumber;
     if (body.packNumber !== undefined) data.packNumber = body.packNumber;
-    if (body.pickedAt !== undefined) data.pickedAt = new Date(body.pickedAt);
+    if (body.pickedAt !== undefined) data.pickedAt = body.pickedAt != null ? new Date(body.pickedAt) : null;
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
@@ -35,14 +36,15 @@ router.put('/:id', async (req, res) => {
   const data: any = {};
     if (body.pickNumber !== undefined) data.pickNumber = body.pickNumber;
     if (body.packNumber !== undefined) data.packNumber = body.packNumber;
-    if (body.pickedAt !== undefined) data.pickedAt = new Date(body.pickedAt);
+    if (body.pickedAt !== undefined) data.pickedAt = body.pickedAt != null ? new Date(body.pickedAt) : null;
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.draftPick.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -51,14 +53,15 @@ router.patch('/:id', async (req, res) => {
   const data: any = {};
     if (body.pickNumber !== undefined) data.pickNumber = body.pickNumber;
     if (body.packNumber !== undefined) data.packNumber = body.packNumber;
-    if (body.pickedAt !== undefined) data.pickedAt = new Date(body.pickedAt);
+    if (body.pickedAt !== undefined) data.pickedAt = body.pickedAt != null ? new Date(body.pickedAt) : null;
     if (body.participantId !== undefined) data.participantId = body.participantId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.draftPick.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

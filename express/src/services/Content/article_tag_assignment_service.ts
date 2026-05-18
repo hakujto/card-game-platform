@@ -20,4 +20,5 @@ export class ArticleTagAssignmentService {
   async remove(id: number) {
     return prisma.articleTagAssignment.delete({ where: { id } });
   }
+
 }

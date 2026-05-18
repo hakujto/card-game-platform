@@ -37,4 +37,24 @@ describe('Order API', () => {
     const res = await request(app).delete('/api/orders/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/orders returns 400 when paid_requires_paid_at violated", async () => {
+    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'PAID', paidAt: null });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/orders returns 400 when shipped_requires_tracking violated", async () => {
+    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', trackingNumber: null });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/orders returns 400 when total_not_negative violated", async () => {
+    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', paidAt: '2024-01-01T00:00:00.000Z', trackingNumber: 'test', total: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/orders returns 400 when discount_not_exceed_total violated", async () => {
+    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', paidAt: '2024-01-01T00:00:00.000Z', trackingNumber: 'test', discountApplied: 1 });
+    expect(res.status).toBe(400);
+  });
 });

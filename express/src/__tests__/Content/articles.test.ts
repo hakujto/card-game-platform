@@ -39,4 +39,9 @@ describe('Article API', () => {
     const res = await request(app).delete('/api/articles/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/articles returns 400 when published_requires_published_at violated", async () => {
+    const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: null });
+    expect(res.status).toBe(400);
+  });
 });

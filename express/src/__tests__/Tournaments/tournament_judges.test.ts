@@ -32,4 +32,5 @@ describe('TournamentJudge API', () => {
     const res = await request(app).delete('/api/tournament_judges/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

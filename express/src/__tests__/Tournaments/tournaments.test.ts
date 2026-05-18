@@ -16,7 +16,7 @@ describe('Tournament API', () => {
       .post('/api/tournaments')
       .send({
       name: 'test',
-      maxPlayers: 1,
+      maxPlayers: 2,
       entryFee: 0.00,
       prizePool: 0.00,
       startTime: '2024-01-01T00:00:00.000Z',
@@ -39,5 +39,25 @@ describe('Tournament API', () => {
   it('DELETE /api/tournaments/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/tournaments/1');
     expect([204, 404]).toContain(res.status);
+  });
+
+  it("POST /api/tournaments returns 400 when max_players_positive violated", async () => {
+    const res = await request(app).post('/api/tournaments').send({ name: 'test', startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z', maxPlayers: 513 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournaments returns 400 when entry_fee_not_negative violated", async () => {
+    const res = await request(app).post('/api/tournaments').send({ name: 'test', maxPlayers: 2, startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z', entryFee: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournaments returns 400 when prize_pool_not_negative violated", async () => {
+    const res = await request(app).post('/api/tournaments').send({ name: 'test', maxPlayers: 2, startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z', prizePool: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/tournaments returns 400 when end_time_after_start violated", async () => {
+    const res = await request(app).post('/api/tournaments').send({ name: 'test', maxPlayers: 2, startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
   });
 });

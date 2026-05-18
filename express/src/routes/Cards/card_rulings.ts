@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+
 router.get('/', async (_req, res) => {
   const items = await prisma.cardRuling.findMany();
   res.json(items);
@@ -12,7 +13,7 @@ router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
     if (body.rulingText !== undefined) data.rulingText = body.rulingText;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
     if (body.source !== undefined) data.source = body.source;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
@@ -33,14 +34,15 @@ router.put('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
     if (body.rulingText !== undefined) data.rulingText = body.rulingText;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
     if (body.source !== undefined) data.source = body.source;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.cardRuling.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -48,14 +50,15 @@ router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
     if (body.rulingText !== undefined) data.rulingText = body.rulingText;
-    if (body.publishedAt !== undefined) data.publishedAt = new Date(body.publishedAt);
+    if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
     if (body.source !== undefined) data.source = body.source;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
     const entity = await prisma.cardRuling.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

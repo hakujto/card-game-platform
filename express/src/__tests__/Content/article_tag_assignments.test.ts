@@ -32,4 +32,5 @@ describe('ArticleTagAssignment API', () => {
     const res = await request(app).delete('/api/article_tag_assignments/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

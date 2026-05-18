@@ -20,4 +20,14 @@ export class DeckTagService {
   async remove(id: number) {
     return prisma.deckTag.delete({ where: { id } });
   }
+
+  async rename(newName: string): Promise<void> {
+    throw new Error('rename not implemented');
+  }
+  async merge_into(id: number, targetTagId: number): Promise<void> {
+    const entity = await prisma.deckTag.findUnique({ where: { id } });
+    if (!entity) throw new Error('DeckTag not found: ' + id);
+    // TODO: implement merge_into domain logic
+    throw new Error('merge_into not implemented');
+  }
 }

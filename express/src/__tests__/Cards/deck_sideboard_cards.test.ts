@@ -34,4 +34,5 @@ describe('DeckSideboardCard API', () => {
     const res = await request(app).delete('/api/deck_sideboard_cards/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

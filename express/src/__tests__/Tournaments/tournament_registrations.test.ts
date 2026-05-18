@@ -35,4 +35,5 @@ describe('TournamentRegistration API', () => {
     const res = await request(app).delete('/api/tournament_registrations/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

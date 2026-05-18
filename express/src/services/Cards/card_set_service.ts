@@ -20,4 +20,8 @@ export class CardSetService {
   async remove(id: number) {
     return prisma.cardSet.delete({ where: { id } });
   }
+
+  async is_legal_in_standard(): Promise<boolean> {
+    throw new Error('is_legal_in_standard not implemented');
+  }
 }

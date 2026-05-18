@@ -36,4 +36,14 @@ describe('OrderItem API', () => {
     const res = await request(app).delete('/api/order_items/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/order_items returns 400 when quantity_positive violated", async () => {
+    const res = await request(app).post('/api/order_items').send({ priceAtPurchase: 0.00, orderId: 1, productId: 1, quantity: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/order_items returns 400 when price_not_negative violated", async () => {
+    const res = await request(app).post('/api/order_items').send({ quantity: 1, orderId: 1, productId: 1, priceAtPurchase: -1 });
+    expect(res.status).toBe(400);
+  });
 });

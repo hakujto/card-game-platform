@@ -20,4 +20,5 @@ export class DeckCardService {
   async remove(id: number) {
     return prisma.deckCard.delete({ where: { id } });
   }
+
 }

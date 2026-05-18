@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { DeckService } from '../../services/Cards/deck_service.js';
 
 const router = Router();
+const service = new DeckService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.deck.findMany();
@@ -19,8 +22,8 @@ router.post('/', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
     const entity = await prisma.deck.create({ data });
@@ -47,14 +50,15 @@ router.put('/:id', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -69,14 +73,15 @@ router.patch('/:id', async (req, res) => {
     if (body.archetype !== undefined) data.archetype = body.archetype;
     if (body.wins !== undefined) data.wins = body.wins;
     if (body.losses !== undefined) data.losses = body.losses;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.updatedAt !== undefined) data.updatedAt = new Date(body.updatedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -89,4 +94,53 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.get('/:id/validate', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.validate_size(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/clone', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.clone(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/publish', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.publish(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/unpublish', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.unpublish(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/certify', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.certify_tournament_legal(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

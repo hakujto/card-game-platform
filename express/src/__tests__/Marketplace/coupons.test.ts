@@ -16,11 +16,11 @@ describe('Coupon API', () => {
       .post('/api/coupons')
       .send({
       code: 'test',
-      discountValue: 0.00,
+      discountValue: 1,
       minOrderValue: 0.00,
       usesCount: 1,
       validFrom: '2024-01-01T00:00:00.000Z',
-      validUntil: '2024-01-01T00:00:00.000Z',
+      validUntil: '2024-01-02T00:00:00.000Z',
       isActive: true
     });
     expect([200, 201]).toContain(res.status);
@@ -39,5 +39,20 @@ describe('Coupon API', () => {
   it('DELETE /api/coupons/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/coupons/1');
     expect([204, 404]).toContain(res.status);
+  });
+
+  it("POST /api/coupons returns 400 when discount_value_positive violated", async () => {
+    const res = await request(app).post('/api/coupons').send({ code: 'test', validFrom: '2024-01-01T00:00:00.000Z', validUntil: '2024-01-02T00:00:00.000Z', discountType: 'PERCENT', maxUses: 1, discountValue: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/coupons returns 400 when percent_discount_range violated", async () => {
+    const res = await request(app).post('/api/coupons').send({ code: 'test', validFrom: '2024-01-01T00:00:00.000Z', validUntil: '2024-01-02T00:00:00.000Z', discountType: 'PERCENT', discountValue: 101 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/coupons returns 400 when uses_not_exceed_max violated", async () => {
+    const res = await request(app).post('/api/coupons').send({ code: 'test', discountValue: 1, validFrom: '2024-01-01T00:00:00.000Z', validUntil: '2024-01-02T00:00:00.000Z', maxUses: 1, usesCount: 2 });
+    expect(res.status).toBe(400);
   });
 });

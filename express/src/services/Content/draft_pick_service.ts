@@ -20,4 +20,8 @@ export class DraftPickService {
   async remove(id: number) {
     return prisma.draftPick.delete({ where: { id } });
   }
+
+  async is_first_pick(): Promise<boolean> {
+    throw new Error('is_first_pick not implemented');
+  }
 }

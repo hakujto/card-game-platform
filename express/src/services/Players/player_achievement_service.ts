@@ -20,4 +20,5 @@ export class PlayerAchievementService {
   async remove(id: number) {
     return prisma.playerAchievement.delete({ where: { id } });
   }
+
 }

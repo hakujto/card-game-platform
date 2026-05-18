@@ -36,4 +36,5 @@ describe('CardRuling API', () => {
     const res = await request(app).delete('/api/card_rulings/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

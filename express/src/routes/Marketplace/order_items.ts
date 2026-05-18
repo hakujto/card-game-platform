@@ -3,6 +3,11 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if (!((data.quantity == null || data.quantity > 0))) throw new Error(`Order item quantity must be greater than zero`);
+  if (!((data.priceAtPurchase == null || Number(data.priceAtPurchase) >= 0))) throw new Error(`Price at purchase must not be negative`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.orderItem.findMany();
   res.json(items);
@@ -17,6 +22,7 @@ router.post('/', async (req, res) => {
     if (body.orderId !== undefined) data.orderId = body.orderId;
     if (body.productId !== undefined) data.productId = body.productId;
   try {
+  validate(data);
     const entity = await prisma.orderItem.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -39,10 +45,12 @@ router.put('/:id', async (req, res) => {
     if (body.orderId !== undefined) data.orderId = body.orderId;
     if (body.productId !== undefined) data.productId = body.productId;
   try {
+  validate(data);
     const entity = await prisma.orderItem.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -55,10 +63,12 @@ router.patch('/:id', async (req, res) => {
     if (body.orderId !== undefined) data.orderId = body.orderId;
     if (body.productId !== undefined) data.productId = body.productId;
   try {
+  validate(data);
     const entity = await prisma.orderItem.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

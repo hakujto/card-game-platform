@@ -20,4 +20,14 @@ export class DraftParticipantService {
   async remove(id: number) {
     return prisma.draftParticipant.delete({ where: { id } });
   }
+
+  async drafted_card_count(): Promise<number> {
+    throw new Error('drafted_card_count not implemented');
+  }
+  async pick_card(id: number, cardId: number, packNumber: number): Promise<void> {
+    const entity = await prisma.draftParticipant.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftParticipant not found: ' + id);
+    // TODO: implement pick_card domain logic
+    throw new Error('pick_card not implemented');
+  }
 }

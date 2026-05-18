@@ -35,10 +35,6 @@ model Card {
   powerLevel  Int @default(1)
   setId  Int?
   set    CardSet?  @relation("CardSet", fields: [setId], references: [id])
-  rulingsId  Int?
-  rulings    CardRuling?  @relation("CardRulings", fields: [rulingsId], references: [id])
-  abilitiesId  Int?
-  abilities    CardAbility?  @relation("CardAbilities", fields: [abilitiesId], references: [id])
   cardRulings  CardRuling[]  @relation("CardRulingCard")
   cardAbilities  CardAbility[]  @relation("CardAbilityCard")
   decks  Deck[]  @relation("DeckCards")
@@ -76,7 +72,6 @@ model CardRuling {
   source  String
   cardId  Int?
   card    Card?  @relation("CardRulingCard", fields: [cardId], references: [id])
-  cards  Card[]  @relation("CardRulings")
 }
 
 model CardAbility {
@@ -87,7 +82,6 @@ model CardAbility {
   abilityText  String
   cardId  Int?
   card    Card?  @relation("CardAbilityCard", fields: [cardId], references: [id])
-  cards  Card[]  @relation("CardAbilities")
 }
 
 model Deck {
@@ -164,8 +158,6 @@ model Player {
   lastActiveAt  DateTime?
   userId  Int?
   user    User?  @relation("PlayerUser", fields: [userId], references: [id])
-  seasonStatsId  Int?
-  seasonStats    PlayerSeasonStats?  @relation("PlayerSeasonStats", fields: [seasonStatsId], references: [id])
   achievements  Achievement[]  @relation("PlayerAchievements")
   friends  Player[]  @relation("PlayerFriends")
   friendsOf  Player[]  @relation("PlayerFriends")
@@ -208,7 +200,6 @@ model PlayerSeasonStats {
   player    Player?  @relation("PlayerSeasonStatsPlayer", fields: [playerId], references: [id])
   seasonId  Int?
   season    Season?  @relation("PlayerSeasonStatsSeason", fields: [seasonId], references: [id])
-  players  Player[]  @relation("PlayerSeasonStats")
 }
 
 model PlayerCollection {
@@ -308,12 +299,6 @@ model Tournament {
   season    Season?  @relation("TournamentSeason", fields: [seasonId], references: [id])
   organizerId  Int?
   organizer    Player?  @relation("TournamentOrganizer", fields: [organizerId], references: [id])
-  registrationsId  Int?
-  registrations    TournamentRegistration?  @relation("TournamentRegistrations", fields: [registrationsId], references: [id])
-  roundsId  Int?
-  rounds    TournamentRound?  @relation("TournamentRounds", fields: [roundsId], references: [id])
-  prizesId  Int?
-  prizes    TournamentPrize?  @relation("TournamentPrizes", fields: [prizesId], references: [id])
   judges  Player[]  @relation("TournamentJudges")
   tournamentJudges  TournamentJudge[]  @relation("TournamentJudgeTournament")
   tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationTournament")
@@ -344,7 +329,6 @@ model TournamentRegistration {
   player    Player?  @relation("TournamentRegistrationPlayer", fields: [playerId], references: [id])
   deckId  Int?
   deck    Deck?  @relation("TournamentRegistrationDeck", fields: [deckId], references: [id])
-  tournaments  Tournament[]  @relation("TournamentRegistrations")
 }
 
 model TournamentRound {
@@ -356,10 +340,7 @@ model TournamentRound {
   timeLimitMinutes  Int @default(50)
   tournamentId  Int?
   tournament    Tournament?  @relation("TournamentRoundTournament", fields: [tournamentId], references: [id])
-  matchesId  Int?
-  matches    Match?  @relation("TournamentRoundMatches", fields: [matchesId], references: [id])
-  tournaments  Tournament[]  @relation("TournamentRounds")
-  matchesViaMatchRound  Match[]  @relation("MatchRound")
+  matches  Match[]  @relation("MatchRound")
 }
 
 model Match {
@@ -377,10 +358,7 @@ model Match {
   player1    Player?  @relation("MatchPlayer1", fields: [player1Id], references: [id])
   player2Id  Int?
   player2    Player?  @relation("MatchPlayer2", fields: [player2Id], references: [id])
-  gamesId  Int?
-  games    Game?  @relation("MatchGames", fields: [gamesId], references: [id])
-  tournamentRounds  TournamentRound[]  @relation("TournamentRoundMatches")
-  gamesViaGameMatch  Game[]  @relation("GameMatch")
+  games  Game[]  @relation("GameMatch")
 }
 
 model Game {
@@ -395,7 +373,6 @@ model Game {
   match    Match?  @relation("GameMatch", fields: [matchId], references: [id])
   winnerId  Int?
   winner    Player?  @relation("GameWinner", fields: [winnerId], references: [id])
-  matches  Match[]  @relation("MatchGames")
 }
 
 model TournamentPrize {
@@ -409,7 +386,6 @@ model TournamentPrize {
   seasonPoints  Int @default(0)
   tournamentId  Int?
   tournament    Tournament?  @relation("TournamentPrizeTournament", fields: [tournamentId], references: [id])
-  tournaments  Tournament[]  @relation("TournamentPrizes")
   awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePrize")
 }
 
@@ -458,8 +434,6 @@ model Order {
   shippedAt  DateTime?
   playerId  Int?
   player    Player?  @relation("OrderPlayer", fields: [playerId], references: [id])
-  itemsId  Int?
-  items    OrderItem?  @relation("OrderItems", fields: [itemsId], references: [id])
   couponId  Int?
   coupon    Coupon?  @relation("OrderCoupon", fields: [couponId], references: [id])
   orderItems  OrderItem[]  @relation("OrderItemOrder")
@@ -474,7 +448,6 @@ model OrderItem {
   order    Order?  @relation("OrderItemOrder", fields: [orderId], references: [id])
   productId  Int?
   product    Product?  @relation("OrderItemProduct", fields: [productId], references: [id])
-  orders  Order[]  @relation("OrderItems")
 }
 
 model Coupon {
@@ -509,8 +482,6 @@ model Tradelisting {
   seller    Player?  @relation("TradelistingSeller", fields: [sellerId], references: [id])
   cardId  Int?
   card    Card?  @relation("TradelistingCard", fields: [cardId], references: [id])
-  bidsId  Int?
-  bids    TradeBid?  @relation("TradelistingBids", fields: [bidsId], references: [id])
   tradeBids  TradeBid[]  @relation("TradeBidListing")
   tradeTransactions  TradeTransaction[]  @relation("TradeTransactionListing")
 }
@@ -524,7 +495,6 @@ model TradeBid {
   listing    Tradelisting?  @relation("TradeBidListing", fields: [listingId], references: [id])
   bidderId  Int?
   bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id])
-  tradelistings  Tradelisting[]  @relation("TradelistingBids")
 }
 
 model TradeTransaction {
@@ -579,8 +549,6 @@ model DraftSession {
   completedAt  DateTime?
   cardSetId  Int?
   cardSet    CardSet?  @relation("DraftSessionCardSet", fields: [cardSetId], references: [id])
-  participantsId  Int?
-  participants    DraftParticipant?  @relation("DraftSessionParticipants", fields: [participantsId], references: [id])
   draftParticipants  DraftParticipant[]  @relation("DraftParticipantSession")
 }
 
@@ -592,9 +560,6 @@ model DraftParticipant {
   session    DraftSession?  @relation("DraftParticipantSession", fields: [sessionId], references: [id])
   playerId  Int?
   player    Player?  @relation("DraftParticipantPlayer", fields: [playerId], references: [id])
-  draftedCardsId  Int?
-  draftedCards    DraftPick?  @relation("DraftParticipantDraftedCards", fields: [draftedCardsId], references: [id])
-  draftSessions  DraftSession[]  @relation("DraftSessionParticipants")
   draftPicks  DraftPick[]  @relation("DraftPickParticipant")
 }
 
@@ -607,7 +572,6 @@ model DraftPick {
   participant    DraftParticipant?  @relation("DraftPickParticipant", fields: [participantId], references: [id])
   cardId  Int?
   card    Card?  @relation("DraftPickCard", fields: [cardId], references: [id])
-  draftParticipants  DraftParticipant[]  @relation("DraftParticipantDraftedCards")
 }
 
 model Article {
@@ -627,8 +591,6 @@ model Article {
   author    Player?  @relation("ArticleAuthor", fields: [authorId], references: [id])
   featuredDeckId  Int?
   featuredDeck    Deck?  @relation("ArticleFeaturedDeck", fields: [featuredDeckId], references: [id])
-  commentsId  Int?
-  comments    ArticleComment?  @relation("ArticleComments", fields: [commentsId], references: [id])
   tags  ArticleTag[]  @relation("ArticleTags")
   articleTagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentArticle")
   articleComments  ArticleComment[]  @relation("ArticleCommentArticle")
@@ -662,7 +624,6 @@ model ArticleComment {
   parentCommentId  Int?
   parentComment    ArticleComment?  @relation("ArticleCommentParentComment", fields: [parentCommentId], references: [id])
   parentCommentChildren  ArticleComment[]  @relation("ArticleCommentParentComment")
-  articles  Article[]  @relation("ArticleComments")
 }
 
 model Stream {

@@ -34,4 +34,9 @@ describe('CardAbility API', () => {
     const res = await request(app).delete('/api/card_abilities/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/card_abilities returns 400 when keyword_ability_requires_keyword violated", async () => {
+    const res = await request(app).post('/api/card_abilities').send({ abilityText: 'test', cardId: 1, abilityType: 'KEYWORD', keyword: null });
+    expect(res.status).toBe(400);
+  });
 });

@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { DraftSessionService } from '../../services/Content/draft_session_service.js';
 
 const router = Router();
+const service = new DraftSessionService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.draftSession.findMany();
@@ -14,10 +17,9 @@ router.post('/', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.completedAt !== undefined) data.completedAt = new Date(body.completedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
-    if (body.participantsId !== undefined) data.participantsId = body.participantsId;
   try {
     const entity = await prisma.draftSession.create({ data });
     res.status(201).json(entity);
@@ -38,15 +40,15 @@ router.put('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.completedAt !== undefined) data.completedAt = new Date(body.completedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
-    if (body.participantsId !== undefined) data.participantsId = body.participantsId;
   try {
     const entity = await prisma.draftSession.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -56,15 +58,15 @@ router.patch('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
-    if (body.createdAt !== undefined) data.createdAt = new Date(body.createdAt);
-    if (body.completedAt !== undefined) data.completedAt = new Date(body.completedAt);
+    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
+    if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
-    if (body.participantsId !== undefined) data.participantsId = body.participantsId;
   try {
     const entity = await prisma.draftSession.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -77,4 +79,33 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/start', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.start(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/abandon', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.abandon(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/complete', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.complete(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

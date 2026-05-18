@@ -34,4 +34,5 @@ describe('DeckTag API', () => {
     const res = await request(app).delete('/api/deck_tags/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

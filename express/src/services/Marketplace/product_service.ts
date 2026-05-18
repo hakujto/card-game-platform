@@ -20,4 +20,39 @@ export class ProductService {
   async remove(id: number) {
     return prisma.product.delete({ where: { id } });
   }
+
+  async effective_price(): Promise<number> {
+    throw new Error('effective_price not implemented');
+  }
+
+  async is_in_stock(): Promise<boolean> {
+    throw new Error('is_in_stock not implemented');
+  }
+  async activate(id: number): Promise<void> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement activate domain logic
+    throw new Error('activate not implemented');
+  }
+
+  async deactivate(id: number): Promise<void> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement deactivate domain logic
+    throw new Error('deactivate not implemented');
+  }
+
+  async apply_discount(id: number, percent: number): Promise<number> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement apply_discount domain logic
+    throw new Error('apply_discount not implemented');
+  }
+
+  async restock(id: number, quantity: number): Promise<void> {
+    const entity = await prisma.product.findUnique({ where: { id } });
+    if (!entity) throw new Error('Product not found: ' + id);
+    // TODO: implement restock domain logic
+    throw new Error('restock not implemented');
+  }
 }

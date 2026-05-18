@@ -3,6 +3,12 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if (!((data.placementTo == null || (data.placementFrom != null && data.placementTo >= data.placementFrom)))) throw new Error(`placement_to must be greater than or equal to placement_from`);
+  if (!((data.placementFrom == null || data.placementFrom > 0))) throw new Error(`placement_from must be greater than zero`);
+  if (!((data.amount == null || Number(data.amount) >= 0))) throw new Error(`Prize amount must not be negative`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.tournamentPrize.findMany();
   res.json(items);
@@ -20,6 +26,7 @@ router.post('/', async (req, res) => {
     if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
   try {
+  validate(data);
     const entity = await prisma.tournamentPrize.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -45,10 +52,12 @@ router.put('/:id', async (req, res) => {
     if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
   try {
+  validate(data);
     const entity = await prisma.tournamentPrize.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -64,10 +73,12 @@ router.patch('/:id', async (req, res) => {
     if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
   try {
+  validate(data);
     const entity = await prisma.tournamentPrize.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

@@ -3,6 +3,10 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if ((data.abilityType === 'KEYWORD') && !((data.keyword === undefined || data.keyword != null))) throw new Error(`Keyword ability must have a keyword name`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.cardAbility.findMany();
   res.json(items);
@@ -17,6 +21,7 @@ router.post('/', async (req, res) => {
     if (body.timing !== undefined) data.timing = body.timing;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardAbility.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -39,10 +44,12 @@ router.put('/:id', async (req, res) => {
     if (body.timing !== undefined) data.timing = body.timing;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardAbility.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -55,10 +62,12 @@ router.patch('/:id', async (req, res) => {
     if (body.timing !== undefined) data.timing = body.timing;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.cardAbility.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

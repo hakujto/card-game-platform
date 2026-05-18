@@ -17,7 +17,7 @@ describe('Season API', () => {
       .send({
       name: 'test',
       startDate: '2024-01-01',
-      endDate: '2024-01-01',
+      endDate: '2024-01-02T00:00:00.000Z',
       isActive: true
     });
     expect([200, 201]).toContain(res.status);
@@ -37,4 +37,5 @@ describe('Season API', () => {
     const res = await request(app).delete('/api/seasons/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

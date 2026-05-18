@@ -3,6 +3,10 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if (!((data.quantity == null || (data.quantity >= 1 && data.quantity <= 4)))) throw new Error(`A deck can contain between 1 and 4 copies of a card`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.deckCard.findMany();
   res.json(items);
@@ -16,6 +20,7 @@ router.post('/', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckCard.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -37,10 +42,12 @@ router.put('/:id', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckCard.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -52,10 +59,12 @@ router.patch('/:id', async (req, res) => {
     if (body.deckId !== undefined) data.deckId = body.deckId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
+  validate(data);
     const entity = await prisma.deckCard.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

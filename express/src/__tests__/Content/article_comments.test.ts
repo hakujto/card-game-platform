@@ -36,4 +36,5 @@ describe('ArticleComment API', () => {
     const res = await request(app).delete('/api/article_comments/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

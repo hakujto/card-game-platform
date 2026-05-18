@@ -36,4 +36,5 @@ describe('PlayerCollection API', () => {
     const res = await request(app).delete('/api/player_collections/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

@@ -34,4 +34,19 @@ describe('Game API', () => {
     const res = await request(app).delete('/api/games/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/games returns 400 when game_number_range violated", async () => {
+    const res = await request(app).post('/api/games').send({ matchId: 1, turnsPlayed: 1, durationSeconds: 1, gameNumber: 4 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/games returns 400 when turns_played_positive violated", async () => {
+    const res = await request(app).post('/api/games').send({ gameNumber: 1, matchId: 1, turnsPlayed: 0 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/games returns 400 when duration_positive violated", async () => {
+    const res = await request(app).post('/api/games').send({ gameNumber: 1, matchId: 1, durationSeconds: 0 });
+    expect(res.status).toBe(400);
+  });
 });

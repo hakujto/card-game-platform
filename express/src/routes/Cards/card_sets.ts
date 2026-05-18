@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+
 router.get('/', async (_req, res) => {
   const items = await prisma.cardSet.findMany();
   res.json(items);
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
   const data: any = {};
     if (body.name !== undefined) data.name = body.name;
     if (body.code !== undefined) data.code = body.code;
-    if (body.releaseDate !== undefined) data.releaseDate = new Date(body.releaseDate);
+    if (body.releaseDate !== undefined) data.releaseDate = body.releaseDate != null ? new Date(body.releaseDate) : null;
     if (body.setType !== undefined) data.setType = body.setType;
     if (body.totalCards !== undefined) data.totalCards = body.totalCards;
     if (body.description !== undefined) data.description = body.description;
@@ -37,7 +38,7 @@ router.put('/:id', async (req, res) => {
   const data: any = {};
     if (body.name !== undefined) data.name = body.name;
     if (body.code !== undefined) data.code = body.code;
-    if (body.releaseDate !== undefined) data.releaseDate = new Date(body.releaseDate);
+    if (body.releaseDate !== undefined) data.releaseDate = body.releaseDate != null ? new Date(body.releaseDate) : null;
     if (body.setType !== undefined) data.setType = body.setType;
     if (body.totalCards !== undefined) data.totalCards = body.totalCards;
     if (body.description !== undefined) data.description = body.description;
@@ -45,8 +46,9 @@ router.put('/:id', async (req, res) => {
   try {
     const entity = await prisma.cardSet.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -55,7 +57,7 @@ router.patch('/:id', async (req, res) => {
   const data: any = {};
     if (body.name !== undefined) data.name = body.name;
     if (body.code !== undefined) data.code = body.code;
-    if (body.releaseDate !== undefined) data.releaseDate = new Date(body.releaseDate);
+    if (body.releaseDate !== undefined) data.releaseDate = body.releaseDate != null ? new Date(body.releaseDate) : null;
     if (body.setType !== undefined) data.setType = body.setType;
     if (body.totalCards !== undefined) data.totalCards = body.totalCards;
     if (body.description !== undefined) data.description = body.description;
@@ -63,8 +65,9 @@ router.patch('/:id', async (req, res) => {
   try {
     const entity = await prisma.cardSet.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

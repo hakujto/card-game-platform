@@ -35,4 +35,9 @@ describe('TournamentRound API', () => {
     const res = await request(app).delete('/api/tournament_rounds/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/tournament_rounds returns 400 when ended_after_started violated", async () => {
+    const res = await request(app).post('/api/tournament_rounds').send({ roundNumber: 1, tournamentId: 1, endedAt: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
+  });
 });

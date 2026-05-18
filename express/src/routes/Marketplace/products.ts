@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { ProductService } from '../../services/Marketplace/product_service.js';
 
 const router = Router();
+const service = new ProductService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.product.findMany();
@@ -53,8 +56,9 @@ router.put('/:id', async (req, res) => {
   try {
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -75,8 +79,9 @@ router.patch('/:id', async (req, res) => {
   try {
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -89,4 +94,45 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/activate', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.activate(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/deactivate', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.deactivate(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/discount', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const percent = req.body.percent;
+  try {
+    const result = await service.apply_discount(id, percent);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/restock', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const quantity = req.body.quantity;
+  try {
+    await service.restock(id, quantity);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

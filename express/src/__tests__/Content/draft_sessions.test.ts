@@ -35,4 +35,5 @@ describe('DraftSession API', () => {
     const res = await request(app).delete('/api/draft_sessions/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

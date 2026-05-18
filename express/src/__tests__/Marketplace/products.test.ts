@@ -39,4 +39,5 @@ describe('Product API', () => {
     const res = await request(app).delete('/api/products/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

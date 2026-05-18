@@ -35,4 +35,19 @@ describe('Match API', () => {
     const res = await request(app).delete('/api/matches/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/matches returns 400 when wins_not_negative violated", async () => {
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: null, player1Wins: -1 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/matches returns 400 when max_three_games violated", async () => {
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: null, player1Wins: 3 });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/matches returns 400 when bye_has_no_player2 violated", async () => {
+    const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'BYE', player2Id: 1 });
+    expect(res.status).toBe(400);
+  });
 });

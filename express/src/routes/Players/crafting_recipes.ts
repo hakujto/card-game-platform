@@ -3,6 +3,10 @@ import { prisma } from '../../lib/prisma.js';
 
 const router = Router();
 
+function validate(data: any): void {
+  if (!((data.dustCost == null || data.dustCost > 0))) throw new Error(`Crafting recipe must have a dust cost greater than zero`);
+}
+
 router.get('/', async (_req, res) => {
   const items = await prisma.craftingRecipe.findMany();
   res.json(items);
@@ -15,6 +19,7 @@ router.post('/', async (req, res) => {
     if (body.isAvailable !== undefined) data.isAvailable = body.isAvailable;
     if (body.resultCardId !== undefined) data.resultCardId = body.resultCardId;
   try {
+  validate(data);
     const entity = await prisma.craftingRecipe.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -35,10 +40,12 @@ router.put('/:id', async (req, res) => {
     if (body.isAvailable !== undefined) data.isAvailable = body.isAvailable;
     if (body.resultCardId !== undefined) data.resultCardId = body.resultCardId;
   try {
+  validate(data);
     const entity = await prisma.craftingRecipe.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -49,10 +56,12 @@ router.patch('/:id', async (req, res) => {
     if (body.isAvailable !== undefined) data.isAvailable = body.isAvailable;
     if (body.resultCardId !== undefined) data.resultCardId = body.resultCardId;
   try {
+  validate(data);
     const entity = await prisma.craftingRecipe.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 

@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { StreamService } from '../../services/Content/stream_service.js';
 
 const router = Router();
+const service = new StreamService();
+
+function validate(data: any): void {
+  if ((data.actualStart != null) && !(data.status === 'LIVE')) throw new Error(`actual_start_requires_live_or_ended`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.stream.findMany();
@@ -16,13 +22,14 @@ router.post('/', async (req, res) => {
     if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
-    if (body.scheduledStart !== undefined) data.scheduledStart = new Date(body.scheduledStart);
-    if (body.actualStart !== undefined) data.actualStart = new Date(body.actualStart);
-    if (body.endedAt !== undefined) data.endedAt = new Date(body.endedAt);
+    if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
+    if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
+    if (body.endedAt !== undefined) data.endedAt = body.endedAt != null ? new Date(body.endedAt) : null;
     if (body.vodUrl !== undefined) data.vodUrl = body.vodUrl;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
     if (body.streamerId !== undefined) data.streamerId = body.streamerId;
   try {
+  validate(data);
     const entity = await prisma.stream.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -44,17 +51,19 @@ router.put('/:id', async (req, res) => {
     if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
-    if (body.scheduledStart !== undefined) data.scheduledStart = new Date(body.scheduledStart);
-    if (body.actualStart !== undefined) data.actualStart = new Date(body.actualStart);
-    if (body.endedAt !== undefined) data.endedAt = new Date(body.endedAt);
+    if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
+    if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
+    if (body.endedAt !== undefined) data.endedAt = body.endedAt != null ? new Date(body.endedAt) : null;
     if (body.vodUrl !== undefined) data.vodUrl = body.vodUrl;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
     if (body.streamerId !== undefined) data.streamerId = body.streamerId;
   try {
+  validate(data);
     const entity = await prisma.stream.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -66,17 +75,19 @@ router.patch('/:id', async (req, res) => {
     if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
-    if (body.scheduledStart !== undefined) data.scheduledStart = new Date(body.scheduledStart);
-    if (body.actualStart !== undefined) data.actualStart = new Date(body.actualStart);
-    if (body.endedAt !== undefined) data.endedAt = new Date(body.endedAt);
+    if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
+    if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
+    if (body.endedAt !== undefined) data.endedAt = body.endedAt != null ? new Date(body.endedAt) : null;
     if (body.vodUrl !== undefined) data.vodUrl = body.vodUrl;
     if (body.tournamentId !== undefined) data.tournamentId = body.tournamentId;
     if (body.streamerId !== undefined) data.streamerId = body.streamerId;
   try {
+  validate(data);
     const entity = await prisma.stream.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -89,4 +100,34 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/live', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.go_live(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/end', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.end(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/viewers', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const count = req.body.count;
+  try {
+    await service.update_viewer_peak(id, count);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

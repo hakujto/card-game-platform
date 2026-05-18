@@ -36,4 +36,14 @@ describe('AwardedPrize API', () => {
     const res = await request(app).delete('/api/awarded_prizes/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/awarded_prizes returns 400 when claimed_requires_claimed_at violated", async () => {
+    const res = await request(app).post('/api/awarded_prizes').send({ finalPlacement: 1, awardedAt: '2024-01-01T00:00:00.000Z', prizeId: 1, playerId: 1, claimed: true, claimedAt: null });
+    expect(res.status).toBe(400);
+  });
+
+  it("POST /api/awarded_prizes returns 400 when final_placement_positive violated", async () => {
+    const res = await request(app).post('/api/awarded_prizes').send({ awardedAt: '2024-01-01T00:00:00.000Z', prizeId: 1, playerId: 1, claimed: true, claimedAt: '2024-01-01T00:00:00.000Z', finalPlacement: 0 });
+    expect(res.status).toBe(400);
+  });
 });

@@ -20,4 +20,28 @@ export class ArticleService {
   async remove(id: number) {
     return prisma.article.delete({ where: { id } });
   }
+
+  async reading_time_minutes(): Promise<number> {
+    throw new Error('reading_time_minutes not implemented');
+  }
+  async publish(id: number): Promise<void> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement publish domain logic
+    throw new Error('publish not implemented');
+  }
+
+  async archive(id: number): Promise<void> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement archive domain logic
+    throw new Error('archive not implemented');
+  }
+
+  async increment_view(id: number): Promise<void> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement increment_view domain logic
+    throw new Error('increment_view not implemented');
+  }
 }

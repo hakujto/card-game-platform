@@ -1,7 +1,17 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { CardService } from '../../services/Cards/card_service.js';
 
 const router = Router();
+const service = new CardService();
+
+function validate(data: any): void {
+  if (!((data.manaCost == null || (data.manaCost >= 0 && data.manaCost <= 20)))) throw new Error(`mana_cost must be between 0 and 20`);
+  if (!((data.powerLevel == null || (data.powerLevel >= 1 && data.powerLevel <= 10)))) throw new Error(`power_level must be between 1 and 10`);
+  if (!(!((data.isBanned === true && data.isRestricted === true)))) throw new Error(`Card cannot be both banned and restricted at the same time`);
+  if ((data.cardType === 'CREATURE') && !((data.attack === undefined || data.attack != null) && (data.defense === undefined || data.defense != null))) throw new Error(`Creature card must have attack and defense`);
+  if ((data.cardType === 'PLANESWALKER') && !((data.loyalty === undefined || data.loyalty != null))) throw new Error(`Planeswalker card must have loyalty`);
+}
 
 router.get('/', async (_req, res) => {
   const items = await prisma.card.findMany();
@@ -28,9 +38,8 @@ router.post('/', async (req, res) => {
     if (body.isRestricted !== undefined) data.isRestricted = body.isRestricted;
     if (body.powerLevel !== undefined) data.powerLevel = body.powerLevel;
     if (body.setId !== undefined) data.setId = body.setId;
-    if (body.rulingsId !== undefined) data.rulingsId = body.rulingsId;
-    if (body.abilitiesId !== undefined) data.abilitiesId = body.abilitiesId;
   try {
+  validate(data);
     const entity = await prisma.card.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
@@ -64,13 +73,13 @@ router.put('/:id', async (req, res) => {
     if (body.isRestricted !== undefined) data.isRestricted = body.isRestricted;
     if (body.powerLevel !== undefined) data.powerLevel = body.powerLevel;
     if (body.setId !== undefined) data.setId = body.setId;
-    if (body.rulingsId !== undefined) data.rulingsId = body.rulingsId;
-    if (body.abilitiesId !== undefined) data.abilitiesId = body.abilitiesId;
   try {
+  validate(data);
     const entity = await prisma.card.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -94,13 +103,13 @@ router.patch('/:id', async (req, res) => {
     if (body.isRestricted !== undefined) data.isRestricted = body.isRestricted;
     if (body.powerLevel !== undefined) data.powerLevel = body.powerLevel;
     if (body.setId !== undefined) data.setId = body.setId;
-    if (body.rulingsId !== undefined) data.rulingsId = body.rulingsId;
-    if (body.abilitiesId !== undefined) data.abilitiesId = body.abilitiesId;
   try {
+  validate(data);
     const entity = await prisma.card.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -113,4 +122,53 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/ban', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.ban(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/unban', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.unban(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/restrict', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.restrict(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.post('/:id/unrestrict', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.unrestrict(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.get('/:id/value', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.calculate_value(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

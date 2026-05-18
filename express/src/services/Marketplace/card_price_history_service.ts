@@ -20,4 +20,12 @@ export class CardPriceHistoryService {
   async remove(id: number) {
     return prisma.cardPriceHistory.delete({ where: { id } });
   }
+
+  async price_change_percent(previousAvg: number): Promise<number> {
+    throw new Error('price_change_percent not implemented');
+  }
+
+  async is_price_spike(thresholdPercent: number): Promise<boolean> {
+    throw new Error('is_price_spike not implemented');
+  }
 }

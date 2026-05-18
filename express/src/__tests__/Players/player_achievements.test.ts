@@ -36,4 +36,9 @@ describe('PlayerAchievement API', () => {
     const res = await request(app).delete('/api/player_achievements/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/player_achievements returns 400 when completed_requires_progress violated", async () => {
+    const res = await request(app).post('/api/player_achievements').send({ earnedAt: '2024-01-01T00:00:00.000Z', playerId: 1, achievementId: 1, isCompleted: true, progress: 0 });
+    expect(res.status).toBe(400);
+  });
 });

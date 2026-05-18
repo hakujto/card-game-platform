@@ -37,4 +37,9 @@ describe('Stream API', () => {
     const res = await request(app).delete('/api/streams/1');
     expect([204, 404]).toContain(res.status);
   });
+
+  it("POST /api/streams returns 400 when actual_start_requires_live_or_ended violated", async () => {
+    const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z' });
+    expect(res.status).toBe(400);
+  });
 });

@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
+import { DeckTagService } from '../../services/Cards/deck_tag_service.js';
 
 const router = Router();
+const service = new DeckTagService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.deckTag.findMany();
@@ -35,8 +38,9 @@ router.put('/:id', async (req, res) => {
   try {
     const entity = await prisma.deckTag.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -48,8 +52,9 @@ router.patch('/:id', async (req, res) => {
   try {
     const entity = await prisma.deckTag.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err: any) {
+    const status = err?.code === 'P2025' ? 404 : 400;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 
@@ -62,4 +67,14 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/merge', async (req, res) => {
+  const id = Number((req.params as any).id);
+  const targetTagId = req.body.targetTagId;
+  try {
+    await service.merge_into(id, targetTagId);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
 export default router;

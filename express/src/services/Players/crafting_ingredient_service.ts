@@ -20,4 +20,5 @@ export class CraftingIngredientService {
   async remove(id: number) {
     return prisma.craftingIngredient.delete({ where: { id } });
   }
+
 }

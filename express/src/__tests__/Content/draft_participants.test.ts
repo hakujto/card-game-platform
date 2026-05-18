@@ -35,4 +35,5 @@ describe('DraftParticipant API', () => {
     const res = await request(app).delete('/api/draft_participants/1');
     expect([204, 404]).toContain(res.status);
   });
+
 });

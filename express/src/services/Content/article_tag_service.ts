@@ -20,4 +20,12 @@ export class ArticleTagService {
   async remove(id: number) {
     return prisma.articleTag.delete({ where: { id } });
   }
+
+  async rename(newName: string): Promise<void> {
+    throw new Error('rename not implemented');
+  }
+
+  async article_count(): Promise<number> {
+    throw new Error('article_count not implemented');
+  }
 }

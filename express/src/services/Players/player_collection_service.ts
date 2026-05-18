@@ -20,4 +20,14 @@ export class PlayerCollectionService {
   async remove(id: number) {
     return prisma.playerCollection.delete({ where: { id } });
   }
+
+  async add(quantity: number): Promise<void> {
+    throw new Error('add not implemented');
+  }
+  async estimated_value(id: number): Promise<number> {
+    const entity = await prisma.playerCollection.findUnique({ where: { id } });
+    if (!entity) throw new Error('PlayerCollection not found: ' + id);
+    // TODO: implement estimated_value domain logic
+    throw new Error('estimated_value not implemented');
+  }
 }
