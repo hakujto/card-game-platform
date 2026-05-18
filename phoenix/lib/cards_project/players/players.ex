@@ -108,6 +108,25 @@ defmodule CardsProject.Players do
     PlayerSeasonStats.changeset(player_season_stats, attrs)
   end
 
+  def player_season_stats_win_rate_behavior(id) do
+    player_season_stats = Repo.get!(PlayerSeasonStats, id)
+    result = PlayerSeasonStats.win_rate(player_season_stats)
+    Repo.update!(PlayerSeasonStats.changeset(player_season_stats, %{}))
+    result
+  end
+
+  def player_season_stats_add_points_behavior(id, points) do
+    player_season_stats = Repo.get!(PlayerSeasonStats, id)
+    PlayerSeasonStats.add_points(player_season_stats, points)
+    Repo.update!(PlayerSeasonStats.changeset(player_season_stats, %{}))
+  end
+
+  def player_season_stats_record_tournament_win_behavior(id) do
+    player_season_stats = Repo.get!(PlayerSeasonStats, id)
+    PlayerSeasonStats.record_tournament_win(player_season_stats)
+    Repo.update!(PlayerSeasonStats.changeset(player_season_stats, %{}))
+  end
+
   # ── PlayerCollection ─────────────────────────────────────────────────────
 
   def list_player_collections, do: Repo.all(PlayerCollection)
@@ -130,6 +149,18 @@ defmodule CardsProject.Players do
 
   def change_player_collection(%PlayerCollection{} = player_collection, attrs \\ %{}) do
     PlayerCollection.changeset(player_collection, attrs)
+  end
+
+  def player_collection_add_behavior(id, quantity) do
+    player_collection = Repo.get!(PlayerCollection, id)
+    PlayerCollection.add(player_collection, quantity)
+    Repo.update!(PlayerCollection.changeset(player_collection, %{}))
+  end
+
+  def player_collection_remove_behavior(id, quantity) do
+    player_collection = Repo.get!(PlayerCollection, id)
+    PlayerCollection.remove(player_collection, quantity)
+    Repo.update!(PlayerCollection.changeset(player_collection, %{}))
   end
 
   def player_collection_estimated_value_behavior(id) do
@@ -205,6 +236,19 @@ defmodule CardsProject.Players do
     Achievement.changeset(achievement, attrs)
   end
 
+  def achievement_point_value_behavior(id, multiplier) do
+    achievement = Repo.get!(Achievement, id)
+    result = Achievement.point_value(achievement, multiplier)
+    Repo.update!(Achievement.changeset(achievement, %{}))
+    result
+  end
+
+  def achievement_reveal_behavior(id) do
+    achievement = Repo.get!(Achievement, id)
+    Achievement.reveal(achievement)
+    Repo.update!(Achievement.changeset(achievement, %{}))
+  end
+
   # ── PlayerAchievement ─────────────────────────────────────────────────────
 
   def list_player_achievements, do: Repo.all(PlayerAchievement)
@@ -229,6 +273,18 @@ defmodule CardsProject.Players do
     PlayerAchievement.changeset(player_achievement, attrs)
   end
 
+  def player_achievement_increment_progress_behavior(id, amount) do
+    player_achievement = Repo.get!(PlayerAchievement, id)
+    PlayerAchievement.increment_progress(player_achievement, amount)
+    Repo.update!(PlayerAchievement.changeset(player_achievement, %{}))
+  end
+
+  def player_achievement_complete_behavior(id) do
+    player_achievement = Repo.get!(PlayerAchievement, id)
+    PlayerAchievement.complete(player_achievement)
+    Repo.update!(PlayerAchievement.changeset(player_achievement, %{}))
+  end
+
   # ── CraftingRecipe ─────────────────────────────────────────────────────
 
   def list_crafting_recipes, do: Repo.all(CraftingRecipe)
@@ -251,6 +307,31 @@ defmodule CardsProject.Players do
 
   def change_crafting_recipe(%CraftingRecipe{} = crafting_recipe, attrs \\ %{}) do
     CraftingRecipe.changeset(crafting_recipe, attrs)
+  end
+
+  def crafting_recipe_can_craft_behavior(id, player_id) do
+    crafting_recipe = Repo.get!(CraftingRecipe, id)
+    result = CraftingRecipe.can_craft(crafting_recipe, player_id)
+    Repo.update!(CraftingRecipe.changeset(crafting_recipe, %{}))
+    result
+  end
+
+  def crafting_recipe_execute_craft_behavior(id, player_id) do
+    crafting_recipe = Repo.get!(CraftingRecipe, id)
+    CraftingRecipe.execute_craft(crafting_recipe, player_id)
+    Repo.update!(CraftingRecipe.changeset(crafting_recipe, %{}))
+  end
+
+  def crafting_recipe_disable_behavior(id) do
+    crafting_recipe = Repo.get!(CraftingRecipe, id)
+    CraftingRecipe.disable(crafting_recipe)
+    Repo.update!(CraftingRecipe.changeset(crafting_recipe, %{}))
+  end
+
+  def crafting_recipe_enable_behavior(id) do
+    crafting_recipe = Repo.get!(CraftingRecipe, id)
+    CraftingRecipe.enable(crafting_recipe)
+    Repo.update!(CraftingRecipe.changeset(crafting_recipe, %{}))
   end
 
   # ── CraftingIngredient ─────────────────────────────────────────────────────

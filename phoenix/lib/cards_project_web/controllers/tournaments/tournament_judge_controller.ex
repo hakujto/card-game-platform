@@ -48,6 +48,18 @@ defmodule CardsProjectWeb.Tournaments.TournamentJudgeController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/tournament-judges/{id}/promote
+  def promote_to_head(conn, %{"id" => id}) do
+    Tournaments.tournament_judge_promote_to_head_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # DELETE /api/tournament-judges/{id}
+  def remove(conn, %{"id" => id}) do
+    Tournaments.tournament_judge_remove_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_tournament_judge(%TournamentJudge{} = record) do
     Map.take(record, [:id, :role, :tournament_id, :player_id])
   end

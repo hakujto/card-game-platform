@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Content.ArticleTagController do
     send_resp(conn, :no_content, "")
   end
 
+  # PATCH /api/article-tags/{id}/rename
+  def rename(conn, %{"id" => id} = params) do
+    new_name = Map.get(params, "new_name")
+    Content.article_tag_rename_behavior(id, new_name)
+    send_resp(conn, :no_content, "")
+  end
+
+  # GET /api/article-tags/{id}/article-count
+  def article_count(conn, %{"id" => id}) do
+    result = Content.article_tag_article_count_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_article_tag(%ArticleTag{} = record) do
     Map.take(record, [:id, :name, :slug])
   end

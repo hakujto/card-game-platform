@@ -11,6 +11,7 @@ defmodule CardsProject.Cards.Deck do
     field :archetype, :string
     field :wins, :integer, default: 0
     field :losses, :integer, default: 0
+    field :draws, :integer, default: 0
     field :created_at, :naive_datetime
     belongs_to :player, CardsProject.Players.Player
     many_to_many :cards, CardsProject.Cards.Card, join_through: "deck_cards_m2m"
@@ -23,8 +24,8 @@ defmodule CardsProject.Cards.Deck do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :is_public, :is_tournament_legal, :wins, :losses, :created_at, :description, :format, :archetype, :player_id])
-    |> validate_required([:name, :is_public, :is_tournament_legal, :wins, :losses, :created_at])
+    |> cast(attrs, [:name, :is_public, :is_tournament_legal, :wins, :losses, :draws, :created_at, :description, :format, :archetype, :player_id])
+    |> validate_required([:name, :is_public, :is_tournament_legal, :wins, :losses, :draws, :created_at])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:archetype, ["Aggro", "Control", "Midrange", "Combo", "Prison", "Tempo"])
   end
@@ -33,6 +34,21 @@ defmodule CardsProject.Cards.Deck do
 
   def validate_size(_record) do
     # TODO: implement Deck.validate_size
+    {:error, :not_implemented}
+  end
+
+  def add_card(_record, _card_id, _quantity) do
+    # TODO: implement Deck.add_card
+    :ok
+  end
+
+  def remove_card(_record, _card_id) do
+    # TODO: implement Deck.remove_card
+    :ok
+  end
+
+  def win_rate(_record) do
+    # TODO: implement Deck.win_rate
     {:error, :not_implemented}
   end
 

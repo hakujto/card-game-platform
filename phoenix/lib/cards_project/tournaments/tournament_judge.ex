@@ -16,4 +16,16 @@ defmodule CardsProject.Tournaments.TournamentJudge do
     |> cast(attrs, [:role, :tournament_id, :player_id])
     |> validate_inclusion(:role, ["HeadJudge", "Judge", "ScorekeeperJudge"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def promote_to_head(_record) do
+    # TODO: implement TournamentJudge.promote_to_head
+    :ok
+  end
+
+  def remove(_record) do
+    # TODO: implement TournamentJudge.remove
+    :ok
+  end
 end

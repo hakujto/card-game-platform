@@ -48,6 +48,20 @@ defmodule CardsProjectWeb.Cards.DeckCardController do
     send_resp(conn, :no_content, "")
   end
 
+  # PATCH /api/deck-cards/{id}/increment
+  def increment(conn, %{"id" => id} = params) do
+    amount = Map.get(params, "amount")
+    Cards.deck_card_increment_behavior(id, amount)
+    send_resp(conn, :no_content, "")
+  end
+
+  # PATCH /api/deck-cards/{id}/decrement
+  def decrement(conn, %{"id" => id} = params) do
+    amount = Map.get(params, "amount")
+    Cards.deck_card_decrement_behavior(id, amount)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_deck_card(%DeckCard{} = record) do
     Map.take(record, [:id, :quantity, :is_commander, :deck_id, :card_id])
   end

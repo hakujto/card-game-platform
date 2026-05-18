@@ -38,6 +38,11 @@ defmodule CardsProject.Tournaments.Match do
     {:error, :not_implemented}
   end
 
+  def concede(_record, _player_id) do
+    # TODO: implement Match.concede
+    :ok
+  end
+
   def draw(_record) do
     # TODO: implement Match.draw
     :ok

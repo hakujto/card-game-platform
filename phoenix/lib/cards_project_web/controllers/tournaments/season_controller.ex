@@ -66,6 +66,12 @@ defmodule CardsProjectWeb.Tournaments.SeasonController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/seasons/{id}/ongoing
+  def is_ongoing(conn, %{"id" => id}) do
+    result = Tournaments.season_is_ongoing_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_season(%Season{} = record) do
     Map.take(record, [:id, :name, :start_date, :end_date, :format, :is_active, :reward_description])
   end

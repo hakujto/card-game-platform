@@ -67,6 +67,12 @@ defmodule CardsProjectWeb.Content.StreamController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/streams/{id}/duration
+  def duration_minutes(conn, %{"id" => id}) do
+    result = Content.stream_duration_minutes_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_stream(%Stream{} = record) do
     Map.take(record, [:id, :title, :stream_url, :platform, :status, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
   end

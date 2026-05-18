@@ -74,6 +74,18 @@ defmodule CardsProjectWeb.Marketplace.ProductController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/products/{id}/effective-price
+  def effective_price(conn, %{"id" => id}) do
+    result = Marketplace.product_effective_price_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/products/{id}/in-stock
+  def is_in_stock(conn, %{"id" => id}) do
+    result = Marketplace.product_is_in_stock_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_product(%Product{} = record) do
     Map.take(record, [:id, :name, :product_type, :price, :stock, :active, :discount_percent, :description, :image_url, :featured, :card_id, :card_set_id])
   end

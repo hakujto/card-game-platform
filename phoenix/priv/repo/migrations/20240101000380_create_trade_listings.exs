@@ -1,8 +1,8 @@
-defmodule CardsProject.Repo.Migrations.CreateTradelistings do
+defmodule CardsProject.Repo.Migrations.CreateTradeListings do
   use Ecto.Migration
 
   def change do
-    create table(:tradelistings) do
+    create table(:trade_listings) do
       add :listing_type, :string, default: "FixedPrice"
       add :asking_price, :decimal, null: true
       add :auction_start_price, :decimal, null: true
@@ -21,7 +21,7 @@ defmodule CardsProject.Repo.Migrations.CreateTradelistings do
 
       timestamps()
     end
-    create index(:tradelistings, [:seller_id])
-    create index(:tradelistings, [:card_id])
+    create index(:trade_listings, [:seller_id])
+    create index(:trade_listings, [:card_id])
   end
 end

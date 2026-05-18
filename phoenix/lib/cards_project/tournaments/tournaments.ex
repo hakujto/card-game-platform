@@ -58,6 +58,13 @@ defmodule CardsProject.Tournaments do
     Repo.update!(Season.changeset(season, %{}))
   end
 
+  def season_is_ongoing_behavior(id) do
+    season = Repo.get!(Season, id)
+    result = Season.is_ongoing(season)
+    Repo.update!(Season.changeset(season, %{}))
+    result
+  end
+
   # ── Tournament ─────────────────────────────────────────────────────
 
   def list_tournaments, do: Repo.all(Tournament)
@@ -113,6 +120,19 @@ defmodule CardsProject.Tournaments do
     result
   end
 
+  def tournament_register_player_behavior(id, player_id, deck_id) do
+    tournament = Repo.get!(Tournament, id)
+    Tournament.register_player(tournament, player_id, deck_id)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+  end
+
+  def tournament_is_full_behavior(id) do
+    tournament = Repo.get!(Tournament, id)
+    result = Tournament.is_full(tournament)
+    Repo.update!(Tournament.changeset(tournament, %{}))
+    result
+  end
+
   # ── TournamentJudge ─────────────────────────────────────────────────────
 
   def list_tournament_judges, do: Repo.all(TournamentJudge)
@@ -135,6 +155,18 @@ defmodule CardsProject.Tournaments do
 
   def change_tournament_judge(%TournamentJudge{} = tournament_judge, attrs \\ %{}) do
     TournamentJudge.changeset(tournament_judge, attrs)
+  end
+
+  def tournament_judge_promote_to_head_behavior(id) do
+    tournament_judge = Repo.get!(TournamentJudge, id)
+    TournamentJudge.promote_to_head(tournament_judge)
+    Repo.update!(TournamentJudge.changeset(tournament_judge, %{}))
+  end
+
+  def tournament_judge_remove_behavior(id) do
+    tournament_judge = Repo.get!(TournamentJudge, id)
+    TournamentJudge.remove(tournament_judge)
+    Repo.update!(TournamentJudge.changeset(tournament_judge, %{}))
   end
 
   # ── TournamentRegistration ─────────────────────────────────────────────────────
@@ -221,6 +253,13 @@ defmodule CardsProject.Tournaments do
     Repo.update!(TournamentRound.changeset(tournament_round, %{}))
   end
 
+  def tournament_round_is_time_expired_behavior(id) do
+    tournament_round = Repo.get!(TournamentRound, id)
+    result = TournamentRound.is_time_expired(tournament_round)
+    Repo.update!(TournamentRound.changeset(tournament_round, %{}))
+    result
+  end
+
   # ── Match ─────────────────────────────────────────────────────
 
   def list_matches, do: Repo.all(Match)
@@ -259,6 +298,12 @@ defmodule CardsProject.Tournaments do
     result
   end
 
+  def match_concede_behavior(id, player_id) do
+    match = Repo.get!(Match, id)
+    Match.concede(match, player_id)
+    Repo.update!(Match.changeset(match, %{}))
+  end
+
   def match_draw_behavior(id) do
     match = Repo.get!(Match, id)
     Match.draw(match)
@@ -295,6 +340,13 @@ defmodule CardsProject.Tournaments do
     Repo.update!(Game.changeset(game, %{}))
   end
 
+  def game_duration_minutes_behavior(id) do
+    game = Repo.get!(Game, id)
+    result = Game.duration_minutes(game)
+    Repo.update!(Game.changeset(game, %{}))
+    result
+  end
+
   # ── TournamentPrize ─────────────────────────────────────────────────────
 
   def list_tournament_prizes, do: Repo.all(TournamentPrize)
@@ -319,6 +371,19 @@ defmodule CardsProject.Tournaments do
     TournamentPrize.changeset(tournament_prize, attrs)
   end
 
+  def tournament_prize_applies_to_placement_behavior(id, placement) do
+    tournament_prize = Repo.get!(TournamentPrize, id)
+    result = TournamentPrize.applies_to_placement(tournament_prize, placement)
+    Repo.update!(TournamentPrize.changeset(tournament_prize, %{}))
+    result
+  end
+
+  def tournament_prize_award_to_player_behavior(id, player_id) do
+    tournament_prize = Repo.get!(TournamentPrize, id)
+    TournamentPrize.award_to_player(tournament_prize, player_id)
+    Repo.update!(TournamentPrize.changeset(tournament_prize, %{}))
+  end
+
   # ── AwardedPrize ─────────────────────────────────────────────────────
 
   def list_awarded_prizes, do: Repo.all(AwardedPrize)
@@ -341,6 +406,12 @@ defmodule CardsProject.Tournaments do
 
   def change_awarded_prize(%AwardedPrize{} = awarded_prize, attrs \\ %{}) do
     AwardedPrize.changeset(awarded_prize, attrs)
+  end
+
+  def awarded_prize_claim_behavior(id) do
+    awarded_prize = Repo.get!(AwardedPrize, id)
+    AwardedPrize.claim(awarded_prize)
+    Repo.update!(AwardedPrize.changeset(awarded_prize, %{}))
   end
 
 end

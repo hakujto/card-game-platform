@@ -67,6 +67,12 @@ defmodule CardsProjectWeb.Marketplace.TradeTransactionController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/transactions/{id}/seller-net
+  def seller_net(conn, %{"id" => id}) do
+    result = Marketplace.trade_transaction_seller_net_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_trade_transaction(%TradeTransaction{} = record) do
     Map.take(record, [:id, :final_price, :platform_fee, :status, :completed_at, :listing_id, :buyer_id, :seller_id])
   end

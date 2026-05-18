@@ -19,4 +19,11 @@ defmodule CardsProject.Tournaments.AwardedPrize do
     |> cast(attrs, [:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id])
     |> validate_required([:final_placement, :awarded_at, :claimed])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def claim(_record) do
+    # TODO: implement AwardedPrize.claim
+    :ok
+  end
 end

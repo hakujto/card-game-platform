@@ -48,6 +48,12 @@ defmodule CardsProjectWeb.Tournaments.AwardedPrizeController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/awarded-prizes/{id}/claim
+  def claim(conn, %{"id" => id}) do
+    Tournaments.awarded_prize_claim_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_awarded_prize(%AwardedPrize{} = record) do
     Map.take(record, [:id, :final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id])
   end

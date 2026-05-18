@@ -66,6 +66,12 @@ defmodule CardsProjectWeb.Tournaments.TournamentRoundController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/rounds/{id}/time-expired
+  def is_time_expired(conn, %{"id" => id}) do
+    result = Tournaments.tournament_round_is_time_expired_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_tournament_round(%TournamentRound{} = record) do
     Map.take(record, [:id, :round_number, :status, :started_at, :ended_at, :time_limit_minutes, :tournament_id, :matches_id])
   end

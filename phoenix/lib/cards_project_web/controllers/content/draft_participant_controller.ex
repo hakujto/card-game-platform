@@ -56,6 +56,12 @@ defmodule CardsProjectWeb.Content.DraftParticipantController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/draft-participants/{id}/card-count
+  def drafted_card_count(conn, %{"id" => id}) do
+    result = Content.draft_participant_drafted_card_count_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_draft_participant(%DraftParticipant{} = record) do
     Map.take(record, [:id, :seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id])
   end

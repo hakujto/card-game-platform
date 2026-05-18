@@ -1,8 +1,8 @@
-defmodule CardsProject.Marketplace.Tradelisting do
+defmodule CardsProject.Marketplace.TradeListing do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "tradelistings" do
+  schema "trade_listings" do
     field :listing_type, :string
     field :asking_price, :decimal
     field :auction_start_price, :decimal
@@ -35,27 +35,27 @@ defmodule CardsProject.Marketplace.Tradelisting do
   # ── Business operations ────────────────────────────────────────────
 
   def close(_record) do
-    # TODO: implement Tradelisting.close
+    # TODO: implement TradeListing.close
     :ok
   end
 
   def extend(_record, _days) do
-    # TODO: implement Tradelisting.extend
+    # TODO: implement TradeListing.extend
     :ok
   end
 
   def cancel(_record) do
-    # TODO: implement Tradelisting.cancel
+    # TODO: implement TradeListing.cancel
     :ok
   end
 
   def is_expired(_record) do
-    # TODO: implement Tradelisting.is_expired
+    # TODO: implement TradeListing.is_expired
     {:error, :not_implemented}
   end
 
   def finalize_auction(_record) do
-    # TODO: implement Tradelisting.finalize_auction
+    # TODO: implement TradeListing.finalize_auction
     :ok
   end
 end

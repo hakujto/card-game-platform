@@ -7,7 +7,7 @@ defmodule CardsProject.Repo.Migrations.CreateTradeTransactions do
       add :platform_fee, :decimal
       add :status, :string, default: "Pending"
       add :completed_at, :naive_datetime, null: true
-      add :listing_id, references(:tradelistings, on_delete: :nilify_all)
+      add :listing_id, references(:trade_listings, on_delete: :nilify_all)
       add :buyer_id, references(:players, on_delete: :nilify_all)
       add :seller_id, references(:players, on_delete: :nilify_all)
 

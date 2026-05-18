@@ -60,6 +60,12 @@ defmodule CardsProjectWeb.Content.ArticleCommentController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/comments/{id}/is-reply
+  def is_reply(conn, %{"id" => id}) do
+    result = Content.article_comment_is_reply_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_article_comment(%ArticleComment{} = record) do
     Map.take(record, [:id, :body, :is_hidden, :created_at, :article_id, :author_id, :parent_comment_id])
   end

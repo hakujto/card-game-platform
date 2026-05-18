@@ -92,8 +92,8 @@ Base URL: `http://localhost:4000`
 - `GET/PUT/PATCH/DELETE` `/api/order_items/:id`
 - `GET/POST` `/api/coupons`
 - `GET/PUT/PATCH/DELETE` `/api/coupons/:id`
-- `GET/POST` `/api/tradelistings`
-- `GET/PUT/PATCH/DELETE` `/api/tradelistings/:id`
+- `GET/POST` `/api/trade_listings`
+- `GET/PUT/PATCH/DELETE` `/api/trade_listings/:id`
 - `GET/POST` `/api/trade_bids`
 - `GET/PUT/PATCH/DELETE` `/api/trade_bids/:id`
 - `GET/POST` `/api/trade_transactions`
@@ -135,7 +135,7 @@ Bounded Contexts:
 - **Cards BC** (`lib/cards_project/cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
 - **Players BC** (`lib/cards_project/players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
 - **Tournaments BC** (`lib/cards_project/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
-- **Marketplace BC** (`lib/cards_project/marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Marketplace BC** (`lib/cards_project/marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`lib/cards_project/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
 
 ## Docker

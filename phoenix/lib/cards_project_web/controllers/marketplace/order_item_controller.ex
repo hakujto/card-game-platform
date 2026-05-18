@@ -48,6 +48,12 @@ defmodule CardsProjectWeb.Marketplace.OrderItemController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/order-items/{id}/total
+  def line_total(conn, %{"id" => id}) do
+    result = Marketplace.order_item_line_total_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_order_item(%OrderItem{} = record) do
     Map.take(record, [:id, :quantity, :price_at_purchase, :foil, :order_id, :product_id])
   end

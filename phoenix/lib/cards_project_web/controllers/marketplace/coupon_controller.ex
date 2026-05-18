@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/coupons/{id}/valid
+  def is_valid(conn, %{"id" => id}) do
+    result = Marketplace.coupon_is_valid_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/coupons/{id}/applicable
+  def is_applicable_to_order(conn, %{"id" => id} = params) do
+    order_total = Map.get(params, "order_total")
+    result = Marketplace.coupon_is_applicable_to_order_behavior(id, order_total)
+    json(conn, %{result: result})
+  end
+
   # POST /api/coupons/{id}/redeem
   def redeem(conn, %{"id" => id}) do
     Marketplace.coupon_redeem_behavior(id)

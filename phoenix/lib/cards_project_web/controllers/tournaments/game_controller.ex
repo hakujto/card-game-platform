@@ -55,6 +55,12 @@ defmodule CardsProjectWeb.Tournaments.GameController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/games/{id}/duration
+  def duration_minutes(conn, %{"id" => id}) do
+    result = Tournaments.game_duration_minutes_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_game(%Game{} = record) do
     Map.take(record, [:id, :game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
   end

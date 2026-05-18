@@ -48,6 +48,13 @@ defmodule CardsProjectWeb.Cards.DeckTagController do
     send_resp(conn, :no_content, "")
   end
 
+  # PATCH /api/deck-tags/{id}/rename
+  def rename(conn, %{"id" => id} = params) do
+    new_name = Map.get(params, "new_name")
+    Cards.deck_tag_rename_behavior(id, new_name)
+    send_resp(conn, :no_content, "")
+  end
+
   # POST /api/deck-tags/{id}/merge
   def merge_into(conn, %{"id" => id} = params) do
     target_tag_id = Map.get(params, "target_tag_id")

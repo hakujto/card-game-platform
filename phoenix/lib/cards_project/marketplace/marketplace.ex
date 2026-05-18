@@ -10,7 +10,7 @@ defmodule CardsProject.Marketplace do
   alias CardsProject.Marketplace.Order
   alias CardsProject.Marketplace.OrderItem
   alias CardsProject.Marketplace.Coupon
-  alias CardsProject.Marketplace.Tradelisting
+  alias CardsProject.Marketplace.TradeListing
   alias CardsProject.Marketplace.TradeBid
   alias CardsProject.Marketplace.TradeTransaction
   alias CardsProject.Marketplace.CardPriceHistory
@@ -63,6 +63,20 @@ defmodule CardsProject.Marketplace do
     product = Repo.get!(Product, id)
     Product.restock(product, quantity)
     Repo.update!(Product.changeset(product, %{}))
+  end
+
+  def product_effective_price_behavior(id) do
+    product = Repo.get!(Product, id)
+    result = Product.effective_price(product)
+    Repo.update!(Product.changeset(product, %{}))
+    result
+  end
+
+  def product_is_in_stock_behavior(id) do
+    product = Repo.get!(Product, id)
+    result = Product.is_in_stock(product)
+    Repo.update!(Product.changeset(product, %{}))
+    result
   end
 
   # ── Order ─────────────────────────────────────────────────────
@@ -158,6 +172,13 @@ defmodule CardsProject.Marketplace do
     OrderItem.changeset(order_item, attrs)
   end
 
+  def order_item_line_total_behavior(id) do
+    order_item = Repo.get!(OrderItem, id)
+    result = OrderItem.line_total(order_item)
+    Repo.update!(OrderItem.changeset(order_item, %{}))
+    result
+  end
+
   # ── Coupon ─────────────────────────────────────────────────────
 
   def list_coupons, do: Repo.all(Coupon)
@@ -182,6 +203,20 @@ defmodule CardsProject.Marketplace do
     Coupon.changeset(coupon, attrs)
   end
 
+  def coupon_is_valid_behavior(id) do
+    coupon = Repo.get!(Coupon, id)
+    result = Coupon.is_valid(coupon)
+    Repo.update!(Coupon.changeset(coupon, %{}))
+    result
+  end
+
+  def coupon_is_applicable_to_order_behavior(id, order_total) do
+    coupon = Repo.get!(Coupon, id)
+    result = Coupon.is_applicable_to_order(coupon, order_total)
+    Repo.update!(Coupon.changeset(coupon, %{}))
+    result
+  end
+
   def coupon_redeem_behavior(id) do
     coupon = Repo.get!(Coupon, id)
     Coupon.redeem(coupon)
@@ -194,58 +229,59 @@ defmodule CardsProject.Marketplace do
     Repo.update!(Coupon.changeset(coupon, %{}))
   end
 
-  # ── Tradelisting ─────────────────────────────────────────────────────
+  # ── TradeListing ─────────────────────────────────────────────────────
 
-  def list_tradelistings, do: Repo.all(Tradelisting)
+  def list_trade_listings, do: Repo.all(TradeListing)
 
-  def get_tradelisting!(id), do: Repo.get!(Tradelisting, id)
+  def get_trade_listing!(id), do: Repo.get!(TradeListing, id)
 
-  def create_tradelisting(attrs \\ %{}) do
-    %Tradelisting{}
-    |> Tradelisting.changeset(attrs)
+  def create_trade_listing(attrs \\ %{}) do
+    %TradeListing{}
+    |> TradeListing.changeset(attrs)
     |> Repo.insert()
   end
 
-  def update_tradelisting(%Tradelisting{} = tradelisting, attrs) do
-    tradelisting
-    |> Tradelisting.changeset(attrs)
+  def update_trade_listing(%TradeListing{} = trade_listing, attrs) do
+    trade_listing
+    |> TradeListing.changeset(attrs)
     |> Repo.update()
   end
 
-  def delete_tradelisting(%Tradelisting{} = tradelisting), do: Repo.delete(tradelisting)
+  def delete_trade_listing(%TradeListing{} = trade_listing), do: Repo.delete(trade_listing)
 
-  def change_tradelisting(%Tradelisting{} = tradelisting, attrs \\ %{}) do
-    Tradelisting.changeset(tradelisting, attrs)
+  def change_trade_listing(%TradeListing{} = trade_listing, attrs \\ %{}) do
+    TradeListing.changeset(trade_listing, attrs)
   end
 
-  def tradelisting_close_behavior(id) do
-    tradelisting = Repo.get!(Tradelisting, id)
-    Tradelisting.close(tradelisting)
-    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  def trade_listing_close_behavior(id) do
+    trade_listing = Repo.get!(TradeListing, id)
+    TradeListing.close(trade_listing)
+    Repo.update!(TradeListing.changeset(trade_listing, %{}))
   end
 
-  def tradelisting_extend_behavior(id, days) do
-    tradelisting = Repo.get!(Tradelisting, id)
-    Tradelisting.extend(tradelisting, days)
-    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  def trade_listing_extend_behavior(id, days) do
+    trade_listing = Repo.get!(TradeListing, id)
+    TradeListing.extend(trade_listing, days)
+    Repo.update!(TradeListing.changeset(trade_listing, %{}))
   end
 
-  def tradelisting_cancel_behavior(id) do
-    tradelisting = Repo.get!(Tradelisting, id)
-    Tradelisting.cancel(tradelisting)
-    Repo.update!(Tradelisting.changeset(tradelisting, %{}))
+  def trade_listing_cancel_behavior(id) do
+    trade_listing = Repo.get!(TradeListing, id)
+    TradeListing.cancel(trade_listing)
+    Repo.update!(TradeListing.changeset(trade_listing, %{}))
   end
 
-  # triggered by @on(status = Sold)
-  def tradelisting_set_status(id, value) do
-    tradelisting = Repo.get!(Tradelisting, id)
-    tradelisting = Tradelisting.changeset(tradelisting, %{status: value})
-    tradelisting = Repo.update!(tradelisting)
-    if to_string(value) == "Sold" do
-      Tradelisting.finalize_auction(tradelisting)
-      Repo.update!(Tradelisting.changeset(tradelisting, %{}))
-    end
-    :ok
+  def trade_listing_is_expired_behavior(id) do
+    trade_listing = Repo.get!(TradeListing, id)
+    result = TradeListing.is_expired(trade_listing)
+    Repo.update!(TradeListing.changeset(trade_listing, %{}))
+    result
+  end
+
+  def trade_listing_finalize_auction_behavior(id) do
+    trade_listing = Repo.get!(TradeListing, id)
+    TradeListing.finalize_auction(trade_listing)
+    Repo.update!(TradeListing.changeset(trade_listing, %{}))
   end
 
   # ── TradeBid ─────────────────────────────────────────────────────
@@ -270,6 +306,19 @@ defmodule CardsProject.Marketplace do
 
   def change_trade_bid(%TradeBid{} = trade_bid, attrs \\ %{}) do
     TradeBid.changeset(trade_bid, attrs)
+  end
+
+  def trade_bid_outbid_by_behavior(id, new_amount) do
+    trade_bid = Repo.get!(TradeBid, id)
+    result = TradeBid.outbid_by(trade_bid, new_amount)
+    Repo.update!(TradeBid.changeset(trade_bid, %{}))
+    result
+  end
+
+  def trade_bid_retract_behavior(id) do
+    trade_bid = Repo.get!(TradeBid, id)
+    TradeBid.retract(trade_bid)
+    Repo.update!(TradeBid.changeset(trade_bid, %{}))
   end
 
   # ── TradeTransaction ─────────────────────────────────────────────────────
@@ -314,6 +363,13 @@ defmodule CardsProject.Marketplace do
     Repo.update!(TradeTransaction.changeset(trade_transaction, %{}))
   end
 
+  def trade_transaction_seller_net_behavior(id) do
+    trade_transaction = Repo.get!(TradeTransaction, id)
+    result = TradeTransaction.seller_net(trade_transaction)
+    Repo.update!(TradeTransaction.changeset(trade_transaction, %{}))
+    result
+  end
+
   # ── CardPriceHistory ─────────────────────────────────────────────────────
 
   def list_card_price_histories, do: Repo.all(CardPriceHistory)
@@ -336,6 +392,20 @@ defmodule CardsProject.Marketplace do
 
   def change_card_price_history(%CardPriceHistory{} = card_price_history, attrs \\ %{}) do
     CardPriceHistory.changeset(card_price_history, attrs)
+  end
+
+  def card_price_history_price_change_percent_behavior(id, previous_avg) do
+    card_price_history = Repo.get!(CardPriceHistory, id)
+    result = CardPriceHistory.price_change_percent(card_price_history, previous_avg)
+    Repo.update!(CardPriceHistory.changeset(card_price_history, %{}))
+    result
+  end
+
+  def card_price_history_is_price_spike_behavior(id, threshold_percent) do
+    card_price_history = Repo.get!(CardPriceHistory, id)
+    result = CardPriceHistory.is_price_spike(card_price_history, threshold_percent)
+    Repo.update!(CardPriceHistory.changeset(card_price_history, %{}))
+    result
   end
 
   # ── TradeDispute ─────────────────────────────────────────────────────

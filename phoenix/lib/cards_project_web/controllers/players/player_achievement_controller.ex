@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Players.PlayerAchievementController do
     send_resp(conn, :no_content, "")
   end
 
+  # PATCH /api/player-achievements/{id}/progress
+  def increment_progress(conn, %{"id" => id} = params) do
+    amount = Map.get(params, "amount")
+    Players.player_achievement_increment_progress_behavior(id, amount)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/player-achievements/{id}/complete
+  def complete(conn, %{"id" => id}) do
+    Players.player_achievement_complete_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_player_achievement(%PlayerAchievement{} = record) do
     Map.take(record, [:id, :earned_at, :progress, :is_completed, :player_id, :achievement_id])
   end

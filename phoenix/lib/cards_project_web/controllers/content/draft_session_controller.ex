@@ -66,6 +66,12 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/draft-sessions/{id}/full
+  def is_full(conn, %{"id" => id}) do
+    result = Content.draft_session_is_full_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_draft_session(%DraftSession{} = record) do
     Map.take(record, [:id, :status, :draft_type, :seats, :created_at, :completed_at, :card_set_id, :participants_id])
   end

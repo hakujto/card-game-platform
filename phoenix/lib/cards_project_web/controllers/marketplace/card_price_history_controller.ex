@@ -48,6 +48,20 @@ defmodule CardsProjectWeb.Marketplace.CardPriceHistoryController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/price-history/{id}/change
+  def price_change_percent(conn, %{"id" => id} = params) do
+    previous_avg = Map.get(params, "previous_avg")
+    result = Marketplace.card_price_history_price_change_percent_behavior(id, previous_avg)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/price-history/{id}/spike
+  def is_price_spike(conn, %{"id" => id} = params) do
+    threshold_percent = Map.get(params, "threshold_percent")
+    result = Marketplace.card_price_history_is_price_spike_behavior(id, threshold_percent)
+    json(conn, %{result: result})
+  end
+
   defp serialize_card_price_history(%CardPriceHistory{} = record) do
     Map.take(record, [:id, :price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id])
   end

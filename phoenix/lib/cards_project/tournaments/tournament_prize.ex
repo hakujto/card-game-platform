@@ -29,4 +29,9 @@ defmodule CardsProject.Tournaments.TournamentPrize do
     # TODO: implement TournamentPrize.applies_to_placement
     {:error, :not_implemented}
   end
+
+  def award_to_player(_record, _player_id) do
+    # TODO: implement TournamentPrize.award_to_player
+    :ok
+  end
 end

@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Players.AchievementController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/achievements/{id}/point-value
+  def point_value(conn, %{"id" => id} = params) do
+    multiplier = Map.get(params, "multiplier")
+    result = Players.achievement_point_value_behavior(id, multiplier)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/achievements/{id}/reveal
+  def reveal(conn, %{"id" => id}) do
+    Players.achievement_reveal_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_achievement(%Achievement{} = record) do
     Map.take(record, [:id, :name, :description, :icon_url, :points, :rarity, :is_hidden])
   end

@@ -7,6 +7,7 @@ defmodule CardsProjectWeb.Cards.CardSetControllerTest do
     "code" => "test",
     "release_date" => ~D[2024-01-01],
     "total_cards" => 0,
+    "is_rotated" => true,
     "set_type" => "Core"
   }
 

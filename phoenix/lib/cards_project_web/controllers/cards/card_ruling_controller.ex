@@ -48,6 +48,18 @@ defmodule CardsProjectWeb.Cards.CardRulingController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/card-rulings/{id}/current
+  def is_current(conn, %{"id" => id}) do
+    result = Cards.card_ruling_is_current_behavior(id)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/card-rulings/{id}/supersedes
+  def supersedes_previous(conn, %{"id" => id}) do
+    result = Cards.card_ruling_supersedes_previous_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_card_ruling(%CardRuling{} = record) do
     Map.take(record, [:id, :ruling_text, :published_at, :source, :card_id])
   end

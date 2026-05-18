@@ -8,6 +8,7 @@ defmodule CardsProjectWeb.Cards.DeckControllerTest do
     "is_tournament_legal" => true,
     "wins" => 0,
     "losses" => 0,
+    "draws" => 0,
     "created_at" => ~N[2024-01-01 00:00:00],
     "updated_at" => ~N[2024-01-01 00:00:00],
     "format" => "Standard"

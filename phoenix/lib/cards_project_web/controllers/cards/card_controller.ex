@@ -78,6 +78,20 @@ defmodule CardsProjectWeb.Cards.CardController do
     json(conn, %{result: result})
   end
 
+  # POST /api/cards/{id}/rarity-bonus
+  def apply_rarity_bonus(conn, %{"id" => id} = params) do
+    multiplier = Map.get(params, "multiplier")
+    result = Cards.card_apply_rarity_bonus_behavior(id, multiplier)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/cards/{id}/legal
+  def is_legal_in_format(conn, %{"id" => id} = params) do
+    format = Map.get(params, "format")
+    result = Cards.card_is_legal_in_format_behavior(id, format)
+    json(conn, %{result: result})
+  end
+
   defp serialize_card(%Card{} = record) do
     Map.take(record, [:id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id, :rulings_id, :abilities_id])
   end

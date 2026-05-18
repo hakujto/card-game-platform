@@ -78,6 +78,20 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
     json(conn, %{result: result})
   end
 
+  # POST /api/tournaments/{id}/register
+  def register_player(conn, %{"id" => id} = params) do
+    player_id = Map.get(params, "player_id")
+    deck_id = Map.get(params, "deck_id")
+    Tournaments.tournament_register_player_behavior(id, player_id, deck_id)
+    send_resp(conn, :no_content, "")
+  end
+
+  # GET /api/tournaments/{id}/full
+  def is_full(conn, %{"id" => id}) do
+    result = Tournaments.tournament_is_full_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_tournament(%Tournament{} = record) do
     Map.take(record, [:id, :name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
   end

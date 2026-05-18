@@ -64,6 +64,11 @@ defmodule CardsProject.Tournaments.Tournament do
     {:error, :not_implemented}
   end
 
+  def register_player(_record, _player_id, _deck_id) do
+    # TODO: implement Tournament.register_player
+    :ok
+  end
+
   def is_full(_record) do
     # TODO: implement Tournament.is_full
     {:error, :not_implemented}

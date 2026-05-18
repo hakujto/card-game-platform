@@ -6,7 +6,7 @@ defmodule CardsProject.Repo.Migrations.CreateTradeBids do
       add :amount, :decimal
       add :placed_at, :naive_datetime
       add :is_winning, :boolean, default: false
-      add :listing_id, references(:tradelistings, on_delete: :nilify_all)
+      add :listing_id, references(:trade_listings, on_delete: :nilify_all)
       add :bidder_id, references(:players, on_delete: :nilify_all)
 
       timestamps()

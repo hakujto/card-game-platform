@@ -62,6 +62,13 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
     json(conn, %{result: result})
   end
 
+  # POST /api/matches/{id}/concede
+  def concede(conn, %{"id" => id} = params) do
+    player_id = Map.get(params, "player_id")
+    Tournaments.match_concede_behavior(id, player_id)
+    send_resp(conn, :no_content, "")
+  end
+
   # POST /api/matches/{id}/draw
   def draw(conn, %{"id" => id}) do
     Tournaments.match_draw_behavior(id)

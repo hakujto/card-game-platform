@@ -48,6 +48,12 @@ defmodule CardsProjectWeb.Content.DraftPickController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/draft-picks/{id}/first-pick
+  def is_first_pick(conn, %{"id" => id}) do
+    result = Content.draft_pick_is_first_pick_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_draft_pick(%DraftPick{} = record) do
     Map.take(record, [:id, :pick_number, :pack_number, :picked_at, :participant_id, :card_id])
   end

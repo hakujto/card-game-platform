@@ -6,7 +6,7 @@ defmodule CardsProject.Marketplace.TradeBid do
     field :amount, :decimal
     field :placed_at, :naive_datetime
     field :is_winning, :boolean, default: false
-    belongs_to :listing, CardsProject.Marketplace.Tradelisting
+    belongs_to :listing, CardsProject.Marketplace.TradeListing
     belongs_to :bidder, CardsProject.Players.Player
 
     timestamps()
@@ -24,5 +24,10 @@ defmodule CardsProject.Marketplace.TradeBid do
   def outbid_by(_record, _new_amount) do
     # TODO: implement TradeBid.outbid_by
     {:error, :not_implemented}
+  end
+
+  def retract(_record) do
+    # TODO: implement TradeBid.retract
+    :ok
   end
 end

@@ -71,6 +71,20 @@ defmodule CardsProject.Cards do
     result
   end
 
+  def card_apply_rarity_bonus_behavior(id, multiplier) do
+    card = Repo.get!(Card, id)
+    result = Card.apply_rarity_bonus(card, multiplier)
+    Repo.update!(Card.changeset(card, %{}))
+    result
+  end
+
+  def card_is_legal_in_format_behavior(id, format) do
+    card = Repo.get!(Card, id)
+    result = Card.is_legal_in_format(card, format)
+    Repo.update!(Card.changeset(card, %{}))
+    result
+  end
+
   # ── CardSet ─────────────────────────────────────────────────────
 
   def list_card_sets, do: Repo.all(CardSet)
@@ -93,6 +107,33 @@ defmodule CardsProject.Cards do
 
   def change_card_set(%CardSet{} = card_set, attrs \\ %{}) do
     CardSet.changeset(card_set, attrs)
+  end
+
+  def card_set_is_legal_in_standard_behavior(id) do
+    card_set = Repo.get!(CardSet, id)
+    result = CardSet.is_legal_in_standard(card_set)
+    Repo.update!(CardSet.changeset(card_set, %{}))
+    result
+  end
+
+  def card_set_is_legal_in_format_behavior(id, format) do
+    card_set = Repo.get!(CardSet, id)
+    result = CardSet.is_legal_in_format(card_set, format)
+    Repo.update!(CardSet.changeset(card_set, %{}))
+    result
+  end
+
+  def card_set_card_count_by_rarity_behavior(id, rarity) do
+    card_set = Repo.get!(CardSet, id)
+    result = CardSet.card_count_by_rarity(card_set, rarity)
+    Repo.update!(CardSet.changeset(card_set, %{}))
+    result
+  end
+
+  def card_set_rotate_out_behavior(id) do
+    card_set = Repo.get!(CardSet, id)
+    CardSet.rotate_out(card_set)
+    Repo.update!(CardSet.changeset(card_set, %{}))
   end
 
   # ── CardRuling ─────────────────────────────────────────────────────
@@ -119,6 +160,20 @@ defmodule CardsProject.Cards do
     CardRuling.changeset(card_ruling, attrs)
   end
 
+  def card_ruling_is_current_behavior(id) do
+    card_ruling = Repo.get!(CardRuling, id)
+    result = CardRuling.is_current(card_ruling)
+    Repo.update!(CardRuling.changeset(card_ruling, %{}))
+    result
+  end
+
+  def card_ruling_supersedes_previous_behavior(id) do
+    card_ruling = Repo.get!(CardRuling, id)
+    result = CardRuling.supersedes_previous(card_ruling)
+    Repo.update!(CardRuling.changeset(card_ruling, %{}))
+    result
+  end
+
   # ── CardAbility ─────────────────────────────────────────────────────
 
   def list_card_abilities, do: Repo.all(CardAbility)
@@ -141,6 +196,20 @@ defmodule CardsProject.Cards do
 
   def change_card_ability(%CardAbility{} = card_ability, attrs \\ %{}) do
     CardAbility.changeset(card_ability, attrs)
+  end
+
+  def card_ability_is_usable_at_behavior(id, timing) do
+    card_ability = Repo.get!(CardAbility, id)
+    result = CardAbility.is_usable_at(card_ability, timing)
+    Repo.update!(CardAbility.changeset(card_ability, %{}))
+    result
+  end
+
+  def card_ability_describe_behavior(id) do
+    card_ability = Repo.get!(CardAbility, id)
+    result = CardAbility.describe(card_ability)
+    Repo.update!(CardAbility.changeset(card_ability, %{}))
+    result
   end
 
   # ── Deck ─────────────────────────────────────────────────────
@@ -170,6 +239,25 @@ defmodule CardsProject.Cards do
   def deck_validate_size_behavior(id) do
     deck = Repo.get!(Deck, id)
     result = Deck.validate_size(deck)
+    Repo.update!(Deck.changeset(deck, %{}))
+    result
+  end
+
+  def deck_add_card_behavior(id, card_id, quantity) do
+    deck = Repo.get!(Deck, id)
+    Deck.add_card(deck, card_id, quantity)
+    Repo.update!(Deck.changeset(deck, %{}))
+  end
+
+  def deck_remove_card_behavior(id, card_id) do
+    deck = Repo.get!(Deck, id)
+    Deck.remove_card(deck, card_id)
+    Repo.update!(Deck.changeset(deck, %{}))
+  end
+
+  def deck_win_rate_behavior(id) do
+    deck = Repo.get!(Deck, id)
+    result = Deck.win_rate(deck)
     Repo.update!(Deck.changeset(deck, %{}))
     result
   end
@@ -224,6 +312,18 @@ defmodule CardsProject.Cards do
     DeckCard.changeset(deck_card, attrs)
   end
 
+  def deck_card_increment_behavior(id, amount) do
+    deck_card = Repo.get!(DeckCard, id)
+    DeckCard.increment(deck_card, amount)
+    Repo.update!(DeckCard.changeset(deck_card, %{}))
+  end
+
+  def deck_card_decrement_behavior(id, amount) do
+    deck_card = Repo.get!(DeckCard, id)
+    DeckCard.decrement(deck_card, amount)
+    Repo.update!(DeckCard.changeset(deck_card, %{}))
+  end
+
   # ── DeckSideboardCard ─────────────────────────────────────────────────────
 
   def list_deck_sideboard_cards, do: Repo.all(DeckSideboardCard)
@@ -248,6 +348,18 @@ defmodule CardsProject.Cards do
     DeckSideboardCard.changeset(deck_sideboard_card, attrs)
   end
 
+  def deck_sideboard_card_increment_behavior(id, amount) do
+    deck_sideboard_card = Repo.get!(DeckSideboardCard, id)
+    DeckSideboardCard.increment(deck_sideboard_card, amount)
+    Repo.update!(DeckSideboardCard.changeset(deck_sideboard_card, %{}))
+  end
+
+  def deck_sideboard_card_decrement_behavior(id, amount) do
+    deck_sideboard_card = Repo.get!(DeckSideboardCard, id)
+    DeckSideboardCard.decrement(deck_sideboard_card, amount)
+    Repo.update!(DeckSideboardCard.changeset(deck_sideboard_card, %{}))
+  end
+
   # ── DeckTag ─────────────────────────────────────────────────────
 
   def list_deck_tags, do: Repo.all(DeckTag)
@@ -270,6 +382,12 @@ defmodule CardsProject.Cards do
 
   def change_deck_tag(%DeckTag{} = deck_tag, attrs \\ %{}) do
     DeckTag.changeset(deck_tag, attrs)
+  end
+
+  def deck_tag_rename_behavior(id, new_name) do
+    deck_tag = Repo.get!(DeckTag, id)
+    DeckTag.rename(deck_tag, new_name)
+    Repo.update!(DeckTag.changeset(deck_tag, %{}))
   end
 
   def deck_tag_merge_into_behavior(id, target_tag_id) do

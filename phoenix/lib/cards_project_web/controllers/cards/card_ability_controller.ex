@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Cards.CardAbilityController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/card-abilities/{id}/usable
+  def is_usable_at(conn, %{"id" => id} = params) do
+    timing = Map.get(params, "timing")
+    result = Cards.card_ability_is_usable_at_behavior(id, timing)
+    json(conn, %{result: result})
+  end
+
+  # GET /api/card-abilities/{id}/describe
+  def describe(conn, %{"id" => id}) do
+    result = Cards.card_ability_describe_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_card_ability(%CardAbility{} = record) do
     Map.take(record, [:id, :ability_type, :keyword, :ability_text, :timing, :card_id])
   end

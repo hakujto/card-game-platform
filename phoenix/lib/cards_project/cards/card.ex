@@ -63,4 +63,14 @@ defmodule CardsProject.Cards.Card do
     # TODO: implement Card.calculate_value
     {:error, :not_implemented}
   end
+
+  def apply_rarity_bonus(_record, _multiplier) do
+    # TODO: implement Card.apply_rarity_bonus
+    {:error, :not_implemented}
+  end
+
+  def is_legal_in_format(_record, _format) do
+    # TODO: implement Card.is_legal_in_format
+    {:error, :not_implemented}
+  end
 end

@@ -66,6 +66,12 @@ defmodule CardsProjectWeb.Content.ArticleController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/articles/{id}/reading-time
+  def reading_time_minutes(conn, %{"id" => id}) do
+    result = Content.article_reading_time_minutes_behavior(id)
+    json(conn, %{result: result})
+  end
+
   defp serialize_article(%Article{} = record) do
     Map.take(record, [:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :view_count, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
   end

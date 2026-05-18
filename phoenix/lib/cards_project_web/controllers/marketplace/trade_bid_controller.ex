@@ -48,6 +48,19 @@ defmodule CardsProjectWeb.Marketplace.TradeBidController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/bids/{id}/outbid
+  def outbid_by(conn, %{"id" => id} = params) do
+    new_amount = Map.get(params, "new_amount")
+    result = Marketplace.trade_bid_outbid_by_behavior(id, new_amount)
+    json(conn, %{result: result})
+  end
+
+  # DELETE /api/bids/{id}
+  def retract(conn, %{"id" => id}) do
+    Marketplace.trade_bid_retract_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_trade_bid(%TradeBid{} = record) do
     Map.take(record, [:id, :amount, :placed_at, :is_winning, :listing_id, :bidder_id])
   end

@@ -7,7 +7,7 @@ defmodule CardsProject.Marketplace.TradeTransaction do
     field :platform_fee, :decimal
     field :status, :string
     field :completed_at, :naive_datetime
-    belongs_to :listing, CardsProject.Marketplace.Tradelisting
+    belongs_to :listing, CardsProject.Marketplace.TradeListing
     belongs_to :buyer, CardsProject.Players.Player
     belongs_to :seller, CardsProject.Players.Player
 

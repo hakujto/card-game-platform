@@ -20,6 +20,16 @@ defmodule CardsProject.Players.CraftingRecipe do
 
   # ── Business operations ────────────────────────────────────────────
 
+  def can_craft(_record, _player_id) do
+    # TODO: implement CraftingRecipe.can_craft
+    {:error, :not_implemented}
+  end
+
+  def execute_craft(_record, _player_id) do
+    # TODO: implement CraftingRecipe.execute_craft
+    :ok
+  end
+
   def disable(_record) do
     # TODO: implement CraftingRecipe.disable
     :ok

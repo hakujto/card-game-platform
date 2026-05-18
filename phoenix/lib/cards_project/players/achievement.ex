@@ -20,4 +20,16 @@ defmodule CardsProject.Players.Achievement do
     |> validate_required([:name, :description, :points, :is_hidden])
     |> validate_inclusion(:rarity, ["Common", "Uncommon", "Rare", "Epic", "Legendary"])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def point_value(_record, _multiplier) do
+    # TODO: implement Achievement.point_value
+    {:error, :not_implemented}
+  end
+
+  def reveal(_record) do
+    # TODO: implement Achievement.reveal
+    :ok
+  end
 end

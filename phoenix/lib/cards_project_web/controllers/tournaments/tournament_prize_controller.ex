@@ -48,6 +48,20 @@ defmodule CardsProjectWeb.Tournaments.TournamentPrizeController do
     send_resp(conn, :no_content, "")
   end
 
+  # GET /api/prizes/{id}/applies
+  def applies_to_placement(conn, %{"id" => id} = params) do
+    placement = Map.get(params, "placement")
+    result = Tournaments.tournament_prize_applies_to_placement_behavior(id, placement)
+    json(conn, %{result: result})
+  end
+
+  # POST /api/prizes/{id}/award
+  def award_to_player(conn, %{"id" => id} = params) do
+    player_id = Map.get(params, "player_id")
+    Tournaments.tournament_prize_award_to_player_behavior(id, player_id)
+    send_resp(conn, :no_content, "")
+  end
+
   defp serialize_tournament_prize(%TournamentPrize{} = record) do
     Map.take(record, [:id, :placement_from, :placement_to, :prize_type, :amount, :description, :packs_count, :season_points, :tournament_id])
   end

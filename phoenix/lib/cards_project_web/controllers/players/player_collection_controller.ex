@@ -48,6 +48,20 @@ defmodule CardsProjectWeb.Players.PlayerCollectionController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/collection/{id}/add
+  def add(conn, %{"id" => id} = params) do
+    quantity = Map.get(params, "quantity")
+    Players.player_collection_add_behavior(id, quantity)
+    send_resp(conn, :no_content, "")
+  end
+
+  # POST /api/collection/{id}/remove
+  def remove(conn, %{"id" => id} = params) do
+    quantity = Map.get(params, "quantity")
+    Players.player_collection_remove_behavior(id, quantity)
+    send_resp(conn, :no_content, "")
+  end
+
   # GET /api/collection/{id}/value
   def estimated_value(conn, %{"id" => id}) do
     result = Players.player_collection_estimated_value_behavior(id)

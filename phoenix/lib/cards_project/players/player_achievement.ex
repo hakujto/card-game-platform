@@ -18,4 +18,16 @@ defmodule CardsProject.Players.PlayerAchievement do
     |> cast(attrs, [:earned_at, :progress, :is_completed, :player_id, :achievement_id])
     |> validate_required([:earned_at, :progress, :is_completed])
   end
+
+  # ── Business operations ────────────────────────────────────────────
+
+  def increment_progress(_record, _amount) do
+    # TODO: implement PlayerAchievement.increment_progress
+    :ok
+  end
+
+  def complete(_record) do
+    # TODO: implement PlayerAchievement.complete
+    :ok
+  end
 end
