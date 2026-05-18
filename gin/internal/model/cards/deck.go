@@ -37,6 +37,7 @@ type DeckCreateRequest struct {
 	Archetype *DeckArchetypeType `json:"archetype"`
 	Wins int `json:"wins"`
 	Losses int `json:"losses"`
+	Draws int `json:"draws"`
 	PlayerID uint `json:"player_id"`
 }
 
@@ -50,6 +51,7 @@ type DeckUpdateRequest struct {
 	Archetype *DeckArchetypeType `json:"archetype"`
 	Wins *int `json:"wins"`
 	Losses *int `json:"losses"`
+	Draws *int `json:"draws"`
 	PlayerID *uint `json:"player_id"`
 }
 
@@ -66,6 +68,7 @@ type DeckResponse struct {
 	Archetype *DeckArchetypeType `json:"archetype"`
 	Wins int `json:"wins"`
 	Losses int `json:"losses"`
+	Draws int `json:"draws"`
 	PlayerID uint `json:"player_id"`
 }
 
@@ -79,6 +82,7 @@ type Deck struct {
 	Archetype *DeckArchetypeType `gorm:"column:archetype"`
 	Wins int `gorm:"column:wins;not null;default:0"`
 	Losses int `gorm:"column:losses;not null;default:0"`
+	Draws int `gorm:"column:draws;not null;default:0"`
 	PlayerID uint `gorm:"column:player_id"`
 	CardsIDs []uint `gorm:"serializer:json;column:cards_ids"`
 	SideboardCardsIDs []uint `gorm:"serializer:json;column:sideboard_cards_ids"`
@@ -98,6 +102,7 @@ func (m *Deck) ToResponse() DeckResponse {
 		Archetype: m.Archetype,
 		Wins: m.Wins,
 		Losses: m.Losses,
+		Draws: m.Draws,
 		PlayerID: m.PlayerID,
 	}
 }
@@ -111,11 +116,24 @@ func (m *Deck) ApplyUpdate(req DeckUpdateRequest) {
 	if req.Archetype != nil { m.Archetype = req.Archetype }
 	if req.Wins != nil { m.Wins = *req.Wins }
 	if req.Losses != nil { m.Losses = *req.Losses }
+	if req.Draws != nil { m.Draws = *req.Draws }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 
 func (m *Deck) ValidateSize()  (bool, error) {
 	return false, fmt.Errorf("ValidateSize: not implemented")
+}
+
+func (m *Deck) AddCard(cardId int, quantity int)  error {
+	return fmt.Errorf("AddCard: not implemented")
+}
+
+func (m *Deck) RemoveCard(cardId int)  error {
+	return fmt.Errorf("RemoveCard: not implemented")
+}
+
+func (m *Deck) WinRate()  (float64, error) {
+	return 0.0, fmt.Errorf("WinRate: not implemented")
 }
 
 func (m *Deck) Clone()  (interface{}, error) {

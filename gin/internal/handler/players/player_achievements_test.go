@@ -25,6 +25,8 @@ func setupPlayerAchievementDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewPlayerAchievementHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewPlayerHandler(db).RegisterRoutes(r)
+	handler_app.NewAchievementHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -115,6 +117,22 @@ func TestPlayerAchievement_Rule_CompletedRequiresProgress_Violated(t *testing.T)
 	depAchievementRID := createDepAchievement(t, r, db)
 	_ = depAchievementRID
 	body := map[string]interface{}{"earned_at": "2024-01-01T00:00:00Z", "progress": 0, "is_completed": "true", "player_id": depPlayerRID, "achievement_id": depAchievementRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/player_achievements", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestPlayerAchievement_Rule_ProgressNotNegative_Violated(t *testing.T) {
+	db, r := setupPlayerAchievementDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depAchievementRID := createDepAchievement(t, r, db)
+	_ = depAchievementRID
+	body := map[string]interface{}{"earned_at": "2024-01-01T00:00:00Z", "progress": -1, "is_completed": true, "player_id": depPlayerRID, "achievement_id": depAchievementRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/player_achievements", bytes.NewBuffer(b))

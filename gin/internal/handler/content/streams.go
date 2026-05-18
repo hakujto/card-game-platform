@@ -27,6 +27,7 @@ func (h *StreamHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/live", h.GoLive)
 	g.POST("/:id/end", h.End)
 	g.PATCH("/:id/viewers", h.UpdateViewerPeak)
+	g.GET("/:id/duration", h.DurationMinutes)
 }
 
 func (h *StreamHandler) List(c *gin.Context) {
@@ -155,10 +156,29 @@ func (h *StreamHandler) UpdateViewerPeak(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *StreamHandler) DurationMinutes(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Stream
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.DurationMinutes()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateStream(req *model.StreamCreateRequest) []string {
 	var errs []string
 	if !((!( req.ActualStart != nil ) || (req.Status == model.StreamStatusType_Live))) {
 		errs = append(errs, "actual_start_requires_live_or_ended")
+	}
+	if !((!( req.EndedAt != nil ) || (req.Status == model.StreamStatusType_Ended))) {
+		errs = append(errs, "ended_at can only be set when stream status is Ended")
+	}
+	if !(req.ViewerCountPeak >= 0) {
+		errs = append(errs, "Peak viewer count must not be negative")
 	}
 	return errs
 }

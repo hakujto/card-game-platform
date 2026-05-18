@@ -25,6 +25,9 @@ func setupDeckSideboardCardDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewDeckSideboardCardHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewDeckHandler(db).RegisterRoutes(r)
+	handler_app.NewCardSetHandler(db).RegisterRoutes(r)
+	handler_app.NewCardHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -121,4 +124,24 @@ func TestDeckSideboardCard_Delete(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/api/deck_sideboard_cards/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestDeckSideboardCard_Rule_QuantityRange_Violated(t *testing.T) {
+	db, r := setupDeckSideboardCardDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depDeckRID := createDepDeck(t, r, db)
+	_ = depDeckRID
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"quantity": 5, "deck_id": depDeckRID, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/deck_sideboard_cards", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

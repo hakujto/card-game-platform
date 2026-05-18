@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"fmt"
 )
 
 type AchievementRarityType string
@@ -79,4 +80,12 @@ func (m *Achievement) ApplyUpdate(req AchievementUpdateRequest) {
 	if req.Points != nil { m.Points = *req.Points }
 	if req.Rarity != nil { m.Rarity = *req.Rarity }
 	if req.IsHidden != nil { m.IsHidden = *req.IsHidden }
+}
+
+func (m *Achievement) PointValue(multiplier int)  (int, error) {
+	return 0, fmt.Errorf("PointValue: not implemented")
+}
+
+func (m *Achievement) Reveal()  error {
+	return fmt.Errorf("Reveal: not implemented")
 }

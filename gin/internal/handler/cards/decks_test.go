@@ -52,7 +52,7 @@ func TestDeck_Create(t *testing.T) {
 	_ = db
 	depPlayer1ID := createDepPlayer(t, r, db)
 	_ = depPlayer1ID
-	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
 	result := postDeck(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -62,7 +62,7 @@ func TestDeck_Get(t *testing.T) {
 	_ = db
 	depPlayer2ID := createDepPlayer(t, r, db)
 	_ = depPlayer2ID
-	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
+	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/decks/"+id, nil)
@@ -75,7 +75,7 @@ func TestDeck_Update(t *testing.T) {
 	_ = db
 	depPlayer3ID := createDepPlayer(t, r, db)
 	_ = depPlayer3ID
-	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer3ID})
+	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"name": "test"}
 	b, _ := json.Marshal(upBody)
@@ -91,10 +91,66 @@ func TestDeck_Delete(t *testing.T) {
 	_ = db
 	depPlayer4ID := createDepPlayer(t, r, db)
 	_ = depPlayer4ID
-	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer4ID})
+	created := postDeck(t, r, db, map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayer4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/decks/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestDeck_Rule_WinsNotNegative_Violated(t *testing.T) {
+	db, r := setupDeckDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": -1, "losses": 1, "draws": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeck_Rule_LossesNotNegative_Violated(t *testing.T) {
+	db, r := setupDeckDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": -1, "draws": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeck_Rule_DrawsNotNegative_Violated(t *testing.T) {
+	db, r := setupDeckDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": -1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeck_Rule_TournamentLegalDeckMustBeValidated_Violated(t *testing.T) {
+	db, r := setupDeckDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": false, "is_tournament_legal": "true", "wins": 1, "losses": 1, "draws": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

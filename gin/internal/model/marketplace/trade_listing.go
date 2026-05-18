@@ -8,104 +8,104 @@ import (
 	"fmt"
 )
 
-type TradelistingListingTypeType string
+type TradeListingListingTypeType string
 const (
-	TradelistingListingTypeType_FixedPrice TradelistingListingTypeType = "FixedPrice"
-	TradelistingListingTypeType_Auction TradelistingListingTypeType = "Auction"
-	TradelistingListingTypeType_TradeOffer TradelistingListingTypeType = "TradeOffer"
+	TradeListingListingTypeType_FixedPrice TradeListingListingTypeType = "FixedPrice"
+	TradeListingListingTypeType_Auction TradeListingListingTypeType = "Auction"
+	TradeListingListingTypeType_TradeOffer TradeListingListingTypeType = "TradeOffer"
 )
 
-type TradelistingConditionType string
+type TradeListingConditionType string
 const (
-	TradelistingConditionType_Mint TradelistingConditionType = "Mint"
-	TradelistingConditionType_NearMint TradelistingConditionType = "NearMint"
-	TradelistingConditionType_Excellent TradelistingConditionType = "Excellent"
-	TradelistingConditionType_Good TradelistingConditionType = "Good"
-	TradelistingConditionType_Played TradelistingConditionType = "Played"
+	TradeListingConditionType_Mint TradeListingConditionType = "Mint"
+	TradeListingConditionType_NearMint TradeListingConditionType = "NearMint"
+	TradeListingConditionType_Excellent TradeListingConditionType = "Excellent"
+	TradeListingConditionType_Good TradeListingConditionType = "Good"
+	TradeListingConditionType_Played TradeListingConditionType = "Played"
 )
 
-type TradelistingStatusType string
+type TradeListingStatusType string
 const (
-	TradelistingStatusType_Active TradelistingStatusType = "Active"
-	TradelistingStatusType_Sold TradelistingStatusType = "Sold"
-	TradelistingStatusType_Expired TradelistingStatusType = "Expired"
-	TradelistingStatusType_Cancelled TradelistingStatusType = "Cancelled"
-	TradelistingStatusType_Pending TradelistingStatusType = "Pending"
+	TradeListingStatusType_Active TradeListingStatusType = "Active"
+	TradeListingStatusType_Sold TradeListingStatusType = "Sold"
+	TradeListingStatusType_Expired TradeListingStatusType = "Expired"
+	TradeListingStatusType_Cancelled TradeListingStatusType = "Cancelled"
+	TradeListingStatusType_Pending TradeListingStatusType = "Pending"
 )
 
-// TradelistingCreateRequest is the POST body.
-type TradelistingCreateRequest struct {
-	ListingType TradelistingListingTypeType `json:"listing_type" binding:"required"`
+// TradeListingCreateRequest is the POST body.
+type TradeListingCreateRequest struct {
+	ListingType TradeListingListingTypeType `json:"listing_type" binding:"required"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
 	AuctionCurrentBid *types.Decimal `json:"auction_current_bid"`
 	AuctionEndTime *string `json:"auction_end_time"`
 	Foil bool `json:"foil"`
-	Condition TradelistingConditionType `json:"condition" binding:"required"`
+	Condition TradeListingConditionType `json:"condition" binding:"required"`
 	Quantity int `json:"quantity"`
-	Status TradelistingStatusType `json:"status" binding:"required"`
+	Status TradeListingStatusType `json:"status" binding:"required"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID uint `json:"seller_id"`
 	CardID uint `json:"card_id"`
 }
 
-// TradelistingUpdateRequest is the PUT/PATCH body — all fields optional.
-type TradelistingUpdateRequest struct {
-	ListingType *TradelistingListingTypeType `json:"listing_type"`
+// TradeListingUpdateRequest is the PUT/PATCH body — all fields optional.
+type TradeListingUpdateRequest struct {
+	ListingType *TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
 	AuctionCurrentBid *types.Decimal `json:"auction_current_bid"`
 	AuctionEndTime *string `json:"auction_end_time"`
 	Foil *bool `json:"foil"`
-	Condition *TradelistingConditionType `json:"condition"`
+	Condition *TradeListingConditionType `json:"condition"`
 	Quantity *int `json:"quantity"`
-	Status *TradelistingStatusType `json:"status"`
+	Status *TradeListingStatusType `json:"status"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID *uint `json:"seller_id"`
 	CardID *uint `json:"card_id"`
 }
 
-// TradelistingResponse is the JSON representation returned by the API.
-type TradelistingResponse struct {
+// TradeListingResponse is the JSON representation returned by the API.
+type TradeListingResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	ListingType TradelistingListingTypeType `json:"listing_type"`
+	ListingType TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
 	AuctionCurrentBid *types.Decimal `json:"auction_current_bid"`
 	AuctionEndTime *string `json:"auction_end_time"`
 	Foil bool `json:"foil"`
-	Condition TradelistingConditionType `json:"condition"`
+	Condition TradeListingConditionType `json:"condition"`
 	Quantity int `json:"quantity"`
-	Status TradelistingStatusType `json:"status"`
+	Status TradeListingStatusType `json:"status"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID uint `json:"seller_id"`
 	CardID uint `json:"card_id"`
 }
 
-type Tradelisting struct {
+type TradeListing struct {
 	gorm.Model
-	ListingType TradelistingListingTypeType `gorm:"column:listing_type;not null;default:'FixedPrice'"`
+	ListingType TradeListingListingTypeType `gorm:"column:listing_type;not null;default:'FixedPrice'"`
 	AskingPrice *types.Decimal `gorm:"column:asking_price;type:decimal(10,2)"`
 	AuctionStartPrice *types.Decimal `gorm:"column:auction_start_price;type:decimal(10,2)"`
 	AuctionCurrentBid *types.Decimal `gorm:"column:auction_current_bid;type:decimal(10,2)"`
 	AuctionEndTime *string `gorm:"column:auction_end_time"`
 	Foil bool `gorm:"column:foil;default:false"`
-	Condition TradelistingConditionType `gorm:"column:condition;not null;default:'Mint'"`
+	Condition TradeListingConditionType `gorm:"column:condition;not null;default:'Mint'"`
 	Quantity int `gorm:"column:quantity;not null;default:1"`
-	Status TradelistingStatusType `gorm:"column:status;not null;default:'Active'"`
+	Status TradeListingStatusType `gorm:"column:status;not null;default:'Active'"`
 	Description *string `gorm:"column:description;type:text"`
 	ExpiresAt *string `gorm:"column:expires_at"`
 	SellerID uint `gorm:"column:seller_id"`
 	CardID uint `gorm:"column:card_id"`
 }
 
-func (m *Tradelisting) ToResponse() TradelistingResponse {
-	return TradelistingResponse{
+func (m *TradeListing) ToResponse() TradeListingResponse {
+	return TradeListingResponse{
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
@@ -125,7 +125,7 @@ func (m *Tradelisting) ToResponse() TradelistingResponse {
 	}
 }
 
-func (m *Tradelisting) ApplyUpdate(req TradelistingUpdateRequest) {
+func (m *TradeListing) ApplyUpdate(req TradeListingUpdateRequest) {
 	if req.ListingType != nil { m.ListingType = *req.ListingType }
 	if req.AskingPrice != nil { m.AskingPrice = req.AskingPrice }
 	if req.AuctionStartPrice != nil { m.AuctionStartPrice = req.AuctionStartPrice }
@@ -141,22 +141,22 @@ func (m *Tradelisting) ApplyUpdate(req TradelistingUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
-func (m *Tradelisting) Close()  error {
+func (m *TradeListing) Close()  error {
 	return fmt.Errorf("Close: not implemented")
 }
 
-func (m *Tradelisting) Extend(days int)  error {
+func (m *TradeListing) Extend(days int)  error {
 	return fmt.Errorf("Extend: not implemented")
 }
 
-func (m *Tradelisting) Cancel()  error {
+func (m *TradeListing) Cancel()  error {
 	return fmt.Errorf("Cancel: not implemented")
 }
 
-func (m *Tradelisting) IsExpired()  (bool, error) {
+func (m *TradeListing) IsExpired()  (bool, error) {
 	return false, fmt.Errorf("IsExpired: not implemented")
 }
 
-func (m *Tradelisting) FinalizeAuction()  error {
+func (m *TradeListing) FinalizeAuction()  error {
 	return fmt.Errorf("FinalizeAuction: not implemented")
 }

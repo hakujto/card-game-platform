@@ -26,6 +26,7 @@ func (h *MatchHandler) RegisterRoutes(r gin.IRouter) {
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/record", h.RecordResult)
 	g.GET("/:id/winner", h.DetermineWinner)
+	g.POST("/:id/concede", h.Concede)
 	g.POST("/:id/draw", h.Draw)
 }
 
@@ -147,6 +148,26 @@ func (h *MatchHandler) DetermineWinner(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *MatchHandler) Concede(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	playerId := func() int {
+		v, ok := body["player_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.Concede(playerId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
 func (h *MatchHandler) Draw(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Match
@@ -170,6 +191,12 @@ func validateMatch(req *model.MatchCreateRequest) []string {
 	}
 	if !((!( req.Status == model.MatchStatusType_BYE ) || (req.Player2ID == nil))) {
 		errs = append(errs, "BYE match must not have a second player")
+	}
+	if !((!( req.EndedAt != nil ) || ((req.StartedAt != nil && *req.EndedAt > *req.StartedAt)))) {
+		errs = append(errs, "Match end time must be after start time")
+	}
+	if !((!( req.Status == model.MatchStatusType_Completed ) || (req.StartedAt != nil))) {
+		errs = append(errs, "Completed match must have a start time")
 	}
 	return errs
 }

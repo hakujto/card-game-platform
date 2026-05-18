@@ -90,3 +90,15 @@ func TestAchievement_Delete(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }
+
+func TestAchievement_Rule_PointsPositive_Violated(t *testing.T) {
+	db, r := setupAchievementDB(t)
+	_ = db
+	body := map[string]interface{}{"name": "test", "description": "test", "points": 0, "rarity": "Common", "is_hidden": true}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/achievements", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

@@ -24,6 +24,8 @@ func (h *CardPriceHistoryHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/price-history/{id}/change", h.PriceChangePercent)
+	g.GET("/:id/api/price-history/{id}/spike", h.IsPriceSpike)
 }
 
 func (h *CardPriceHistoryHandler) List(c *gin.Context) {
@@ -102,10 +104,56 @@ func (h *CardPriceHistoryHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *CardPriceHistoryHandler) PriceChangePercent(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CardPriceHistory
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardPriceHistory"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	previousAvg := func() float64 {
+		v, ok := body["previous_avg"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return f
+	}()
+	result, err := row.PriceChangePercent(previousAvg)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *CardPriceHistoryHandler) IsPriceSpike(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CardPriceHistory
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardPriceHistory"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	thresholdPercent := func() int {
+		v, ok := body["threshold_percent"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	result, err := row.IsPriceSpike(thresholdPercent)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateCardPriceHistory(req *model.CardPriceHistoryCreateRequest) []string {
 	var errs []string
 	if !((float64(req.MinPrice) <= float64(req.AvgPrice) && float64(req.AvgPrice) <= float64(req.MaxPrice))) {
 		errs = append(errs, "min_price <= avg_price <= max_price must hold")
+	}
+	if !(req.Volume >= 0) {
+		errs = append(errs, "Price history volume must not be negative")
+	}
+	if !(float64(req.MinPrice) >= 0) {
+		errs = append(errs, "Prices must not be negative")
 	}
 	return errs
 }

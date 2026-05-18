@@ -197,3 +197,11 @@ func (m *Card) Unrestrict()  error {
 func (m *Card) CalculateValue()  (float64, error) {
 	return 0.0, fmt.Errorf("CalculateValue: not implemented")
 }
+
+func (m *Card) ApplyRarityBonus(multiplier int)  (float64, error) {
+	return 0.0, fmt.Errorf("ApplyRarityBonus: not implemented")
+}
+
+func (m *Card) IsLegalInFormat(format string)  (bool, error) {
+	return false, fmt.Errorf("IsLegalInFormat: not implemented")
+}

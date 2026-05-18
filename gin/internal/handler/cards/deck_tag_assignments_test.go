@@ -25,6 +25,8 @@ func setupDeckTagAssignmentDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewDeckTagAssignmentHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewDeckHandler(db).RegisterRoutes(r)
+	handler_app.NewDeckTagHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

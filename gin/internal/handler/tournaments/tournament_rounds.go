@@ -27,6 +27,7 @@ func (h *TournamentRoundHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/api/rounds/{id}/start", h.Start)
 	g.POST("/:id/api/rounds/{id}/complete", h.Complete)
 	g.POST("/:id/api/rounds/{id}/pairings", h.GeneratePairings)
+	g.GET("/:id/api/rounds/{id}/time-expired", h.IsTimeExpired)
 }
 
 func (h *TournamentRoundHandler) List(c *gin.Context) {
@@ -143,10 +144,32 @@ func (h *TournamentRoundHandler) GeneratePairings(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *TournamentRoundHandler) IsTimeExpired(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TournamentRound
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRound"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsTimeExpired()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateTournamentRound(req *model.TournamentRoundCreateRequest) []string {
 	var errs []string
 	if !((!( req.EndedAt != nil ) || ((req.StartedAt != nil && *req.EndedAt > *req.StartedAt)))) {
 		errs = append(errs, "Round end time must be after start time")
+	}
+	if !((!( req.Status == model.TournamentRoundStatusType_Completed ) || (req.StartedAt != nil))) {
+		errs = append(errs, "Completed round must have a start time")
+	}
+	if !(req.RoundNumber > 0) {
+		errs = append(errs, "Round number must be greater than zero")
+	}
+	if !(req.TimeLimitMinutes > 0) {
+		errs = append(errs, "Round time limit must be greater than zero")
 	}
 	return errs
 }

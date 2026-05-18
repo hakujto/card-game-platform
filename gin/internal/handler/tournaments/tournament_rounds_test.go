@@ -25,6 +25,8 @@ func setupTournamentRoundDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewTournamentRoundHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -113,4 +115,58 @@ func TestTournamentRound_Delete(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/api/tournament_rounds/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestTournamentRound_Rule_CompletedRequiresStartedAt_Violated(t *testing.T) {
+	db, r := setupTournamentRoundDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	body := map[string]interface{}{"round_number": 1, "status": "Completed", "time_limit_minutes": 1, "tournament_id": depTournamentRID, "started_at": nil}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/tournament_rounds", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestTournamentRound_Rule_RoundNumberPositive_Violated(t *testing.T) {
+	db, r := setupTournamentRoundDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	body := map[string]interface{}{"round_number": 0, "status": "Pending", "time_limit_minutes": 1, "tournament_id": depTournamentRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/tournament_rounds", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestTournamentRound_Rule_TimeLimitPositive_Violated(t *testing.T) {
+	db, r := setupTournamentRoundDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	body := map[string]interface{}{"round_number": 1, "status": "Pending", "time_limit_minutes": 0, "tournament_id": depTournamentRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/tournament_rounds", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

@@ -57,7 +57,7 @@ func Init() {
 		&model_marketplace.Order{},
 		&model_marketplace.OrderItem{},
 		&model_marketplace.Coupon{},
-		&model_marketplace.Tradelisting{},
+		&model_marketplace.TradeListing{},
 		&model_marketplace.TradeBid{},
 		&model_marketplace.TradeTransaction{},
 		&model_marketplace.CardPriceHistory{},

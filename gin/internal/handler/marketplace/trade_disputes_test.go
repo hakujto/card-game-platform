@@ -20,11 +20,13 @@ import (
 func setupTradeDisputeDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
-	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.Tradelisting{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
+	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	h := handler_app.NewTradeDisputeHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewTradeListingHandler(db).RegisterRoutes(r)
+	handler_app.NewTradeTransactionHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -56,8 +58,8 @@ func TestTradeDispute_Create(t *testing.T) {
 	_ = depCardSet1ID
 	depCard1ID := createDepCard(t, r, db)
 	_ = depCard1ID
-	depTradelisting1ID := createDepTradelisting(t, r, db)
-	_ = depTradelisting1ID
+	depTradeListing1ID := createDepTradeListing(t, r, db)
+	_ = depTradeListing1ID
 	depTradeTransaction1ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction1ID
 	body := map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction1ID, "opened_by_id": depPlayer1ID}
@@ -74,8 +76,8 @@ func TestTradeDispute_Get(t *testing.T) {
 	_ = depCardSet2ID
 	depCard2ID := createDepCard(t, r, db)
 	_ = depCard2ID
-	depTradelisting2ID := createDepTradelisting(t, r, db)
-	_ = depTradelisting2ID
+	depTradeListing2ID := createDepTradeListing(t, r, db)
+	_ = depTradeListing2ID
 	depTradeTransaction2ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction2ID
 	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction2ID, "opened_by_id": depPlayer2ID})
@@ -95,8 +97,8 @@ func TestTradeDispute_Update(t *testing.T) {
 	_ = depCardSet3ID
 	depCard3ID := createDepCard(t, r, db)
 	_ = depCard3ID
-	depTradelisting3ID := createDepTradelisting(t, r, db)
-	_ = depTradelisting3ID
+	depTradeListing3ID := createDepTradeListing(t, r, db)
+	_ = depTradeListing3ID
 	depTradeTransaction3ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction3ID
 	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction3ID, "opened_by_id": depPlayer3ID})
@@ -119,8 +121,8 @@ func TestTradeDispute_Delete(t *testing.T) {
 	_ = depCardSet4ID
 	depCard4ID := createDepCard(t, r, db)
 	_ = depCard4ID
-	depTradelisting4ID := createDepTradelisting(t, r, db)
-	_ = depTradelisting4ID
+	depTradeListing4ID := createDepTradeListing(t, r, db)
+	_ = depTradeListing4ID
 	depTradeTransaction4ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction4ID
 	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction4ID, "opened_by_id": depPlayer4ID})

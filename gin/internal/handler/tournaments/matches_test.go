@@ -25,6 +25,9 @@ func setupMatchDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewMatchHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentRoundHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -58,7 +61,7 @@ func TestMatch_Create(t *testing.T) {
 	_ = depTournament1ID
 	depTournamentRound1ID := createDepTournamentRound(t, r, db)
 	_ = depTournamentRound1ID
-	body := map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "round_id": depTournamentRound1ID, "player1_id": depPlayer1ID}
+	body := map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound1ID, "player1_id": depPlayer1ID}
 	result := postMatch(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -74,7 +77,7 @@ func TestMatch_Get(t *testing.T) {
 	_ = depTournament2ID
 	depTournamentRound2ID := createDepTournamentRound(t, r, db)
 	_ = depTournamentRound2ID
-	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "round_id": depTournamentRound2ID, "player1_id": depPlayer2ID})
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound2ID, "player1_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/matches/"+id, nil)
@@ -93,7 +96,7 @@ func TestMatch_Update(t *testing.T) {
 	_ = depTournament3ID
 	depTournamentRound3ID := createDepTournamentRound(t, r, db)
 	_ = depTournamentRound3ID
-	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "round_id": depTournamentRound3ID, "player1_id": depPlayer3ID})
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound3ID, "player1_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"player1_wins": 0}
 	b, _ := json.Marshal(upBody)
@@ -115,7 +118,7 @@ func TestMatch_Delete(t *testing.T) {
 	_ = depTournament4ID
 	depTournamentRound4ID := createDepTournamentRound(t, r, db)
 	_ = depTournamentRound4ID
-	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "round_id": depTournamentRound4ID, "player1_id": depPlayer4ID})
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound4ID, "player1_id": depPlayer4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/matches/"+id, nil)
@@ -175,6 +178,26 @@ func TestMatch_Rule_ByeHasNoPlayer2_Violated(t *testing.T) {
 	depTournamentRoundRID := createDepTournamentRound(t, r, db)
 	_ = depTournamentRoundRID
 	body := map[string]interface{}{"status": "BYE", "player1_wins": 1, "player2_wins": 1, "round_id": depTournamentRoundRID, "player1_id": depPlayerRID, "player2_id": 1}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/matches", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestMatch_Rule_CompletedRequiresStartedAt_Violated(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	depTournamentRoundRID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundRID
+	body := map[string]interface{}{"status": "Completed", "player1_wins": 1, "player2_wins": 1, "round_id": depTournamentRoundRID, "player1_id": depPlayerRID, "started_at": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/matches", bytes.NewBuffer(b))

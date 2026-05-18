@@ -50,7 +50,7 @@ func TestCardSet_List(t *testing.T) {
 func TestCardSet_Create(t *testing.T) {
 	db, r := setupCardSetDB(t)
 	_ = db
-	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1}
+	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": "2024-01-02", "set_type": "Core", "total_cards": 1, "is_rotated": true}
 	result := postCardSet(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -58,7 +58,7 @@ func TestCardSet_Create(t *testing.T) {
 func TestCardSet_Get(t *testing.T) {
 	db, r := setupCardSetDB(t)
 	_ = db
-	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1})
+	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": "2024-01-02", "set_type": "Core", "total_cards": 1, "is_rotated": true})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/card_sets/"+id, nil)
@@ -69,7 +69,7 @@ func TestCardSet_Get(t *testing.T) {
 func TestCardSet_Update(t *testing.T) {
 	db, r := setupCardSetDB(t)
 	_ = db
-	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1})
+	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": "2024-01-02", "set_type": "Core", "total_cards": 1, "is_rotated": true})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"name": "test"}
 	b, _ := json.Marshal(upBody)
@@ -83,10 +83,34 @@ func TestCardSet_Update(t *testing.T) {
 func TestCardSet_Delete(t *testing.T) {
 	db, r := setupCardSetDB(t)
 	_ = db
-	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1})
+	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": "2024-01-02", "set_type": "Core", "total_cards": 1, "is_rotated": true})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/card_sets/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestCardSet_Rule_TotalCardsPositive_Violated(t *testing.T) {
+	db, r := setupCardSetDB(t)
+	_ = db
+	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0, "is_rotated": true}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/card_sets", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCardSet_Rule_RotatedSetHasRotationDate_Violated(t *testing.T) {
+	db, r := setupCardSetDB(t)
+	_ = db
+	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": "true", "rotation_date": nil}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/card_sets", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"fmt"
 )
 
 // AwardedPrizeCreateRequest is the POST body.
@@ -70,4 +71,8 @@ func (m *AwardedPrize) ApplyUpdate(req AwardedPrizeUpdateRequest) {
 	if req.ClaimedAt != nil { m.ClaimedAt = req.ClaimedAt }
 	if req.PrizeID != nil { m.PrizeID = *req.PrizeID }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
+}
+
+func (m *AwardedPrize) Claim()  error {
+	return fmt.Errorf("Claim: not implemented")
 }

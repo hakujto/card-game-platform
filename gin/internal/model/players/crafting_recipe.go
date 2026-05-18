@@ -56,6 +56,14 @@ func (m *CraftingRecipe) ApplyUpdate(req CraftingRecipeUpdateRequest) {
 	if req.ResultCardID != nil { m.ResultCardID = *req.ResultCardID }
 }
 
+func (m *CraftingRecipe) CanCraft(playerId int)  (bool, error) {
+	return false, fmt.Errorf("CanCraft: not implemented")
+}
+
+func (m *CraftingRecipe) ExecuteCraft(playerId int)  error {
+	return fmt.Errorf("ExecuteCraft: not implemented")
+}
+
 func (m *CraftingRecipe) Disable()  error {
 	return fmt.Errorf("Disable: not implemented")
 }

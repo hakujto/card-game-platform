@@ -41,7 +41,7 @@ func createDepSeason(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepCardSet(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1}
+	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/card_sets", bytes.NewBuffer(b))

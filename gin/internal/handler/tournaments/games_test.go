@@ -25,6 +25,10 @@ func setupGameDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewGameHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentRoundHandler(db).RegisterRoutes(r)
+	handler_app.NewMatchHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -189,6 +193,50 @@ func TestGame_Rule_DurationPositive_Violated(t *testing.T) {
 	depMatchRID := createDepMatch(t, r, db)
 	_ = depMatchRID
 	body := map[string]interface{}{"game_number": 1, "match_id": depMatchRID, "duration_seconds": 0}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/games", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGame_Rule_DrawHasNoWinner_Violated(t *testing.T) {
+	db, r := setupGameDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	depTournamentRoundRID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundRID
+	depMatchRID := createDepMatch(t, r, db)
+	_ = depMatchRID
+	body := map[string]interface{}{"game_number": 1, "match_id": depMatchRID, "winner_side": "Draw", "winner_id": 1}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/games", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGame_Rule_NonDrawRequiresWinner_Violated(t *testing.T) {
+	db, r := setupGameDB(t)
+	_ = db
+	depSeasonRID := createDepSeason(t, r, db)
+	_ = depSeasonRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depTournamentRID := createDepTournament(t, r, db)
+	_ = depTournamentRID
+	depTournamentRoundRID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundRID
+	depMatchRID := createDepMatch(t, r, db)
+	_ = depMatchRID
+	body := map[string]interface{}{"game_number": 1, "match_id": depMatchRID, "winner_side": "Player1", "winner": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/games", bytes.NewBuffer(b))

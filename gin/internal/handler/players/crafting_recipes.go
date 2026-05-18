@@ -24,6 +24,10 @@ func (h *CraftingRecipeHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/crafting-recipes/{id}/can-craft", h.CanCraft)
+	g.POST("/:id/api/crafting-recipes/{id}/craft", h.ExecuteCraft)
+	g.POST("/:id/api/crafting-recipes/{id}/disable", h.Disable)
+	g.POST("/:id/api/crafting-recipes/{id}/enable", h.Enable)
 }
 
 func (h *CraftingRecipeHandler) List(c *gin.Context) {
@@ -95,6 +99,72 @@ func (h *CraftingRecipeHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *CraftingRecipeHandler) CanCraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CraftingRecipe
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	playerId := func() int {
+		v, ok := body["player_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	result, err := row.CanCraft(playerId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *CraftingRecipeHandler) ExecuteCraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CraftingRecipe
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	playerId := func() int {
+		v, ok := body["player_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.ExecuteCraft(playerId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *CraftingRecipeHandler) Disable(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CraftingRecipe
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Disable()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *CraftingRecipeHandler) Enable(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CraftingRecipe
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Enable()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }
 

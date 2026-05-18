@@ -29,6 +29,8 @@ func (h *CardHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/restrict", h.Restrict)
 	g.POST("/:id/unrestrict", h.Unrestrict)
 	g.GET("/:id/value", h.CalculateValue)
+	g.POST("/:id/rarity-bonus", h.ApplyRarityBonus)
+	g.GET("/:id/legal", h.IsLegalInFormat)
 }
 
 func (h *CardHandler) List(c *gin.Context) {
@@ -182,6 +184,46 @@ func (h *CardHandler) CalculateValue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *CardHandler) ApplyRarityBonus(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Card
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Card"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	multiplier := func() int {
+		v, ok := body["multiplier"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	result, err := row.ApplyRarityBonus(multiplier)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *CardHandler) IsLegalInFormat(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Card
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Card"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	format := func() string {
+		v, ok := body["format"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	result, err := row.IsLegalInFormat(format)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateCard(req *model.CardCreateRequest) []string {
 	var errs []string
 	if !((!( req.CardType == model.CardCardTypeType_Creature ) || (req.Attack != nil && req.Defense != nil))) {
@@ -189,6 +231,9 @@ func validateCard(req *model.CardCreateRequest) []string {
 	}
 	if !((!( req.CardType == model.CardCardTypeType_Planeswalker ) || (req.Loyalty != nil))) {
 		errs = append(errs, "Planeswalker card must have loyalty")
+	}
+	if !((!( req.CardType != model.CardCardTypeType_Planeswalker ) || (req.Loyalty == nil))) {
+		errs = append(errs, "Only Planeswalker cards can have loyalty")
 	}
 	if !((req.ManaCost >= 0 && req.ManaCost <= 20)) {
 		errs = append(errs, "mana_cost must be between 0 and 20")
@@ -198,6 +243,9 @@ func validateCard(req *model.CardCreateRequest) []string {
 	}
 	if !(!((req.IsBanned && req.IsRestricted))) {
 		errs = append(errs, "Card cannot be both banned and restricted at the same time")
+	}
+	if !((!( req.IsBanned ) || (req.LegalFormats == "message"))) {
+		errs = append(errs, "banned_card_not_in_legal_formats")
 	}
 	return errs
 }

@@ -27,6 +27,7 @@ func (h *TradeTransactionHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/api/transactions/{id}/complete", h.Complete)
 	g.POST("/:id/api/transactions/{id}/refund", h.Refund)
 	g.POST("/:id/api/transactions/{id}/dispute", h.OpenDispute)
+	g.GET("/:id/api/transactions/{id}/seller-net", h.SellerNet)
 }
 
 func (h *TradeTransactionHandler) List(c *gin.Context) {
@@ -151,6 +152,19 @@ func (h *TradeTransactionHandler) OpenDispute(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *TradeTransactionHandler) SellerNet(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeTransaction
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeTransaction"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.SellerNet()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateTradeTransaction(req *model.TradeTransactionCreateRequest) []string {
 	var errs []string
 	if !(float64(req.PlatformFee) <= float64(req.FinalPrice)) {
@@ -158,6 +172,9 @@ func validateTradeTransaction(req *model.TradeTransactionCreateRequest) []string
 	}
 	if !(float64(req.PlatformFee) >= 0) {
 		errs = append(errs, "Platform fee must not be negative")
+	}
+	if !(float64(req.FinalPrice) > 0) {
+		errs = append(errs, "Transaction final price must be greater than zero")
 	}
 	if !((!( req.Status == model.TradeTransactionStatusType_Completed ) || (req.CompletedAt != nil))) {
 		errs = append(errs, "Completed transaction must have a completed_at timestamp")

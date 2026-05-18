@@ -27,6 +27,7 @@ func (h *SeasonHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/activate", h.Activate)
 	g.POST("/:id/deactivate", h.Deactivate)
 	g.POST("/:id/finalize", h.FinalizeRewards)
+	g.GET("/:id/ongoing", h.IsOngoing)
 }
 
 func (h *SeasonHandler) List(c *gin.Context) {
@@ -141,6 +142,19 @@ func (h *SeasonHandler) FinalizeRewards(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *SeasonHandler) IsOngoing(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Season
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Season"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsOngoing()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func validateSeason(req *model.SeasonCreateRequest) []string {

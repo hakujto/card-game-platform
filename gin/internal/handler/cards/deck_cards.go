@@ -24,6 +24,8 @@ func (h *DeckCardHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.PATCH("/:id/api/deck-cards/{id}/increment", h.Increment)
+	g.PATCH("/:id/api/deck-cards/{id}/decrement", h.Decrement)
 }
 
 func (h *DeckCardHandler) List(c *gin.Context) {
@@ -96,6 +98,46 @@ func (h *DeckCardHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DeckCard"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *DeckCardHandler) Increment(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DeckCard
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DeckCard"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	amount := func() int {
+		v, ok := body["amount"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.Increment(amount)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *DeckCardHandler) Decrement(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DeckCard
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DeckCard"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	amount := func() int {
+		v, ok := body["amount"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.Decrement(amount)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }
 

@@ -24,6 +24,7 @@ func (h *OrderItemHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/order-items/{id}/total", h.LineTotal)
 }
 
 func (h *OrderItemHandler) List(c *gin.Context) {
@@ -98,6 +99,19 @@ func (h *OrderItemHandler) Delete(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *OrderItemHandler) LineTotal(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.OrderItem
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "OrderItem"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.LineTotal()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func validateOrderItem(req *model.OrderItemCreateRequest) []string {

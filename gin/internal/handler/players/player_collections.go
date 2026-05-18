@@ -24,6 +24,8 @@ func (h *PlayerCollectionHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.POST("/:id/api/collection/{id}/add", h.Add)
+	g.POST("/:id/api/collection/{id}/remove", h.Remove)
 	g.GET("/:id/api/collection/{id}/value", h.EstimatedValue)
 }
 
@@ -42,6 +44,9 @@ func (h *PlayerCollectionHandler) Create(c *gin.Context) {
 	var req model.PlayerCollectionCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
+	}
+	if msgs := validatePlayerCollection(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.PlayerCollection{}
 	row.Quantity = req.Quantity
@@ -79,6 +84,10 @@ func (h *PlayerCollectionHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestPlayerCollection(&row)
+	if msgs := validatePlayerCollection(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -96,6 +105,46 @@ func (h *PlayerCollectionHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *PlayerCollectionHandler) Add(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.PlayerCollection
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "PlayerCollection"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	quantity := func() int {
+		v, ok := body["quantity"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.Add(quantity)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *PlayerCollectionHandler) Remove(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.PlayerCollection
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "PlayerCollection"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	quantity := func() int {
+		v, ok := body["quantity"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.Remove(quantity)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
 func (h *PlayerCollectionHandler) EstimatedValue(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.PlayerCollection
@@ -107,4 +156,24 @@ func (h *PlayerCollectionHandler) EstimatedValue(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func validatePlayerCollection(req *model.PlayerCollectionCreateRequest) []string {
+	var errs []string
+	if !(req.Quantity > 0) {
+		errs = append(errs, "Collection quantity must be greater than zero")
+	}
+	return errs
+}
+
+func toCreateRequestPlayerCollection(m *model.PlayerCollection) model.PlayerCollectionCreateRequest {
+	return model.PlayerCollectionCreateRequest{
+		Quantity: m.Quantity,
+		Foil: m.Foil,
+		Condition: m.Condition,
+		AcquiredAt: m.AcquiredAt,
+		AcquiredVia: m.AcquiredVia,
+		PlayerID: m.PlayerID,
+		CardID: m.CardID,
+	}
 }

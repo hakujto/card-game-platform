@@ -20,7 +20,7 @@ import (
 func setupCardPriceHistoryDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
-	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.Tradelisting{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
+	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	h := handler_app.NewCardPriceHistoryHandler(db)
@@ -54,7 +54,7 @@ func TestCardPriceHistory_Create(t *testing.T) {
 	_ = depCardSet1ID
 	depCard1ID := createDepCard(t, r, db)
 	_ = depCard1ID
-	body := map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0, "volume": 1, "foil": true, "card_id": depCard1ID}
+	body := map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0, "max_price": 0.0, "volume": 0, "foil": true, "card_id": depCard1ID}
 	result := postCardPriceHistory(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -66,7 +66,7 @@ func TestCardPriceHistory_Get(t *testing.T) {
 	_ = depCardSet2ID
 	depCard2ID := createDepCard(t, r, db)
 	_ = depCard2ID
-	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0, "volume": 1, "foil": true, "card_id": depCard2ID})
+	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0, "max_price": 0.0, "volume": 0, "foil": true, "card_id": depCard2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/card_price_histories/"+id, nil)
@@ -81,7 +81,7 @@ func TestCardPriceHistory_Update(t *testing.T) {
 	_ = depCardSet3ID
 	depCard3ID := createDepCard(t, r, db)
 	_ = depCard3ID
-	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0, "volume": 1, "foil": true, "card_id": depCard3ID})
+	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0, "max_price": 0.0, "volume": 0, "foil": true, "card_id": depCard3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"price_date": "2024-01-01"}
 	b, _ := json.Marshal(upBody)
@@ -99,10 +99,42 @@ func TestCardPriceHistory_Delete(t *testing.T) {
 	_ = depCardSet4ID
 	depCard4ID := createDepCard(t, r, db)
 	_ = depCard4ID
-	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0, "volume": 1, "foil": true, "card_id": depCard4ID})
+	created := postCardPriceHistory(t, r, db, map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0, "max_price": 0.0, "volume": 0, "foil": true, "card_id": depCard4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/card_price_histories/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestCardPriceHistory_Rule_VolumeNotNegative_Violated(t *testing.T) {
+	db, r := setupCardPriceHistoryDB(t)
+	_ = db
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": 0.0, "max_price": 0.0, "volume": -1, "foil": true, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/card_price_histories", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCardPriceHistory_Rule_PricesNotNegative_Violated(t *testing.T) {
+	db, r := setupCardPriceHistoryDB(t)
+	_ = db
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"price_date": "2024-01-01", "avg_price": 0.0, "min_price": -1, "max_price": 0.0, "volume": 1, "foil": true, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/card_price_histories", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

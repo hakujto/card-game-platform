@@ -24,6 +24,8 @@ func (h *ArticleTagHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.PATCH("/:id/api/article-tags/{id}/rename", h.Rename)
+	g.GET("/:id/api/article-tags/{id}/article-count", h.ArticleCount)
 }
 
 func (h *ArticleTagHandler) List(c *gin.Context) {
@@ -88,4 +90,37 @@ func (h *ArticleTagHandler) Delete(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *ArticleTagHandler) Rename(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.ArticleTag
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "ArticleTag"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	newName := func() string {
+		v, ok := body["new_name"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	err := row.Rename(newName)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *ArticleTagHandler) ArticleCount(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.ArticleTag
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "ArticleTag"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.ArticleCount()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }

@@ -25,6 +25,7 @@ func (h *GameHandler) RegisterRoutes(r gin.IRouter) {
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/winner", h.RecordWinner)
+	g.GET("/:id/duration", h.DurationMinutes)
 }
 
 func (h *GameHandler) List(c *gin.Context) {
@@ -124,6 +125,19 @@ func (h *GameHandler) RecordWinner(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *GameHandler) DurationMinutes(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Game
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Game"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.DurationMinutes()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateGame(req *model.GameCreateRequest) []string {
 	var errs []string
 	if !((req.GameNumber >= 1 && req.GameNumber <= 3)) {
@@ -134,6 +148,12 @@ func validateGame(req *model.GameCreateRequest) []string {
 	}
 	if !((!( req.DurationSeconds != nil ) || (*req.DurationSeconds > 0))) {
 		errs = append(errs, "Game duration must be greater than zero")
+	}
+	if !((!( (req.WinnerSide != nil && *req.WinnerSide == model.GameWinnerSideType_Draw) ) || (req.WinnerID == nil))) {
+		errs = append(errs, "A draw cannot have a winner")
+	}
+	if !((!( (req.WinnerSide != nil && (req.WinnerSide == nil || *req.WinnerSide != model.GameWinnerSideType_Draw)) ) || (req.WinnerID != nil))) {
+		errs = append(errs, "A decisive game must have a winner player set")
 	}
 	return errs
 }

@@ -24,6 +24,8 @@ func (h *TournamentJudgeHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.POST("/:id/api/tournament-judges/{id}/promote", h.PromoteToHead)
+	g.DELETE("/:id/api/tournament-judges/{id}", h.Remove)
 }
 
 func (h *TournamentJudgeHandler) List(c *gin.Context) {
@@ -88,5 +90,31 @@ func (h *TournamentJudgeHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentJudge"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TournamentJudgeHandler) PromoteToHead(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TournamentJudge
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentJudge"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.PromoteToHead()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TournamentJudgeHandler) Remove(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TournamentJudge
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentJudge"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Remove()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }

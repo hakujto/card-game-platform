@@ -10,14 +10,14 @@ import (
 	"cards_project/internal/handler"
 )
 
-type TradelistingHandler struct { db *gorm.DB }
+type TradeListingHandler struct { db *gorm.DB }
 
-func NewTradelistingHandler(db *gorm.DB) *TradelistingHandler {
-	return &TradelistingHandler{db: db}
+func NewTradeListingHandler(db *gorm.DB) *TradeListingHandler {
+	return &TradeListingHandler{db: db}
 }
 
-func (h *TradelistingHandler) RegisterRoutes(r gin.IRouter) {
-	g := r.Group("/api/tradelistings")
+func (h *TradeListingHandler) RegisterRoutes(r gin.IRouter) {
+	g := r.Group("/api/trade_listings")
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
@@ -27,28 +27,30 @@ func (h *TradelistingHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/api/trade-listings/{id}/close", h.Close)
 	g.PATCH("/:id/api/trade-listings/{id}/extend", h.Extend)
 	g.DELETE("/:id/api/trade-listings/{id}/cancel", h.Cancel)
+	g.GET("/:id/api/trade-listings/{id}/expired", h.IsExpired)
+	g.POST("/:id/api/trade-listings/{id}/finalize", h.FinalizeAuction)
 }
 
-func (h *TradelistingHandler) List(c *gin.Context) {
+func (h *TradeListingHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
-	var rows []model.Tradelisting
+	var rows []model.TradeListing
 	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
-	out := make([]model.TradelistingResponse, len(rows))
+	out := make([]model.TradeListingResponse, len(rows))
 	for i := range rows { out[i] = rows[i].ToResponse() }
 	c.JSON(http.StatusOK, out)
 }
 
-func (h *TradelistingHandler) Create(c *gin.Context) {
-	var req model.TradelistingCreateRequest
+func (h *TradeListingHandler) Create(c *gin.Context) {
+	var req model.TradeListingCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
 	}
-	if msgs := validateTradelisting(&req); len(msgs) > 0 {
+	if msgs := validateTradeListing(&req); len(msgs) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
-	row := model.Tradelisting{}
+	row := model.TradeListing{}
 	row.ListingType = req.ListingType
 	row.AskingPrice = req.AskingPrice
 	row.AuctionStartPrice = req.AuctionStartPrice
@@ -68,30 +70,30 @@ func (h *TradelistingHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, row.ToResponse())
 }
 
-func (h *TradelistingHandler) Get(c *gin.Context) {
+func (h *TradeListingHandler) Get(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *TradelistingHandler) Update(c *gin.Context) {
+func (h *TradeListingHandler) Update(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
-	var req model.TradelistingUpdateRequest
+	var req model.TradeListingUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
-	createReq := toCreateRequestTradelisting(&row)
-	if msgs := validateTradelisting(&createReq); len(msgs) > 0 {
+	createReq := toCreateRequestTradeListing(&row)
+	if msgs := validateTradeListing(&createReq); len(msgs) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
@@ -100,22 +102,22 @@ func (h *TradelistingHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *TradelistingHandler) Patch(c *gin.Context) { h.Update(c) }
+func (h *TradeListingHandler) Patch(c *gin.Context) { h.Update(c) }
 
-func (h *TradelistingHandler) Delete(c *gin.Context) {
+func (h *TradeListingHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Tradelisting{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+	if err := h.db.Delete(&model.TradeListing{}, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
 }
 
-func (h *TradelistingHandler) Close(c *gin.Context) {
+func (h *TradeListingHandler) Close(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
 	err := row.Close()
@@ -124,11 +126,11 @@ func (h *TradelistingHandler) Close(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *TradelistingHandler) Extend(c *gin.Context) {
+func (h *TradeListingHandler) Extend(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
 	var body map[string]interface{}
@@ -144,11 +146,11 @@ func (h *TradelistingHandler) Extend(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *TradelistingHandler) Cancel(c *gin.Context) {
+func (h *TradeListingHandler) Cancel(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
 	err := row.Cancel()
@@ -157,18 +159,44 @@ func (h *TradelistingHandler) Cancel(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *TradelistingHandler) SetStatus(c *gin.Context) {
+func (h *TradeListingHandler) IsExpired(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsExpired()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *TradeListingHandler) FinalizeAuction(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.FinalizeAuction()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TradeListingHandler) SetStatus(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var body struct{ Value string `json:"value"` }
 	if err := c.ShouldBindJSON(&body); err != nil {
 		handler.ValidationError(c, err.Error()); return
 	}
-	var row model.Tradelisting
+	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tradelisting"); return }
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
-	row.Status = model.TradelistingStatusType(body.Value)
+	row.Status = model.TradeListingStatusType(body.Value)
 	if row.Status == "Sold" {
 		_ = row.FinalizeAuction() // @on(status = Sold)
 	}
@@ -176,12 +204,12 @@ func (h *TradelistingHandler) SetStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func validateTradelisting(req *model.TradelistingCreateRequest) []string {
+func validateTradeListing(req *model.TradeListingCreateRequest) []string {
 	var errs []string
-	if !((!( req.ListingType == model.TradelistingListingTypeType_FixedPrice ) || (req.AskingPrice != nil))) {
+	if !((!( req.ListingType == model.TradeListingListingTypeType_FixedPrice ) || (req.AskingPrice != nil))) {
 		errs = append(errs, "Fixed price listing must have an asking price")
 	}
-	if !((!( req.ListingType == model.TradelistingListingTypeType_Auction ) || (req.AuctionStartPrice != nil && req.AuctionEndTime != nil))) {
+	if !((!( req.ListingType == model.TradeListingListingTypeType_Auction ) || (req.AuctionStartPrice != nil && req.AuctionEndTime != nil))) {
 		errs = append(errs, "Auction listing must have a start price and end time")
 	}
 	if !((req.Quantity >= 1 && req.Quantity <= 9999)) {
@@ -190,8 +218,8 @@ func validateTradelisting(req *model.TradelistingCreateRequest) []string {
 	return errs
 }
 
-func toCreateRequestTradelisting(m *model.Tradelisting) model.TradelistingCreateRequest {
-	return model.TradelistingCreateRequest{
+func toCreateRequestTradeListing(m *model.TradeListing) model.TradeListingCreateRequest {
+	return model.TradeListingCreateRequest{
 		ListingType: m.ListingType,
 		AskingPrice: m.AskingPrice,
 		AuctionStartPrice: m.AuctionStartPrice,

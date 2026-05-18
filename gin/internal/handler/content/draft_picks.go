@@ -24,6 +24,7 @@ func (h *DraftPickHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/draft-picks/{id}/first-pick", h.IsFirstPick)
 }
 
 func (h *DraftPickHandler) List(c *gin.Context) {
@@ -41,6 +42,9 @@ func (h *DraftPickHandler) Create(c *gin.Context) {
 	var req model.DraftPickCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
+	}
+	if msgs := validateDraftPick(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.DraftPick{}
 	row.PickNumber = req.PickNumber
@@ -76,6 +80,10 @@ func (h *DraftPickHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestDraftPick(&row)
+	if msgs := validateDraftPick(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -91,4 +99,38 @@ func (h *DraftPickHandler) Delete(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *DraftPickHandler) IsFirstPick(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftPick
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftPick"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsFirstPick()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func validateDraftPick(req *model.DraftPickCreateRequest) []string {
+	var errs []string
+	if !(req.PickNumber > 0) {
+		errs = append(errs, "Pick number must be greater than zero")
+	}
+	if !((req.PackNumber >= 1 && req.PackNumber <= 3)) {
+		errs = append(errs, "Pack number must be between 1 and 3")
+	}
+	return errs
+}
+
+func toCreateRequestDraftPick(m *model.DraftPick) model.DraftPickCreateRequest {
+	return model.DraftPickCreateRequest{
+		PickNumber: m.PickNumber,
+		PackNumber: m.PackNumber,
+		PickedAt: m.PickedAt,
+		ParticipantID: m.ParticipantID,
+		CardID: m.CardID,
+	}
 }

@@ -25,6 +25,7 @@ func setupPlayerCollectionDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewPlayerCollectionHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewPlayerHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -113,4 +114,22 @@ func TestPlayerCollection_Delete(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/api/player_collections/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestPlayerCollection_Rule_QuantityPositive_Violated(t *testing.T) {
+	db, r := setupPlayerCollectionDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"quantity": 0, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00Z", "acquired_via": "Purchase", "player_id": depPlayerRID, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/player_collections", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

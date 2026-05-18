@@ -29,6 +29,8 @@ func (h *TournamentHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/complete", h.Complete)
 	g.POST("/:id/rounds", h.GenerateRound)
 	g.GET("/:id/prizes", h.CalculatePrizeDistribution)
+	g.POST("/:id/register", h.RegisterPlayer)
+	g.GET("/:id/full", h.IsFull)
 }
 
 func (h *TournamentHandler) List(c *gin.Context) {
@@ -175,6 +177,44 @@ func (h *TournamentHandler) CalculatePrizeDistribution(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	result, err := row.CalculatePrizeDistribution()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *TournamentHandler) RegisterPlayer(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	playerId := func() int {
+		v, ok := body["player_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	deckId := func() int {
+		v, ok := body["deck_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.RegisterPlayer(playerId, deckId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TournamentHandler) IsFull(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsFull()
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})

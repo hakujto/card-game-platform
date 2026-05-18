@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"fmt"
 )
 
 // DeckCardCreateRequest is the POST body.
@@ -58,4 +59,12 @@ func (m *DeckCard) ApplyUpdate(req DeckCardUpdateRequest) {
 	if req.IsCommander != nil { m.IsCommander = *req.IsCommander }
 	if req.DeckID != nil { m.DeckID = *req.DeckID }
 	if req.CardID != nil { m.CardID = *req.CardID }
+}
+
+func (m *DeckCard) Increment(amount int)  error {
+	return fmt.Errorf("Increment: not implemented")
+}
+
+func (m *DeckCard) Decrement(amount int)  error {
+	return fmt.Errorf("Decrement: not implemented")
 }

@@ -99,3 +99,7 @@ func (m *TournamentPrize) ApplyUpdate(req TournamentPrizeUpdateRequest) {
 func (m *TournamentPrize) AppliesToPlacement(placement int)  (bool, error) {
 	return false, fmt.Errorf("AppliesToPlacement: not implemented")
 }
+
+func (m *TournamentPrize) AwardToPlayer(playerId int)  error {
+	return fmt.Errorf("AwardToPlayer: not implemented")
+}

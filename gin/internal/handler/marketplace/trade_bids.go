@@ -24,6 +24,8 @@ func (h *TradeBidHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/bids/{id}/outbid", h.OutbidBy)
+	g.DELETE("/:id/api/bids/{id}", h.Retract)
 }
 
 func (h *TradeBidHandler) List(c *gin.Context) {
@@ -97,6 +99,39 @@ func (h *TradeBidHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeBid"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TradeBidHandler) OutbidBy(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeBid
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeBid"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	newAmount := func() float64 {
+		v, ok := body["new_amount"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return f
+	}()
+	result, err := row.OutbidBy(newAmount)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *TradeBidHandler) Retract(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeBid
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeBid"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Retract()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }
 

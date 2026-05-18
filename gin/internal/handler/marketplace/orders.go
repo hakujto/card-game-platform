@@ -218,6 +218,9 @@ func validateOrder(req *model.OrderCreateRequest) []string {
 	if !((!( req.Status == model.OrderStatusType_Shipped ) || (req.TrackingNumber != nil))) {
 		errs = append(errs, "Shipped order must have a tracking number")
 	}
+	if !((!( req.ShippedAt != nil ) || (req.Status == model.OrderStatusType_Shipped))) {
+		errs = append(errs, "shipped_at_requires_shipped_status")
+	}
 	if !(float64(req.Total) >= 0) {
 		errs = append(errs, "Order total must not be negative")
 	}

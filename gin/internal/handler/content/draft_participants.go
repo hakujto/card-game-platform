@@ -25,6 +25,7 @@ func (h *DraftParticipantHandler) RegisterRoutes(r gin.IRouter) {
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/draft-participants/{id}/pick", h.PickCard)
+	g.GET("/:id/api/draft-participants/{id}/card-count", h.DraftedCardCount)
 }
 
 func (h *DraftParticipantHandler) List(c *gin.Context) {
@@ -42,6 +43,9 @@ func (h *DraftParticipantHandler) Create(c *gin.Context) {
 	var req model.DraftParticipantCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
+	}
+	if msgs := validateDraftParticipant(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.DraftParticipant{}
 	row.SeatNumber = req.SeatNumber
@@ -76,6 +80,10 @@ func (h *DraftParticipantHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestDraftParticipant(&row)
+	if msgs := validateDraftParticipant(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -116,4 +124,34 @@ func (h *DraftParticipantHandler) PickCard(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *DraftParticipantHandler) DraftedCardCount(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftParticipant
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftParticipant"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.DraftedCardCount()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func validateDraftParticipant(req *model.DraftParticipantCreateRequest) []string {
+	var errs []string
+	if !(req.SeatNumber > 0) {
+		errs = append(errs, "Seat number must be greater than zero")
+	}
+	return errs
+}
+
+func toCreateRequestDraftParticipant(m *model.DraftParticipant) model.DraftParticipantCreateRequest {
+	return model.DraftParticipantCreateRequest{
+		SeatNumber: m.SeatNumber,
+		JoinedAt: m.JoinedAt,
+		SessionID: m.SessionID,
+		PlayerID: m.PlayerID,
+	}
 }

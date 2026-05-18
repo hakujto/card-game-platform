@@ -24,6 +24,8 @@ func (h *CardAbilityHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/card-abilities/{id}/usable", h.IsUsableAt)
+	g.GET("/:id/api/card-abilities/{id}/describe", h.Describe)
 }
 
 func (h *CardAbilityHandler) List(c *gin.Context) {
@@ -98,6 +100,39 @@ func (h *CardAbilityHandler) Delete(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *CardAbilityHandler) IsUsableAt(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CardAbility
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardAbility"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	timing := func() string {
+		v, ok := body["timing"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	result, err := row.IsUsableAt(timing)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *CardAbilityHandler) Describe(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.CardAbility
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardAbility"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.Describe()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func validateCardAbility(req *model.CardAbilityCreateRequest) []string {

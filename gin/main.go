@@ -61,7 +61,7 @@ func main() {
 	handler_marketplace.NewOrderHandler(database.DB).RegisterRoutes(r)
 	handler_marketplace.NewOrderItemHandler(database.DB).RegisterRoutes(r)
 	handler_marketplace.NewCouponHandler(database.DB).RegisterRoutes(r)
-	handler_marketplace.NewTradelistingHandler(database.DB).RegisterRoutes(r)
+	handler_marketplace.NewTradeListingHandler(database.DB).RegisterRoutes(r)
 	handler_marketplace.NewTradeBidHandler(database.DB).RegisterRoutes(r)
 	handler_marketplace.NewTradeTransactionHandler(database.DB).RegisterRoutes(r)
 	handler_marketplace.NewCardPriceHistoryHandler(database.DB).RegisterRoutes(r)

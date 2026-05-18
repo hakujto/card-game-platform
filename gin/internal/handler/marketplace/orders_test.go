@@ -20,7 +20,7 @@ import (
 func setupOrderDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
-	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.Tradelisting{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
+	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	h := handler_app.NewOrderHandler(db)
@@ -52,7 +52,7 @@ func TestOrder_Create(t *testing.T) {
 	_ = db
 	depPlayer1ID := createDepPlayer(t, r, db)
 	_ = depPlayer1ID
-	body := map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
+	body := map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
 	result := postOrder(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -62,7 +62,7 @@ func TestOrder_Get(t *testing.T) {
 	_ = db
 	depPlayer2ID := createDepPlayer(t, r, db)
 	_ = depPlayer2ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/orders/"+id, nil)
@@ -75,7 +75,7 @@ func TestOrder_Update(t *testing.T) {
 	_ = db
 	depPlayer3ID := createDepPlayer(t, r, db)
 	_ = depPlayer3ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer3ID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"total": 0}
 	b, _ := json.Marshal(upBody)
@@ -91,7 +91,7 @@ func TestOrder_Delete(t *testing.T) {
 	_ = db
 	depPlayer4ID := createDepPlayer(t, r, db)
 	_ = depPlayer4ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer4ID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/orders/"+id, nil)

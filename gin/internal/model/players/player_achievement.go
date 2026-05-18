@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"fmt"
 )
 
 // PlayerAchievementCreateRequest is the POST body.
@@ -64,4 +65,12 @@ func (m *PlayerAchievement) ApplyUpdate(req PlayerAchievementUpdateRequest) {
 	if req.IsCompleted != nil { m.IsCompleted = *req.IsCompleted }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 	if req.AchievementID != nil { m.AchievementID = *req.AchievementID }
+}
+
+func (m *PlayerAchievement) IncrementProgress(amount int)  error {
+	return fmt.Errorf("IncrementProgress: not implemented")
+}
+
+func (m *PlayerAchievement) Complete()  error {
+	return fmt.Errorf("Complete: not implemented")
 }

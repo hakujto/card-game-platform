@@ -25,6 +25,7 @@ func setupCraftingIngredientDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewCraftingIngredientHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewCraftingRecipeHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

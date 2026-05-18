@@ -25,6 +25,7 @@ func setupArticleCommentDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewArticleCommentHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewArticleHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

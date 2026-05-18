@@ -24,6 +24,8 @@ func (h *CouponHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/valid", h.IsValid)
+	g.GET("/:id/applicable", h.IsApplicableToOrder)
 	g.POST("/:id/redeem", h.Redeem)
 	g.POST("/:id/deactivate", h.Deactivate)
 }
@@ -104,6 +106,39 @@ func (h *CouponHandler) Delete(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (h *CouponHandler) IsValid(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Coupon
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Coupon"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsValid()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *CouponHandler) IsApplicableToOrder(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Coupon
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Coupon"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	orderTotal := func() float64 {
+		v, ok := body["order_total"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return f
+	}()
+	result, err := row.IsApplicableToOrder(orderTotal)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func (h *CouponHandler) Redeem(c *gin.Context) {

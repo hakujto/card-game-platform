@@ -71,3 +71,7 @@ func (m *TradeBid) ApplyUpdate(req TradeBidUpdateRequest) {
 func (m *TradeBid) OutbidBy(newAmount float64)  (bool, error) {
 	return false, fmt.Errorf("OutbidBy: not implemented")
 }
+
+func (m *TradeBid) Retract()  error {
+	return fmt.Errorf("Retract: not implemented")
+}

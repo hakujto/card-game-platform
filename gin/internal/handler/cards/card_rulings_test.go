@@ -25,6 +25,8 @@ func setupCardRulingDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewCardRulingHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewCardSetHandler(db).RegisterRoutes(r)
+	handler_app.NewCardHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

@@ -27,6 +27,7 @@ func (h *DraftSessionHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/api/draft-sessions/{id}/start", h.Start)
 	g.POST("/:id/api/draft-sessions/{id}/abandon", h.Abandon)
 	g.POST("/:id/api/draft-sessions/{id}/complete", h.Complete)
+	g.GET("/:id/api/draft-sessions/{id}/full", h.IsFull)
 }
 
 func (h *DraftSessionHandler) List(c *gin.Context) {
@@ -44,6 +45,9 @@ func (h *DraftSessionHandler) Create(c *gin.Context) {
 	var req model.DraftSessionCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
+	}
+	if msgs := validateDraftSession(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.DraftSession{}
 	row.Status = req.Status
@@ -79,6 +83,10 @@ func (h *DraftSessionHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestDraftSession(&row)
+	if msgs := validateDraftSession(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -133,4 +141,38 @@ func (h *DraftSessionHandler) Complete(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *DraftSessionHandler) IsFull(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsFull()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func validateDraftSession(req *model.DraftSessionCreateRequest) []string {
+	var errs []string
+	if !((req.Seats >= 2 && req.Seats <= 16)) {
+		errs = append(errs, "Draft session must have between 2 and 16 seats")
+	}
+	if !((!( req.CompletedAt != nil ) || (req.Status == model.DraftSessionStatusType_Completed))) {
+		errs = append(errs, "completed_at can only be set when draft status is Completed")
+	}
+	return errs
+}
+
+func toCreateRequestDraftSession(m *model.DraftSession) model.DraftSessionCreateRequest {
+	return model.DraftSessionCreateRequest{
+		Status: m.Status,
+		DraftType: m.DraftType,
+		Seats: m.Seats,
+		CompletedAt: m.CompletedAt,
+		CardSetID: m.CardSetID,
+	}
 }

@@ -176,6 +176,10 @@ func (m *Tournament) CalculatePrizeDistribution()  (float64, error) {
 	return 0.0, fmt.Errorf("CalculatePrizeDistribution: not implemented")
 }
 
+func (m *Tournament) RegisterPlayer(playerId int, deckId int)  error {
+	return fmt.Errorf("RegisterPlayer: not implemented")
+}
+
 func (m *Tournament) IsFull()  (bool, error) {
 	return false, fmt.Errorf("IsFull: not implemented")
 }

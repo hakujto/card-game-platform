@@ -45,6 +45,9 @@ func (h *TournamentRegistrationHandler) Create(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
 	}
+	if msgs := validateTournamentRegistration(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	row := model.TournamentRegistration{}
 	row.Status = req.Status
 	row.Seed = req.Seed
@@ -82,6 +85,10 @@ func (h *TournamentRegistrationHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestTournamentRegistration(&row)
+	if msgs := validateTournamentRegistration(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -143,4 +150,31 @@ func (h *TournamentRegistrationHandler) PromoteFromWaitlist(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func validateTournamentRegistration(req *model.TournamentRegistrationCreateRequest) []string {
+	var errs []string
+	if !(req.PointsEarned >= 0) {
+		errs = append(errs, "Points earned must not be negative")
+	}
+	if !((!( req.FinalStanding != nil ) || (*req.FinalStanding > 0))) {
+		errs = append(errs, "Final standing must be greater than zero")
+	}
+	if !((!( req.Seed != nil ) || (*req.Seed > 0))) {
+		errs = append(errs, "Seed must be greater than zero")
+	}
+	return errs
+}
+
+func toCreateRequestTournamentRegistration(m *model.TournamentRegistration) model.TournamentRegistrationCreateRequest {
+	return model.TournamentRegistrationCreateRequest{
+		Status: m.Status,
+		Seed: m.Seed,
+		FinalStanding: m.FinalStanding,
+		PointsEarned: m.PointsEarned,
+		RegisteredAt: m.RegisteredAt,
+		TournamentID: m.TournamentID,
+		PlayerID: m.PlayerID,
+		DeckID: m.DeckID,
+	}
 }

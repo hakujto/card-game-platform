@@ -24,6 +24,7 @@ func (h *DeckTagHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.PATCH("/:id/api/deck-tags/{id}/rename", h.Rename)
 	g.POST("/:id/api/deck-tags/{id}/merge", h.MergeInto)
 }
 
@@ -88,6 +89,26 @@ func (h *DeckTagHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DeckTag"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *DeckTagHandler) Rename(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DeckTag
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DeckTag"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	newName := func() string {
+		v, ok := body["new_name"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	err := row.Rename(newName)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }
 

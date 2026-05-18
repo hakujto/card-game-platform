@@ -13,7 +13,7 @@ import (
 
 func createDepCardSet(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1}
+	body := map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/card_sets", bytes.NewBuffer(b))
@@ -55,7 +55,7 @@ func createDepPlayer(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepDeck(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "player_id": 1}
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))

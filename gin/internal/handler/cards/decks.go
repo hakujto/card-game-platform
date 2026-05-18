@@ -25,6 +25,9 @@ func (h *DeckHandler) RegisterRoutes(r gin.IRouter) {
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/validate", h.ValidateSize)
+	g.POST("/:id/cards", h.AddCard)
+	g.DELETE("/:id/cards/{card_id}", h.RemoveCard)
+	g.GET("/:id/win-rate", h.WinRate)
 	g.POST("/:id/clone", h.Clone)
 	g.POST("/:id/publish", h.Publish)
 	g.POST("/:id/unpublish", h.Unpublish)
@@ -47,6 +50,9 @@ func (h *DeckHandler) Create(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handler.ValidationError(c, err.Error()); return
 	}
+	if msgs := validateDeck(&req); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	row := model.Deck{}
 	row.Name = req.Name
 	row.Description = req.Description
@@ -56,6 +62,7 @@ func (h *DeckHandler) Create(c *gin.Context) {
 	row.Archetype = req.Archetype
 	row.Wins = req.Wins
 	row.Losses = req.Losses
+	row.Draws = req.Draws
 	row.PlayerID = req.PlayerID
 	if err := h.db.Create(&row).Error; err != nil {
 		handler.DbError(c, err); return
@@ -85,6 +92,10 @@ func (h *DeckHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
+	createReq := toCreateRequestDeck(&row)
+	if msgs := validateDeck(&createReq); len(msgs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
+	}
 	if err := h.db.Save(&row).Error; err != nil {
 		handler.DbError(c, err); return
 	}
@@ -110,6 +121,64 @@ func (h *DeckHandler) ValidateSize(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	result, err := row.ValidateSize()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *DeckHandler) AddCard(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Deck
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Deck"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	cardId := func() int {
+		v, ok := body["card_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	quantity := func() int {
+		v, ok := body["quantity"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.AddCard(cardId, quantity)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *DeckHandler) RemoveCard(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Deck
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Deck"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	cardId := func() int {
+		v, ok := body["card_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.RemoveCard(cardId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *DeckHandler) WinRate(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Deck
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Deck"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.WinRate()
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})
@@ -165,4 +234,36 @@ func (h *DeckHandler) CertifyTournamentLegal(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func validateDeck(req *model.DeckCreateRequest) []string {
+	var errs []string
+	if !(req.Wins >= 0) {
+		errs = append(errs, "Deck wins count must not be negative")
+	}
+	if !(req.Losses >= 0) {
+		errs = append(errs, "Deck losses count must not be negative")
+	}
+	if !(req.Draws >= 0) {
+		errs = append(errs, "Deck draws count must not be negative")
+	}
+	if !((!( req.IsTournamentLegal ) || (req.IsPublic))) {
+		errs = append(errs, "Tournament-legal deck must be made public")
+	}
+	return errs
+}
+
+func toCreateRequestDeck(m *model.Deck) model.DeckCreateRequest {
+	return model.DeckCreateRequest{
+		Name: m.Name,
+		Description: m.Description,
+		Format: m.Format,
+		IsPublic: m.IsPublic,
+		IsTournamentLegal: m.IsTournamentLegal,
+		Archetype: m.Archetype,
+		Wins: m.Wins,
+		Losses: m.Losses,
+		Draws: m.Draws,
+		PlayerID: m.PlayerID,
+	}
 }

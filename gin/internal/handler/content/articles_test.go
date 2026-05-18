@@ -52,7 +52,7 @@ func TestArticle_Create(t *testing.T) {
 	_ = db
 	depPlayer1ID := createDepPlayer(t, r, db)
 	_ = depPlayer1ID
-	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 1, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer1ID}
+	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 0, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer1ID}
 	result := postArticle(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -62,7 +62,7 @@ func TestArticle_Get(t *testing.T) {
 	_ = db
 	depPlayer2ID := createDepPlayer(t, r, db)
 	_ = depPlayer2ID
-	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 1, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer2ID})
+	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 0, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/articles/"+id, nil)
@@ -75,7 +75,7 @@ func TestArticle_Update(t *testing.T) {
 	_ = db
 	depPlayer3ID := createDepPlayer(t, r, db)
 	_ = depPlayer3ID
-	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 1, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer3ID})
+	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 0, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"title": "test"}
 	b, _ := json.Marshal(upBody)
@@ -91,7 +91,7 @@ func TestArticle_Delete(t *testing.T) {
 	_ = db
 	depPlayer4ID := createDepPlayer(t, r, db)
 	_ = depPlayer4ID
-	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 1, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer4ID})
+	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 0, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/articles/"+id, nil)
@@ -105,6 +105,20 @@ func TestArticle_Rule_PublishedRequiresPublishedAt_Violated(t *testing.T) {
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
 	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "view_count": 1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayerRID, "published_at": nil}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/articles", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestArticle_Rule_ViewCountNotNegative_Violated(t *testing.T) {
+	db, r := setupArticleDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": -1, "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayerRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/articles", bytes.NewBuffer(b))

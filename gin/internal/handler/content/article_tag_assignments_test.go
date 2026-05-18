@@ -25,6 +25,8 @@ func setupArticleTagAssignmentDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewArticleTagAssignmentHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewArticleHandler(db).RegisterRoutes(r)
+	handler_app.NewArticleTagHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"fmt"
 )
 
 type TournamentJudgeRoleType string
@@ -59,4 +60,12 @@ func (m *TournamentJudge) ApplyUpdate(req TournamentJudgeUpdateRequest) {
 	if req.Role != nil { m.Role = *req.Role }
 	if req.TournamentID != nil { m.TournamentID = *req.TournamentID }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
+}
+
+func (m *TournamentJudge) PromoteToHead()  error {
+	return fmt.Errorf("PromoteToHead: not implemented")
+}
+
+func (m *TournamentJudge) Remove()  error {
+	return fmt.Errorf("Remove: not implemented")
 }

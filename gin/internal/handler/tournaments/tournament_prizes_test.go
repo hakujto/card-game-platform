@@ -25,6 +25,8 @@ func setupTournamentPrizeDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewTournamentPrizeHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
+	handler_app.NewTournamentHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

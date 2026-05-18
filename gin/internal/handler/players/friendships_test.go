@@ -25,6 +25,7 @@ func setupFriendshipDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewFriendshipHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewPlayerHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

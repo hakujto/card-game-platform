@@ -114,6 +114,10 @@ func (m *Match) DetermineWinner()  (bool, error) {
 	return false, fmt.Errorf("DetermineWinner: not implemented")
 }
 
+func (m *Match) Concede(playerId int)  error {
+	return fmt.Errorf("Concede: not implemented")
+}
+
 func (m *Match) Draw()  error {
 	return fmt.Errorf("Draw: not implemented")
 }

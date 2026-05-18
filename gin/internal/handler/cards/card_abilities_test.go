@@ -25,6 +25,8 @@ func setupCardAbilityDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewCardAbilityHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewCardSetHandler(db).RegisterRoutes(r)
+	handler_app.NewCardHandler(db).RegisterRoutes(r)
 	return db, r
 }
 

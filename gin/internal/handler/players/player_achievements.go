@@ -24,6 +24,8 @@ func (h *PlayerAchievementHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.PATCH("/:id/api/player-achievements/{id}/progress", h.IncrementProgress)
+	g.POST("/:id/api/player-achievements/{id}/complete", h.Complete)
 }
 
 func (h *PlayerAchievementHandler) List(c *gin.Context) {
@@ -100,10 +102,65 @@ func (h *PlayerAchievementHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *PlayerAchievementHandler) IncrementProgress(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.PlayerAchievement
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "PlayerAchievement"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	amount := func() int {
+		v, ok := body["amount"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.IncrementProgress(amount)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *PlayerAchievementHandler) Complete(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.PlayerAchievement
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "PlayerAchievement"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Complete()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *PlayerAchievementHandler) SetIsCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var body struct{ Value bool `json:"value"` }
+	if err := c.ShouldBindJSON(&body); err != nil {
+		handler.ValidationError(c, err.Error()); return
+	}
+	var row model.PlayerAchievement
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "PlayerAchievement"); return }
+		handler.DbError(c, err); return
+	}
+	row.IsCompleted = body.Value
+	if row.IsCompleted == true {
+		_ = row.Complete() // @on(is_completed = true)
+	}
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
 func validatePlayerAchievement(req *model.PlayerAchievementCreateRequest) []string {
 	var errs []string
 	if !((!( req.IsCompleted ) || (req.Progress > 0))) {
 		errs = append(errs, "Completed achievement must have progress greater than zero")
+	}
+	if !(req.Progress >= 0) {
+		errs = append(errs, "Achievement progress must not be negative")
 	}
 	return errs
 }

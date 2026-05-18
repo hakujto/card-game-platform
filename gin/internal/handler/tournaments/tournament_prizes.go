@@ -24,6 +24,8 @@ func (h *TournamentPrizeHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/api/prizes/{id}/applies", h.AppliesToPlacement)
+	g.POST("/:id/api/prizes/{id}/award", h.AwardToPlayer)
 }
 
 func (h *TournamentPrizeHandler) List(c *gin.Context) {
@@ -100,6 +102,46 @@ func (h *TournamentPrizeHandler) Delete(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentPrize"); return }
 		handler.DbError(c, err); return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TournamentPrizeHandler) AppliesToPlacement(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TournamentPrize
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentPrize"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	placement := func() int {
+		v, ok := body["placement"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	result, err := row.AppliesToPlacement(placement)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func (h *TournamentPrizeHandler) AwardToPlayer(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TournamentPrize
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentPrize"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	playerId := func() int {
+		v, ok := body["player_id"]; if !ok { return 0 }
+		f, ok := v.(float64); if !ok { return 0 }
+		return int(f)
+	}()
+	err := row.AwardToPlayer(playerId)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
 }
 

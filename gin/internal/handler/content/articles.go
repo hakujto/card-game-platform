@@ -27,6 +27,7 @@ func (h *ArticleHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/publish", h.Publish)
 	g.POST("/:id/archive", h.Archive)
 	g.POST("/:id/view", h.IncrementView)
+	g.GET("/:id/reading-time", h.ReadingTimeMinutes)
 }
 
 func (h *ArticleHandler) List(c *gin.Context) {
@@ -148,10 +149,26 @@ func (h *ArticleHandler) IncrementView(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *ArticleHandler) ReadingTimeMinutes(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.ReadingTimeMinutes()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func validateArticle(req *model.ArticleCreateRequest) []string {
 	var errs []string
 	if !((!( req.Status == model.ArticleStatusType_Published ) || (req.PublishedAt != nil))) {
 		errs = append(errs, "Published article must have a published_at timestamp")
+	}
+	if !(req.ViewCount >= 0) {
+		errs = append(errs, "Article view count must not be negative")
 	}
 	return errs
 }

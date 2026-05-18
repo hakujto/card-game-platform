@@ -25,6 +25,8 @@ func setupDraftPickDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewDraftPickHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewDraftSessionHandler(db).RegisterRoutes(r)
+	handler_app.NewDraftParticipantHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -129,4 +131,48 @@ func TestDraftPick_Delete(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/api/draft_picks/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestDraftPick_Rule_PickNumberPositive_Violated(t *testing.T) {
+	db, r := setupDraftPickDB(t)
+	_ = db
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depDraftSessionRID := createDepDraftSession(t, r, db)
+	_ = depDraftSessionRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depDraftParticipantRID := createDepDraftParticipant(t, r, db)
+	_ = depDraftParticipantRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"pick_number": 0, "pack_number": 1, "picked_at": "2024-01-01T00:00:00Z", "participant_id": depDraftParticipantRID, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/draft_picks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDraftPick_Rule_PackNumberRange_Violated(t *testing.T) {
+	db, r := setupDraftPickDB(t)
+	_ = db
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depDraftSessionRID := createDepDraftSession(t, r, db)
+	_ = depDraftSessionRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depDraftParticipantRID := createDepDraftParticipant(t, r, db)
+	_ = depDraftParticipantRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"pick_number": 1, "pack_number": 4, "picked_at": "2024-01-01T00:00:00Z", "participant_id": depDraftParticipantRID, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/draft_picks", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

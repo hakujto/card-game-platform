@@ -55,7 +55,7 @@ func createDepTournament(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepDeck(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "player_id": 1}
+	body := map[string]interface{}{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/decks", bytes.NewBuffer(b))

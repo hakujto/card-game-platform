@@ -92,8 +92,8 @@ Base URL: `http://localhost:8080`
 - `GET/PUT/PATCH/DELETE` `/api/order_items/:id`
 - `GET/POST` `/api/coupons`
 - `GET/PUT/PATCH/DELETE` `/api/coupons/:id`
-- `GET/POST` `/api/tradelistings`
-- `GET/PUT/PATCH/DELETE` `/api/tradelistings/:id`
+- `GET/POST` `/api/trade_listings`
+- `GET/PUT/PATCH/DELETE` `/api/trade_listings/:id`
 - `GET/POST` `/api/trade_bids`
 - `GET/PUT/PATCH/DELETE` `/api/trade_bids/:id`
 - `GET/POST` `/api/trade_transactions`
@@ -135,7 +135,7 @@ Bounded Contexts:
 - **Cards BC** (`internal/model/cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
 - **Players BC** (`internal/model/players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
 - **Tournaments BC** (`internal/model/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
-- **Marketplace BC** (`internal/model/marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Marketplace BC** (`internal/model/marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`internal/model/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
 
 ## Docker

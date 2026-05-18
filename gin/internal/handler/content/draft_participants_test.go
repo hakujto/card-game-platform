@@ -25,6 +25,7 @@ func setupDraftParticipantDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	r := gin.New()
 	h := handler_app.NewDraftParticipantHandler(db)
 	h.RegisterRoutes(r)
+	handler_app.NewDraftSessionHandler(db).RegisterRoutes(r)
 	return db, r
 }
 
@@ -113,4 +114,22 @@ func TestDraftParticipant_Delete(t *testing.T) {
 	req, _ := http.NewRequest("DELETE", "/api/draft_participants/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestDraftParticipant_Rule_SeatNumberPositive_Violated(t *testing.T) {
+	db, r := setupDraftParticipantDB(t)
+	_ = db
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depDraftSessionRID := createDepDraftSession(t, r, db)
+	_ = depDraftSessionRID
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	body := map[string]interface{}{"seat_number": 0, "joined_at": "2024-01-01T00:00:00Z", "session_id": depDraftSessionRID, "player_id": depPlayerRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/draft_participants", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

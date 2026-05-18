@@ -26,6 +26,7 @@ func (h *ArticleCommentHandler) RegisterRoutes(r gin.IRouter) {
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/comments/{id}/hide", h.Hide)
 	g.POST("/:id/api/comments/{id}/unhide", h.Unhide)
+	g.GET("/:id/api/comments/{id}/is-reply", h.IsReply)
 }
 
 func (h *ArticleCommentHandler) List(c *gin.Context) {
@@ -119,4 +120,17 @@ func (h *ArticleCommentHandler) Unhide(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *ArticleCommentHandler) IsReply(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.ArticleComment
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "ArticleComment"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.IsReply()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
