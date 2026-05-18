@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.content.article-tag-queries :as queries]
+            [cards_project.content.article-tag-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-article-tag! [params]
@@ -81,4 +82,14 @@
   (DELETE "/api/article_tags/:id" [id]
     (queries/delete-article-tag! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/article_tags/:id/rename" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        new-name (get params :new-name)]
+      (svc/rename! int-id new-name)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (GET "/api/article_tags/:id/article-count" [id]
+    (let [result (svc/article-count! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

@@ -4,9 +4,9 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :status "WaitingForPlayers"
+(def valid-params {   :status "Completed"
    :draft-type "Booster"
-   :seats 0
+   :seats 2
    :created-at "2024-01-01T00:00:00"
    :card-set-id 1})
 
@@ -42,5 +42,28 @@
   (testing "DELETE /api/draft_sessions/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/draft_sessions/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-seats-range
+  (testing "POST /api/draft_sessions violates rule seats_range → 422"
+    (let [params (merge valid-params
+       {   :seats 17})
+          resp (app (-> (mock/request :post "/api/draft_sessions")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-completed-at-requires-completed-status
+  (testing "POST /api/draft_sessions violates rule completed_at_requires_completed_status → 422"
+    (let [params (merge valid-params
+       {   :completed-at "2024-01-02T00:00:00"
+   :status "WaitingForPlayers"})
+          resp (app (-> (mock/request :post "/api/draft_sessions")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

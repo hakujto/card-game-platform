@@ -25,6 +25,10 @@
   (let [errors (atom [])]
     (when (and (= (get m :status) "BYE") (not (nil? (get m :player2))))
       (swap! errors conj "BYE match must not have a second player"))
+    (when (and (some? (get m :ended_at)) (not (let [lhs (get m :ended_at) rhs (get m :started_at)] (or (nil? lhs) (nil? rhs) (pos? (compare lhs rhs))))))
+      (swap! errors conj "Match end time must be after start time"))
+    (when (and (= (get m :status) "Completed") (not (some? (get m :started_at))))
+      (swap! errors conj "Completed match must have a start time"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -123,6 +127,12 @@
   (GET "/api/matches/:id/winner" [id]
     (let [result (svc/determine-winner! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (POST "/api/matches/:id/concede" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        player-id (get params :player-id)]
+      (svc/concede! int-id player-id)
+      (-> (resp/response nil) (resp/status 204))))
 
   (POST "/api/matches/:id/draw" [id]
     (svc/draw! (Integer/parseInt id))

@@ -40,3 +40,9 @@
     (finalize-rewards-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
+(defn is-ongoing!
+  [id]
+  (if (queries/get-season-by-id db-spec {:id id})
+    (is-ongoing-behavior! id)
+    (throw (ex-info "Season not found" {:id id}))))
+

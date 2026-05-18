@@ -5,6 +5,8 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :status "Registered"
+   :seed 1
+   :final-standing 1
    :points-earned 0
    :registered-at "2024-01-01T00:00:00"
    :tournament-id 1
@@ -43,5 +45,38 @@
   (testing "DELETE /api/tournament_registrations/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/tournament_registrations/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-points-earned-not-negative
+  (testing "POST /api/tournament_registrations violates rule points_earned_not_negative → 422"
+    (let [params (merge valid-params
+       {   :points-earned -1})
+          resp (app (-> (mock/request :post "/api/tournament_registrations")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-final-standing-positive
+  (testing "POST /api/tournament_registrations violates rule final_standing_positive → 422"
+    (let [params (merge valid-params
+       {   :final-standing "0"})
+          resp (app (-> (mock/request :post "/api/tournament_registrations")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-seed-positive
+  (testing "POST /api/tournament_registrations violates rule seed_positive → 422"
+    (let [params (merge valid-params
+       {   :seed "0"})
+          resp (app (-> (mock/request :post "/api/tournament_registrations")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

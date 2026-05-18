@@ -36,7 +36,7 @@
             [cards_project.marketplace.order-handler :as marketplace-order]
             [cards_project.marketplace.order-item-handler :as marketplace-order-item]
             [cards_project.marketplace.coupon-handler :as marketplace-coupon]
-            [cards_project.marketplace.tradelisting-handler :as marketplace-tradelisting]
+            [cards_project.marketplace.trade-listing-handler :as marketplace-trade-listing]
             [cards_project.marketplace.trade-bid-handler :as marketplace-trade-bid]
             [cards_project.marketplace.trade-transaction-handler :as marketplace-trade-transaction]
             [cards_project.marketplace.card-price-history-handler :as marketplace-card-price-history]
@@ -83,7 +83,7 @@
    marketplace-order/orders-routes
    marketplace-order-item/order-items-routes
    marketplace-coupon/coupons-routes
-   marketplace-tradelisting/tradelistings-routes
+   marketplace-trade-listing/trade-listings-routes
    marketplace-trade-bid/trade-bids-routes
    marketplace-trade-transaction/trade-transactions-routes
    marketplace-card-price-history/card-price-histories-routes

@@ -7,6 +7,18 @@
             [cards_project.players.player-collection-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- player-collection-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-player-collection-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :quantity)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Collection quantity must be greater than zero"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-player-collection! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :foil :condition :acquired_at :acquired_via :player_id :card_id}
@@ -42,9 +54,11 @@
 
   (POST "/api/player_collections" {params :body}
     (try
-      (let [new-id (insert-player-collection! params)
-            record  (or (queries/get-player-collection-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+      (let [kw (player-collection-kw-params params)]
+        (validate-player-collection-rules! kw)
+        (let [new-id (insert-player-collection! params)
+              record  (or (queries/get-player-collection-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -57,11 +71,13 @@
 
   (PUT "/api/player_collections/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-player-collection! int-id params)
-        (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (player-collection-kw-params params)]
+        (validate-player-collection-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-player-collection! int-id params)
+          (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -69,11 +85,13 @@
 
   (PATCH "/api/player_collections/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-player-collection! int-id params)
-        (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (player-collection-kw-params params)]
+        (validate-player-collection-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-player-collection! int-id params)
+          (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -82,6 +100,18 @@
   (DELETE "/api/player_collections/:id" [id]
     (queries/delete-player-collection! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/player_collections/:id/add" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        quantity (get params :quantity)]
+      (svc/add! int-id quantity)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (POST "/api/player_collections/:id/remove" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        quantity (get params :quantity)]
+      (svc/remove! int-id quantity)
+      (-> (resp/response nil) (resp/status 204))))
 
   (GET "/api/player_collections/:id/value" [id]
     (let [result (svc/estimated-value! (Integer/parseInt id))]

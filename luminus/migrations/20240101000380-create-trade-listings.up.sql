@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS tradelistings (
+CREATE TABLE IF NOT EXISTS trade_listings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   listing_type VARCHAR NOT NULL DEFAULT 'FixedPrice',
   asking_price DECIMAL,

@@ -11,9 +11,9 @@
    :mana-colors "White"
    :attack 1
    :defense 1
-   :loyalty 1
+   :loyalty nil
    :description "test"
-   :legal-formats "Standard"
+   :legal-formats "message"
    :is-banned false
    :is-restricted true
    :power-level 1
@@ -77,6 +77,17 @@
       (is (= 422 (:status resp)))))
 )
 
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-spell-or-artifact-no-loyalty
+  (testing "POST /api/cards violates rule spell_or_artifact_no_loyalty → 422"
+    (let [params (merge valid-params
+       {   :loyalty 1})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
 ; Simple rule violated → 422
 (deftest test-rule-mana-cost-range
   (testing "POST /api/cards violates rule mana_cost_range → 422"
@@ -105,6 +116,18 @@
     (let [params (merge valid-params
        {   :is-banned true
    :is-restricted true})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-banned-card-not-in-legal-formats
+  (testing "POST /api/cards violates rule banned_card_not_in_legal_formats → 422"
+    (let [params (merge valid-params
+       {   :is-banned true
+   :legal-formats "Standard"})
           resp (app (-> (mock/request :post "/api/cards")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

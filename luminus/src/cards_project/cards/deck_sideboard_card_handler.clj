@@ -4,7 +4,20 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.cards.deck-sideboard-card-queries :as queries]
+            [cards_project.cards.deck-sideboard-card-service :as svc]
             [cards_project.db :refer [db-spec]]))
+
+(defn- deck-sideboard-card-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-deck-sideboard-card-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :quantity)] (or (nil? v) (and (>= (->num v) 1) (<= (->num v) 4))))
+      (swap! errors conj "Sideboard card quantity must be between 1 and 4 copies"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
 (defn- insert-deck-sideboard-card! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
@@ -41,9 +54,11 @@
 
   (POST "/api/deck_sideboard_cards" {params :body}
     (try
-      (let [new-id (insert-deck-sideboard-card! params)
-            record  (or (queries/get-deck-sideboard-card-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+      (let [kw (deck-sideboard-card-kw-params params)]
+        (validate-deck-sideboard-card-rules! kw)
+        (let [new-id (insert-deck-sideboard-card! params)
+              record  (or (queries/get-deck-sideboard-card-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -56,11 +71,13 @@
 
   (PUT "/api/deck_sideboard_cards/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-deck-sideboard-card! int-id params)
-        (if-let [record (queries/get-deck-sideboard-card-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (deck-sideboard-card-kw-params params)]
+        (validate-deck-sideboard-card-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-deck-sideboard-card! int-id params)
+          (if-let [record (queries/get-deck-sideboard-card-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -68,11 +85,13 @@
 
   (PATCH "/api/deck_sideboard_cards/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-deck-sideboard-card! int-id params)
-        (if-let [record (queries/get-deck-sideboard-card-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (deck-sideboard-card-kw-params params)]
+        (validate-deck-sideboard-card-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-deck-sideboard-card! int-id params)
+          (if-let [record (queries/get-deck-sideboard-card-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -81,4 +100,16 @@
   (DELETE "/api/deck_sideboard_cards/:id" [id]
     (queries/delete-deck-sideboard-card! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/deck_sideboard_cards/:id/increment" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        amount (get params :amount)]
+      (svc/increment! int-id amount)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (PATCH "/api/deck_sideboard_cards/:id/decrement" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        amount (get params :amount)]
+      (svc/decrement! int-id amount)
+      (-> (resp/response nil) (resp/status 204))))
 )

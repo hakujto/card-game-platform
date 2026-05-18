@@ -31,3 +31,9 @@
     (unhide-behavior! id)
     (throw (ex-info "ArticleComment not found" {:id id}))))
 
+(defn is-reply!
+  [id]
+  (if (queries/get-article-comment-by-id db-spec {:id id})
+    (is-reply-behavior! id)
+    (throw (ex-info "ArticleComment not found" {:id id}))))
+

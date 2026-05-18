@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.tournaments.tournament-judge-queries :as queries]
+            [cards_project.tournaments.tournament-judge-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-tournament-judge! [params]
@@ -80,5 +81,13 @@
 
   (DELETE "/api/tournament_judges/:id" [id]
     (queries/delete-tournament-judge! db-spec {:id (Integer/parseInt id)})
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/tournament_judges/:id/promote" [id]
+    (svc/promote-to-head! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (DELETE "/api/tournament_judges/:id" [id]
+    (svc/remove! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 )

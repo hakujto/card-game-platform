@@ -52,3 +52,15 @@
     (restock-behavior! id quantity)
     (throw (ex-info "Product not found" {:id id}))))
 
+(defn effective-price!
+  [id]
+  (if (queries/get-product-by-id db-spec {:id id})
+    (effective-price-behavior! id)
+    (throw (ex-info "Product not found" {:id id}))))
+
+(defn is-in-stock!
+  [id]
+  (if (queries/get-product-by-id db-spec {:id id})
+    (is-in-stock-behavior! id)
+    (throw (ex-info "Product not found" {:id id}))))
+

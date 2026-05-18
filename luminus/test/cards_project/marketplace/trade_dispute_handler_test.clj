@@ -6,7 +6,7 @@
 
 (def valid-params {   :reason "ItemNotReceived"
    :description "test"
-   :status "Open"
+   :status "Resolved"
    :opened-at "2024-01-01T00:00:00"
    :transaction-id 1
    :opened-by-id 1})

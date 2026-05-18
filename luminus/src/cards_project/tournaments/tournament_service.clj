@@ -25,6 +25,9 @@
 (defn- calculate-prize-distribution-behavior! [id]
   (throw (ex-info "calculate_prize_distribution not implemented" {:id id})))
 
+(defn- register-player-behavior! [id player-id deck-id]
+  (throw (ex-info "register_player not implemented" {:id id})))
+
 (defn- is-full-behavior! [id]
   (throw (ex-info "is_full not implemented" {:id id})))
 
@@ -56,5 +59,17 @@
   [id]
   (if (queries/get-tournament-by-id db-spec {:id id})
     (calculate-prize-distribution-behavior! id)
+    (throw (ex-info "Tournament not found" {:id id}))))
+
+(defn register-player!
+  [id player-id deck-id]
+  (if (queries/get-tournament-by-id db-spec {:id id})
+    (register-player-behavior! id player-id deck-id)
+    (throw (ex-info "Tournament not found" {:id id}))))
+
+(defn is-full!
+  [id]
+  (if (queries/get-tournament-by-id db-spec {:id id})
+    (is-full-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 

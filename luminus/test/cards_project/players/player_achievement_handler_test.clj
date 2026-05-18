@@ -56,3 +56,14 @@
       (is (= 422 (:status resp)))))
 )
 
+; Simple rule violated → 422
+(deftest test-rule-progress-not-negative
+  (testing "POST /api/player_achievements violates rule progress_not_negative → 422"
+    (let [params (merge valid-params
+       {   :progress -1})
+          resp (app (-> (mock/request :post "/api/player_achievements")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+

@@ -27,6 +27,8 @@
       (swap! errors conj "Paid order must have paid_at set"))
     (when (and (= (get m :status) "Shipped") (not (some? (get m :tracking_number))))
       (swap! errors conj "Shipped order must have a tracking number"))
+    (when (and (some? (get m :shipped_at)) (not (= (get m :status) "Shipped")))
+      (swap! errors conj "shipped_at_requires_shipped_status"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 

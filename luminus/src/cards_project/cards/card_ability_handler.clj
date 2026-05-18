@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.cards.card-ability-queries :as queries]
+            [cards_project.cards.card-ability-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- card-ability-kw-params [params]
@@ -97,4 +98,12 @@
   (DELETE "/api/card_abilities/:id" [id]
     (queries/delete-card-ability! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/card_abilities/:id/usable" [id]
+    (let [result (svc/is-usable-at! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (GET "/api/card_abilities/:id/describe" [id]
+    (let [result (svc/describe! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

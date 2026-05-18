@@ -4,9 +4,11 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :round-number 0
-   :status "Pending"
-   :time-limit-minutes 0
+(def valid-params {   :round-number 1
+   :status "Completed"
+   :started-at "2024-01-01T00:00:00"
+   :ended-at "2024-01-02T00:00:00"
+   :time-limit-minutes 1
    :tournament-id 1})
 
 (deftest test-list-tournament-rounds
@@ -49,6 +51,40 @@
     (let [params (merge valid-params
        {   :ended-at "2023-12-31T00:00:00"
    :started-at "2024-01-01T00:00:00"})
+          resp (app (-> (mock/request :post "/api/tournament_rounds")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-completed-requires-started-at
+  (testing "POST /api/tournament_rounds violates rule completed_requires_started_at → 422"
+    (let [params (merge valid-params
+       {   :status "Completed"
+   :started-at nil})
+          resp (app (-> (mock/request :post "/api/tournament_rounds")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-round-number-positive
+  (testing "POST /api/tournament_rounds violates rule round_number_positive → 422"
+    (let [params (merge valid-params
+       {   :round-number "0"})
+          resp (app (-> (mock/request :post "/api/tournament_rounds")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-time-limit-positive
+  (testing "POST /api/tournament_rounds violates rule time_limit_positive → 422"
+    (let [params (merge valid-params
+       {   :time-limit-minutes "0"})
           resp (app (-> (mock/request :post "/api/tournament_rounds")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

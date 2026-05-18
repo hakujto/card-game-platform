@@ -12,6 +12,7 @@
    :entry-fee 0
    :prize-pool 0
    :start-time "2024-01-01T00:00:00"
+   :end-time "2024-01-02T00:00:00"
    :is-online true
    :created-at "2024-01-01T00:00:00"
    :season-id 1

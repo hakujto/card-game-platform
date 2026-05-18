@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
   platform_fee DECIMAL NOT NULL,
   status VARCHAR NOT NULL DEFAULT 'Pending',
   completed_at DATETIME,
-  listing_id INTEGER NOT NULL REFERENCES tradelistings(id) ON DELETE SET NULL,
+  listing_id INTEGER NOT NULL REFERENCES trade_listings(id) ON DELETE SET NULL,
   buyer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,
   seller_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

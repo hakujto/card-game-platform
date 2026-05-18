@@ -25,6 +25,12 @@
 (defn- calculate-value-behavior! [id]
   (throw (ex-info "calculate_value not implemented" {:id id})))
 
+(defn- apply-rarity-bonus-behavior! [id multiplier]
+  (throw (ex-info "apply_rarity_bonus not implemented" {:id id})))
+
+(defn- is-legal-in-format-behavior! [id format]
+  (throw (ex-info "is_legal_in_format not implemented" {:id id})))
+
 (defn ban!
   [id]
   (if (queries/get-card-by-id db-spec {:id id})
@@ -53,5 +59,17 @@
   [id]
   (if (queries/get-card-by-id db-spec {:id id})
     (calculate-value-behavior! id)
+    (throw (ex-info "Card not found" {:id id}))))
+
+(defn apply-rarity-bonus!
+  [id multiplier]
+  (if (queries/get-card-by-id db-spec {:id id})
+    (apply-rarity-bonus-behavior! id multiplier)
+    (throw (ex-info "Card not found" {:id id}))))
+
+(defn is-legal-in-format!
+  [id format]
+  (if (queries/get-card-by-id db-spec {:id id})
+    (is-legal-in-format-behavior! id format)
     (throw (ex-info "Card not found" {:id id}))))
 

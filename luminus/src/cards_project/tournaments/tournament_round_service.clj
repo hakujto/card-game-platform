@@ -40,3 +40,9 @@
     (generate-pairings-behavior! id)
     (throw (ex-info "TournamentRound not found" {:id id}))))
 
+(defn is-time-expired!
+  [id]
+  (if (queries/get-tournament-round-by-id db-spec {:id id})
+    (is-time-expired-behavior! id)
+    (throw (ex-info "TournamentRound not found" {:id id}))))
+

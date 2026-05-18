@@ -115,6 +115,14 @@
     (queries/delete-coupon! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
 
+  (GET "/api/coupons/:id/valid" [id]
+    (let [result (svc/is-valid! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (GET "/api/coupons/:id/applicable" [id]
+    (let [result (svc/is-applicable-to-order! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
   (POST "/api/coupons/:id/redeem" [id]
     (svc/redeem! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))

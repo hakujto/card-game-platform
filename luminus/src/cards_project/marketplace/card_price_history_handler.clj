@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.marketplace.card-price-history-queries :as queries]
+            [cards_project.marketplace.card-price-history-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- card-price-history-kw-params [params]
@@ -15,6 +16,10 @@
   (let [errors (atom [])]
     (when-not (and (let [v (get m :min_price)] (or (nil? v) (<= (->num v) (->num (get m :avg_price))))) (let [v (get m :avg_price)] (or (nil? v) (<= (->num v) (->num (get m :max_price))))))
       (swap! errors conj "min_price <= avg_price <= max_price must hold"))
+    (when-not (let [v (get m :volume)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Price history volume must not be negative"))
+    (when-not (let [v (get m :min_price)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Prices must not be negative"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -99,4 +104,12 @@
   (DELETE "/api/card_price_histories/:id" [id]
     (queries/delete-card-price-history! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/card_price_histories/:id/change" [id]
+    (let [result (svc/price-change-percent! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (GET "/api/card_price_histories/:id/spike" [id]
+    (let [result (svc/is-price-spike! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

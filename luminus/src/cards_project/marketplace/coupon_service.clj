@@ -22,6 +22,18 @@
 (defn- deactivate-behavior! [id]
   (throw (ex-info "deactivate not implemented" {:id id})))
 
+(defn is-valid!
+  [id]
+  (if (queries/get-coupon-by-id db-spec {:id id})
+    (is-valid-behavior! id)
+    (throw (ex-info "Coupon not found" {:id id}))))
+
+(defn is-applicable-to-order!
+  [id order-total]
+  (if (queries/get-coupon-by-id db-spec {:id id})
+    (is-applicable-to-order-behavior! id order-total)
+    (throw (ex-info "Coupon not found" {:id id}))))
+
 (defn redeem!
   [id]
   (if (queries/get-coupon-by-id db-spec {:id id})

@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.tournaments.tournament-prize-queries :as queries]
+            [cards_project.tournaments.tournament-prize-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- tournament-prize-kw-params [params]
@@ -103,4 +104,14 @@
   (DELETE "/api/tournament_prizes/:id" [id]
     (queries/delete-tournament-prize! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/tournament_prizes/:id/applies" [id]
+    (let [result (svc/applies-to-placement! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (POST "/api/tournament_prizes/:id/award" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        player-id (get params :player-id)]
+      (svc/award-to-player! int-id player-id)
+      (-> (resp/response nil) (resp/status 204))))
 )

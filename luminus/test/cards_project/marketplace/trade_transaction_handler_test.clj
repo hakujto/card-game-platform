@@ -5,7 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :final-price 1
-   :platform-fee 0
+   :platform-fee 1
    :status "Completed"
    :completed-at "2024-01-02T00:00:00"
    :listing-id 1
@@ -63,6 +63,17 @@
   (testing "POST /api/trade_transactions violates rule fee_not_negative → 422"
     (let [params (merge valid-params
        {   :platform-fee -1})
+          resp (app (-> (mock/request :post "/api/trade_transactions")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-final-price-positive
+  (testing "POST /api/trade_transactions violates rule final_price_positive → 422"
+    (let [params (merge valid-params
+       {   :final-price "0"})
           resp (app (-> (mock/request :post "/api/trade_transactions")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

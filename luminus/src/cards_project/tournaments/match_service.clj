@@ -16,6 +16,9 @@
 (defn- determine-winner-behavior! [id]
   (throw (ex-info "determine_winner not implemented" {:id id})))
 
+(defn- concede-behavior! [id player-id]
+  (throw (ex-info "concede not implemented" {:id id})))
+
 (defn- draw-behavior! [id]
   (throw (ex-info "draw not implemented" {:id id})))
 
@@ -31,6 +34,12 @@
   [id]
   (if (queries/get-match-by-id db-spec {:id id})
     (determine-winner-behavior! id)
+    (throw (ex-info "Match not found" {:id id}))))
+
+(defn concede!
+  [id player-id]
+  (if (queries/get-match-by-id db-spec {:id id})
+    (concede-behavior! id player-id)
     (throw (ex-info "Match not found" {:id id}))))
 
 (defn draw!

@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.cards.deck-card-queries :as queries]
+            [cards_project.cards.deck-card-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- deck-card-kw-params [params]
@@ -99,4 +100,16 @@
   (DELETE "/api/deck_cards/:id" [id]
     (queries/delete-deck-card! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/deck_cards/:id/increment" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        amount (get params :amount)]
+      (svc/increment! int-id amount)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (PATCH "/api/deck_cards/:id/decrement" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        amount (get params :amount)]
+      (svc/decrement! int-id amount)
+      (-> (resp/response nil) (resp/status 204))))
 )

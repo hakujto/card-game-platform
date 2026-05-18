@@ -7,6 +7,8 @@
 (def valid-params {   :status "BYE"
    :player1-wins 0
    :player2-wins 0
+   :started-at "2024-01-01T00:00:00"
+   :ended-at "2024-01-02T00:00:00"
    :player1-id 1})
 
 (deftest test-list-matches
@@ -71,6 +73,30 @@
     (let [params (merge valid-params
        {   :status "BYE"
    :player2 1})
+          resp (app (-> (mock/request :post "/api/matches")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-ended-after-started
+  (testing "POST /api/matches violates rule ended_after_started → 422"
+    (let [params (merge valid-params
+       {   :ended-at "2023-12-31T00:00:00"
+   :started-at "2024-01-01T00:00:00"})
+          resp (app (-> (mock/request :post "/api/matches")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-completed-requires-started-at
+  (testing "POST /api/matches violates rule completed_requires_started_at → 422"
+    (let [params (merge valid-params
+       {   :status "Completed"
+   :started-at nil})
           resp (app (-> (mock/request :post "/api/matches")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

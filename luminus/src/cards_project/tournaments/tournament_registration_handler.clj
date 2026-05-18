@@ -7,6 +7,27 @@
             [cards_project.tournaments.tournament-registration-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- tournament-registration-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-tournament-registration-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :points_earned)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Points earned must not be negative"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
+(defn- validate-tournament-registration-implies! [m]
+  (let [errors (atom [])]
+    (when (and (some? (get m :final_standing)) (not (let [v (get m :final_standing)] (or (nil? v) (> (->num v) 0)))))
+      (swap! errors conj "Final standing must be greater than zero"))
+    (when (and (some? (get m :seed)) (not (let [v (get m :seed)] (or (nil? v) (> (->num v) 0)))))
+      (swap! errors conj "Seed must be greater than zero"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-tournament-registration! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:status :seed :final_standing :points_earned :registered_at :tournament_id :player_id :deck_id}
@@ -42,9 +63,12 @@
 
   (POST "/api/tournament_registrations" {params :body}
     (try
-      (let [new-id (insert-tournament-registration! params)
-            record  (or (queries/get-tournament-registration-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+      (let [kw (tournament-registration-kw-params params)]
+        (validate-tournament-registration-rules! kw)
+        (validate-tournament-registration-implies! kw)
+        (let [new-id (insert-tournament-registration! params)
+              record  (or (queries/get-tournament-registration-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -57,11 +81,14 @@
 
   (PUT "/api/tournament_registrations/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-tournament-registration! int-id params)
-        (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (tournament-registration-kw-params params)]
+        (validate-tournament-registration-rules! kw)
+        (validate-tournament-registration-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-tournament-registration! int-id params)
+          (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -69,11 +96,14 @@
 
   (PATCH "/api/tournament_registrations/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-tournament-registration! int-id params)
-        (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (tournament-registration-kw-params params)]
+        (validate-tournament-registration-rules! kw)
+        (validate-tournament-registration-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-tournament-registration! int-id params)
+          (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e

@@ -18,6 +18,8 @@
       (swap! errors conj "Platform fee cannot exceed the final price"))
     (when-not (let [v (get m :platform_fee)] (or (nil? v) (>= (->num v) 0)))
       (swap! errors conj "Platform fee must not be negative"))
+    (when-not (let [v (get m :final_price)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Transaction final price must be greater than zero"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -126,4 +128,8 @@
         reason (get params :reason)]
       (svc/open-dispute! int-id reason)
       (-> (resp/response nil) (resp/status 204))))
+
+  (GET "/api/trade_transactions/:id/seller-net" [id]
+    (let [result (svc/seller-net! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

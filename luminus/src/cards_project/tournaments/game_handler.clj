@@ -25,6 +25,10 @@
       (swap! errors conj "Turns played must be greater than zero"))
     (when (and (some? (get m :duration_seconds)) (not (let [v (get m :duration_seconds)] (or (nil? v) (> (->num v) 0)))))
       (swap! errors conj "Game duration must be greater than zero"))
+    (when (and (= (get m :winner_side) "Draw") (not (nil? (get m :winner))))
+      (swap! errors conj "A draw cannot have a winner"))
+    (when (and (and (some? (get m :winner_side)) (not= (get m :winner_side) "Draw")) (not (some? (get m :winner))))
+      (swap! errors conj "A decisive game must have a winner player set"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -118,4 +122,8 @@
         winner-side (get params :winner-side)]
       (svc/record-winner! int-id winner-side)
       (-> (resp/response nil) (resp/status 204))))
+
+  (GET "/api/games/:id/duration" [id]
+    (let [result (svc/duration-minutes! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

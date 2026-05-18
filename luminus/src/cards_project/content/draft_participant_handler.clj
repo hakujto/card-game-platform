@@ -7,6 +7,18 @@
             [cards_project.content.draft-participant-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- draft-participant-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-draft-participant-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :seat_number)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Seat number must be greater than zero"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-draft-participant! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:seat_number :joined_at :session_id :player_id}
@@ -42,9 +54,11 @@
 
   (POST "/api/draft_participants" {params :body}
     (try
-      (let [new-id (insert-draft-participant! params)
-            record  (or (queries/get-draft-participant-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+      (let [kw (draft-participant-kw-params params)]
+        (validate-draft-participant-rules! kw)
+        (let [new-id (insert-draft-participant! params)
+              record  (or (queries/get-draft-participant-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -57,11 +71,13 @@
 
   (PUT "/api/draft_participants/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-draft-participant! int-id params)
-        (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (draft-participant-kw-params params)]
+        (validate-draft-participant-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-draft-participant! int-id params)
+          (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -69,11 +85,13 @@
 
   (PATCH "/api/draft_participants/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-draft-participant! int-id params)
-        (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (draft-participant-kw-params params)]
+        (validate-draft-participant-rules! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-draft-participant! int-id params)
+          (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -89,4 +107,8 @@
         pack-number (get params :pack-number)]
       (svc/pick-card! int-id card-id pack-number)
       (-> (resp/response nil) (resp/status 204))))
+
+  (GET "/api/draft_participants/:id/card-count" [id]
+    (let [result (svc/drafted-card-count! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

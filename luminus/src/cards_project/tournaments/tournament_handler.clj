@@ -134,4 +134,15 @@
   (GET "/api/tournaments/:id/prizes" [id]
     (let [result (svc/calculate-prize-distribution! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (POST "/api/tournaments/:id/register" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        player-id (get params :player-id)
+        deck-id (get params :deck-id)]
+      (svc/register-player! int-id player-id deck-id)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (GET "/api/tournaments/:id/full" [id]
+    (let [result (svc/is-full! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

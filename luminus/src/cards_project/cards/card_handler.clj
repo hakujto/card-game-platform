@@ -29,6 +29,10 @@
       (swap! errors conj "Creature card must have attack and defense"))
     (when (and (= (get m :card_type) "Planeswalker") (not (some? (get m :loyalty))))
       (swap! errors conj "Planeswalker card must have loyalty"))
+    (when (and (not= (get m :card_type) "Planeswalker") (not (nil? (get m :loyalty))))
+      (swap! errors conj "Only Planeswalker cards can have loyalty"))
+    (when (and (true? (get m :is_banned)) (not (= (get m :legal_formats) "message")))
+      (swap! errors conj "banned_card_not_in_legal_formats"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -135,5 +139,15 @@
 
   (GET "/api/cards/:id/value" [id]
     (let [result (svc/calculate-value! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (POST "/api/cards/:id/rarity-bonus" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        multiplier (get params :multiplier)
+          result  (svc/apply-rarity-bonus! int-id multiplier)]
+      (resp/response {:result result})))
+
+  (GET "/api/cards/:id/legal" [id]
+    (let [result (svc/is-legal-in-format! (Integer/parseInt id))]
       (resp/response {:result result})))
 )

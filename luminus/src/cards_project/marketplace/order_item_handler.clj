@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.marketplace.order-item-queries :as queries]
+            [cards_project.marketplace.order-item-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- order-item-kw-params [params]
@@ -101,4 +102,8 @@
   (DELETE "/api/order_items/:id" [id]
     (queries/delete-order-item! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/order_items/:id/total" [id]
+    (let [result (svc/line-total! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

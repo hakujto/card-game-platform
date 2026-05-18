@@ -58,3 +58,25 @@
       (is (= 422 (:status resp)))))
 )
 
+; Simple rule violated → 422
+(deftest test-rule-volume-not-negative
+  (testing "POST /api/card_price_histories violates rule volume_not_negative → 422"
+    (let [params (merge valid-params
+       {   :volume -1})
+          resp (app (-> (mock/request :post "/api/card_price_histories")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-prices-not-negative
+  (testing "POST /api/card_price_histories violates rule prices_not_negative → 422"
+    (let [params (merge valid-params
+       {   :min-price -1})
+          resp (app (-> (mock/request :post "/api/card_price_histories")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+

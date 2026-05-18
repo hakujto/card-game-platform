@@ -40,3 +40,9 @@
     (update-viewer-peak-behavior! id count)
     (throw (ex-info "Stream not found" {:id id}))))
 
+(defn duration-minutes!
+  [id]
+  (if (queries/get-stream-by-id db-spec {:id id})
+    (duration-minutes-behavior! id)
+    (throw (ex-info "Stream not found" {:id id}))))
+

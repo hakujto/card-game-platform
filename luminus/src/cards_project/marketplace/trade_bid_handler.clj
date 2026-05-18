@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.marketplace.trade-bid-queries :as queries]
+            [cards_project.marketplace.trade-bid-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- trade-bid-kw-params [params]
@@ -98,5 +99,13 @@
 
   (DELETE "/api/trade_bids/:id" [id]
     (queries/delete-trade-bid! db-spec {:id (Integer/parseInt id)})
+    (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/trade_bids/:id/outbid" [id]
+    (let [result (svc/outbid-by! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (DELETE "/api/trade_bids/:id" [id]
+    (svc/retract! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 )

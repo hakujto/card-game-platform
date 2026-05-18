@@ -6,7 +6,7 @@
 
 (def valid-params {   :name "test"
    :product-type "SingleCard"
-   :price "0.00"
+   :price 1
    :stock 0
    :active true
    :discount-percent 0
@@ -44,5 +44,38 @@
   (testing "DELETE /api/products/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/products/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-price-positive
+  (testing "POST /api/products violates rule price_positive → 422"
+    (let [params (merge valid-params
+       {   :price "0"})
+          resp (app (-> (mock/request :post "/api/products")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-stock-not-negative
+  (testing "POST /api/products violates rule stock_not_negative → 422"
+    (let [params (merge valid-params
+       {   :stock -1})
+          resp (app (-> (mock/request :post "/api/products")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-discount-percent-range
+  (testing "POST /api/products violates rule discount_percent_range → 422"
+    (let [params (merge valid-params
+       {   :discount-percent 101})
+          resp (app (-> (mock/request :post "/api/products")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

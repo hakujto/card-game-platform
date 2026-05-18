@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.cards.card-ruling-queries :as queries]
+            [cards_project.cards.card-ruling-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- insert-card-ruling! [params]
@@ -81,4 +82,12 @@
   (DELETE "/api/card_rulings/:id" [id]
     (queries/delete-card-ruling! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/card_rulings/:id/current" [id]
+    (let [result (svc/is-current! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (GET "/api/card_rulings/:id/supersedes" [id]
+    (let [result (svc/supersedes-previous! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

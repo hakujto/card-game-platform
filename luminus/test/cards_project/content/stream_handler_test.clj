@@ -7,7 +7,7 @@
 (def valid-params {   :title "test"
    :stream-url "https://example.com"
    :platform "Twitch"
-   :status "Scheduled"
+   :status "Live"
    :viewer-count-peak 0
    :scheduled-start "2024-01-01T00:00:00"
    :streamer-id 1})
@@ -52,6 +52,29 @@
     (let [params (merge valid-params
        {   :actual-start "2024-01-02T00:00:00"
    :status "Scheduled"})
+          resp (app (-> (mock/request :post "/api/streams")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-ended-at-requires-ended-status
+  (testing "POST /api/streams violates rule ended_at_requires_ended_status → 422"
+    (let [params (merge valid-params
+       {   :ended-at "2024-01-02T00:00:00"
+   :status "Scheduled"})
+          resp (app (-> (mock/request :post "/api/streams")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-viewer-count-not-negative
+  (testing "POST /api/streams violates rule viewer_count_not_negative → 422"
+    (let [params (merge valid-params
+       {   :viewer-count-peak -1})
           resp (app (-> (mock/request :post "/api/streams")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

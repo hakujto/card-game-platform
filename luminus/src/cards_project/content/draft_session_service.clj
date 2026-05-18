@@ -40,3 +40,9 @@
     (complete-behavior! id)
     (throw (ex-info "DraftSession not found" {:id id}))))
 
+(defn is-full!
+  [id]
+  (if (queries/get-draft-session-by-id db-spec {:id id})
+    (is-full-behavior! id)
+    (throw (ex-info "DraftSession not found" {:id id}))))
+

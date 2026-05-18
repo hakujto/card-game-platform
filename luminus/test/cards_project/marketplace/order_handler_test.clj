@@ -71,6 +71,18 @@
       (is (= 422 (:status resp)))))
 )
 
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-shipped-at-requires-shipped-status
+  (testing "POST /api/orders violates rule shipped_at_requires_shipped_status → 422"
+    (let [params (merge valid-params
+       {   :shipped-at "2024-01-02T00:00:00"
+   :status "Pending"})
+          resp (app (-> (mock/request :post "/api/orders")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
 ; Simple rule violated → 422
 (deftest test-rule-total-not-negative
   (testing "POST /api/orders violates rule total_not_negative → 422"

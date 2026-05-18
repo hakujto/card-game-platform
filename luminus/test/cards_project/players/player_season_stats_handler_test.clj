@@ -45,3 +45,47 @@
       (is (#{204 404} (:status resp)))))
 )
 
+; Simple rule violated → 422
+(deftest test-rule-wins-not-negative
+  (testing "POST /api/player_season_statses violates rule wins_not_negative → 422"
+    (let [params (merge valid-params
+       {   :wins -1})
+          resp (app (-> (mock/request :post "/api/player_season_statses")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-losses-not-negative
+  (testing "POST /api/player_season_statses violates rule losses_not_negative → 422"
+    (let [params (merge valid-params
+       {   :losses -1})
+          resp (app (-> (mock/request :post "/api/player_season_statses")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-tournament-wins-not-negative
+  (testing "POST /api/player_season_statses violates rule tournament_wins_not_negative → 422"
+    (let [params (merge valid-params
+       {   :tournament-wins -1})
+          resp (app (-> (mock/request :post "/api/player_season_statses")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-season-points-not-negative
+  (testing "POST /api/player_season_statses violates rule season_points_not_negative → 422"
+    (let [params (merge valid-params
+       {   :season-points -1})
+          resp (app (-> (mock/request :post "/api/player_season_statses")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+

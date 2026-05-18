@@ -112,4 +112,8 @@
   (POST "/api/seasons/:id/finalize" [id]
     (svc/finalize-rewards! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/seasons/:id/ongoing" [id]
+    (let [result (svc/is-ongoing! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

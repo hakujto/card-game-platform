@@ -4,12 +4,20 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.players.player-achievement-queries :as queries]
+            [cards_project.players.player-achievement-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- player-achievement-kw-params [params]
   (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
 
 (defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-player-achievement-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :progress)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Achievement progress must not be negative"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
 (defn- validate-player-achievement-implies! [m]
   (let [errors (atom [])]
@@ -54,6 +62,7 @@
   (POST "/api/player_achievements" {params :body}
     (try
       (let [kw (player-achievement-kw-params params)]
+        (validate-player-achievement-rules! kw)
         (validate-player-achievement-implies! kw)
         (let [new-id (insert-player-achievement! params)
               record  (or (queries/get-player-achievement-by-id db-spec {:id new-id}) {:id new-id})]
@@ -71,6 +80,7 @@
   (PUT "/api/player_achievements/:id" [id :as {params :body}]
     (try
       (let [kw (player-achievement-kw-params params)]
+        (validate-player-achievement-rules! kw)
         (validate-player-achievement-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-player-achievement! int-id params)
@@ -85,6 +95,7 @@
   (PATCH "/api/player_achievements/:id" [id :as {params :body}]
     (try
       (let [kw (player-achievement-kw-params params)]
+        (validate-player-achievement-rules! kw)
         (validate-player-achievement-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-player-achievement! int-id params)
@@ -98,5 +109,15 @@
 
   (DELETE "/api/player_achievements/:id" [id]
     (queries/delete-player-achievement! db-spec {:id (Integer/parseInt id)})
+    (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/player_achievements/:id/progress" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        amount (get params :amount)]
+      (svc/increment-progress! int-id amount)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (POST "/api/player_achievements/:id/complete" [id]
+    (svc/complete! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 )

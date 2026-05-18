@@ -6,7 +6,7 @@
 
 (def valid-params {   :name "test"
    :description "test"
-   :points 0
+   :points 1
    :rarity "Common"
    :is-hidden true})
 
@@ -42,5 +42,16 @@
   (testing "DELETE /api/achievements/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/achievements/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-points-positive
+  (testing "POST /api/achievements violates rule points_positive → 422"
+    (let [params (merge valid-params
+       {   :points "0"})
+          resp (app (-> (mock/request :post "/api/achievements")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

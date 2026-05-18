@@ -8,6 +8,7 @@
    :discount-type "Percent"
    :discount-value 1
    :min-order-value "0.00"
+   :max-uses 1
    :uses-count 0
    :valid-from "2024-01-01T00:00:00"
    :valid-until "2024-01-02T00:00:00"

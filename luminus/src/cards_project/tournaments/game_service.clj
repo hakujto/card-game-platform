@@ -22,3 +22,9 @@
     (record-winner-behavior! id winner-side)
     (throw (ex-info "Game not found" {:id id}))))
 
+(defn duration-minutes!
+  [id]
+  (if (queries/get-game-by-id db-spec {:id id})
+    (duration-minutes-behavior! id)
+    (throw (ex-info "Game not found" {:id id}))))
+

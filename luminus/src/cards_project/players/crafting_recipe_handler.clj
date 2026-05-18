@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.players.crafting-recipe-queries :as queries]
+            [cards_project.players.crafting-recipe-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- crafting-recipe-kw-params [params]
@@ -98,5 +99,23 @@
 
   (DELETE "/api/crafting_recipes/:id" [id]
     (queries/delete-crafting-recipe! db-spec {:id (Integer/parseInt id)})
+    (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/crafting_recipes/:id/can-craft" [id]
+    (let [result (svc/can-craft! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
+  (POST "/api/crafting_recipes/:id/craft" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        player-id (get params :player-id)]
+      (svc/execute-craft! int-id player-id)
+      (-> (resp/response nil) (resp/status 204))))
+
+  (POST "/api/crafting_recipes/:id/disable" [id]
+    (svc/disable! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/crafting_recipes/:id/enable" [id]
+    (svc/enable! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 )

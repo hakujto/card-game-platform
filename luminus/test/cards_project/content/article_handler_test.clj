@@ -61,3 +61,14 @@
       (is (= 422 (:status resp)))))
 )
 
+; Simple rule violated → 422
+(deftest test-rule-view-count-not-negative
+  (testing "POST /api/articles violates rule view_count_not_negative → 422"
+    (let [params (merge valid-params
+       {   :view-count -1})
+          resp (app (-> (mock/request :post "/api/articles")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+

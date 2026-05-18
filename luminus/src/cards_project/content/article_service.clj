@@ -40,3 +40,9 @@
     (increment-view-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
+(defn reading-time-minutes!
+  [id]
+  (if (queries/get-article-by-id db-spec {:id id})
+    (reading-time-minutes-behavior! id)
+    (throw (ex-info "Article not found" {:id id}))))
+

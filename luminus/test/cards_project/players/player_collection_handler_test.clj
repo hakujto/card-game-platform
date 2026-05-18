@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :quantity 0
+(def valid-params {   :quantity 1
    :foil true
    :condition "Mint"
    :acquired-at "2024-01-01T00:00:00"
@@ -44,5 +44,16 @@
   (testing "DELETE /api/player_collections/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/player_collections/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-quantity-positive
+  (testing "POST /api/player_collections violates rule quantity_positive → 422"
+    (let [params (merge valid-params
+       {   :quantity "0"})
+          resp (app (-> (mock/request :post "/api/player_collections")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

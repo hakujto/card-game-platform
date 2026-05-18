@@ -4,8 +4,8 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :pick-number 0
-   :pack-number 0
+(def valid-params {   :pick-number 1
+   :pack-number 1
    :picked-at "2024-01-01T00:00:00"
    :participant-id 1
    :card-id 1})
@@ -42,5 +42,27 @@
   (testing "DELETE /api/draft_picks/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/draft_picks/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-pick-number-positive
+  (testing "POST /api/draft_picks violates rule pick_number_positive → 422"
+    (let [params (merge valid-params
+       {   :pick-number "0"})
+          resp (app (-> (mock/request :post "/api/draft_picks")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-pack-number-range
+  (testing "POST /api/draft_picks violates rule pack_number_range → 422"
+    (let [params (merge valid-params
+       {   :pack-number 4})
+          resp (app (-> (mock/request :post "/api/draft_picks")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

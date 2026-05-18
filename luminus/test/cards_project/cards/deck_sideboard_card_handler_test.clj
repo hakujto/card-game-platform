@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :quantity 0
+(def valid-params {   :quantity 1
    :deck-id 1
    :card-id 1})
 
@@ -40,5 +40,16 @@
   (testing "DELETE /api/deck_sideboard_cards/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/deck_sideboard_cards/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-quantity-range
+  (testing "POST /api/deck_sideboard_cards violates rule quantity_range → 422"
+    (let [params (merge valid-params
+       {   :quantity 5})
+          resp (app (-> (mock/request :post "/api/deck_sideboard_cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 

@@ -7,6 +7,25 @@
             [cards_project.content.draft-session-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
+(defn- draft-session-kw-params [params]
+  (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
+
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-draft-session-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :seats)] (or (nil? v) (and (>= (->num v) 2) (<= (->num v) 16))))
+      (swap! errors conj "Draft session must have between 2 and 16 seats"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
+(defn- validate-draft-session-implies! [m]
+  (let [errors (atom [])]
+    (when (and (some? (get m :completed_at)) (not (= (get m :status) "Completed")))
+      (swap! errors conj "completed_at can only be set when draft status is Completed"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-draft-session! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:status :draft_type :seats :completed_at :card_set_id}
@@ -42,9 +61,12 @@
 
   (POST "/api/draft_sessions" {params :body}
     (try
-      (let [new-id (insert-draft-session! params)
-            record  (or (queries/get-draft-session-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+      (let [kw (draft-session-kw-params params)]
+        (validate-draft-session-rules! kw)
+        (validate-draft-session-implies! kw)
+        (let [new-id (insert-draft-session! params)
+              record  (or (queries/get-draft-session-by-id db-spec {:id new-id}) {:id new-id})]
+          (-> (resp/response record) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -57,11 +79,14 @@
 
   (PUT "/api/draft_sessions/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-draft-session! int-id params)
-        (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (draft-session-kw-params params)]
+        (validate-draft-session-rules! kw)
+        (validate-draft-session-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-draft-session! int-id params)
+          (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -69,11 +94,14 @@
 
   (PATCH "/api/draft_sessions/:id" [id :as {params :body}]
     (try
-      (let [int-id (Integer/parseInt id)]
-        (update-draft-session! int-id params)
-        (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
+      (let [kw (draft-session-kw-params params)]
+        (validate-draft-session-rules! kw)
+        (validate-draft-session-implies! kw)
+        (let [int-id (Integer/parseInt id)]
+          (update-draft-session! int-id params)
+          (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
+            (resp/response record)
+            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -94,4 +122,8 @@
   (POST "/api/draft_sessions/:id/complete" [id]
     (svc/complete! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/draft_sessions/:id/full" [id]
+    (let [result (svc/is-full! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

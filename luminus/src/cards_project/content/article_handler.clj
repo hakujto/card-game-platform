@@ -10,6 +10,15 @@
 (defn- article-kw-params [params]
   (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params)))
 
+(defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
+
+(defn- validate-article-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :view_count)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Article view count must not be negative"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- validate-article-implies! [m]
   (let [errors (atom [])]
     (when (and (= (get m :status) "Published") (not (some? (get m :published_at))))
@@ -53,6 +62,7 @@
   (POST "/api/articles" {params :body}
     (try
       (let [kw (article-kw-params params)]
+        (validate-article-rules! kw)
         (validate-article-implies! kw)
         (let [new-id (insert-article! params)
               record  (or (queries/get-article-by-id db-spec {:id new-id}) {:id new-id})]
@@ -70,6 +80,7 @@
   (PUT "/api/articles/:id" [id :as {params :body}]
     (try
       (let [kw (article-kw-params params)]
+        (validate-article-rules! kw)
         (validate-article-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-article! int-id params)
@@ -84,6 +95,7 @@
   (PATCH "/api/articles/:id" [id :as {params :body}]
     (try
       (let [kw (article-kw-params params)]
+        (validate-article-rules! kw)
         (validate-article-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-article! int-id params)
@@ -110,4 +122,8 @@
   (POST "/api/articles/:id/view" [id]
     (svc/increment-view! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/articles/:id/reading-time" [id]
+    (let [result (svc/reading-time-minutes! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

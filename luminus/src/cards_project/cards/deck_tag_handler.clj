@@ -83,6 +83,12 @@
     (queries/delete-deck-tag! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))
 
+  (PATCH "/api/deck_tags/:id/rename" [id :as {params :body}]
+    (let [int-id (Integer/parseInt id)
+        new-name (get params :new-name)]
+      (svc/rename! int-id new-name)
+      (-> (resp/response nil) (resp/status 204))))
+
   (POST "/api/deck_tags/:id/merge" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)
         target-tag-id (get params :target-tag-id)]

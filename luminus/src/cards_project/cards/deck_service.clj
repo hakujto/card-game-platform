@@ -13,6 +13,15 @@
 (defn- validate-size-behavior! [id]
   (throw (ex-info "validate_size not implemented" {:id id})))
 
+(defn- add-card-behavior! [id card-id quantity]
+  (throw (ex-info "add_card not implemented" {:id id})))
+
+(defn- remove-card-behavior! [id card-id]
+  (throw (ex-info "remove_card not implemented" {:id id})))
+
+(defn- win-rate-behavior! [id]
+  (throw (ex-info "win_rate not implemented" {:id id})))
+
 (defn- clone-behavior! [id]
   (throw (ex-info "clone not implemented" {:id id})))
 
@@ -29,6 +38,24 @@
   [id]
   (if (queries/get-deck-by-id db-spec {:id id})
     (validate-size-behavior! id)
+    (throw (ex-info "Deck not found" {:id id}))))
+
+(defn add-card!
+  [id card-id quantity]
+  (if (queries/get-deck-by-id db-spec {:id id})
+    (add-card-behavior! id card-id quantity)
+    (throw (ex-info "Deck not found" {:id id}))))
+
+(defn remove-card!
+  [id card-id]
+  (if (queries/get-deck-by-id db-spec {:id id})
+    (remove-card-behavior! id card-id)
+    (throw (ex-info "Deck not found" {:id id}))))
+
+(defn win-rate!
+  [id]
+  (if (queries/get-deck-by-id db-spec {:id id})
+    (win-rate-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn clone!

@@ -4,6 +4,7 @@
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [cards_project.tournaments.awarded-prize-queries :as queries]
+            [cards_project.tournaments.awarded-prize-service :as svc]
             [cards_project.db :refer [db-spec]]))
 
 (defn- awarded-prize-kw-params [params]
@@ -108,5 +109,9 @@
 
   (DELETE "/api/awarded_prizes/:id" [id]
     (queries/delete-awarded-prize! db-spec {:id (Integer/parseInt id)})
+    (-> (resp/response nil) (resp/status 204)))
+
+  (POST "/api/awarded_prizes/:id/claim" [id]
+    (svc/claim! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 )

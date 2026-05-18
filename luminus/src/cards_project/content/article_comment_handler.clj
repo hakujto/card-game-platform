@@ -90,4 +90,8 @@
   (POST "/api/article_comments/:id/unhide" [id]
     (svc/unhide! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/article_comments/:id/is-reply" [id]
+    (let [result (svc/is-reply! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

@@ -12,10 +12,21 @@
 
 (defn- ->num [v] (when (some? v) (if (string? v) (Double/parseDouble v) (double v))))
 
+(defn- validate-tournament-round-rules! [m]
+  (let [errors (atom [])]
+    (when-not (let [v (get m :round_number)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Round number must be greater than zero"))
+    (when-not (let [v (get m :time_limit_minutes)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Round time limit must be greater than zero"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- validate-tournament-round-implies! [m]
   (let [errors (atom [])]
     (when (and (some? (get m :ended_at)) (not (let [lhs (get m :ended_at) rhs (get m :started_at)] (or (nil? lhs) (nil? rhs) (pos? (compare lhs rhs))))))
       (swap! errors conj "Round end time must be after start time"))
+    (when (and (= (get m :status) "Completed") (not (some? (get m :started_at))))
+      (swap! errors conj "Completed round must have a start time"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -55,6 +66,7 @@
   (POST "/api/tournament_rounds" {params :body}
     (try
       (let [kw (tournament-round-kw-params params)]
+        (validate-tournament-round-rules! kw)
         (validate-tournament-round-implies! kw)
         (let [new-id (insert-tournament-round! params)
               record  (or (queries/get-tournament-round-by-id db-spec {:id new-id}) {:id new-id})]
@@ -72,6 +84,7 @@
   (PUT "/api/tournament_rounds/:id" [id :as {params :body}]
     (try
       (let [kw (tournament-round-kw-params params)]
+        (validate-tournament-round-rules! kw)
         (validate-tournament-round-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament-round! int-id params)
@@ -86,6 +99,7 @@
   (PATCH "/api/tournament_rounds/:id" [id :as {params :body}]
     (try
       (let [kw (tournament-round-kw-params params)]
+        (validate-tournament-round-rules! kw)
         (validate-tournament-round-implies! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament-round! int-id params)
@@ -112,4 +126,8 @@
   (POST "/api/tournament_rounds/:id/pairings" [id]
     (svc/generate-pairings! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (GET "/api/tournament_rounds/:id/time-expired" [id]
+    (let [result (svc/is-time-expired! (Integer/parseInt id))]
+      (resp/response {:result result})))
 )

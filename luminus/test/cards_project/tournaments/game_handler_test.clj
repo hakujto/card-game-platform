@@ -5,6 +5,8 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :game-number 1
+   :turns-played 1
+   :duration-seconds 1
    :match-id 1})
 
 (deftest test-list-games
@@ -68,6 +70,30 @@
   (testing "POST /api/games violates rule duration_positive → 422"
     (let [params (merge valid-params
        {   :duration-seconds "0"})
+          resp (app (-> (mock/request :post "/api/games")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-draw-has-no-winner
+  (testing "POST /api/games violates rule draw_has_no_winner → 422"
+    (let [params (merge valid-params
+       {   :winner-side "Draw"
+   :winner 1})
+          resp (app (-> (mock/request :post "/api/games")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-non-draw-requires-winner
+  (testing "POST /api/games violates rule non_draw_requires_winner → 422"
+    (let [params (merge valid-params
+       {   :winner-side "Player1"
+   :winner nil})
           resp (app (-> (mock/request :post "/api/games")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

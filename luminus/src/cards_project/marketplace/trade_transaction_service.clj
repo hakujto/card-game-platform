@@ -40,3 +40,9 @@
     (open-dispute-behavior! id reason)
     (throw (ex-info "TradeTransaction not found" {:id id}))))
 
+(defn seller-net!
+  [id]
+  (if (queries/get-trade-transaction-by-id db-spec {:id id})
+    (seller-net-behavior! id)
+    (throw (ex-info "TradeTransaction not found" {:id id}))))
+

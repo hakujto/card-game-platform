@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :seat-number 0
+(def valid-params {   :seat-number 1
    :joined-at "2024-01-01T00:00:00"
    :player-id 1})
 
@@ -40,5 +40,16 @@
   (testing "DELETE /api/draft_participants/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/draft_participants/1"))]
       (is (#{204 404} (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-seat-number-positive
+  (testing "POST /api/draft_participants violates rule seat_number_positive → 422"
+    (let [params (merge valid-params
+       {   :seat-number "0"})
+          resp (app (-> (mock/request :post "/api/draft_participants")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
 )
 
