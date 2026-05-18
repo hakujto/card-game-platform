@@ -71,4 +71,21 @@ class DraftSessionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenSeatsRangeViolated(): void
+    {
+        // Draft session must have between 2 and 16 seats
+        $this->client->request('POST', '/api/draft_sessions', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['draftType' => 'BOOSTER', 'createdAt' => '2024-01-01T00:00:00+00:00', 'cardSetId' => 1, 'completedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'COMPLETED', 'seats' => 17])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenCompletedAtRequiresCompletedStatusViolated(): void
+    {
+        // completed_at can only be set when draft status is Completed
+        $this->client->request('POST', '/api/draft_sessions', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'WAITINGFORPLAYERS', 'draftType' => 'BOOSTER', 'seats' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'cardSetId' => 1, 'completedAt' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

@@ -101,4 +101,12 @@ class DraftParticipantController extends AbstractController
         $this->repository->save($draftParticipant, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/card-count', name: 'draftedCardCount', methods: ['GET'])]
+    public function draftedCardCount(DraftParticipant $draftParticipant): JsonResponse
+    {
+        $result = $draftParticipant->draftedCardCount();
+        $this->repository->save($draftParticipant, flush: true);
+        return $this->json($result);
+    }
 }

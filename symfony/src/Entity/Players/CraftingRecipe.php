@@ -112,6 +112,16 @@ class CraftingRecipe
 
     // ── Business operations ──────────────────────────────────────────
 
+    public function canCraft($playerId): void
+    {
+        throw new \RuntimeException('can_craft not implemented');
+    }
+
+    public function executeCraft($playerId): void
+    {
+        throw new \RuntimeException('execute_craft not implemented');
+    }
+
     public function disable(): void
     {
         throw new \RuntimeException('disable not implemented');

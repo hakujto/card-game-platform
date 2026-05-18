@@ -84,4 +84,36 @@ class CraftingRecipeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/can-craft', name: 'canCraft', methods: ['GET'])]
+    public function canCraft(CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $result = $craftingRecipe->canCraft($playerId);
+        $this->repository->save($craftingRecipe, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/craft', name: 'executeCraft', methods: ['POST'])]
+    public function executeCraft(CraftingRecipe $craftingRecipe, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $craftingRecipe->executeCraft($data['playerId'] ?? null);
+        $this->repository->save($craftingRecipe, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/disable', name: 'disable', methods: ['POST'])]
+    public function disable(CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $craftingRecipe->disable();
+        $this->repository->save($craftingRecipe, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/enable', name: 'enable', methods: ['POST'])]
+    public function enable(CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $craftingRecipe->enable();
+        $this->repository->save($craftingRecipe, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

@@ -79,4 +79,16 @@ class TournamentJudge
         return $this;
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function promoteToHead(): void
+    {
+        throw new \RuntimeException('promote_to_head not implemented');
+    }
+
+    public function remove(): void
+    {
+        throw new \RuntimeException('remove not implemented');
+    }
+
 }

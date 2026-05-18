@@ -93,4 +93,30 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPointsEarnedNotNegativeViolated(): void
+    {
+        // Points earned must not be negative
+        $this->client->request('POST', '/api/tournament_registrations', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'REGISTERED', 'registeredAt' => '2024-01-01T00:00:00+00:00', 'tournamentId' => 1, 'playerId' => 1, 'deckId' => 1, 'finalStanding' => 1, 'finalStanding' => 1, 'seed' => 1, 'seed' => 1, 'pointsEarned' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenFinalStandingPositiveViolated(): void
+    {
+        // Final standing must be greater than zero
+        $this->client->request('POST', '/api/tournament_registrations', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'REGISTERED', 'pointsEarned' => 1, 'registeredAt' => '2024-01-01T00:00:00+00:00', 'tournamentId' => 1, 'playerId' => 1, 'deckId' => 1, 'finalStanding' => 1, 'finalStanding' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenSeedPositiveViolated(): void
+    {
+        // Seed must be greater than zero
+        $this->client->request('POST', '/api/tournament_registrations', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'REGISTERED', 'pointsEarned' => 1, 'registeredAt' => '2024-01-01T00:00:00+00:00', 'tournamentId' => 1, 'playerId' => 1, 'deckId' => 1, 'seed' => 1, 'seed' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

@@ -118,6 +118,21 @@ class DraftSession
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Draft session must have between 2 and 16 seats")]
+    public function isSeatsRangeValid(): bool
+    {
+        return ($this->getSeats() === null || ($this->getSeats() >= 2 && $this->getSeats() <= 16));
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getCompletedAt() !== null && !($this->getStatus() === 'COMPLETED')) {
+            throw new \DomainException('completed_at can only be set when draft status is Completed');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function start(): void

@@ -78,6 +78,13 @@ class DeckSideboardCard
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Sideboard card quantity must be between 1 and 4 copies")]
+    public function isQuantityRangeValid(): bool
+    {
+        return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 4));
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function increment($amount): void

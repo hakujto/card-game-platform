@@ -154,6 +154,31 @@ class PlayerSeasonStats
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Season wins must not be negative")]
+    public function isWinsNotNegativeValid(): bool
+    {
+        return ($this->getWins() === null || $this->getWins() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Season losses must not be negative")]
+    public function isLossesNotNegativeValid(): bool
+    {
+        return ($this->getLosses() === null || $this->getLosses() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Season tournament wins must not be negative")]
+    public function isTournamentWinsNotNegativeValid(): bool
+    {
+        return ($this->getTournamentWins() === null || $this->getTournamentWins() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Season points must not be negative")]
+    public function isSeasonPointsNotNegativeValid(): bool
+    {
+        return ($this->getSeasonPoints() === null || $this->getSeasonPoints() >= 0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function winRate(): void

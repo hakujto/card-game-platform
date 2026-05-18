@@ -80,7 +80,7 @@ class CardAbilityApiTest extends WebTestCase
     {
         // Keyword ability must have a keyword name
         $this->client->request('POST', '/api/card_abilities', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['abilityText' => 'test', 'abilityType' => 'KEYWORD', 'keyword' => null])
+            json_encode(['abilityText' => 'test', 'cardId' => 1, 'abilityType' => 'KEYWORD', 'keyword' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }

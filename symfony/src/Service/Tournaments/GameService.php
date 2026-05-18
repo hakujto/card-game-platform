@@ -28,4 +28,13 @@ class GameService
         $entity->recordWinner($winnerSide);
         $this->repository->save($entity, flush: true);
     }
+
+    public function durationMinutes(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Game not found: ' . $id);
+        $result = $entity->durationMinutes();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

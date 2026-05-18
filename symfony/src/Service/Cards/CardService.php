@@ -61,4 +61,22 @@ class CardService
         $this->repository->save($entity, flush: true);
         return $result;
     }
+
+    public function applyRarityBonus(int $id, $multiplier): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $result = $entity->applyRarityBonus($multiplier);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function isLegalInFormat(int $id, $format): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $result = $entity->isLegalInFormat($format);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

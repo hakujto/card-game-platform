@@ -161,6 +161,24 @@ class TournamentRegistration
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Points earned must not be negative")]
+    public function isPointsEarnedNotNegativeValid(): bool
+    {
+        return ($this->getPointsEarned() === null || $this->getPointsEarned() >= 0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getFinalStanding() !== null && !(($this->getFinalStanding() === null || $this->getFinalStanding() > 0))) {
+            throw new \DomainException('Final standing must be greater than zero');
+        }
+        if ($this->getSeed() !== null && !(($this->getSeed() === null || $this->getSeed() > 0))) {
+            throw new \DomainException('Seed must be greater than zero');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function withdraw(): void

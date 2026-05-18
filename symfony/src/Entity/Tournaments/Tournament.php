@@ -358,6 +358,11 @@ class Tournament
         throw new \RuntimeException('calculate_prize_distribution not implemented');
     }
 
+    public function registerPlayer($playerId, $deckId): void
+    {
+        throw new \RuntimeException('register_player not implemented');
+    }
+
     public function isFull(): void
     {
         throw new \RuntimeException('is_full not implemented');

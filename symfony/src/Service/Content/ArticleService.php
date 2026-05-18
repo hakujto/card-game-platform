@@ -44,4 +44,13 @@ class ArticleService
         $entity->incrementView();
         $this->repository->save($entity, flush: true);
     }
+
+    public function readingTimeMinutes(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Article not found: ' . $id);
+        $result = $entity->readingTimeMinutes();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

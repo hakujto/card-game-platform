@@ -200,11 +200,21 @@ class Stream
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Peak viewer count must not be negative")]
+    public function isViewerCountNotNegativeValid(): bool
+    {
+        return ($this->getViewerCountPeak() === null || $this->getViewerCountPeak() >= 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->getActualStart() !== null && !($this->getStatus() === 'LIVE')) {
             throw new \DomainException('actual_start_requires_live_or_ended');
+        }
+        if ($this->getEndedAt() !== null && !($this->getStatus() === 'ENDED')) {
+            throw new \DomainException('ended_at can only be set when stream status is Ended');
         }
     }
 

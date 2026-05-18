@@ -111,4 +111,23 @@ class Achievement
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Achievement must award at least one point")]
+    public function isPointsPositiveValid(): bool
+    {
+        return ($this->getPoints() === null || $this->getPoints() > 0);
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function pointValue($multiplier): void
+    {
+        throw new \RuntimeException('point_value not implemented');
+    }
+
+    public function reveal(): void
+    {
+        throw new \RuntimeException('reveal not implemented');
+    }
+
 }

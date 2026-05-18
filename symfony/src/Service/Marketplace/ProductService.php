@@ -53,4 +53,22 @@ class ProductService
         $entity->restock($quantity);
         $this->repository->save($entity, flush: true);
     }
+
+    public function effectivePrice(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Product not found: ' . $id);
+        $result = $entity->effectivePrice();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function isInStock(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Product not found: ' . $id);
+        $result = $entity->isInStock();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

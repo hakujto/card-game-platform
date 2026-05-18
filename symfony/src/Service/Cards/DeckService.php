@@ -30,6 +30,31 @@ class DeckService
         return $result;
     }
 
+    public function addCard(int $id, $cardId, $quantity): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Deck not found: ' . $id);
+        $entity->addCard($cardId, $quantity);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function removeCard(int $id, $cardId): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Deck not found: ' . $id);
+        $entity->removeCard($cardId);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function winRate(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Deck not found: ' . $id);
+        $result = $entity->winRate();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
     public function clone(int $id): mixed
     {
         $entity = $this->repository->find($id);

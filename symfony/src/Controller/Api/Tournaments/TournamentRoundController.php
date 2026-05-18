@@ -125,4 +125,12 @@ class TournamentRoundController extends AbstractController
         $this->repository->save($tournamentRound, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/time-expired', name: 'isTimeExpired', methods: ['GET'])]
+    public function isTimeExpired(TournamentRound $tournamentRound): JsonResponse
+    {
+        $result = $tournamentRound->isTimeExpired();
+        $this->repository->save($tournamentRound, flush: true);
+        return $this->json($result);
+    }
 }

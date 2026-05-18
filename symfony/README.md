@@ -87,8 +87,8 @@ Swagger: http://localhost:8000/api/doc
 - `GET/PUT/PATCH/DELETE` `/api/order_items/{id}`
 - `GET/POST` `/api/coupons`
 - `GET/PUT/PATCH/DELETE` `/api/coupons/{id}`
-- `GET/POST` `/api/tradelistings`
-- `GET/PUT/PATCH/DELETE` `/api/tradelistings/{id}`
+- `GET/POST` `/api/trade_listings`
+- `GET/PUT/PATCH/DELETE` `/api/trade_listings/{id}`
 - `GET/POST` `/api/trade_bids`
 - `GET/PUT/PATCH/DELETE` `/api/trade_bids/{id}`
 - `GET/POST` `/api/trade_transactions`

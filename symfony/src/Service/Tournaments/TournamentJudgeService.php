@@ -21,4 +21,19 @@ class TournamentJudgeService
         throw new \LogicException('Not implemented');
     }
 
+    public function promoteToHead(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentJudge not found: ' . $id);
+        $entity->promoteToHead();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function remove(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentJudge not found: ' . $id);
+        $entity->remove();
+        $this->repository->save($entity, flush: true);
+    }
 }

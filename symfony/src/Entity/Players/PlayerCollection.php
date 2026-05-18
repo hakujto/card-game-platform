@@ -139,6 +139,13 @@ class PlayerCollection
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Collection quantity must be greater than zero")]
+    public function isQuantityPositiveValid(): bool
+    {
+        return ($this->getQuantity() === null || $this->getQuantity() > 0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function add($quantity): void

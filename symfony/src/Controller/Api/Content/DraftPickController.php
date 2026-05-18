@@ -98,4 +98,11 @@ class DraftPickController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/first-pick', name: 'isFirstPick', methods: ['GET'])]
+    public function isFirstPick(DraftPick $draftPick): JsonResponse
+    {
+        $result = $draftPick->isFirstPick();
+        $this->repository->save($draftPick, flush: true);
+        return $this->json($result);
+    }
 }

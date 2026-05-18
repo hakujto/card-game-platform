@@ -100,4 +100,19 @@ class CardAbilityController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/usable', name: 'isUsableAt', methods: ['GET'])]
+    public function isUsableAt(CardAbility $cardAbility): JsonResponse
+    {
+        $result = $cardAbility->isUsableAt($timing);
+        $this->repository->save($cardAbility, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/describe', name: 'describe', methods: ['GET'])]
+    public function describe(CardAbility $cardAbility): JsonResponse
+    {
+        $result = $cardAbility->describe();
+        $this->repository->save($cardAbility, flush: true);
+        return $this->json($result);
+    }
 }

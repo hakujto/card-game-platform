@@ -80,7 +80,7 @@ class GameApiTest extends WebTestCase
     {
         // Game number must be between 1 and 3 (best-of-3)
         $this->client->request('POST', '/api/games', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['turnsPlayed' => 1, 'turnsPlayed' => 1, 'durationSeconds' => 1, 'durationSeconds' => 1, 'gameNumber' => 4])
+            json_encode(['matchId' => 1, 'turnsPlayed' => 1, 'turnsPlayed' => 1, 'durationSeconds' => 1, 'durationSeconds' => 1, 'winnerSide' => 'DRAW', 'winner' => null, 'winnerSide' => 'PLAYER1', 'winner' => 'test', 'gameNumber' => 4])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -89,7 +89,7 @@ class GameApiTest extends WebTestCase
     {
         // Turns played must be greater than zero
         $this->client->request('POST', '/api/games', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['gameNumber' => 1, 'turnsPlayed' => 1, 'turnsPlayed' => 0])
+            json_encode(['gameNumber' => 1, 'matchId' => 1, 'turnsPlayed' => 1, 'turnsPlayed' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -98,7 +98,25 @@ class GameApiTest extends WebTestCase
     {
         // Game duration must be greater than zero
         $this->client->request('POST', '/api/games', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['gameNumber' => 1, 'durationSeconds' => 1, 'durationSeconds' => 0])
+            json_encode(['gameNumber' => 1, 'matchId' => 1, 'durationSeconds' => 1, 'durationSeconds' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenDrawHasNoWinnerViolated(): void
+    {
+        // A draw cannot have a winner
+        $this->client->request('POST', '/api/games', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['gameNumber' => 1, 'matchId' => 1, 'winnerSide' => 'DRAW', 'winner' => 'test'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenNonDrawRequiresWinnerViolated(): void
+    {
+        // A decisive game must have a winner player set
+        $this->client->request('POST', '/api/games', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['gameNumber' => 1, 'matchId' => 1, 'winnerSide' => 'PLAYER1', 'winner' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }

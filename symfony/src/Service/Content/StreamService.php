@@ -44,4 +44,13 @@ class StreamService
         $entity->updateViewerPeak($count);
         $this->repository->save($entity, flush: true);
     }
+
+    public function durationMinutes(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Stream not found: ' . $id);
+        $result = $entity->durationMinutes();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

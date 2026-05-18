@@ -75,6 +75,15 @@ class DeckTagController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/rename', name: 'rename', methods: ['PATCH'])]
+    public function rename(DeckTag $deckTag, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $deckTag->rename($data['newName'] ?? null);
+        $this->repository->save($deckTag, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/merge', name: 'mergeInto', methods: ['POST'])]
     public function mergeInto(DeckTag $deckTag, Request $request): JsonResponse
     {

@@ -146,4 +146,12 @@ class ArticleController extends AbstractController
         $this->repository->save($article, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/reading-time', name: 'readingTimeMinutes', methods: ['GET'])]
+    public function readingTimeMinutes(Article $article): JsonResponse
+    {
+        $result = $article->readingTimeMinutes();
+        $this->repository->save($article, flush: true);
+        return $this->json($result);
+    }
 }

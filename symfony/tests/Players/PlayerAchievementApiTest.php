@@ -81,7 +81,16 @@ class PlayerAchievementApiTest extends WebTestCase
     {
         // Completed achievement must have progress greater than zero
         $this->client->request('POST', '/api/player_achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00', 'isCompleted' => true, 'progress' => 0])
+            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'achievementId' => 1, 'isCompleted' => true, 'progress' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenProgressNotNegativeViolated(): void
+    {
+        // Achievement progress must not be negative
+        $this->client->request('POST', '/api/player_achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'achievementId' => 1, 'isCompleted' => true, 'progress' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

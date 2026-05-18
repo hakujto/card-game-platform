@@ -96,4 +96,21 @@ class DeckCardController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/increment', name: 'increment', methods: ['PATCH'])]
+    public function increment(DeckCard $deckCard, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $deckCard->increment($data['amount'] ?? null);
+        $this->repository->save($deckCard, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/decrement', name: 'decrement', methods: ['PATCH'])]
+    public function decrement(DeckCard $deckCard, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $deckCard->decrement($data['amount'] ?? null);
+        $this->repository->save($deckCard, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

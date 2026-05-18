@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
-use App\Entity\Marketplace\Tradelisting;
+use App\Entity\Marketplace\TradeListing;
 use App\Entity\Marketplace\TradeTransaction;
 
 class TradeDisputeApiTest extends WebTestCase
@@ -19,7 +19,7 @@ class TradeDisputeApiTest extends WebTestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $auxTradelisting;
+    private TradeListing $auxTradeListing;
     private TradeTransaction $depTransaction;
     private Player $depOpenedBy;
 
@@ -35,12 +35,12 @@ class TradeDisputeApiTest extends WebTestCase
         $this->auxCard = new Card();
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
-        $this->auxTradelisting = new Tradelisting();
-        $this->auxTradelisting->setSeller($this->auxPlayer);
-        $this->auxTradelisting->setCard($this->auxCard);
-        $this->em->persist($this->auxTradelisting);
+        $this->auxTradeListing = new TradeListing();
+        $this->auxTradeListing->setSeller($this->auxPlayer);
+        $this->auxTradeListing->setCard($this->auxCard);
+        $this->em->persist($this->auxTradeListing);
         $this->depTransaction = new TradeTransaction();
-        $this->depTransaction->setListing($this->auxTradelisting);
+        $this->depTransaction->setListing($this->auxTradeListing);
         $this->depTransaction->setBuyer($this->auxPlayer);
         $this->depTransaction->setSeller($this->auxPlayer);
         $this->em->persist($this->depTransaction);
@@ -68,7 +68,7 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testCreateReturns201(): void
     {
-        $freshSubListing = new Tradelisting();
+        $freshSubListing = new TradeListing();
         $freshSubListing->setSeller($this->auxPlayer);
         $freshSubListing->setCard($this->auxCard);
         $this->em->persist($freshSubListing);
@@ -115,7 +115,7 @@ class TradeDisputeApiTest extends WebTestCase
     {
         // resolved_at_requires_terminal_status
         $this->client->request('POST', '/api/trade_disputes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['reason' => 'ITEMNOTRECEIVED', 'description' => 'test', 'status' => 'OPEN', 'openedAt' => '2024-01-01T00:00:00+00:00', 'resolvedAt' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['reason' => 'ITEMNOTRECEIVED', 'description' => 'test', 'status' => 'OPEN', 'openedAt' => '2024-01-01T00:00:00+00:00', 'transactionId' => 1, 'openedById' => 1, 'resolvedAt' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }

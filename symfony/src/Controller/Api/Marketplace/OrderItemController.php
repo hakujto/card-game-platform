@@ -95,4 +95,11 @@ class OrderItemController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/total', name: 'lineTotal', methods: ['GET'])]
+    public function lineTotal(OrderItem $orderItem): JsonResponse
+    {
+        $result = $orderItem->lineTotal();
+        $this->repository->save($orderItem, flush: true);
+        return $this->json($result);
+    }
 }

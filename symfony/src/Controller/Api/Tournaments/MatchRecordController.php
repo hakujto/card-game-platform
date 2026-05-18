@@ -138,6 +138,15 @@ class MatchRecordController extends AbstractController
         return $this->json($result);
     }
 
+    #[Route('/{id}/concede', name: 'concede', methods: ['POST'])]
+    public function concede(MatchRecord $matchRecord, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $matchRecord->concede($data['playerId'] ?? null);
+        $this->repository->save($matchRecord, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/draw', name: 'draw', methods: ['POST'])]
     public function draw(MatchRecord $matchRecord): JsonResponse
     {

@@ -92,4 +92,19 @@ class CardPriceHistoryController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/change', name: 'priceChangePercent', methods: ['GET'])]
+    public function priceChangePercent(CardPriceHistory $cardPriceHistory): JsonResponse
+    {
+        $result = $cardPriceHistory->priceChangePercent($previousAvg);
+        $this->repository->save($cardPriceHistory, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/spike', name: 'isPriceSpike', methods: ['GET'])]
+    public function isPriceSpike(CardPriceHistory $cardPriceHistory): JsonResponse
+    {
+        $result = $cardPriceHistory->isPriceSpike($thresholdPercent);
+        $this->repository->save($cardPriceHistory, flush: true);
+        return $this->json($result);
+    }
 }

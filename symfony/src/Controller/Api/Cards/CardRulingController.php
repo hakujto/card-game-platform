@@ -86,4 +86,19 @@ class CardRulingController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/current', name: 'isCurrent', methods: ['GET'])]
+    public function isCurrent(CardRuling $cardRuling): JsonResponse
+    {
+        $result = $cardRuling->isCurrent();
+        $this->repository->save($cardRuling, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/supersedes', name: 'supersedesPrevious', methods: ['GET'])]
+    public function supersedesPrevious(CardRuling $cardRuling): JsonResponse
+    {
+        $result = $cardRuling->supersedesPrevious();
+        $this->repository->save($cardRuling, flush: true);
+        return $this->json($result);
+    }
 }

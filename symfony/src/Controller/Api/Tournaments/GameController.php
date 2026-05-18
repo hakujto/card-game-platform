@@ -121,4 +121,12 @@ class GameController extends AbstractController
         $this->repository->save($game, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/duration', name: 'durationMinutes', methods: ['GET'])]
+    public function durationMinutes(Game $game): JsonResponse
+    {
+        $result = $game->durationMinutes();
+        $this->repository->save($game, flush: true);
+        return $this->json($result);
+    }
 }

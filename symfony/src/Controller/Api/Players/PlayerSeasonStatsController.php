@@ -101,4 +101,28 @@ class PlayerSeasonStatsController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/win-rate', name: 'winRate', methods: ['GET'])]
+    public function winRate(PlayerSeasonStats $playerSeasonStats): JsonResponse
+    {
+        $result = $playerSeasonStats->winRate();
+        $this->repository->save($playerSeasonStats, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/points', name: 'addPoints', methods: ['PATCH'])]
+    public function addPoints(PlayerSeasonStats $playerSeasonStats, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $playerSeasonStats->addPoints($data['points'] ?? null);
+        $this->repository->save($playerSeasonStats, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/tournament-win', name: 'recordTournamentWin', methods: ['POST'])]
+    public function recordTournamentWin(PlayerSeasonStats $playerSeasonStats): JsonResponse
+    {
+        $playerSeasonStats->recordTournamentWin();
+        $this->repository->save($playerSeasonStats, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

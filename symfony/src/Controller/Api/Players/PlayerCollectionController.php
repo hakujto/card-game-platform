@@ -102,6 +102,24 @@ class PlayerCollectionController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/add', name: 'add', methods: ['POST'])]
+    public function add(PlayerCollection $playerCollection, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $playerCollection->add($data['quantity'] ?? null);
+        $this->repository->save($playerCollection, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/remove', name: 'remove', methods: ['POST'])]
+    public function remove(PlayerCollection $playerCollection, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $playerCollection->remove($data['quantity'] ?? null);
+        $this->repository->save($playerCollection, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/value', name: 'estimatedValue', methods: ['GET'])]
     public function estimatedValue(PlayerCollection $playerCollection): JsonResponse
     {

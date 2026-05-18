@@ -209,6 +209,12 @@ class MatchRecord
         if ($this->getStatus() === 'BYE' && $this->getPlayer2() !== null) {
             throw new \DomainException('BYE match must not have a second player');
         }
+        if ($this->getEndedAt() !== null && !(($this->getEndedAt() === null || ($this->getStartedAt() !== null && $this->getEndedAt() > $this->getStartedAt())))) {
+            throw new \DomainException('Match end time must be after start time');
+        }
+        if ($this->getStatus() === 'COMPLETED' && $this->getStartedAt() === null) {
+            throw new \DomainException('Completed match must have a start time');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────
@@ -221,6 +227,11 @@ class MatchRecord
     public function determineWinner(): void
     {
         throw new \RuntimeException('determine_winner not implemented');
+    }
+
+    public function concede($playerId): void
+    {
+        throw new \RuntimeException('concede not implemented');
     }
 
     public function draw(): void

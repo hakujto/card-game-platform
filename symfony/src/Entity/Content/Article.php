@@ -260,6 +260,13 @@ class Article
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Article view count must not be negative")]
+    public function isViewCountNotNegativeValid(): bool
+    {
+        return ($this->getViewCount() === null || $this->getViewCount() >= 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {

@@ -21,4 +21,19 @@ class DeckCardService
         throw new \LogicException('Not implemented');
     }
 
+    public function increment(int $id, $amount): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DeckCard not found: ' . $id);
+        $entity->increment($amount);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function decrement(int $id, $amount): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DeckCard not found: ' . $id);
+        $entity->decrement($amount);
+        $this->repository->save($entity, flush: true);
+    }
 }

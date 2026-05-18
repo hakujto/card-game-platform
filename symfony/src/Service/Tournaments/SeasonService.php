@@ -44,4 +44,13 @@ class SeasonService
         $entity->finalizeRewards();
         $this->repository->save($entity, flush: true);
     }
+
+    public function isOngoing(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Season not found: ' . $id);
+        $result = $entity->isOngoing();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

@@ -143,4 +143,12 @@ class StreamController extends AbstractController
         $this->repository->save($stream, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/duration', name: 'durationMinutes', methods: ['GET'])]
+    public function durationMinutes(Stream $stream): JsonResponse
+    {
+        $result = $stream->durationMinutes();
+        $this->repository->save($stream, flush: true);
+        return $this->json($result);
+    }
 }

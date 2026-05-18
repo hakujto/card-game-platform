@@ -109,6 +109,19 @@ class DraftPick
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Pick number must be greater than zero")]
+    public function isPickNumberPositiveValid(): bool
+    {
+        return ($this->getPickNumber() === null || $this->getPickNumber() > 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Pack number must be between 1 and 3")]
+    public function isPackNumberRangeValid(): bool
+    {
+        return ($this->getPackNumber() === null || ($this->getPackNumber() >= 1 && $this->getPackNumber() <= 3));
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function isFirstPick(): void

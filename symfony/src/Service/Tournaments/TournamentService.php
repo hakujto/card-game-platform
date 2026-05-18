@@ -61,4 +61,21 @@ class TournamentService
         $this->repository->save($entity, flush: true);
         return $result;
     }
+
+    public function registerPlayer(int $id, $playerId, $deckId): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $entity->registerPlayer($playerId, $deckId);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function isFull(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Tournament not found: ' . $id);
+        $result = $entity->isFull();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

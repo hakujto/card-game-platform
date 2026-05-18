@@ -101,6 +101,22 @@ class CouponController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/valid', name: 'isValid', methods: ['GET'])]
+    public function isValid(Coupon $coupon): JsonResponse
+    {
+        $result = $coupon->isValid();
+        $this->repository->save($coupon, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/applicable', name: 'isApplicableToOrder', methods: ['GET'])]
+    public function isApplicableToOrder(Coupon $coupon): JsonResponse
+    {
+        $result = $coupon->isApplicableToOrder($orderTotal);
+        $this->repository->save($coupon, flush: true);
+        return $this->json($result);
+    }
+
     #[Route('/{id}/redeem', name: 'redeem', methods: ['POST'])]
     public function redeem(Coupon $coupon): JsonResponse
     {

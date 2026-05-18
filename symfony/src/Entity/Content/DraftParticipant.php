@@ -94,6 +94,13 @@ class DraftParticipant
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Seat number must be greater than zero")]
+    public function isSeatNumberPositiveValid(): bool
+    {
+        return ($this->getSeatNumber() === null || $this->getSeatNumber() > 0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function pickCard($cardId, $packNumber): void

@@ -73,4 +73,12 @@ class DraftParticipantApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenSeatNumberPositiveViolated(): void
+    {
+        // Seat number must be greater than zero
+        $this->client->request('POST', '/api/draft_participants', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['joinedAt' => '2024-01-01T00:00:00+00:00', 'sessionId' => 1, 'playerId' => 1, 'seatNumber' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

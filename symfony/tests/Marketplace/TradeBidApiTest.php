@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
-use App\Entity\Marketplace\Tradelisting;
+use App\Entity\Marketplace\TradeListing;
 
 class TradeBidApiTest extends WebTestCase
 {
@@ -18,7 +18,7 @@ class TradeBidApiTest extends WebTestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $depListing;
+    private TradeListing $depListing;
     private Player $depBidder;
 
     protected function setUp(): void
@@ -33,7 +33,7 @@ class TradeBidApiTest extends WebTestCase
         $this->auxCard = new Card();
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
-        $this->depListing = new Tradelisting();
+        $this->depListing = new TradeListing();
         $this->depListing->setSeller($this->auxPlayer);
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
@@ -97,7 +97,7 @@ class TradeBidApiTest extends WebTestCase
     {
         // Bid amount must be greater than zero
         $this->client->request('POST', '/api/trade_bids', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['placedAt' => '2024-01-01T00:00:00+00:00', 'isWinning' => true, 'amount' => 0])
+            json_encode(['placedAt' => '2024-01-01T00:00:00+00:00', 'isWinning' => true, 'listingId' => 1, 'bidderId' => 1, 'amount' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }

@@ -21,4 +21,20 @@ class AchievementService
         throw new \LogicException('Not implemented');
     }
 
+    public function pointValue(int $id, $multiplier): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Achievement not found: ' . $id);
+        $result = $entity->pointValue($multiplier);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function reveal(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Achievement not found: ' . $id);
+        $entity->reveal();
+        $this->repository->save($entity, flush: true);
+    }
 }

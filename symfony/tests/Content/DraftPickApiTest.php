@@ -91,4 +91,21 @@ class DraftPickApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPickNumberPositiveViolated(): void
+    {
+        // Pick number must be greater than zero
+        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['packNumber' => 1, 'pickedAt' => '2024-01-01T00:00:00+00:00', 'participantId' => 1, 'cardId' => 1, 'pickNumber' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenPackNumberRangeViolated(): void
+    {
+        // Pack number must be between 1 and 3
+        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['pickNumber' => 1, 'pickedAt' => '2024-01-01T00:00:00+00:00', 'participantId' => 1, 'cardId' => 1, 'packNumber' => 4])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

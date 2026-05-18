@@ -94,4 +94,19 @@ class TournamentJudgeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/promote', name: 'promoteToHead', methods: ['POST'])]
+    public function promoteToHead(TournamentJudge $tournamentJudge): JsonResponse
+    {
+        $tournamentJudge->promoteToHead();
+        $this->repository->save($tournamentJudge, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}', name: 'remove', methods: ['DELETE'])]
+    public function remove(TournamentJudge $tournamentJudge): JsonResponse
+    {
+        $tournamentJudge->remove();
+        $this->repository->save($tournamentJudge, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

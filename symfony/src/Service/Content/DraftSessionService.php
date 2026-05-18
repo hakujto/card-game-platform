@@ -44,4 +44,13 @@ class DraftSessionService
         $entity->complete();
         $this->repository->save($entity, flush: true);
     }
+
+    public function isFull(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DraftSession not found: ' . $id);
+        $result = $entity->isFull();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

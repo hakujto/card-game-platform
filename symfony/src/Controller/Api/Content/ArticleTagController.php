@@ -75,4 +75,20 @@ class ArticleTagController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/rename', name: 'rename', methods: ['PATCH'])]
+    public function rename(ArticleTag $articleTag, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $articleTag->rename($data['newName'] ?? null);
+        $this->repository->save($articleTag, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/article-count', name: 'articleCount', methods: ['GET'])]
+    public function articleCount(ArticleTag $articleTag): JsonResponse
+    {
+        $result = $articleTag->articleCount();
+        $this->repository->save($articleTag, flush: true);
+        return $this->json($result);
+    }
 }

@@ -75,7 +75,7 @@ class OrderApiTest extends WebTestCase
     {
         // Paid order must have paid_at set
         $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PAID', 'paidAt' => null])
+            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'status' => 'PAID', 'paidAt' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -84,7 +84,16 @@ class OrderApiTest extends WebTestCase
     {
         // Shipped order must have a tracking number
         $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => null])
+            json_encode(['total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'status' => 'SHIPPED', 'trackingNumber' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenShippedAtRequiresShippedStatusViolated(): void
+    {
+        // shipped_at_requires_shipped_status
+        $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'PENDING', 'total' => '0.00', 'discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'shippedAt' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -93,7 +102,7 @@ class OrderApiTest extends WebTestCase
     {
         // Order total must not be negative
         $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PAID', 'paidAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => 'test', 'total' => -1])
+            json_encode(['discountApplied' => '0.00', 'currency' => 'test', 'createdAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'status' => 'PAID', 'paidAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'trackingNumber' => 'test', 'shippedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'SHIPPED', 'total' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

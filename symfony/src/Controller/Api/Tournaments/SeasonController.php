@@ -106,4 +106,12 @@ class SeasonController extends AbstractController
         $this->repository->save($season, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/ongoing', name: 'isOngoing', methods: ['GET'])]
+    public function isOngoing(Season $season): JsonResponse
+    {
+        $result = $season->isOngoing();
+        $this->repository->save($season, flush: true);
+        return $this->json($result);
+    }
 }

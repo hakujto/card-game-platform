@@ -21,4 +21,20 @@ class TradeBidService
         throw new \LogicException('Not implemented');
     }
 
+    public function outbidBy(int $id, $newAmount): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeBid not found: ' . $id);
+        $result = $entity->outbidBy($newAmount);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function retract(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeBid not found: ' . $id);
+        $entity->retract();
+        $this->repository->save($entity, flush: true);
+    }
 }

@@ -35,8 +35,10 @@ class CardSetController extends AbstractController
         if (isset($data['name'])) $cardSet->setName($data['name']);
         if (isset($data['code'])) $cardSet->setCode($data['code']);
         if (isset($data['releaseDate'])) $cardSet->setReleaseDate(new \DateTime($data['releaseDate']));
+        if (isset($data['rotationDate'])) $cardSet->setRotationDate(new \DateTime($data['rotationDate']));
         if (isset($data['setType'])) $cardSet->setSetType($data['setType']);
         if (isset($data['totalCards'])) $cardSet->setTotalCards($data['totalCards']);
+        if (isset($data['isRotated'])) $cardSet->setIsRotated($data['isRotated']);
         if (isset($data['description'])) $cardSet->setDescription($data['description']);
         if (isset($data['logoUrl'])) $cardSet->setLogoUrl($data['logoUrl']);
 
@@ -44,6 +46,12 @@ class CardSetController extends AbstractController
         $errors = $this->validator->validate($cardSet);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $cardSet->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($cardSet, flush: true);
@@ -63,8 +71,10 @@ class CardSetController extends AbstractController
         if (isset($data['name'])) $cardSet->setName($data['name']);
         if (isset($data['code'])) $cardSet->setCode($data['code']);
         if (isset($data['releaseDate'])) $cardSet->setReleaseDate(new \DateTime($data['releaseDate']));
+        if (isset($data['rotationDate'])) $cardSet->setRotationDate(new \DateTime($data['rotationDate']));
         if (isset($data['setType'])) $cardSet->setSetType($data['setType']);
         if (isset($data['totalCards'])) $cardSet->setTotalCards($data['totalCards']);
+        if (isset($data['isRotated'])) $cardSet->setIsRotated($data['isRotated']);
         if (isset($data['description'])) $cardSet->setDescription($data['description']);
         if (isset($data['logoUrl'])) $cardSet->setLogoUrl($data['logoUrl']);
 
@@ -72,6 +82,12 @@ class CardSetController extends AbstractController
         $errors = $this->validator->validate($cardSet);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $cardSet->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($cardSet, flush: true);
@@ -85,4 +101,35 @@ class CardSetController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/standard-legal', name: 'isLegalInStandard', methods: ['GET'])]
+    public function isLegalInStandard(CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->isLegalInStandard();
+        $this->repository->save($cardSet, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/legal', name: 'isLegalInFormat', methods: ['GET'])]
+    public function isLegalInFormat(CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->isLegalInFormat($format);
+        $this->repository->save($cardSet, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/rarity-count', name: 'cardCountByRarity', methods: ['GET'])]
+    public function cardCountByRarity(CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->cardCountByRarity($rarity);
+        $this->repository->save($cardSet, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/rotate', name: 'rotateOut', methods: ['POST'])]
+    public function rotateOut(CardSet $cardSet): JsonResponse
+    {
+        $cardSet->rotateOut();
+        $this->repository->save($cardSet, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

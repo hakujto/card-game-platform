@@ -251,6 +251,9 @@ class Order
         if ($this->getStatus() === 'SHIPPED' && $this->getTrackingNumber() === null) {
             throw new \DomainException('Shipped order must have a tracking number');
         }
+        if ($this->getShippedAt() !== null && !($this->getStatus() === 'SHIPPED')) {
+            throw new \DomainException('shipped_at_requires_shipped_status');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

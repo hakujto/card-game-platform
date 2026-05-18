@@ -112,4 +112,11 @@ class AwardedPrizeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/claim', name: 'claim', methods: ['POST'])]
+    public function claim(AwardedPrize $awardedPrize): JsonResponse
+    {
+        $awardedPrize->claim();
+        $this->repository->save($awardedPrize, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

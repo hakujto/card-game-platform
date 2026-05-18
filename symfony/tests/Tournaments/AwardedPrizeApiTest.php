@@ -97,7 +97,7 @@ class AwardedPrizeApiTest extends WebTestCase
     {
         // Claimed prize must have a claimed_at timestamp
         $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPlacement' => 1, 'awardedAt' => '2024-01-01T00:00:00+00:00', 'claimed' => true, 'claimedAt' => null])
+            json_encode(['finalPlacement' => 1, 'awardedAt' => '2024-01-01T00:00:00+00:00', 'prizeId' => 1, 'playerId' => 1, 'claimed' => true, 'claimedAt' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -106,7 +106,7 @@ class AwardedPrizeApiTest extends WebTestCase
     {
         // Final placement must be greater than zero
         $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['awardedAt' => '2024-01-01T00:00:00+00:00', 'claimed' => true, 'claimedAt' => '2024-01-01T00:00:00+00:00', 'finalPlacement' => 0])
+            json_encode(['awardedAt' => '2024-01-01T00:00:00+00:00', 'prizeId' => 1, 'playerId' => 1, 'claimed' => true, 'claimedAt' => '2024-01-01T00:00:00+00:00', 'finalPlacement' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }

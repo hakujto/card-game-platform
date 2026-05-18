@@ -79,7 +79,7 @@ class CardApiTest extends WebTestCase
     {
         // Creature card must have attack and defense
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'cardType' => 'CREATURE', 'attack' => null])
+            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'setId' => 1, 'cardType' => 'CREATURE', 'attack' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -88,7 +88,16 @@ class CardApiTest extends WebTestCase
     {
         // Planeswalker card must have loyalty
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => null])
+            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'setId' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenSpellOrArtifactNoLoyaltyViolated(): void
+    {
+        // Only Planeswalker cards can have loyalty
+        $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'cardType' => 'CREATURE', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'setId' => 1, 'loyalty' => 1])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -97,7 +106,7 @@ class CardApiTest extends WebTestCase
     {
         // mana_cost must be between 0 and 20
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'powerLevel' => 1, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'manaCost' => 21])
+            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaColors' => 'WHITE', 'description' => 'test', 'isRestricted' => true, 'powerLevel' => 1, 'setId' => 1, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'loyalty' => null, 'isBanned' => true, 'legalFormats' => "message", 'manaCost' => 21])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -106,7 +115,7 @@ class CardApiTest extends WebTestCase
     {
         // power_level must be between 1 and 10
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isBanned' => true, 'isRestricted' => true, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'powerLevel' => 11])
+            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'isRestricted' => true, 'setId' => 1, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'loyalty' => null, 'isBanned' => true, 'legalFormats' => "message", 'powerLevel' => 11])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -115,7 +124,16 @@ class CardApiTest extends WebTestCase
     {
         // Card cannot be both banned and restricted at the same time
         $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'powerLevel' => 1, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'isBanned' => true, 'isRestricted' => true])
+            json_encode(['name' => 'test', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'powerLevel' => 1, 'setId' => 1, 'cardType' => 'CREATURE', 'attack' => 1, 'defense' => 1, 'cardType' => 'PLANESWALKER', 'loyalty' => 1, 'loyalty' => null, 'legalFormats' => "message", 'isBanned' => true, 'isRestricted' => true])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenBannedCardNotInLegalFormatsViolated(): void
+    {
+        // banned_card_not_in_legal_formats
+        $this->client->request('POST', '/api/cards', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'cardType' => 'CREATURE', 'rarity' => 'COMMON', 'manaCost' => 1, 'manaColors' => 'WHITE', 'description' => 'test', 'legalFormats' => 'STANDARD', 'isRestricted' => true, 'powerLevel' => 1, 'setId' => 1, 'isBanned' => true])
         );
         $this->assertResponseStatusCodeSame(422);
     }

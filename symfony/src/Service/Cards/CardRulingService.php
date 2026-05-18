@@ -21,4 +21,21 @@ class CardRulingService
         throw new \LogicException('Not implemented');
     }
 
+    public function isCurrent(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('CardRuling not found: ' . $id);
+        $result = $entity->isCurrent();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function supersedesPrevious(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('CardRuling not found: ' . $id);
+        $result = $entity->supersedesPrevious();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

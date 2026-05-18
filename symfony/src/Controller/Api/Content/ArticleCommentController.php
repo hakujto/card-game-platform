@@ -117,4 +117,12 @@ class ArticleCommentController extends AbstractController
         $this->repository->save($articleComment, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/is-reply', name: 'isReply', methods: ['GET'])]
+    public function isReply(ArticleComment $articleComment): JsonResponse
+    {
+        $result = $articleComment->isReply();
+        $this->repository->save($articleComment, flush: true);
+        return $this->json($result);
+    }
 }

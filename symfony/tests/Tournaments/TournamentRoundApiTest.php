@@ -85,7 +85,34 @@ class TournamentRoundApiTest extends WebTestCase
     {
         // Round end time must be after start time
         $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['roundNumber' => 1, 'status' => 'PENDING', 'timeLimitMinutes' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00', 'endedAt' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['roundNumber' => 1, 'status' => 'PENDING', 'timeLimitMinutes' => 1, 'tournamentId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00', 'endedAt' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenCompletedRequiresStartedAtViolated(): void
+    {
+        // Completed round must have a start time
+        $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['roundNumber' => 1, 'timeLimitMinutes' => 1, 'tournamentId' => 1, 'status' => 'COMPLETED', 'startedAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenRoundNumberPositiveViolated(): void
+    {
+        // Round number must be greater than zero
+        $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['timeLimitMinutes' => 1, 'tournamentId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'COMPLETED', 'startedAt' => '2024-01-01T00:00:00+00:00', 'roundNumber' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenTimeLimitPositiveViolated(): void
+    {
+        // Round time limit must be greater than zero
+        $this->client->request('POST', '/api/tournament_rounds', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['roundNumber' => 1, 'tournamentId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'COMPLETED', 'startedAt' => '2024-01-01T00:00:00+00:00', 'timeLimitMinutes' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }

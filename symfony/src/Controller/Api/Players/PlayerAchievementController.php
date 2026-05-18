@@ -110,4 +110,20 @@ class PlayerAchievementController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/progress', name: 'incrementProgress', methods: ['PATCH'])]
+    public function incrementProgress(PlayerAchievement $playerAchievement, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $playerAchievement->incrementProgress($data['amount'] ?? null);
+        $this->repository->save($playerAchievement, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['POST'])]
+    public function complete(PlayerAchievement $playerAchievement): JsonResponse
+    {
+        $playerAchievement->complete();
+        $this->repository->save($playerAchievement, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

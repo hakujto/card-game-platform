@@ -44,4 +44,13 @@ class TournamentRoundService
         $entity->generatePairings();
         $this->repository->save($entity, flush: true);
     }
+
+    public function isTimeExpired(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TournamentRound not found: ' . $id);
+        $result = $entity->isTimeExpired();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

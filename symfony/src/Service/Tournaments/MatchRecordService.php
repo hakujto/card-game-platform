@@ -39,6 +39,14 @@ class MatchRecordService
         return $result;
     }
 
+    public function concede(int $id, $playerId): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('MatchRecord not found: ' . $id);
+        $entity->concede($playerId);
+        $this->repository->save($entity, flush: true);
+    }
+
     public function draw(int $id): void
     {
         $entity = $this->repository->find($id);

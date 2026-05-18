@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
-use App\Entity\Marketplace\Tradelisting;
+use App\Entity\Marketplace\TradeListing;
 
 class TradeTransactionApiTest extends WebTestCase
 {
@@ -18,7 +18,7 @@ class TradeTransactionApiTest extends WebTestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $depListing;
+    private TradeListing $depListing;
     private Player $depBuyer;
     private Player $depSeller;
 
@@ -34,7 +34,7 @@ class TradeTransactionApiTest extends WebTestCase
         $this->auxCard = new Card();
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
-        $this->depListing = new Tradelisting();
+        $this->depListing = new TradeListing();
         $this->depListing->setSeller($this->auxPlayer);
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
@@ -44,8 +44,8 @@ class TradeTransactionApiTest extends WebTestCase
         $this->em->persist($this->depSeller);
 
         $entity = new TradeTransaction();
-        $entity->setFinalPrice('0.00');
-        $entity->setPlatformFee('0.00');
+        $entity->setFinalPrice('0.01');
+        $entity->setPlatformFee('NaN');
         $entity->setListing($this->depListing);
         $entity->setBuyer($this->depBuyer);
         $entity->setSeller($this->depSeller);
@@ -64,15 +64,15 @@ class TradeTransactionApiTest extends WebTestCase
 
     public function testCreateReturns201(): void
     {
-        $freshListing = new Tradelisting();
+        $freshListing = new TradeListing();
         $freshListing->setSeller($this->auxPlayer);
         $freshListing->setCard($this->auxCard);
         $this->em->persist($freshListing);
         $this->em->flush();
         $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'finalPrice' => '0.00',
-            'platformFee' => '0.00',
+            'finalPrice' => '0.01',
+            'platformFee' => 'NaN',
             'listing' => (int) $freshListing->getId(),
             'buyer' => (int) $this->depBuyer->getId(),
             'seller' => (int) $this->depSeller->getId(),
@@ -91,7 +91,7 @@ class TradeTransactionApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/trade_transactions/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.00'])
+            json_encode(['finalPrice' => '0.01'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -107,7 +107,16 @@ class TradeTransactionApiTest extends WebTestCase
     {
         // Platform fee must not be negative
         $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.00', 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'platformFee' => -1])
+            json_encode(['finalPrice' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'platformFee' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenFinalPricePositiveViolated(): void
+    {
+        // Transaction final price must be greater than zero
+        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['platformFee' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'finalPrice' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -116,7 +125,7 @@ class TradeTransactionApiTest extends WebTestCase
     {
         // Completed transaction must have a completed_at timestamp
         $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.00', 'platformFee' => '0.00', 'status' => 'COMPLETED', 'completedAt' => null])
+            json_encode(['finalPrice' => '0.00', 'platformFee' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }

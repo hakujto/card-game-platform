@@ -75,4 +75,39 @@ class DeckApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenWinsNotNegativeViolated(): void
+    {
+        // Deck wins count must not be negative
+        $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'losses' => 1, 'draws' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'isTournamentLegal' => true, 'isPublic' => true, 'wins' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenLossesNotNegativeViolated(): void
+    {
+        // Deck losses count must not be negative
+        $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'wins' => 1, 'draws' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'isTournamentLegal' => true, 'isPublic' => true, 'losses' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenDrawsNotNegativeViolated(): void
+    {
+        // Deck draws count must not be negative
+        $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'wins' => 1, 'losses' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'isTournamentLegal' => true, 'isPublic' => true, 'draws' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenTournamentLegalDeckMustBeValidatedViolated(): void
+    {
+        // Tournament-legal deck must be made public
+        $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'wins' => 1, 'losses' => 1, 'draws' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'isTournamentLegal' => true, 'isPublic' => false])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

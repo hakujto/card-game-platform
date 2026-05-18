@@ -28,6 +28,10 @@ class CardSet
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private ?\DateTimeInterface $releaseDate = null;
 
+    #[ORM\Column(type: 'date', nullable: true)]
+    #[Groups(['cardSet:read', 'cardSet:write'])]
+    private ?\DateTimeInterface $rotationDate = null;
+
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private string $setType = 'Expansion';
@@ -35,6 +39,10 @@ class CardSet
     #[ORM\Column(type: 'integer')]
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private int $totalCards = 0;
+
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['cardSet:read', 'cardSet:write'])]
+    private bool $isRotated = false;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['cardSet:read', 'cardSet:write'])]
@@ -82,6 +90,17 @@ class CardSet
         return $this;
     }
 
+    public function getRotationDate(): ?\DateTimeInterface
+    {
+        return $this->rotationDate;
+    }
+
+    public function setRotationDate(?\DateTimeInterface $rotationDate): static
+    {
+        $this->rotationDate = $rotationDate;
+        return $this;
+    }
+
     public function getSetType(): string
     {
         return $this->setType;
@@ -101,6 +120,17 @@ class CardSet
     public function setTotalCards(int $totalCards): static
     {
         $this->totalCards = $totalCards;
+        return $this;
+    }
+
+    public function getIsRotated(): bool
+    {
+        return $this->isRotated;
+    }
+
+    public function setIsRotated(bool $isRotated): static
+    {
+        $this->isRotated = $isRotated;
         return $this;
     }
 
@@ -126,11 +156,44 @@ class CardSet
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Card set must have at least one card")]
+    public function isTotalCardsPositiveValid(): bool
+    {
+        return ($this->getTotalCards() === null || $this->getTotalCards() > 0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getRotationDate() !== null && !(($this->getRotationDate() === null || ($this->getReleaseDate() !== null && $this->getRotationDate() > $this->getReleaseDate())))) {
+            throw new \DomainException('Rotation date must be after release date');
+        }
+        if ($this->getIsRotated() === true && $this->getRotationDate() === null) {
+            throw new \DomainException('Rotated set must have a rotation date');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function isLegalInStandard(): void
     {
         throw new \RuntimeException('is_legal_in_standard not implemented');
+    }
+
+    public function isLegalInFormat($format): void
+    {
+        throw new \RuntimeException('is_legal_in_format not implemented');
+    }
+
+    public function cardCountByRarity($rarity): void
+    {
+        throw new \RuntimeException('card_count_by_rarity not implemented');
+    }
+
+    public function rotateOut(): void
+    {
+        throw new \RuntimeException('rotate_out not implemented');
     }
 
 }

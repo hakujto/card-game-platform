@@ -70,4 +70,30 @@ class CardSetApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenTotalCardsPositiveViolated(): void
+    {
+        // Card set must have at least one card
+        $this->client->request('POST', '/api/card_sets', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'code' => 'test', 'releaseDate' => '2024-01-01', 'setType' => 'CORE', 'rotationDate' => '2024-01-01', 'isRotated' => true, 'rotationDate' => '2024-01-01', 'totalCards' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenRotationDateAfterReleaseViolated(): void
+    {
+        // Rotation date must be after release date
+        $this->client->request('POST', '/api/card_sets', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'code' => 'test', 'releaseDate' => '2024-01-01', 'setType' => 'CORE', 'totalCards' => 1, 'isRotated' => true, 'rotationDate' => '2024-01-01', 'rotationDate' => '2024-01-01'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenRotatedSetHasRotationDateViolated(): void
+    {
+        // Rotated set must have a rotation date
+        $this->client->request('POST', '/api/card_sets', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'code' => 'test', 'releaseDate' => '2024-01-01', 'setType' => 'CORE', 'totalCards' => 1, 'isRotated' => true, 'rotationDate' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

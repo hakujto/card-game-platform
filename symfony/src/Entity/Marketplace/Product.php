@@ -200,6 +200,25 @@ class Product
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Product price must be greater than zero")]
+    public function isPricePositiveValid(): bool
+    {
+        return ($this->getPrice() === null || (float)$this->getPrice() > (float)0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Product stock must not be negative")]
+    public function isStockNotNegativeValid(): bool
+    {
+        return ($this->getStock() === null || $this->getStock() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Product discount percent must be between 0 and 100")]
+    public function isDiscountPercentRangeValid(): bool
+    {
+        return ($this->getDiscountPercent() === null || ($this->getDiscountPercent() >= 0 && $this->getDiscountPercent() <= 100));
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function activate(): void

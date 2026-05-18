@@ -29,9 +29,9 @@ class TradeBid
     #[Groups(['tradeBid:read', 'tradeBid:write'])]
     private bool $isWinning = false;
 
-    #[ORM\ManyToOne(targetEntity: Tradelisting::class, inversedBy: 'bids')]
+    #[ORM\ManyToOne(targetEntity: TradeListing::class, inversedBy: 'bids')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Tradelisting $listing = null;
+    private ?TradeListing $listing = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'bids')]
     #[ORM\JoinColumn(nullable: false)]
@@ -81,12 +81,12 @@ class TradeBid
         return $this->listing?->getId();
     }
 
-    public function getListing(): ?Tradelisting
+    public function getListing(): ?TradeListing
     {
         return $this->listing;
     }
 
-    public function setListing(?Tradelisting $listing): static
+    public function setListing(?TradeListing $listing): static
     {
         $this->listing = $listing;
         return $this;
@@ -121,6 +121,11 @@ class TradeBid
     public function outbidBy($newAmount): void
     {
         throw new \RuntimeException('outbid_by not implemented');
+    }
+
+    public function retract(): void
+    {
+        throw new \RuntimeException('retract not implemented');
     }
 
 }

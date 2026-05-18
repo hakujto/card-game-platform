@@ -82,4 +82,12 @@ class PlayerCollectionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenQuantityPositiveViolated(): void
+    {
+        // Collection quantity must be greater than zero
+        $this->client->request('POST', '/api/player_collections', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['foil' => true, 'condition' => 'MINT', 'acquiredAt' => '2024-01-01T00:00:00+00:00', 'acquiredVia' => 'PURCHASE', 'playerId' => 1, 'cardId' => 1, 'quantity' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

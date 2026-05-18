@@ -83,7 +83,16 @@ class ArticleApiTest extends WebTestCase
     {
         // Published article must have a published_at timestamp
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'viewCount' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'PUBLISHED', 'publishedAt' => null])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'viewCount' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => null])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenViewCountNotNegativeViolated(): void
+    {
+        // Article view count must not be negative
+        $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'viewCount' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

@@ -79,7 +79,25 @@ class StreamApiTest extends WebTestCase
     {
         // actual_start_requires_live_or_ended
         $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'actualStart' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenEndedAtRequiresEndedStatusViolated(): void
+    {
+        // ended_at can only be set when stream status is Ended
+        $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00'])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenViewerCountNotNegativeViolated(): void
+    {
+        // Peak viewer count must not be negative
+        $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00', 'status' => 'LIVE', 'endedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'ENDED', 'viewerCountPeak' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

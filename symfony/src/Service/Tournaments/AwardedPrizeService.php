@@ -21,4 +21,22 @@ class AwardedPrizeService
         throw new \LogicException('Not implemented');
     }
 
+    public function claim(int $id): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('AwardedPrize not found: ' . $id);
+        $entity->claim();
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function setClaimed(int $id, string $value): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('AwardedPrize not found: ' . $id);
+        $entity->setClaimed($value);
+        if ($value === 'TRUE') {
+            $entity->claim(); // @on(claimed = true)
+        }
+        $this->repository->save($entity, flush: true);
+    }
 }

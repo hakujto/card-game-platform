@@ -51,6 +51,10 @@ class Deck
     #[Groups(['deck:read', 'deck:write'])]
     private int $losses = 0;
 
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['deck:read', 'deck:write'])]
+    private int $draws = 0;
+
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['deck:read', 'deck:write'])]
     private ?\DateTimeInterface $createdAt = null;
@@ -175,6 +179,17 @@ class Deck
         return $this;
     }
 
+    public function getDraws(): int
+    {
+        return $this->draws;
+    }
+
+    public function setDraws(int $draws): static
+    {
+        $this->draws = $draws;
+        return $this;
+    }
+
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -271,11 +286,53 @@ class Deck
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Deck wins count must not be negative")]
+    public function isWinsNotNegativeValid(): bool
+    {
+        return ($this->getWins() === null || $this->getWins() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Deck losses count must not be negative")]
+    public function isLossesNotNegativeValid(): bool
+    {
+        return ($this->getLosses() === null || $this->getLosses() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Deck draws count must not be negative")]
+    public function isDrawsNotNegativeValid(): bool
+    {
+        return ($this->getDraws() === null || $this->getDraws() >= 0);
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getIsTournamentLegal() === true && !($this->getIsPublic() === true)) {
+            throw new \DomainException('Tournament-legal deck must be made public');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function validateSize(): void
     {
         throw new \RuntimeException('validate_size not implemented');
+    }
+
+    public function addCard($cardId, $quantity): void
+    {
+        throw new \RuntimeException('add_card not implemented');
+    }
+
+    public function removeCard($cardId): void
+    {
+        throw new \RuntimeException('remove_card not implemented');
+    }
+
+    public function winRate(): void
+    {
+        throw new \RuntimeException('win_rate not implemented');
     }
 
     public function clone(): void

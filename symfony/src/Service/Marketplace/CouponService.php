@@ -21,6 +21,24 @@ class CouponService
         throw new \LogicException('Not implemented');
     }
 
+    public function isValid(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Coupon not found: ' . $id);
+        $result = $entity->isValid();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function isApplicableToOrder(int $id, $orderTotal): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Coupon not found: ' . $id);
+        $result = $entity->isApplicableToOrder($orderTotal);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
     public function redeem(int $id): void
     {
         $entity = $this->repository->find($id);

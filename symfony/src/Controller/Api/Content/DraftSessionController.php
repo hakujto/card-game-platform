@@ -49,6 +49,12 @@ class DraftSessionController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $draftSession->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($draftSession, flush: true);
         return $this->json($draftSession, Response::HTTP_CREATED, context: ['groups' => ['draftSession:read']]);
     }
@@ -77,6 +83,12 @@ class DraftSessionController extends AbstractController
         $errors = $this->validator->validate($draftSession);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $draftSession->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($draftSession, flush: true);
@@ -112,5 +124,13 @@ class DraftSessionController extends AbstractController
         $draftSession->complete();
         $this->repository->save($draftSession, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/full', name: 'isFull', methods: ['GET'])]
+    public function isFull(DraftSession $draftSession): JsonResponse
+    {
+        $result = $draftSession->isFull();
+        $this->repository->save($draftSession, flush: true);
+        return $this->json($result);
     }
 }

@@ -310,6 +310,12 @@ class Card
         if ($this->getCardType() === 'PLANESWALKER' && $this->getLoyalty() === null) {
             throw new \DomainException('Planeswalker card must have loyalty');
         }
+        if ($this->getCardType() !== 'PLANESWALKER' && $this->getLoyalty() !== null) {
+            throw new \DomainException('Only Planeswalker cards can have loyalty');
+        }
+        if ($this->getIsBanned() === true && true) {
+            throw new \DomainException('banned_card_not_in_legal_formats');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────
@@ -337,6 +343,16 @@ class Card
     public function calculateValue(): void
     {
         throw new \RuntimeException('calculate_value not implemented');
+    }
+
+    public function applyRarityBonus($multiplier): void
+    {
+        throw new \RuntimeException('apply_rarity_bonus not implemented');
+    }
+
+    public function isLegalInFormat($format): void
+    {
+        throw new \RuntimeException('is_legal_in_format not implemented');
     }
 
 }

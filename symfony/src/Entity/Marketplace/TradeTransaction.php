@@ -33,9 +33,9 @@ class TradeTransaction
     #[Groups(['tradeTransaction:read', 'tradeTransaction:write'])]
     private ?\DateTimeInterface $completedAt = null;
 
-    #[ORM\OneToOne(targetEntity: Tradelisting::class)]
+    #[ORM\OneToOne(targetEntity: TradeListing::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Tradelisting $listing = null;
+    private ?TradeListing $listing = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'purchases')]
     #[ORM\JoinColumn(nullable: false)]
@@ -100,12 +100,12 @@ class TradeTransaction
         return $this->listing?->getId();
     }
 
-    public function getListing(): ?Tradelisting
+    public function getListing(): ?TradeListing
     {
         return $this->listing;
     }
 
-    public function setListing(?Tradelisting $listing): static
+    public function setListing(?TradeListing $listing): static
     {
         $this->listing = $listing;
         return $this;
@@ -156,6 +156,12 @@ class TradeTransaction
     public function isFeeNotNegativeValid(): bool
     {
         return ($this->getPlatformFee() === null || (float)$this->getPlatformFee() >= (float)0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Transaction final price must be greater than zero")]
+    public function isFinalPricePositiveValid(): bool
+    {
+        return ($this->getFinalPrice() === null || (float)$this->getFinalPrice() > (float)0);
     }
 
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────

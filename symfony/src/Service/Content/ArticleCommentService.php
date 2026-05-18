@@ -36,4 +36,13 @@ class ArticleCommentService
         $entity->unhide();
         $this->repository->save($entity, flush: true);
     }
+
+    public function isReply(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('ArticleComment not found: ' . $id);
+        $result = $entity->isReply();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

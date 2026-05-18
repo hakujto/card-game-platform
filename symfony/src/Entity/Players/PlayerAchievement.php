@@ -108,12 +108,31 @@ class PlayerAchievement
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Achievement progress must not be negative")]
+    public function isProgressNotNegativeValid(): bool
+    {
+        return ($this->getProgress() === null || $this->getProgress() >= 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->getIsCompleted() === true && !(($this->getProgress() === null || $this->getProgress() > 0))) {
             throw new \DomainException('Completed achievement must have progress greater than zero');
         }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function incrementProgress($amount): void
+    {
+        throw new \RuntimeException('increment_progress not implemented');
+    }
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
     }
 
 }

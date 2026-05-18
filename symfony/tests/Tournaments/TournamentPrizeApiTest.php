@@ -88,7 +88,7 @@ class TournamentPrizeApiTest extends WebTestCase
     {
         // placement_from must be greater than zero
         $this->client->request('POST', '/api/tournament_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['placementTo' => 1, 'prizeType' => 'CURRENCY', 'amount' => '0.00', 'seasonPoints' => 1, 'placementFrom' => 0])
+            json_encode(['placementTo' => 1, 'prizeType' => 'CURRENCY', 'amount' => '0.00', 'seasonPoints' => 1, 'tournamentId' => 1, 'placementFrom' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -97,7 +97,7 @@ class TournamentPrizeApiTest extends WebTestCase
     {
         // Prize amount must not be negative
         $this->client->request('POST', '/api/tournament_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['placementFrom' => 1, 'placementTo' => 1, 'prizeType' => 'CURRENCY', 'seasonPoints' => 1, 'amount' => -1])
+            json_encode(['placementFrom' => 1, 'placementTo' => 1, 'prizeType' => 'CURRENCY', 'seasonPoints' => 1, 'tournamentId' => 1, 'amount' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

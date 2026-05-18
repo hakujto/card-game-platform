@@ -163,4 +163,21 @@ class CardController extends AbstractController
         $this->repository->save($card, flush: true);
         return $this->json($result);
     }
+
+    #[Route('/{id}/rarity-bonus', name: 'applyRarityBonus', methods: ['POST'])]
+    public function applyRarityBonus(Card $card, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $result = $card->applyRarityBonus($data['multiplier'] ?? null);
+        $this->repository->save($card, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/legal', name: 'isLegalInFormat', methods: ['GET'])]
+    public function isLegalInFormat(Card $card): JsonResponse
+    {
+        $result = $card->isLegalInFormat($format);
+        $this->repository->save($card, flush: true);
+        return $this->json($result);
+    }
 }

@@ -170,6 +170,12 @@ class Game
         if ($this->getDurationSeconds() !== null && !(($this->getDurationSeconds() === null || $this->getDurationSeconds() > 0))) {
             throw new \DomainException('Game duration must be greater than zero');
         }
+        if ($this->getWinnerSide() === 'DRAW' && $this->getWinner() !== null) {
+            throw new \DomainException('A draw cannot have a winner');
+        }
+        if (($this->getWinnerSide() !== null && $this->getWinnerSide() !== 'DRAW') && $this->getWinner() === null) {
+            throw new \DomainException('A decisive game must have a winner player set');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

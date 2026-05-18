@@ -21,6 +21,22 @@ class PlayerCollectionService
         throw new \LogicException('Not implemented');
     }
 
+    public function add(int $id, $quantity): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('PlayerCollection not found: ' . $id);
+        $entity->add($quantity);
+        $this->repository->save($entity, flush: true);
+    }
+
+    public function remove(int $id, $quantity): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('PlayerCollection not found: ' . $id);
+        $entity->remove($quantity);
+        $this->repository->save($entity, flush: true);
+    }
+
     public function estimatedValue(int $id): mixed
     {
         $entity = $this->repository->find($id);

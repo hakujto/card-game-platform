@@ -84,4 +84,21 @@ class CardPriceHistoryApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenVolumeNotNegativeViolated(): void
+    {
+        // Price history volume must not be negative
+        $this->client->request('POST', '/api/card_price_histories', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['priceDate' => '2024-01-01', 'avgPrice' => '0.00', 'minPrice' => '0.00', 'maxPrice' => '0.00', 'foil' => true, 'cardId' => 1, 'volume' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenPricesNotNegativeViolated(): void
+    {
+        // Prices must not be negative
+        $this->client->request('POST', '/api/card_price_histories', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['priceDate' => '2024-01-01', 'avgPrice' => '0.00', 'maxPrice' => '0.00', 'volume' => 1, 'foil' => true, 'cardId' => 1, 'minPrice' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

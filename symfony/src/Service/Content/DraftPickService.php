@@ -21,4 +21,12 @@ class DraftPickService
         throw new \LogicException('Not implemented');
     }
 
+    public function isFirstPick(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DraftPick not found: ' . $id);
+        $result = $entity->isFirstPick();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

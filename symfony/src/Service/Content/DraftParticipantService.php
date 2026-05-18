@@ -28,4 +28,13 @@ class DraftParticipantService
         $entity->pickCard($cardId, $packNumber);
         $this->repository->save($entity, flush: true);
     }
+
+    public function draftedCardCount(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DraftParticipant not found: ' . $id);
+        $result = $entity->draftedCardCount();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

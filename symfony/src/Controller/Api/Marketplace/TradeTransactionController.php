@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Entity\Marketplace\Tradelisting;
-use App\Repository\Marketplace\TradelistingRepository;
+use App\Entity\Marketplace\TradeListing;
+use App\Repository\Marketplace\TradeListingRepository;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 
@@ -21,7 +21,7 @@ class TradeTransactionController extends AbstractController
     public function __construct(
         private TradeTransactionRepository $repository,
         private ValidatorInterface $validator,
-        private TradelistingRepository $tradelistingRepository,
+        private TradeListingRepository $tradeListingRepository,
         private PlayerRepository $playerRepository,
     ) {}
 
@@ -42,7 +42,7 @@ class TradeTransactionController extends AbstractController
         if (isset($data['status'])) $tradeTransaction->setStatus($data['status']);
         if (isset($data['completedAt'])) $tradeTransaction->setCompletedAt(new \DateTime($data['completedAt']));
         if (!isset($data['listing'])) return $this->json(['error' => 'listing is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        $rel_listing = $this->tradelistingRepository->find($data['listing']);
+        $rel_listing = $this->tradeListingRepository->find($data['listing']);
         if (!$rel_listing) return $this->json(['error' => 'TradeListing not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $tradeTransaction->setListing($rel_listing);
         if (!isset($data['buyer'])) return $this->json(['error' => 'buyer is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -84,7 +84,7 @@ class TradeTransactionController extends AbstractController
         if (isset($data['status'])) $tradeTransaction->setStatus($data['status']);
         if (isset($data['completedAt'])) $tradeTransaction->setCompletedAt(new \DateTime($data['completedAt']));
         if (isset($data['listing'])) {
-            $rel_listing = $this->tradelistingRepository->find($data['listing']);
+            $rel_listing = $this->tradeListingRepository->find($data['listing']);
             if (!$rel_listing) return $this->json(['error' => 'TradeListing not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
             $tradeTransaction->setListing($rel_listing);
         }
@@ -144,5 +144,13 @@ class TradeTransactionController extends AbstractController
         $tradeTransaction->openDispute($data['reason'] ?? null);
         $this->repository->save($tradeTransaction, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/seller-net', name: 'sellerNet', methods: ['GET'])]
+    public function sellerNet(TradeTransaction $tradeTransaction): JsonResponse
+    {
+        $result = $tradeTransaction->sellerNet();
+        $this->repository->save($tradeTransaction, flush: true);
+        return $this->json($result);
     }
 }

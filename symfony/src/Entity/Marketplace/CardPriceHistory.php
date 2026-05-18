@@ -140,6 +140,18 @@ class CardPriceHistory
         return (($this->getMinPrice() === null || ($this->getAvgPrice() !== null && (float)$this->getMinPrice() <= (float)$this->getAvgPrice())) && ($this->getAvgPrice() === null || ($this->getMaxPrice() !== null && (float)$this->getAvgPrice() <= (float)$this->getMaxPrice())));
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Price history volume must not be negative")]
+    public function isVolumeNotNegativeValid(): bool
+    {
+        return ($this->getVolume() === null || $this->getVolume() >= 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Prices must not be negative")]
+    public function isPricesNotNegativeValid(): bool
+    {
+        return ($this->getMinPrice() === null || (float)$this->getMinPrice() >= (float)0);
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function priceChangePercent($previousAvg): void

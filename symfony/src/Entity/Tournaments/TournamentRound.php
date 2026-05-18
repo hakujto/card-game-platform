@@ -117,11 +117,27 @@ class TournamentRound
         return $this;
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Round number must be greater than zero")]
+    public function isRoundNumberPositiveValid(): bool
+    {
+        return ($this->getRoundNumber() === null || $this->getRoundNumber() > 0);
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Round time limit must be greater than zero")]
+    public function isTimeLimitPositiveValid(): bool
+    {
+        return ($this->getTimeLimitMinutes() === null || $this->getTimeLimitMinutes() > 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->getEndedAt() !== null && !(($this->getEndedAt() === null || ($this->getStartedAt() !== null && $this->getEndedAt() > $this->getStartedAt())))) {
             throw new \DomainException('Round end time must be after start time');
+        }
+        if ($this->getStatus() === 'COMPLETED' && $this->getStartedAt() === null) {
+            throw new \DomainException('Completed round must have a start time');
         }
     }
 

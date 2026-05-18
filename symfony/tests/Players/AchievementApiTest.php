@@ -66,4 +66,12 @@ class AchievementApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPointsPositiveViolated(): void
+    {
+        // Achievement must award at least one point
+        $this->client->request('POST', '/api/achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'description' => 'test', 'rarity' => 'COMMON', 'isHidden' => true, 'points' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

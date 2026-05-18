@@ -173,4 +173,9 @@ class TournamentPrize
         throw new \RuntimeException('applies_to_placement not implemented');
     }
 
+    public function awardToPlayer($playerId): void
+    {
+        throw new \RuntimeException('award_to_player not implemented');
+    }
+
 }

@@ -137,4 +137,20 @@ class ProductController extends AbstractController
         $this->repository->save($product, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
+
+    #[Route('/{id}/effective-price', name: 'effectivePrice', methods: ['GET'])]
+    public function effectivePrice(Product $product): JsonResponse
+    {
+        $result = $product->effectivePrice();
+        $this->repository->save($product, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/in-stock', name: 'isInStock', methods: ['GET'])]
+    public function isInStock(Product $product): JsonResponse
+    {
+        $result = $product->isInStock();
+        $this->repository->save($product, flush: true);
+        return $this->json($result);
+    }
 }

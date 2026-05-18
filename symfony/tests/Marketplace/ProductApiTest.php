@@ -19,7 +19,7 @@ class ProductApiTest extends WebTestCase
 
         $entity = new Product();
         $entity->setName('test');
-        $entity->setPrice('0.00');
+        $entity->setPrice('0.01');
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -38,7 +38,7 @@ class ProductApiTest extends WebTestCase
         $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'price' => '0.00',
+            'price' => '0.01',
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -66,4 +66,30 @@ class ProductApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenPricePositiveViolated(): void
+    {
+        // Product price must be greater than zero
+        $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'productType' => 'SINGLECARD', 'stock' => 1, 'active' => true, 'discountPercent' => 1, 'featured' => true, 'price' => 0])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenStockNotNegativeViolated(): void
+    {
+        // Product stock must not be negative
+        $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'productType' => 'SINGLECARD', 'price' => '0.00', 'active' => true, 'discountPercent' => 1, 'featured' => true, 'stock' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenDiscountPercentRangeViolated(): void
+    {
+        // Product discount percent must be between 0 and 100
+        $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'test', 'productType' => 'SINGLECARD', 'price' => '0.00', 'stock' => 1, 'active' => true, 'featured' => true, 'discountPercent' => 101])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

@@ -94,4 +94,20 @@ class TournamentPrizeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/applies', name: 'appliesToPlacement', methods: ['GET'])]
+    public function appliesToPlacement(TournamentPrize $tournamentPrize): JsonResponse
+    {
+        $result = $tournamentPrize->appliesToPlacement($placement);
+        $this->repository->save($tournamentPrize, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/award', name: 'awardToPlayer', methods: ['POST'])]
+    public function awardToPlayer(TournamentPrize $tournamentPrize, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tournamentPrize->awardToPlayer($data['playerId'] ?? null);
+        $this->repository->save($tournamentPrize, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

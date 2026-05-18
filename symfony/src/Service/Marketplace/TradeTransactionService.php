@@ -44,4 +44,13 @@ class TradeTransactionService
         $entity->openDispute($reason);
         $this->repository->save($entity, flush: true);
     }
+
+    public function sellerNet(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('TradeTransaction not found: ' . $id);
+        $result = $entity->sellerNet();
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

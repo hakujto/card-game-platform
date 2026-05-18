@@ -42,6 +42,7 @@ class DeckController extends AbstractController
         if (isset($data['archetype'])) $deck->setArchetype($data['archetype']);
         if (isset($data['wins'])) $deck->setWins($data['wins']);
         if (isset($data['losses'])) $deck->setLosses($data['losses']);
+        if (isset($data['draws'])) $deck->setDraws($data['draws']);
         if (isset($data['createdAt'])) $deck->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $deck->setUpdatedAt(new \DateTime($data['updatedAt']));
         if (!isset($data['player'])) return $this->json(['error' => 'player is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -52,6 +53,12 @@ class DeckController extends AbstractController
         $errors = $this->validator->validate($deck);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $deck->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($deck, flush: true);
@@ -76,6 +83,7 @@ class DeckController extends AbstractController
         if (isset($data['archetype'])) $deck->setArchetype($data['archetype']);
         if (isset($data['wins'])) $deck->setWins($data['wins']);
         if (isset($data['losses'])) $deck->setLosses($data['losses']);
+        if (isset($data['draws'])) $deck->setDraws($data['draws']);
         if (isset($data['createdAt'])) $deck->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $deck->setUpdatedAt(new \DateTime($data['updatedAt']));
         if (isset($data['player'])) {
@@ -87,6 +95,12 @@ class DeckController extends AbstractController
         $errors = $this->validator->validate($deck);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $deck->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($deck, flush: true);
@@ -104,6 +118,31 @@ class DeckController extends AbstractController
     public function validateSize(Deck $deck): JsonResponse
     {
         $result = $deck->validateSize();
+        $this->repository->save($deck, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/cards', name: 'addCard', methods: ['POST'])]
+    public function addCard(Deck $deck, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $deck->addCard($data['cardId'] ?? null, $data['quantity'] ?? null);
+        $this->repository->save($deck, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/cards/{card_id}', name: 'removeCard', methods: ['DELETE'])]
+    public function removeCard(Deck $deck, mixed $cardId): JsonResponse
+    {
+        $deck->removeCard($cardId);
+        $this->repository->save($deck, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/win-rate', name: 'winRate', methods: ['GET'])]
+    public function winRate(Deck $deck): JsonResponse
+    {
+        $result = $deck->winRate();
         $this->repository->save($deck, flush: true);
         return $this->json($result);
     }

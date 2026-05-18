@@ -4,66 +4,66 @@ namespace App\Entity\Marketplace;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\Repository\Marketplace\TradelistingRepository;
+use App\Repository\Marketplace\TradeListingRepository;
 use App\Entity\Players\Player;
 use App\Entity\Cards\Card;
 
-#[ORM\Entity(repositoryClass: TradelistingRepository::class)]
-#[ORM\Table(name: 'tradelisting')]
-class Tradelisting
+#[ORM\Entity(repositoryClass: TradeListingRepository::class)]
+#[ORM\Table(name: 'trade_listing')]
+class TradeListing
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['tradelisting:read'])]
+    #[Groups(['tradeListing:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private string $listingType = 'FixedPrice';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?string $askingPrice = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?string $auctionStartPrice = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?string $auctionCurrentBid = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $auctionEndTime = null;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private bool $foil = false;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private string $condition = 'Mint';
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private int $quantity = 1;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private string $status = 'Active';
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    #[Groups(['tradelisting:read', 'tradelisting:write'])]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $expiresAt = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'trade_listings')]
@@ -211,7 +211,7 @@ class Tradelisting
         return $this;
     }
 
-    #[Groups(['tradelisting:read'])]
+    #[Groups(['tradeListing:read'])]
     public function getSellerId(): ?int
     {
         return $this->seller?->getId();
@@ -228,7 +228,7 @@ class Tradelisting
         return $this;
     }
 
-    #[Groups(['tradelisting:read'])]
+    #[Groups(['tradeListing:read'])]
     public function getCardId(): ?int
     {
         return $this->card?->getId();

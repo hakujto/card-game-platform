@@ -85,4 +85,12 @@ class DeckSideboardCardApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
     }
 
+    public function testCreateFailsWhenQuantityRangeViolated(): void
+    {
+        // Sideboard card quantity must be between 1 and 4 copies
+        $this->client->request('POST', '/api/deck_sideboard_cards', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['deckId' => 1, 'cardId' => 1, 'quantity' => 5])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
 }

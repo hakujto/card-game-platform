@@ -171,4 +171,21 @@ class TournamentController extends AbstractController
         $this->repository->save($tournament, flush: true);
         return $this->json($result);
     }
+
+    #[Route('/{id}/register', name: 'registerPlayer', methods: ['POST'])]
+    public function registerPlayer(Tournament $tournament, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $tournament->registerPlayer($data['playerId'] ?? null, $data['deckId'] ?? null);
+        $this->repository->save($tournament, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/full', name: 'isFull', methods: ['GET'])]
+    public function isFull(Tournament $tournament): JsonResponse
+    {
+        $result = $tournament->isFull();
+        $this->repository->save($tournament, flush: true);
+        return $this->json($result);
+    }
 }

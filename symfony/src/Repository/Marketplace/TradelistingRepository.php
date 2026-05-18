@@ -2,21 +2,21 @@
 
 namespace App\Repository\Marketplace;
 
-use App\Entity\Marketplace\Tradelisting;
+use App\Entity\Marketplace\TradeListing;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Tradelisting>
+ * @extends ServiceEntityRepository<TradeListing>
  */
-class TradelistingRepository extends ServiceEntityRepository
+class TradeListingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Tradelisting::class);
+        parent::__construct($registry, TradeListing::class);
     }
 
-    public function save(Tradelisting $entity, bool $flush = false): void
+    public function save(TradeListing $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
         if ($flush) {
@@ -24,7 +24,7 @@ class TradelistingRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Tradelisting $entity, bool $flush = false): void
+    public function remove(TradeListing $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
         if ($flush) {

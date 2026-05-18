@@ -100,4 +100,16 @@ class DeckCard
         return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 4));
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function increment($amount): void
+    {
+        throw new \RuntimeException('increment not implemented');
+    }
+
+    public function decrement($amount): void
+    {
+        throw new \RuntimeException('decrement not implemented');
+    }
+
 }

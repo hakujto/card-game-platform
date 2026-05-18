@@ -83,4 +83,19 @@ class AchievementController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/point-value', name: 'pointValue', methods: ['GET'])]
+    public function pointValue(Achievement $achievement): JsonResponse
+    {
+        $result = $achievement->pointValue($multiplier);
+        $this->repository->save($achievement, flush: true);
+        return $this->json($result);
+    }
+
+    #[Route('/{id}/reveal', name: 'reveal', methods: ['POST'])]
+    public function reveal(Achievement $achievement): JsonResponse
+    {
+        $achievement->reveal();
+        $this->repository->save($achievement, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 }

@@ -21,4 +21,21 @@ class CardPriceHistoryService
         throw new \LogicException('Not implemented');
     }
 
+    public function priceChangePercent(int $id, $previousAvg): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('CardPriceHistory not found: ' . $id);
+        $result = $entity->priceChangePercent($previousAvg);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function isPriceSpike(int $id, $thresholdPercent): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('CardPriceHistory not found: ' . $id);
+        $result = $entity->isPriceSpike($thresholdPercent);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
 }

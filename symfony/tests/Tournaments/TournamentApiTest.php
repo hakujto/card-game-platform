@@ -87,7 +87,7 @@ class TournamentApiTest extends WebTestCase
     {
         // Tournament must allow between 2 and 512 players
         $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'maxPlayers' => 513])
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'seasonId' => 1, 'organizerId' => 1, 'endTime' => '2024-01-01T00:00:00+00:00', 'maxPlayers' => 513])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -96,7 +96,7 @@ class TournamentApiTest extends WebTestCase
     {
         // Entry fee must not be negative
         $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'entryFee' => -1])
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'seasonId' => 1, 'organizerId' => 1, 'endTime' => '2024-01-01T00:00:00+00:00', 'entryFee' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -105,7 +105,7 @@ class TournamentApiTest extends WebTestCase
     {
         // Prize pool must not be negative
         $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'prizePool' => -1])
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'seasonId' => 1, 'organizerId' => 1, 'endTime' => '2024-01-01T00:00:00+00:00', 'prizePool' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -114,7 +114,7 @@ class TournamentApiTest extends WebTestCase
     {
         // End time must be after start time
         $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['name' => 'test', 'format' => 'STANDARD', 'tournamentType' => 'SWISS', 'status' => 'DRAFT', 'maxPlayers' => 1, 'entryFee' => '0.00', 'prizePool' => '0.00', 'startTime' => '2024-01-01T00:00:00+00:00', 'isOnline' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'seasonId' => 1, 'organizerId' => 1, 'endTime' => '2024-01-01T00:00:00+00:00', 'endTime' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }

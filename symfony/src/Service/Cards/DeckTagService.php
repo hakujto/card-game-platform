@@ -21,6 +21,14 @@ class DeckTagService
         throw new \LogicException('Not implemented');
     }
 
+    public function rename(int $id, $newName): void
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('DeckTag not found: ' . $id);
+        $entity->rename($newName);
+        $this->repository->save($entity, flush: true);
+    }
+
     public function mergeInto(int $id, $targetTagId): void
     {
         $entity = $this->repository->find($id);
