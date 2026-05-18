@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # GET /api/card_price_histories/:id/change
+      def price_change_percent
+        @cardPriceHistory = CardPriceHistory.find(params[:id])
+        result = @cardPriceHistory.price_change_percent(previous_avg)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardPriceHistory not found' }, status: :not_found
+      end
+
+      # GET /api/card_price_histories/:id/spike
+      def is_price_spike
+        @cardPriceHistory = CardPriceHistory.find(params[:id])
+        result = @cardPriceHistory.is_price_spike(threshold_percent)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardPriceHistory not found' }, status: :not_found
+      end
+
       private
 
       def set_cardPriceHistory

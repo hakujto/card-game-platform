@@ -61,4 +61,16 @@ RSpec.describe "Api::Players::Achievements", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
+  describe "POST /api/achievements (rule: points_positive)" do
+    it "create fails when points positive violated" do
+      # Achievement must award at least one point
+      post "/api/achievements", params: { achievement: {
+        name: 'test',
+        description: 'test',
+        points: 0,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
 end

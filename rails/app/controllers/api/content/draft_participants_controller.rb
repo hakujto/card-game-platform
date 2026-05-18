@@ -50,6 +50,15 @@ module Api
         render json: { error: 'DraftParticipant not found' }, status: :not_found
       end
 
+      # GET /api/draft_participants/:id/card-count
+      def drafted_card_count
+        @draftParticipant = DraftParticipant.find(params[:id])
+        result = @draftParticipant.drafted_card_count()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftParticipant not found' }, status: :not_found
+      end
+
       private
 
       def set_draftParticipant

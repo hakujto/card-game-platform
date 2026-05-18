@@ -42,7 +42,7 @@ module Api
       # POST /api/players/:id/promote
       def promote
         @player = Player.find(params[:id])
-        result = @player.promote
+        result = @player.promote()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/players/:id/demote
       def demote
         @player = Player.find(params[:id])
-        result = @player.demote
+        result = @player.demote()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found
@@ -60,7 +60,7 @@ module Api
       # POST /api/players/:id/win
       def record_win
         @player = Player.find(params[:id])
-        @player.record_win
+        @player.record_win()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found
@@ -69,7 +69,7 @@ module Api
       # POST /api/players/:id/loss
       def record_loss
         @player = Player.find(params[:id])
-        @player.record_loss
+        @player.record_loss()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found
@@ -78,7 +78,7 @@ module Api
       # GET /api/players/:id/win-rate
       def win_rate
         @player = Player.find(params[:id])
-        result = @player.win_rate
+        result = @player.win_rate()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found
@@ -87,7 +87,7 @@ module Api
       # POST /api/players/:id/verify
       def verify
         @player = Player.find(params[:id])
-        @player.verify
+        @player.verify()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Player not found' }, status: :not_found

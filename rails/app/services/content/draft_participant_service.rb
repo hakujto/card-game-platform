@@ -17,5 +17,12 @@ module Content
       instance.pick_card(card_id, pack_number)
       instance.save!
     end
+
+    def drafted_card_count(id)
+      instance = DraftParticipant.find(id)
+      result = instance.drafted_card_count()
+      instance.save!
+      result
+    end
   end
 end

@@ -4,9 +4,9 @@ RSpec.describe "Api::Tournaments::Games", type: :request do
   before(:each) do
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
-    @aux_tournament_round = TournamentRound.create!({ round_number: 1, status: :pending, time_limit_minutes: 1, tournament_id: @aux_tournament.id })
-    @dep_match = Match.create!({ status: :pending, player1_wins: 1, player2_wins: 1, round_id: @aux_tournament_round.id, player1_id: @aux_player.id })
+    @aux_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
+    @aux_tournament_round = TournamentRound.create!({ round_number: 1, status: :pending, started_at: Time.now, ended_at: nil, time_limit_minutes: 1, tournament_id: @aux_tournament.id })
+    @dep_match = Match.create!({ status: :pending, player1_wins: 1, player2_wins: 1, started_at: Time.now, ended_at: nil, round_id: @aux_tournament_round.id, player1_id: @aux_player.id })
   end
 
   let(:valid_attributes) do
@@ -71,6 +71,8 @@ RSpec.describe "Api::Tournaments::Games", type: :request do
         match_id: 1,
         turns_played: 1,
         duration_seconds: 1,
+        winner: nil,
+        winner_id: 1,
         game_number: 4,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
@@ -96,6 +98,32 @@ RSpec.describe "Api::Tournaments::Games", type: :request do
         game_number: 1,
         match_id: 1,
         duration_seconds: 0,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/games (rule: draw_has_no_winner)" do
+    it "create fails when draw has no winner violated" do
+      # A draw cannot have a winner
+      post "/api/games", params: { game: {
+        game_number: 1,
+        match_id: 1,
+        winner_side: :draw,
+        winner_id: 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/games (rule: non_draw_requires_winner)" do
+    it "create fails when non draw requires winner violated" do
+      # A decisive game must have a winner player set
+      post "/api/games", params: { game: {
+        game_number: 1,
+        match_id: 1,
+        winner_side: :player1,
+        winner: nil,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
     end

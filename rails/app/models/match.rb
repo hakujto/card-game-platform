@@ -20,6 +20,8 @@ class Match < ApplicationRecord
 
   def validate_implies
     errors.add(:base, 'BYE match must not have a second player') if (status == 'b_y_e') && !player2.nil?
+    errors.add(:base, 'Match end time must be after start time') if (!ended_at.nil?) && !((ended_at.nil? || (!started_at.nil? && ended_at > started_at)))
+    errors.add(:base, 'Completed match must have a start time') if (status == 'completed') && started_at.nil?
   end
 
   def to_s
@@ -34,6 +36,10 @@ class Match < ApplicationRecord
 
   def determine_winner
     raise NotImplementedError, "determine_winner not implemented"
+  end
+
+  def concede(player_id)
+    raise NotImplementedError, "concede not implemented"
   end
 
   def draw

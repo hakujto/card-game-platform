@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # GET /api/trade_bids/:id/outbid
+      def outbid_by
+        @tradeBid = TradeBid.find(params[:id])
+        result = @tradeBid.outbid_by(new_amount)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeBid not found' }, status: :not_found
+      end
+
+      # DELETE /api/trade_bids/:id/retract
+      def retract
+        @tradeBid = TradeBid.find(params[:id])
+        @tradeBid.retract()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeBid not found' }, status: :not_found
+      end
+
       private
 
       def set_tradeBid

@@ -4,8 +4,8 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
   before(:each) do
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
-    @dep_round = TournamentRound.create!({ round_number: 1, status: :pending, time_limit_minutes: 1, tournament_id: @aux_tournament.id })
+    @aux_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
+    @dep_round = TournamentRound.create!({ round_number: 1, status: :pending, started_at: Time.now, ended_at: nil, time_limit_minutes: 1, tournament_id: @aux_tournament.id })
   end
 
   let(:valid_attributes) do
@@ -76,6 +76,8 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
         round_id: 1,
         player1_id: 1,
         player2: nil,
+        ended_at: Time.now,
+        started_at: Time.now,
         player1_wins: -1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
@@ -89,6 +91,8 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
         round_id: 1,
         player1_id: 1,
         player2: nil,
+        ended_at: Time.now,
+        started_at: Time.now,
         player1_wins: 3,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
@@ -103,6 +107,31 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
         player1_id: 1,
         status: :b_y_e,
         player2_id: 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/matches (rule: ended_after_started)" do
+    it "create fails when ended after started violated" do
+      # Match end time must be after start time
+      post "/api/matches", params: { match: {
+        round_id: 1,
+        player1_id: 1,
+        ended_at: Time.now - 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/matches (rule: completed_requires_started_at)" do
+    it "create fails when completed requires started at violated" do
+      # Completed match must have a start time
+      post "/api/matches", params: { match: {
+        round_id: 1,
+        player1_id: 1,
+        status: :completed,
+        started_at: nil,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
     end

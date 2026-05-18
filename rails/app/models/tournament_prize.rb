@@ -23,4 +23,8 @@ class TournamentPrize < ApplicationRecord
   def applies_to_placement(placement)
     raise NotImplementedError, "applies_to_placement not implemented"
   end
+
+  def award_to_player(player_id)
+    raise NotImplementedError, "award_to_player not implemented"
+  end
 end

@@ -29,5 +29,12 @@ module Marketplace
       instance.open_dispute(reason)
       instance.save!
     end
+
+    def seller_net(id)
+      instance = TradeTransaction.find(id)
+      result = instance.seller_net()
+      instance.save!
+      result
+    end
   end
 end

@@ -80,4 +80,17 @@ RSpec.describe "Api::Players::PlayerAchievements", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
   end
+
+  describe "POST /api/player_achievements (rule: progress_not_negative)" do
+    it "create fails when progress not negative violated" do
+      # Achievement progress must not be negative
+      post "/api/player_achievements", params: { player_achievement: {
+        earned_at: Time.now,
+        player_id: 1,
+        achievement_id: 1,
+        progress: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
 end

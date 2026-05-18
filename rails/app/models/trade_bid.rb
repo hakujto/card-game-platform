@@ -1,7 +1,7 @@
 class TradeBid < ApplicationRecord
   self.table_name = 'trade_bids'
 
-  belongs_to :listing, class_name: 'Tradelisting'
+  belongs_to :listing, class_name: 'TradeListing'
   belongs_to :bidder, class_name: 'Player'
 
   # Domain invariants — simple rules
@@ -19,5 +19,9 @@ class TradeBid < ApplicationRecord
 
   def outbid_by(new_amount)
     raise NotImplementedError, "outbid_by not implemented"
+  end
+
+  def retract
+    raise NotImplementedError, "retract not implemented"
   end
 end

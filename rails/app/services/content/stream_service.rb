@@ -29,5 +29,12 @@ module Content
       instance.update_viewer_peak(count)
       instance.save!
     end
+
+    def duration_minutes(id)
+      instance = Stream.find(id)
+      result = instance.duration_minutes()
+      instance.save!
+      result
+    end
   end
 end

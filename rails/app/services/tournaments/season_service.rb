@@ -29,5 +29,12 @@ module Tournaments
       instance.finalize_rewards()
       instance.save!
     end
+
+    def is_ongoing(id)
+      instance = Season.find(id)
+      result = instance.is_ongoing()
+      instance.save!
+      result
+    end
   end
 end

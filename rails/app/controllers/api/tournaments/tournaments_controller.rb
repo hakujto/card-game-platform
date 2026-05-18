@@ -42,7 +42,7 @@ module Api
       # POST /api/tournaments/:id/start
       def start
         @tournament = Tournament.find(params[:id])
-        @tournament.start
+        @tournament.start()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/tournaments/:id/cancel
       def cancel
         @tournament = Tournament.find(params[:id])
-        @tournament.cancel
+        @tournament.cancel()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found
@@ -60,7 +60,7 @@ module Api
       # POST /api/tournaments/:id/complete
       def complete
         @tournament = Tournament.find(params[:id])
-        @tournament.complete
+        @tournament.complete()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found
@@ -69,7 +69,7 @@ module Api
       # POST /api/tournaments/:id/rounds
       def generate_round
         @tournament = Tournament.find(params[:id])
-        @tournament.generate_round
+        @tournament.generate_round()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found
@@ -78,7 +78,27 @@ module Api
       # GET /api/tournaments/:id/prizes
       def calculate_prize_distribution
         @tournament = Tournament.find(params[:id])
-        result = @tournament.calculate_prize_distribution
+        result = @tournament.calculate_prize_distribution()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # POST /api/tournaments/:id/register
+      def register_player
+        @tournament = Tournament.find(params[:id])
+        player_id = params[:player_id]
+        deck_id = params[:deck_id]
+        @tournament.register_player(player_id, deck_id)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # GET /api/tournaments/:id/full
+      def is_full
+        @tournament = Tournament.find(params[:id])
+        result = @tournament.is_full()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found

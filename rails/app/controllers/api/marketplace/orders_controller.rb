@@ -42,7 +42,7 @@ module Api
       # DELETE /api/orders/:id/cancel
       def cancel
         @order = Order.find(params[:id])
-        @order.cancel
+        @order.cancel()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Order not found' }, status: :not_found
@@ -61,7 +61,7 @@ module Api
       # GET /api/orders/:id/total
       def calculate_total
         @order = Order.find(params[:id])
-        result = @order.calculate_total
+        result = @order.calculate_total()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Order not found' }, status: :not_found
@@ -80,7 +80,7 @@ module Api
       # POST /api/orders/:id/refund
       def refund
         @order = Order.find(params[:id])
-        @order.refund
+        @order.refund()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Order not found' }, status: :not_found

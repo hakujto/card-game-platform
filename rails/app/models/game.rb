@@ -20,6 +20,8 @@ class Game < ApplicationRecord
   def validate_implies
     errors.add(:base, 'Turns played must be greater than zero') if (!turns_played.nil?) && !((turns_played.nil? || turns_played > 0))
     errors.add(:base, 'Game duration must be greater than zero') if (!duration_seconds.nil?) && !((duration_seconds.nil? || duration_seconds > 0))
+    errors.add(:base, 'A draw cannot have a winner') if (winner_side == 'draw') && !winner.nil?
+    errors.add(:base, 'A decisive game must have a winner player set') if ((!winner_side.nil? && winner_side != 'draw')) && winner.nil?
   end
 
   def to_s

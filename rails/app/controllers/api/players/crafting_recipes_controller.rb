@@ -39,6 +39,43 @@ module Api
         head :no_content
       end
 
+      # GET /api/crafting_recipes/:id/can-craft
+      def can_craft
+        @craftingRecipe = CraftingRecipe.find(params[:id])
+        result = @craftingRecipe.can_craft(player_id)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CraftingRecipe not found' }, status: :not_found
+      end
+
+      # POST /api/crafting_recipes/:id/craft
+      def execute_craft
+        @craftingRecipe = CraftingRecipe.find(params[:id])
+        player_id = params[:player_id]
+        @craftingRecipe.execute_craft(player_id)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CraftingRecipe not found' }, status: :not_found
+      end
+
+      # POST /api/crafting_recipes/:id/disable
+      def disable
+        @craftingRecipe = CraftingRecipe.find(params[:id])
+        @craftingRecipe.disable()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CraftingRecipe not found' }, status: :not_found
+      end
+
+      # POST /api/crafting_recipes/:id/enable
+      def enable
+        @craftingRecipe = CraftingRecipe.find(params[:id])
+        @craftingRecipe.enable()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CraftingRecipe not found' }, status: :not_found
+      end
+
       private
 
       def set_craftingRecipe

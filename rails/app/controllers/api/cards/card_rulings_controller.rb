@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # GET /api/card_rulings/:id/current
+      def is_current
+        @cardRuling = CardRuling.find(params[:id])
+        result = @cardRuling.is_current()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardRuling not found' }, status: :not_found
+      end
+
+      # GET /api/card_rulings/:id/supersedes
+      def supersedes_previous
+        @cardRuling = CardRuling.find(params[:id])
+        result = @cardRuling.supersedes_previous()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardRuling not found' }, status: :not_found
+      end
+
       private
 
       def set_cardRuling

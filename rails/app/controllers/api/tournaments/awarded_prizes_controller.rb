@@ -39,6 +39,15 @@ module Api
         head :no_content
       end
 
+      # POST /api/awarded_prizes/:id/claim
+      def claim
+        @awardedPrize = AwardedPrize.find(params[:id])
+        @awardedPrize.claim()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'AwardedPrize not found' }, status: :not_found
+      end
+
       private
 
       def set_awardedPrize

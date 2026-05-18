@@ -70,4 +70,52 @@ RSpec.describe "Api::Players::PlayerSeasonStatses", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
+  describe "POST /api/player_season_statses (rule: wins_not_negative)" do
+    it "create fails when wins not negative violated" do
+      # Season wins must not be negative
+      post "/api/player_season_statses", params: { player_season_stats: {
+        player_id: 1,
+        season_id: 1,
+        wins: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/player_season_statses (rule: losses_not_negative)" do
+    it "create fails when losses not negative violated" do
+      # Season losses must not be negative
+      post "/api/player_season_statses", params: { player_season_stats: {
+        player_id: 1,
+        season_id: 1,
+        losses: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/player_season_statses (rule: tournament_wins_not_negative)" do
+    it "create fails when tournament wins not negative violated" do
+      # Season tournament wins must not be negative
+      post "/api/player_season_statses", params: { player_season_stats: {
+        player_id: 1,
+        season_id: 1,
+        tournament_wins: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/player_season_statses (rule: season_points_not_negative)" do
+    it "create fails when season points not negative violated" do
+      # Season points must not be negative
+      post "/api/player_season_statses", params: { player_season_stats: {
+        player_id: 1,
+        season_id: 1,
+        season_points: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
 end

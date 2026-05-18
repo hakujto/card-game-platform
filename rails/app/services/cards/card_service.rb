@@ -42,5 +42,19 @@ module Cards
       instance.save!
       result
     end
+
+    def apply_rarity_bonus(id, multiplier)
+      instance = Card.find(id)
+      result = instance.apply_rarity_bonus(multiplier)
+      instance.save!
+      result
+    end
+
+    def is_legal_in_format(id)
+      instance = Card.find(id)
+      result = instance.is_legal_in_format(format)
+      instance.save!
+      result
+    end
   end
 end

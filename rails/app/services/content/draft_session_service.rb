@@ -29,5 +29,12 @@ module Content
       instance.complete()
       instance.save!
     end
+
+    def is_full(id)
+      instance = DraftSession.find(id)
+      result = instance.is_full()
+      instance.save!
+      result
+    end
   end
 end

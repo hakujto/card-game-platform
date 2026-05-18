@@ -29,5 +29,12 @@ module Content
       instance.increment_view()
       instance.save!
     end
+
+    def reading_time_minutes(id)
+      instance = Article.find(id)
+      result = instance.reading_time_minutes()
+      instance.save!
+      result
+    end
   end
 end

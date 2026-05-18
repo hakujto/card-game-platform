@@ -53,8 +53,18 @@ module Api
       # GET /api/matches/:id/winner
       def determine_winner
         @match = Match.find(params[:id])
-        result = @match.determine_winner
+        result = @match.determine_winner()
         render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # POST /api/matches/:id/concede
+      def concede
+        @match = Match.find(params[:id])
+        player_id = params[:player_id]
+        @match.concede(player_id)
+        head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Match not found' }, status: :not_found
       end
@@ -62,7 +72,7 @@ module Api
       # POST /api/matches/:id/draw
       def draw
         @match = Match.find(params[:id])
-        @match.draw
+        @match.draw()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Match not found' }, status: :not_found

@@ -39,10 +39,28 @@ module Api
         head :no_content
       end
 
+      # GET /api/coupons/:id/valid
+      def is_valid
+        @coupon = Coupon.find(params[:id])
+        result = @coupon.is_valid()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Coupon not found' }, status: :not_found
+      end
+
+      # GET /api/coupons/:id/applicable
+      def is_applicable_to_order
+        @coupon = Coupon.find(params[:id])
+        result = @coupon.is_applicable_to_order(order_total)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Coupon not found' }, status: :not_found
+      end
+
       # POST /api/coupons/:id/redeem
       def redeem
         @coupon = Coupon.find(params[:id])
-        @coupon.redeem
+        @coupon.redeem()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Coupon not found' }, status: :not_found
@@ -51,7 +69,7 @@ module Api
       # POST /api/coupons/:id/deactivate
       def deactivate
         @coupon = Coupon.find(params[:id])
-        @coupon.deactivate
+        @coupon.deactivate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Coupon not found' }, status: :not_found

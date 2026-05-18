@@ -39,6 +39,15 @@ module Api
         head :no_content
       end
 
+      # GET /api/draft_picks/:id/first-pick
+      def is_first_pick
+        @draftPick = DraftPick.find(params[:id])
+        result = @draftPick.is_first_pick()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftPick not found' }, status: :not_found
+      end
+
       private
 
       def set_draftPick

@@ -5,7 +5,7 @@ class CreateOrders < ActiveRecord::Migration[7.1]
       t.decimal :total, precision: 10, scale: 2, null: false, default: 0
       t.decimal :discount_applied, precision: 10, scale: 2, null: false, default: 0
       t.string :currency, limit: 3, null: false, default: 'USD'
-      t.integer :payment_method, null: false, default: 0 # enum: { card: 0, pay_pal: 1, crypto: 2, platform_credits: 3 }
+      t.integer :payment_method, null: true # enum: { card: 0, pay_pal: 1, crypto: 2, platform_credits: 3 }
       t.string :payment_reference, limit: 200, null: true
       t.text :shipping_address, null: true
       t.string :tracking_number, limit: 100, null: true

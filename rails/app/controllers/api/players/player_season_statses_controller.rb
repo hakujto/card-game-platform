@@ -39,6 +39,34 @@ module Api
         head :no_content
       end
 
+      # GET /api/player_season_statses/:id/win-rate
+      def win_rate
+        @playerSeasonStats = PlayerSeasonStats.find(params[:id])
+        result = @playerSeasonStats.win_rate()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerSeasonStats not found' }, status: :not_found
+      end
+
+      # PATCH /api/player_season_statses/:id/points
+      def add_points
+        @playerSeasonStats = PlayerSeasonStats.find(params[:id])
+        points = params[:points]
+        @playerSeasonStats.add_points(points)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerSeasonStats not found' }, status: :not_found
+      end
+
+      # POST /api/player_season_statses/:id/tournament-win
+      def record_tournament_win
+        @playerSeasonStats = PlayerSeasonStats.find(params[:id])
+        @playerSeasonStats.record_tournament_win()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerSeasonStats not found' }, status: :not_found
+      end
+
       private
 
       def set_playerSeasonStats

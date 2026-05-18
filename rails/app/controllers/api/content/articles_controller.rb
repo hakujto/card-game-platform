@@ -42,7 +42,7 @@ module Api
       # POST /api/articles/:id/publish
       def publish
         @article = Article.find(params[:id])
-        @article.publish
+        @article.publish()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Article not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/articles/:id/archive
       def archive
         @article = Article.find(params[:id])
-        @article.archive
+        @article.archive()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Article not found' }, status: :not_found
@@ -60,8 +60,17 @@ module Api
       # POST /api/articles/:id/view
       def increment_view
         @article = Article.find(params[:id])
-        @article.increment_view
+        @article.increment_view()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Article not found' }, status: :not_found
+      end
+
+      # GET /api/articles/:id/reading-time
+      def reading_time_minutes
+        @article = Article.find(params[:id])
+        result = @article.reading_time_minutes()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Article not found' }, status: :not_found
       end

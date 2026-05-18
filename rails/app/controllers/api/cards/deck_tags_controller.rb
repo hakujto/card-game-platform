@@ -39,6 +39,16 @@ module Api
         head :no_content
       end
 
+      # PATCH /api/deck_tags/:id/rename
+      def rename
+        @deckTag = DeckTag.find(params[:id])
+        new_name = params[:new_name]
+        @deckTag.rename(new_name)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckTag not found' }, status: :not_found
+      end
+
       # POST /api/deck_tags/:id/merge
       def merge_into
         @deckTag = DeckTag.find(params[:id])

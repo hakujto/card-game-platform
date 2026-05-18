@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Api::Cards::Cards", type: :request do
   before(:each) do
-    @dep_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
+    @dep_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
   end
 
   let(:valid_attributes) do
@@ -110,6 +110,21 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     end
   end
 
+  describe "POST /api/cards (rule: spell_or_artifact_no_loyalty)" do
+    it "create fails when spell or artifact no loyalty violated" do
+      # Only Planeswalker cards can have loyalty
+      post "/api/cards", params: { card: {
+        name: 'test',
+        mana_colors: :white,
+        description: 'test',
+        legal_formats: :standard,
+        set_id: 1,
+        loyalty: 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
   describe "POST /api/cards (rule: mana_cost_range)" do
     it "create fails when mana cost range violated" do
       # mana_cost must be between 0 and 20
@@ -160,6 +175,21 @@ RSpec.describe "Api::Cards::Cards", type: :request do
         loyalty: 1,
         is_banned: true,
         is_restricted: true,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/cards (rule: banned_card_not_in_legal_formats)" do
+    it "create fails when banned card not in legal formats violated" do
+      # banned_card_not_in_legal_formats
+      post "/api/cards", params: { card: {
+        name: 'test',
+        mana_colors: :white,
+        description: 'test',
+        legal_formats: :standard,
+        set_id: 1,
+        is_banned: true,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
     end

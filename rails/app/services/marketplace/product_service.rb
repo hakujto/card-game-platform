@@ -36,5 +36,19 @@ module Marketplace
       instance.restock(quantity)
       instance.save!
     end
+
+    def effective_price(id)
+      instance = Product.find(id)
+      result = instance.effective_price()
+      instance.save!
+      result
+    end
+
+    def is_in_stock(id)
+      instance = Product.find(id)
+      result = instance.is_in_stock()
+      instance.save!
+      result
+    end
   end
 end

@@ -4,6 +4,13 @@ class DraftParticipant < ApplicationRecord
   belongs_to :session, class_name: 'DraftSession'
   belongs_to :player, class_name: 'Player'
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:seat_number_positive, 'Seat number must be greater than zero') unless ((seat_number.nil? || seat_number > 0))
+  end
+
   def to_s
     seat_number.to_s
   end

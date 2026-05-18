@@ -23,5 +23,12 @@ module Content
       instance.unhide()
       instance.save!
     end
+
+    def is_reply(id)
+      instance = ArticleComment.find(id)
+      result = instance.is_reply()
+      instance.save!
+      result
+    end
   end
 end

@@ -3,6 +3,7 @@ source "https://rubygems.org"
 ruby ">= 3.1"
 
 gem "rails", "~> 7.2"
+gem "zeitwerk", "~> 2.7.0"
 gem "sqlite3", ">= 1.4"
 gem "puma", ">= 5.0"
 gem "rack-cors"

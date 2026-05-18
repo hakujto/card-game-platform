@@ -42,7 +42,7 @@ module Api
       # POST /api/products/:id/activate
       def activate
         @product = Product.find(params[:id])
-        @product.activate
+        @product.activate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Product not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/products/:id/deactivate
       def deactivate
         @product = Product.find(params[:id])
-        @product.deactivate
+        @product.deactivate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Product not found' }, status: :not_found
@@ -73,6 +73,24 @@ module Api
         quantity = params[:quantity]
         @product.restock(quantity)
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
+      end
+
+      # GET /api/products/:id/effective-price
+      def effective_price
+        @product = Product.find(params[:id])
+        result = @product.effective_price()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Product not found' }, status: :not_found
+      end
+
+      # GET /api/products/:id/in-stock
+      def is_in_stock
+        @product = Product.find(params[:id])
+        result = @product.is_in_stock()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Product not found' }, status: :not_found
       end

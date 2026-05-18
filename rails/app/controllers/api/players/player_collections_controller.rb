@@ -39,10 +39,30 @@ module Api
         head :no_content
       end
 
+      # POST /api/player_collections/:id/add
+      def add
+        @playerCollection = PlayerCollection.find(params[:id])
+        quantity = params[:quantity]
+        @playerCollection.add(quantity)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerCollection not found' }, status: :not_found
+      end
+
+      # POST /api/player_collections/:id/remove
+      def remove
+        @playerCollection = PlayerCollection.find(params[:id])
+        quantity = params[:quantity]
+        @playerCollection.remove(quantity)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'PlayerCollection not found' }, status: :not_found
+      end
+
       # GET /api/player_collections/:id/value
       def estimated_value
         @playerCollection = PlayerCollection.find(params[:id])
-        result = @playerCollection.estimated_value
+        result = @playerCollection.estimated_value()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'PlayerCollection not found' }, status: :not_found

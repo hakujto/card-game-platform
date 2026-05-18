@@ -3,7 +3,7 @@ class TradeTransaction < ApplicationRecord
 
   enum :status, { pending: 0, completed: 1, disputed: 2, refunded: 3 }
 
-  belongs_to :listing, class_name: 'Tradelisting'
+  belongs_to :listing, class_name: 'TradeListing'
   belongs_to :buyer, class_name: 'Player'
   belongs_to :seller, class_name: 'Player'
 
@@ -13,6 +13,7 @@ class TradeTransaction < ApplicationRecord
   def validate_rules
     errors.add(:fee_not_exceed_price, 'Platform fee cannot exceed the final price') unless ((platform_fee.nil? || (!final_price.nil? && platform_fee.to_f <= final_price.to_f)))
     errors.add(:fee_not_negative, 'Platform fee must not be negative') unless ((platform_fee.nil? || platform_fee.to_f >= 0))
+    errors.add(:final_price_positive, 'Transaction final price must be greater than zero') unless ((final_price.nil? || final_price.to_f > 0))
   end
 
   # Domain invariants — IMPLIES rules

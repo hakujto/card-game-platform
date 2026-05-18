@@ -19,6 +19,25 @@ module Cards
       result
     end
 
+    def add_card(id, card_id, quantity)
+      instance = Deck.find(id)
+      instance.add_card(card_id, quantity)
+      instance.save!
+    end
+
+    def remove_card(id, card_id)
+      instance = Deck.find(id)
+      instance.remove_card(card_id)
+      instance.save!
+    end
+
+    def win_rate(id)
+      instance = Deck.find(id)
+      result = instance.win_rate()
+      instance.save!
+      result
+    end
+
     def clone(id)
       instance = Deck.find(id)
       result = instance.clone()

@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe "Api::Players::PlayerCollections", type: :request do
   before(:each) do
     @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
-    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
   end
 
   let(:valid_attributes) do
@@ -57,7 +57,7 @@ RSpec.describe "Api::Players::PlayerCollections", type: :request do
 
     it "returns 200" do
       patch "/api/player_collections/#{playerCollection.id}",
-            params: { player_collection: { quantity: 1 } },
+            params: { player_collection: { foil: true } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -69,6 +69,19 @@ RSpec.describe "Api::Players::PlayerCollections", type: :request do
     it "returns 204" do
       delete "/api/player_collections/#{playerCollection.id}"
       expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe "POST /api/player_collections (rule: quantity_positive)" do
+    it "create fails when quantity positive violated" do
+      # Collection quantity must be greater than zero
+      post "/api/player_collections", params: { player_collection: {
+        acquired_at: Time.now,
+        player_id: 1,
+        card_id: 1,
+        quantity: 0,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 end

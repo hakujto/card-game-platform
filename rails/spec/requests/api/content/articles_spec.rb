@@ -90,4 +90,21 @@ RSpec.describe "Api::Content::Articles", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
   end
+
+  describe "POST /api/articles (rule: view_count_not_negative)" do
+    it "create fails when view count not negative violated" do
+      # Article view count must not be negative
+      post "/api/articles", params: { article: {
+        title: 'test',
+        slug: 'test',
+        body: 'test',
+        created_at: Time.now,
+        updated_at: Time.now,
+        author_id: 1,
+        published_at: Time.now,
+        view_count: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
 end

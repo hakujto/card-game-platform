@@ -23,6 +23,7 @@ class Order < ApplicationRecord
   def validate_implies
     errors.add(:base, 'Paid order must have paid_at set') if (status == 'paid') && paid_at.nil?
     errors.add(:base, 'Shipped order must have a tracking number') if (status == 'shipped') && tracking_number.nil?
+    errors.add(:base, 'shipped_at_requires_shipped_status') if (!shipped_at.nil?) && !(status == 'shipped')
   end
 
   def to_s

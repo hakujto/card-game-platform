@@ -42,7 +42,37 @@ module Api
       # GET /api/decks/:id/validate
       def validate_size
         @deck = Deck.find(params[:id])
-        result = @deck.validate_size
+        result = @deck.validate_size()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # POST /api/decks/:id/cards
+      def add_card
+        @deck = Deck.find(params[:id])
+        card_id = params[:card_id]
+        quantity = params[:quantity]
+        @deck.add_card(card_id, quantity)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # DELETE /api/decks/:id/cards/:card_id
+      def remove_card
+        @deck = Deck.find(params[:id])
+        card_id = params[:card_id]
+        @deck.remove_card(card_id)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Deck not found' }, status: :not_found
+      end
+
+      # GET /api/decks/:id/win-rate
+      def win_rate
+        @deck = Deck.find(params[:id])
+        result = @deck.win_rate()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Deck not found' }, status: :not_found
@@ -51,7 +81,7 @@ module Api
       # POST /api/decks/:id/clone
       def clone
         @deck = Deck.find(params[:id])
-        result = @deck.clone
+        result = @deck.clone()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Deck not found' }, status: :not_found
@@ -60,7 +90,7 @@ module Api
       # POST /api/decks/:id/publish
       def publish
         @deck = Deck.find(params[:id])
-        @deck.publish
+        @deck.publish()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Deck not found' }, status: :not_found
@@ -69,7 +99,7 @@ module Api
       # POST /api/decks/:id/unpublish
       def unpublish
         @deck = Deck.find(params[:id])
-        @deck.unpublish
+        @deck.unpublish()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Deck not found' }, status: :not_found
@@ -78,7 +108,7 @@ module Api
       # POST /api/decks/:id/certify
       def certify_tournament_legal
         @deck = Deck.find(params[:id])
-        result = @deck.certify_tournament_legal
+        result = @deck.certify_tournament_legal()
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Deck not found' }, status: :not_found
@@ -93,11 +123,11 @@ module Api
       end
 
       def deck_params
-        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id)
+        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :draws, :created_at, :updated_at, :player_id)
       end
 
       def deck_update_params
-        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :created_at, :updated_at, :player_id)
+        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :draws, :created_at, :updated_at, :player_id)
       end
     end
   end

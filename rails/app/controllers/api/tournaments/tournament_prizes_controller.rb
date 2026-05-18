@@ -39,6 +39,25 @@ module Api
         head :no_content
       end
 
+      # GET /api/tournament_prizes/:id/applies
+      def applies_to_placement
+        @tournamentPrize = TournamentPrize.find(params[:id])
+        result = @tournamentPrize.applies_to_placement(placement)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentPrize not found' }, status: :not_found
+      end
+
+      # POST /api/tournament_prizes/:id/award
+      def award_to_player
+        @tournamentPrize = TournamentPrize.find(params[:id])
+        player_id = params[:player_id]
+        @tournamentPrize.award_to_player(player_id)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentPrize not found' }, status: :not_found
+      end
+
       private
 
       def set_tournamentPrize

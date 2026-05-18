@@ -29,5 +29,12 @@ module Tournaments
       instance.generate_pairings()
       instance.save!
     end
+
+    def is_time_expired(id)
+      instance = TournamentRound.find(id)
+      result = instance.is_time_expired()
+      instance.save!
+      result
+    end
   end
 end

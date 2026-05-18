@@ -25,6 +25,8 @@ class Card < ApplicationRecord
   def validate_implies
     errors.add(:base, 'Creature card must have attack and defense') if (card_type == 'creature') && !(!attack.nil? && !defense.nil?)
     errors.add(:base, 'Planeswalker card must have loyalty') if (card_type == 'planeswalker') && loyalty.nil?
+    errors.add(:base, 'Only Planeswalker cards can have loyalty') if (card_type != 'planeswalker') && !loyalty.nil?
+    errors.add(:base, 'banned_card_not_in_legal_formats') if (is_banned == true) && !(legal_formats == "message")
   end
 
   def to_s
@@ -51,5 +53,13 @@ class Card < ApplicationRecord
 
   def calculate_value
     raise NotImplementedError, "calculate_value not implemented"
+  end
+
+  def apply_rarity_bonus(multiplier)
+    raise NotImplementedError, "apply_rarity_bonus not implemented"
+  end
+
+  def is_legal_in_format(format)
+    raise NotImplementedError, "is_legal_in_format not implemented"
   end
 end

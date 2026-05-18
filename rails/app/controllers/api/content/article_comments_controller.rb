@@ -42,7 +42,7 @@ module Api
       # POST /api/article_comments/:id/hide
       def hide
         @articleComment = ArticleComment.find(params[:id])
-        @articleComment.hide
+        @articleComment.hide()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'ArticleComment not found' }, status: :not_found
@@ -51,8 +51,17 @@ module Api
       # POST /api/article_comments/:id/unhide
       def unhide
         @articleComment = ArticleComment.find(params[:id])
-        @articleComment.unhide
+        @articleComment.unhide()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'ArticleComment not found' }, status: :not_found
+      end
+
+      # GET /api/article_comments/:id/is-reply
+      def is_reply
+        @articleComment = ArticleComment.find(params[:id])
+        result = @articleComment.is_reply()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'ArticleComment not found' }, status: :not_found
       end

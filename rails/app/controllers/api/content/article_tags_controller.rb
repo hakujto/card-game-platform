@@ -39,6 +39,25 @@ module Api
         head :no_content
       end
 
+      # PATCH /api/article_tags/:id/rename
+      def rename
+        @articleTag = ArticleTag.find(params[:id])
+        new_name = params[:new_name]
+        @articleTag.rename(new_name)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'ArticleTag not found' }, status: :not_found
+      end
+
+      # GET /api/article_tags/:id/article-count
+      def article_count
+        @articleTag = ArticleTag.find(params[:id])
+        result = @articleTag.article_count()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'ArticleTag not found' }, status: :not_found
+      end
+
       private
 
       def set_articleTag

@@ -170,11 +170,11 @@ POST   /api/marketplace/coupons
 GET    /api/marketplace/coupons/:id
 PATCH  /api/marketplace/coupons/:id
 DELETE /api/marketplace/coupons/:id
-GET    /api/marketplace/tradelistings
-POST   /api/marketplace/tradelistings
-GET    /api/marketplace/tradelistings/:id
-PATCH  /api/marketplace/tradelistings/:id
-DELETE /api/marketplace/tradelistings/:id
+GET    /api/marketplace/trade_listings
+POST   /api/marketplace/trade_listings
+GET    /api/marketplace/trade_listings/:id
+PATCH  /api/marketplace/trade_listings/:id
+DELETE /api/marketplace/trade_listings/:id
 GET    /api/marketplace/trade_bids
 POST   /api/marketplace/trade_bids
 GET    /api/marketplace/trade_bids/:id

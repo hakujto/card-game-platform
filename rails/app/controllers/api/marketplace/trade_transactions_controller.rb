@@ -42,7 +42,7 @@ module Api
       # POST /api/trade_transactions/:id/complete
       def complete
         @tradeTransaction = TradeTransaction.find(params[:id])
-        @tradeTransaction.complete
+        @tradeTransaction.complete()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeTransaction not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/trade_transactions/:id/refund
       def refund
         @tradeTransaction = TradeTransaction.find(params[:id])
-        @tradeTransaction.refund
+        @tradeTransaction.refund()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeTransaction not found' }, status: :not_found
@@ -63,6 +63,15 @@ module Api
         reason = params[:reason]
         @tradeTransaction.open_dispute(reason)
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeTransaction not found' }, status: :not_found
+      end
+
+      # GET /api/trade_transactions/:id/seller-net
+      def seller_net
+        @tradeTransaction = TradeTransaction.find(params[:id])
+        result = @tradeTransaction.seller_net()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeTransaction not found' }, status: :not_found
       end

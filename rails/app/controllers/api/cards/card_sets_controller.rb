@@ -39,6 +39,42 @@ module Api
         head :no_content
       end
 
+      # GET /api/card_sets/:id/standard-legal
+      def is_legal_in_standard
+        @cardSet = CardSet.find(params[:id])
+        result = @cardSet.is_legal_in_standard()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardSet not found' }, status: :not_found
+      end
+
+      # GET /api/card_sets/:id/legal
+      def is_legal_in_format
+        @cardSet = CardSet.find(params[:id])
+        result = @cardSet.is_legal_in_format(format)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardSet not found' }, status: :not_found
+      end
+
+      # GET /api/card_sets/:id/rarity-count
+      def card_count_by_rarity
+        @cardSet = CardSet.find(params[:id])
+        result = @cardSet.card_count_by_rarity(rarity)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardSet not found' }, status: :not_found
+      end
+
+      # POST /api/card_sets/:id/rotate
+      def rotate_out
+        @cardSet = CardSet.find(params[:id])
+        @cardSet.rotate_out()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardSet not found' }, status: :not_found
+      end
+
       private
 
       def set_cardSet
@@ -48,11 +84,11 @@ module Api
       end
 
       def card_set_params
-        params.fetch(:card_set, params).permit(:name, :code, :release_date, :set_type, :total_cards, :description, :logo_url)
+        params.fetch(:card_set, params).permit(:name, :code, :release_date, :rotation_date, :set_type, :total_cards, :is_rotated, :description, :logo_url)
       end
 
       def card_set_update_params
-        params.fetch(:card_set, params).permit(:name, :code, :release_date, :set_type, :total_cards, :description, :logo_url)
+        params.fetch(:card_set, params).permit(:name, :code, :release_date, :rotation_date, :set_type, :total_cards, :is_rotated, :description, :logo_url)
       end
     end
   end

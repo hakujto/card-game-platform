@@ -11,5 +11,17 @@ module Cards
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def increment(id, amount)
+      instance = DeckCard.find(id)
+      instance.increment(amount)
+      instance.save!
+    end
+
+    def decrement(id, amount)
+      instance = DeckCard.find(id)
+      instance.decrement(amount)
+      instance.save!
+    end
   end
 end

@@ -42,7 +42,7 @@ module Api
       # POST /api/streams/:id/live
       def go_live
         @stream = Stream.find(params[:id])
-        @stream.go_live
+        @stream.go_live()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Stream not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/streams/:id/end
       def end
         @stream = Stream.find(params[:id])
-        @stream.end
+        @stream.end()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Stream not found' }, status: :not_found
@@ -63,6 +63,15 @@ module Api
         count = params[:count]
         @stream.update_viewer_peak(count)
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Stream not found' }, status: :not_found
+      end
+
+      # GET /api/streams/:id/duration
+      def duration_minutes
+        @stream = Stream.find(params[:id])
+        result = @stream.duration_minutes()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Stream not found' }, status: :not_found
       end

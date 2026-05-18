@@ -42,7 +42,7 @@ module Api
       # POST /api/friendships/:id/accept
       def accept
         @friendship = Friendship.find(params[:id])
-        @friendship.accept
+        @friendship.accept()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Friendship not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/friendships/:id/decline
       def decline
         @friendship = Friendship.find(params[:id])
-        @friendship.decline
+        @friendship.decline()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Friendship not found' }, status: :not_found
@@ -60,7 +60,7 @@ module Api
       # POST /api/friendships/:id/block
       def block
         @friendship = Friendship.find(params[:id])
-        @friendship.block
+        @friendship.block()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Friendship not found' }, status: :not_found

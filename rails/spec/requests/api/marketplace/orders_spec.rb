@@ -94,6 +94,19 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
     end
   end
 
+  describe "POST /api/orders (rule: shipped_at_requires_shipped_status)" do
+    it "create fails when shipped at requires shipped status violated" do
+      # shipped_at_requires_shipped_status
+      post "/api/orders", params: { order: {
+        created_at: Time.now,
+        player_id: 1,
+        shipped_at: Time.now,
+        status: :pending,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
   describe "POST /api/orders (rule: total_not_negative)" do
     it "create fails when total not negative violated" do
       # Order total must not be negative
@@ -102,6 +115,8 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
         player_id: 1,
         paid_at: Time.now,
         tracking_number: 'test',
+        shipped_at: Time.now,
+        status: :shipped,
         total: -1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)

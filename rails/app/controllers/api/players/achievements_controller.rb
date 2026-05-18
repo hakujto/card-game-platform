@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # GET /api/achievements/:id/point-value
+      def point_value
+        @achievement = Achievement.find(params[:id])
+        result = @achievement.point_value(multiplier)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Achievement not found' }, status: :not_found
+      end
+
+      # POST /api/achievements/:id/reveal
+      def reveal
+        @achievement = Achievement.find(params[:id])
+        @achievement.reveal()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Achievement not found' }, status: :not_found
+      end
+
       private
 
       def set_achievement

@@ -11,5 +11,12 @@ module Marketplace
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def line_total(id)
+      instance = OrderItem.find(id)
+      result = instance.line_total()
+      instance.save!
+      result
+    end
   end
 end

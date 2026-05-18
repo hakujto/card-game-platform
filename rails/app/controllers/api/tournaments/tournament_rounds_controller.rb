@@ -42,7 +42,7 @@ module Api
       # POST /api/tournament_rounds/:id/start
       def start
         @tournamentRound = TournamentRound.find(params[:id])
-        @tournamentRound.start
+        @tournamentRound.start()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRound not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/tournament_rounds/:id/complete
       def complete
         @tournamentRound = TournamentRound.find(params[:id])
-        @tournamentRound.complete
+        @tournamentRound.complete()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRound not found' }, status: :not_found
@@ -60,8 +60,17 @@ module Api
       # POST /api/tournament_rounds/:id/pairings
       def generate_pairings
         @tournamentRound = TournamentRound.find(params[:id])
-        @tournamentRound.generate_pairings
+        @tournamentRound.generate_pairings()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentRound not found' }, status: :not_found
+      end
+
+      # GET /api/tournament_rounds/:id/time-expired
+      def is_time_expired
+        @tournamentRound = TournamentRound.find(params[:id])
+        result = @tournamentRound.is_time_expired()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRound not found' }, status: :not_found
       end

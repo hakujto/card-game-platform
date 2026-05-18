@@ -39,6 +39,26 @@ module Api
         head :no_content
       end
 
+      # PATCH /api/deck_sideboard_cards/:id/increment
+      def increment
+        @deckSideboardCard = DeckSideboardCard.find(params[:id])
+        amount = params[:amount]
+        @deckSideboardCard.increment(amount)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckSideboardCard not found' }, status: :not_found
+      end
+
+      # PATCH /api/deck_sideboard_cards/:id/decrement
+      def decrement
+        @deckSideboardCard = DeckSideboardCard.find(params[:id])
+        amount = params[:amount]
+        @deckSideboardCard.decrement(amount)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckSideboardCard not found' }, status: :not_found
+      end
+
       private
 
       def set_deckSideboardCard

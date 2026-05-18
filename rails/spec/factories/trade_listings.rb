@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :tradelisting do
+  factory :trade_listing do
     listing_type { :fixed_price }
     foil { true }
     condition { :mint }

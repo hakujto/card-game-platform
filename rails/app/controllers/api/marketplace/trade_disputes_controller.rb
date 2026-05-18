@@ -42,7 +42,7 @@ module Api
       # POST /api/trade_disputes/:id/escalate
       def escalate
         @tradeDispute = TradeDispute.find(params[:id])
-        @tradeDispute.escalate
+        @tradeDispute.escalate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeDispute not found' }, status: :not_found
@@ -61,7 +61,7 @@ module Api
       # POST /api/trade_disputes/:id/review
       def review
         @tradeDispute = TradeDispute.find(params[:id])
-        @tradeDispute.review
+        @tradeDispute.review()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeDispute not found' }, status: :not_found

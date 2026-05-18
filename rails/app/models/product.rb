@@ -8,6 +8,15 @@ class Product < ApplicationRecord
 
   validates :name, presence: true, length: { maximum: 200 }
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:price_positive, 'Product price must be greater than zero') unless ((price.nil? || price.to_f > 0))
+    errors.add(:stock_not_negative, 'Product stock must not be negative') unless ((stock.nil? || stock >= 0))
+    errors.add(:discount_percent_range, 'Product discount percent must be between 0 and 100') unless ((discount_percent.nil? || (discount_percent >= 0 && discount_percent <= 100)))
+  end
+
   def to_s
     name.to_s
   end

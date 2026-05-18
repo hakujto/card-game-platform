@@ -42,7 +42,7 @@ module Api
       # POST /api/seasons/:id/activate
       def activate
         @season = Season.find(params[:id])
-        @season.activate
+        @season.activate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Season not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/seasons/:id/deactivate
       def deactivate
         @season = Season.find(params[:id])
-        @season.deactivate
+        @season.deactivate()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Season not found' }, status: :not_found
@@ -60,8 +60,17 @@ module Api
       # POST /api/seasons/:id/finalize
       def finalize_rewards
         @season = Season.find(params[:id])
-        @season.finalize_rewards
+        @season.finalize_rewards()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Season not found' }, status: :not_found
+      end
+
+      # GET /api/seasons/:id/ongoing
+      def is_ongoing
+        @season = Season.find(params[:id])
+        result = @season.is_ongoing()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Season not found' }, status: :not_found
       end

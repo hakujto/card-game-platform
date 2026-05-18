@@ -17,5 +17,12 @@ module Tournaments
       instance.record_winner(winner_side)
       instance.save!
     end
+
+    def duration_minutes(id)
+      instance = Game.find(id)
+      result = instance.duration_minutes()
+      instance.save!
+      result
+    end
   end
 end

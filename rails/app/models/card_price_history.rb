@@ -8,6 +8,8 @@ class CardPriceHistory < ApplicationRecord
 
   def validate_rules
     errors.add(:price_bounds_consistent, 'min_price <= avg_price <= max_price must hold') unless (((min_price.nil? || (!avg_price.nil? && min_price.to_f <= avg_price.to_f)) && (avg_price.nil? || (!max_price.nil? && avg_price.to_f <= max_price.to_f))))
+    errors.add(:volume_not_negative, 'Price history volume must not be negative') unless ((volume.nil? || volume >= 0))
+    errors.add(:prices_not_negative, 'Prices must not be negative') unless ((min_price.nil? || min_price.to_f >= 0))
   end
 
   def to_s

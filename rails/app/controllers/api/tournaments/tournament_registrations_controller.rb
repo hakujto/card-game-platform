@@ -42,7 +42,7 @@ module Api
       # POST /api/tournament_registrations/:id/withdraw
       def withdraw
         @tournamentRegistration = TournamentRegistration.find(params[:id])
-        @tournamentRegistration.withdraw
+        @tournamentRegistration.withdraw()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRegistration not found' }, status: :not_found
@@ -61,7 +61,7 @@ module Api
       # POST /api/tournament_registrations/:id/promote
       def promote_from_waitlist
         @tournamentRegistration = TournamentRegistration.find(params[:id])
-        @tournamentRegistration.promote_from_waitlist
+        @tournamentRegistration.promote_from_waitlist()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRegistration not found' }, status: :not_found

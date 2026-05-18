@@ -11,5 +11,17 @@ module Tournaments
     def update(entity, attributes)
       raise NotImplementedError, "#{self.class}#update not implemented"
     end
+
+    def promote_to_head(id)
+      instance = TournamentJudge.find(id)
+      instance.promote_to_head()
+      instance.save!
+    end
+
+    def remove(id)
+      instance = TournamentJudge.find(id)
+      instance.remove()
+      instance.save!
+    end
   end
 end

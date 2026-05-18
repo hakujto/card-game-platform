@@ -26,6 +26,12 @@ module Tournaments
       result
     end
 
+    def concede(id, player_id)
+      instance = Match.find(id)
+      instance.concede(player_id)
+      instance.save!
+    end
+
     def draw(id)
       instance = Match.find(id)
       instance.draw()

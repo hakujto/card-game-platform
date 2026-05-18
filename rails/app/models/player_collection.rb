@@ -7,6 +7,13 @@ class PlayerCollection < ApplicationRecord
   belongs_to :player, class_name: 'Player'
   belongs_to :card, class_name: 'Card'
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:quantity_positive, 'Collection quantity must be greater than zero') unless ((quantity.nil? || quantity > 0))
+  end
+
   def to_s
     quantity.to_s
   end

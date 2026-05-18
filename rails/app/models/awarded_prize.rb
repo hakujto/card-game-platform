@@ -21,4 +21,10 @@ class AwardedPrize < ApplicationRecord
   def to_s
     final_placement.to_s
   end
+
+  # Business operations
+
+  def claim
+    raise NotImplementedError, "claim not implemented"
+  end
 end

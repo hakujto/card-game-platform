@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # GET /api/card_abilities/:id/usable
+      def is_usable_at
+        @cardAbility = CardAbility.find(params[:id])
+        result = @cardAbility.is_usable_at(timing)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardAbility not found' }, status: :not_found
+      end
+
+      # GET /api/card_abilities/:id/describe
+      def describe
+        @cardAbility = CardAbility.find(params[:id])
+        result = @cardAbility.describe()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'CardAbility not found' }, status: :not_found
+      end
+
       private
 
       def set_cardAbility

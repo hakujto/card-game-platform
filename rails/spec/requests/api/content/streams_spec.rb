@@ -79,6 +79,39 @@ RSpec.describe "Api::Content::Streams", type: :request do
         scheduled_start: Time.now,
         streamer_id: 1,
         actual_start: Time.now,
+        status: :scheduled,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/streams (rule: ended_at_requires_ended_status)" do
+    it "create fails when ended at requires ended status violated" do
+      # ended_at can only be set when stream status is Ended
+      post "/api/streams", params: { stream: {
+        title: 'test',
+        stream_url: 'https://example.com',
+        scheduled_start: Time.now,
+        streamer_id: 1,
+        ended_at: Time.now,
+        status: :scheduled,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/streams (rule: viewer_count_not_negative)" do
+    it "create fails when viewer count not negative violated" do
+      # Peak viewer count must not be negative
+      post "/api/streams", params: { stream: {
+        title: 'test',
+        stream_url: 'https://example.com',
+        scheduled_start: Time.now,
+        streamer_id: 1,
+        actual_start: Time.now,
+        status: :live,
+        ended_at: Time.now,
+        viewer_count_peak: -1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
     end

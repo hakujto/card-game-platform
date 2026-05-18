@@ -39,6 +39,15 @@ module Api
         head :no_content
       end
 
+      # GET /api/order_items/:id/total
+      def line_total
+        @orderItem = OrderItem.find(params[:id])
+        result = @orderItem.line_total()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'OrderItem not found' }, status: :not_found
+      end
+
       private
 
       def set_orderItem

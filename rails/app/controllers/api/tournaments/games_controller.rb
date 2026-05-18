@@ -49,6 +49,15 @@ module Api
         render json: { error: 'Game not found' }, status: :not_found
       end
 
+      # GET /api/games/:id/duration
+      def duration_minutes
+        @game = Game.find(params[:id])
+        result = @game.duration_minutes()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Game not found' }, status: :not_found
+      end
+
       private
 
       def set_game

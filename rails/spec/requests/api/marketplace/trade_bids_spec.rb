@@ -3,9 +3,9 @@ require 'rails_helper'
 RSpec.describe "Api::Marketplace::TradeBids", type: :request do
   before(:each) do
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, set_type: :core, total_cards: 1 })
-    @aux_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
-    @dep_listing = Tradelisting.create!({ listing_type: :trade_offer, foil: true, condition: :mint, quantity: 1, status: :active, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @aux_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+    @dep_listing = TradeListing.create!({ listing_type: :trade_offer, asking_price: '0.00', auction_start_price: '0.00', auction_end_time: Time.now, foil: true, condition: :mint, quantity: 1, status: :active, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
   end
 
   let(:valid_attributes) do

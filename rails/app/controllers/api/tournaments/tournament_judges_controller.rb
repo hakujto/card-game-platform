@@ -39,6 +39,24 @@ module Api
         head :no_content
       end
 
+      # POST /api/tournament_judges/:id/promote
+      def promote_to_head
+        @tournamentJudge = TournamentJudge.find(params[:id])
+        @tournamentJudge.promote_to_head()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentJudge not found' }, status: :not_found
+      end
+
+      # DELETE /api/tournament_judges/:id/remove
+      def remove
+        @tournamentJudge = TournamentJudge.find(params[:id])
+        @tournamentJudge.remove()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TournamentJudge not found' }, status: :not_found
+      end
+
       private
 
       def set_tournamentJudge

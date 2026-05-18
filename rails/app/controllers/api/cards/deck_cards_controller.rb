@@ -39,6 +39,26 @@ module Api
         head :no_content
       end
 
+      # PATCH /api/deck_cards/:id/increment
+      def increment
+        @deckCard = DeckCard.find(params[:id])
+        amount = params[:amount]
+        @deckCard.increment(amount)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckCard not found' }, status: :not_found
+      end
+
+      # PATCH /api/deck_cards/:id/decrement
+      def decrement
+        @deckCard = DeckCard.find(params[:id])
+        amount = params[:amount]
+        @deckCard.decrement(amount)
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DeckCard not found' }, status: :not_found
+      end
+
       private
 
       def set_deckCard

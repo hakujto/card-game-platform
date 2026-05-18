@@ -11,6 +11,13 @@ class Article < ApplicationRecord
   validates :title, presence: true, length: { maximum: 300 }
   validates :slug, presence: true, length: { maximum: 300 }
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:view_count_not_negative, 'Article view count must not be negative') unless ((view_count.nil? || view_count >= 0))
+  end
+
   # Domain invariants — IMPLIES rules
   validate :validate_implies
 

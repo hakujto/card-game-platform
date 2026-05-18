@@ -1,5 +1,5 @@
-class Tradelisting < ApplicationRecord
-  self.table_name = 'tradelistings'
+class TradeListing < ApplicationRecord
+  self.table_name = 'trade_listings'
 
   enum :listing_type, { fixed_price: 0, auction: 1, trade_offer: 2 }, prefix: :listing_type
   enum :condition, { mint: 0, near_mint: 1, excellent: 2, good: 3, played: 4 }, prefix: :condition

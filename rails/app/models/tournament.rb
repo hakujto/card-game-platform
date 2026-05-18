@@ -53,6 +53,10 @@ class Tournament < ApplicationRecord
     raise NotImplementedError, "calculate_prize_distribution not implemented"
   end
 
+  def register_player(player_id, deck_id)
+    raise NotImplementedError, "register_player not implemented"
+  end
+
   def is_full
     raise NotImplementedError, "is_full not implemented"
   end

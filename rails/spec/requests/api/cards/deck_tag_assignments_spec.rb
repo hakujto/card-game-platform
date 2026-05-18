@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Api::Cards::DeckTagAssignments", type: :request do
   before(:each) do
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @dep_deck = Deck.create!({ name: 'test', format: :standard, is_public: true, is_tournament_legal: true, wins: 1, losses: 1, created_at: Time.now, updated_at: Time.now, player_id: @aux_player.id })
+    @dep_deck = Deck.create!({ name: 'test', format: :standard, is_public: true, is_tournament_legal: false, wins: 1, losses: 1, draws: 1, created_at: Time.now, updated_at: Time.now, player_id: @aux_player.id })
     @dep_tag = DeckTag.create!({ name: 'test' })
   end
 

@@ -11,6 +11,22 @@ class Deck < ApplicationRecord
 
   validates :name, presence: true, length: { maximum: 100 }
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:wins_not_negative, 'Deck wins count must not be negative') unless ((wins.nil? || wins >= 0))
+    errors.add(:losses_not_negative, 'Deck losses count must not be negative') unless ((losses.nil? || losses >= 0))
+    errors.add(:draws_not_negative, 'Deck draws count must not be negative') unless ((draws.nil? || draws >= 0))
+  end
+
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Tournament-legal deck must be made public') if (is_tournament_legal == true) && !(is_public == true)
+  end
+
   def to_s
     name.to_s
   end
@@ -19,6 +35,18 @@ class Deck < ApplicationRecord
 
   def validate_size
     raise NotImplementedError, "validate_size not implemented"
+  end
+
+  def add_card(card_id, quantity)
+    raise NotImplementedError, "add_card not implemented"
+  end
+
+  def remove_card(card_id)
+    raise NotImplementedError, "remove_card not implemented"
+  end
+
+  def win_rate
+    raise NotImplementedError, "win_rate not implemented"
   end
 
   def clone

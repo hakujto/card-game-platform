@@ -42,5 +42,18 @@ module Tournaments
       instance.save!
       result
     end
+
+    def register_player(id, player_id, deck_id)
+      instance = Tournament.find(id)
+      instance.register_player(player_id, deck_id)
+      instance.save!
+    end
+
+    def is_full(id)
+      instance = Tournament.find(id)
+      result = instance.is_full()
+      instance.save!
+      result
+    end
   end
 end

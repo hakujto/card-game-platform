@@ -6,6 +6,20 @@ class DraftSession < ApplicationRecord
 
   belongs_to :card_set, class_name: 'CardSet'
 
+  # Domain invariants — simple rules
+  validate :validate_rules
+
+  def validate_rules
+    errors.add(:seats_range, 'Draft session must have between 2 and 16 seats') unless ((seats.nil? || (seats >= 2 && seats <= 16)))
+  end
+
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'completed_at can only be set when draft status is Completed') if (!completed_at.nil?) && !(status == 'completed')
+  end
+
   def to_s
     status.to_s
   end

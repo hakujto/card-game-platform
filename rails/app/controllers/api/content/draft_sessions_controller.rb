@@ -42,7 +42,7 @@ module Api
       # POST /api/draft_sessions/:id/start
       def start
         @draftSession = DraftSession.find(params[:id])
-        @draftSession.start
+        @draftSession.start()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'DraftSession not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/draft_sessions/:id/abandon
       def abandon
         @draftSession = DraftSession.find(params[:id])
-        @draftSession.abandon
+        @draftSession.abandon()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'DraftSession not found' }, status: :not_found
@@ -60,8 +60,17 @@ module Api
       # POST /api/draft_sessions/:id/complete
       def complete
         @draftSession = DraftSession.find(params[:id])
-        @draftSession.complete
+        @draftSession.complete()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # GET /api/draft_sessions/:id/full
+      def is_full
+        @draftSession = DraftSession.find(params[:id])
+        result = @draftSession.is_full()
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'DraftSession not found' }, status: :not_found
       end

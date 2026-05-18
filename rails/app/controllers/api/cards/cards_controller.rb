@@ -42,7 +42,7 @@ module Api
       # POST /api/cards/:id/ban
       def ban
         @card = Card.find(params[:id])
-        @card.ban
+        @card.ban()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
@@ -51,7 +51,7 @@ module Api
       # POST /api/cards/:id/unban
       def unban
         @card = Card.find(params[:id])
-        @card.unban
+        @card.unban()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
@@ -60,7 +60,7 @@ module Api
       # POST /api/cards/:id/restrict
       def restrict
         @card = Card.find(params[:id])
-        @card.restrict
+        @card.restrict()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
@@ -69,7 +69,7 @@ module Api
       # POST /api/cards/:id/unrestrict
       def unrestrict
         @card = Card.find(params[:id])
-        @card.unrestrict
+        @card.unrestrict()
         head :no_content
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
@@ -78,7 +78,26 @@ module Api
       # GET /api/cards/:id/value
       def calculate_value
         @card = Card.find(params[:id])
-        result = @card.calculate_value
+        result = @card.calculate_value()
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # POST /api/cards/:id/rarity-bonus
+      def apply_rarity_bonus
+        @card = Card.find(params[:id])
+        multiplier = params[:multiplier]
+        result = @card.apply_rarity_bonus(multiplier)
+        render json: { result: result }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # GET /api/cards/:id/legal
+      def is_legal_in_format
+        @card = Card.find(params[:id])
+        result = @card.is_legal_in_format(format)
         render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found

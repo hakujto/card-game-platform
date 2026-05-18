@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe "Api::Marketplace::OrderItems", type: :request do
   before(:each) do
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @dep_order = Order.create!({ status: :pending, total: '0.00', discount_applied: '0.00', currency: 'xxx', created_at: Time.now, player_id: @aux_player.id })
-    @dep_product = Product.create!({ name: 'test', product_type: :single_card, price: '0.00', stock: 1, active: true, discount_percent: 1, featured: true })
+    @dep_order = Order.create!({ status: :pending, total: '0.00', discount_applied: '0.00', currency: 'xxx', tracking_number: 'test', created_at: Time.now, paid_at: Time.now, shipped_at: nil, player_id: @aux_player.id })
+    @dep_product = Product.create!({ name: 'test', product_type: :single_card, price: '0.01', stock: 1, active: true, discount_percent: 1, featured: true })
   end
 
   let(:valid_attributes) do

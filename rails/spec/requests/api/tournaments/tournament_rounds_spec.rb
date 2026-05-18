@@ -4,7 +4,7 @@ RSpec.describe "Api::Tournaments::TournamentRounds", type: :request do
   before(:each) do
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @dep_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
+    @dep_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
   end
 
   let(:valid_attributes) do
@@ -73,6 +73,46 @@ RSpec.describe "Api::Tournaments::TournamentRounds", type: :request do
         round_number: 1,
         tournament_id: 1,
         ended_at: Time.now - 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/tournament_rounds (rule: completed_requires_started_at)" do
+    it "create fails when completed requires started at violated" do
+      # Completed round must have a start time
+      post "/api/tournament_rounds", params: { tournament_round: {
+        round_number: 1,
+        tournament_id: 1,
+        status: :completed,
+        started_at: nil,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/tournament_rounds (rule: round_number_positive)" do
+    it "create fails when round number positive violated" do
+      # Round number must be greater than zero
+      post "/api/tournament_rounds", params: { tournament_round: {
+        tournament_id: 1,
+        ended_at: Time.now,
+        started_at: Time.now,
+        round_number: 0,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/tournament_rounds (rule: time_limit_positive)" do
+    it "create fails when time limit positive violated" do
+      # Round time limit must be greater than zero
+      post "/api/tournament_rounds", params: { tournament_round: {
+        round_number: 1,
+        tournament_id: 1,
+        ended_at: Time.now,
+        started_at: Time.now,
+        time_limit_minutes: 0,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
     end
