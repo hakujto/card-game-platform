@@ -44,6 +44,18 @@ class DraftSession(Base):
     def is_full(self) -> bool:
         raise NotImplementedError("is_full not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.seats is None or (self.seats >= 2 and self.seats <= 16))):
+            errors.append("Draft session must have between 2 and 16 seats")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.completed_at is not None) and not (self.status == "Completed"):
+            errors.append("completed_at can only be set when draft status is Completed")
+        return errors
     def __repr__(self) -> str:
         return f"<DraftSession id={{self.id}}>"
 
@@ -65,6 +77,12 @@ class DraftParticipant(Base):
     def drafted_card_count(self) -> int:
         raise NotImplementedError("drafted_card_count not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.seat_number is None or self.seat_number > 0)):
+            errors.append("Seat number must be greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<DraftParticipant id={{self.id}}>"
 
@@ -84,6 +102,14 @@ class DraftPick(Base):
     def is_first_pick(self) -> bool:
         raise NotImplementedError("is_first_pick not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.pick_number is None or self.pick_number > 0)):
+            errors.append("Pick number must be greater than zero")
+        if not ((self.pack_number is None or (self.pack_number >= 1 and self.pack_number <= 3))):
+            errors.append("Pack number must be between 1 and 3")
+        return errors
     def __repr__(self) -> str:
         return f"<DraftPick id={{self.id}}>"
 
@@ -126,6 +152,12 @@ class Article(Base):
     def reading_time_minutes(self) -> int:
         raise NotImplementedError("reading_time_minutes not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.view_count is None or self.view_count >= 0)):
+            errors.append("Article view count must not be negative")
+        return errors
 
     def validate_implies(self) -> list[str]:
         errors = []
@@ -228,10 +260,18 @@ class Stream(Base):
         raise NotImplementedError("duration_minutes not implemented")
 
 
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.viewer_count_peak is None or self.viewer_count_peak >= 0)):
+            errors.append("Peak viewer count must not be negative")
+        return errors
+
     def validate_implies(self) -> list[str]:
         errors = []
         if (self.actual_start is not None) and not (self.status == "Live"):
             errors.append("actual_start_requires_live_or_ended")
+        if (self.ended_at is not None) and not (self.status == "Ended"):
+            errors.append("ended_at can only be set when stream status is Ended")
         return errors
     def __repr__(self) -> str:
         return f"<Stream id={{self.id}}>"

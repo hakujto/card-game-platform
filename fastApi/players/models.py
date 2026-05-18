@@ -121,6 +121,18 @@ class PlayerSeasonStats(Base):
     def record_tournament_win(self):
         raise NotImplementedError("record_tournament_win not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.wins is None or self.wins >= 0)):
+            errors.append("Season wins must not be negative")
+        if not ((self.losses is None or self.losses >= 0)):
+            errors.append("Season losses must not be negative")
+        if not ((self.tournament_wins is None or self.tournament_wins >= 0)):
+            errors.append("Season tournament wins must not be negative")
+        if not ((self.season_points is None or self.season_points >= 0)):
+            errors.append("Season points must not be negative")
+        return errors
     def __repr__(self) -> str:
         return f"<PlayerSeasonStats id={{self.id}}>"
 
@@ -153,6 +165,12 @@ class PlayerCollection(Base):
     def estimated_value(self) -> float:
         raise NotImplementedError("estimated_value not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.quantity is None or self.quantity > 0)):
+            errors.append("Collection quantity must be greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<PlayerCollection id={{self.id}}>"
 
@@ -199,6 +217,19 @@ class Achievement(Base):
     points = Column(Integer, default="10")
     rarity = Column(String(20), default="Common")
     is_hidden = Column(Boolean, default="false")
+
+    def point_value(self, multiplier: int) -> int:
+        raise NotImplementedError("point_value not implemented")
+
+    def reveal(self):
+        raise NotImplementedError("reveal not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.points is None or self.points > 0)):
+            errors.append("Achievement must award at least one point")
+        return errors
     def __repr__(self) -> str:
         return f"<Achievement id={{self.id}}>"
 
@@ -214,6 +245,19 @@ class PlayerAchievement(Base):
     player = relationship("Player", foreign_keys=[player_id])
     achievement_id = Column(Integer, ForeignKey("achievement.id"), nullable=False)
     achievement = relationship("Achievement", foreign_keys=[achievement_id])
+
+    def increment_progress(self, amount: int):
+        raise NotImplementedError("increment_progress not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.progress is None or self.progress >= 0)):
+            errors.append("Achievement progress must not be negative")
+        return errors
 
     def validate_implies(self) -> list[str]:
         errors = []
@@ -233,6 +277,12 @@ class CraftingRecipe(Base):
     result_card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     result_card = relationship("Card", foreign_keys=[result_card_id])
     required_cards = relationship("Card", secondary=crafting_recipe_required_cards_assoc)
+
+    def can_craft(self, player_id: int) -> bool:
+        raise NotImplementedError("can_craft not implemented")
+
+    def execute_craft(self, player_id: int):
+        raise NotImplementedError("execute_craft not implemented")
 
     def disable(self):
         raise NotImplementedError("disable not implemented")

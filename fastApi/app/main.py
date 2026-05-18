@@ -14,7 +14,7 @@ import content.models  # noqa: F401
 from cards.router import router_card, router_card_set, router_card_ruling, router_card_ability, router_deck, router_deck_card, router_deck_sideboard_card, router_deck_tag, router_deck_tag_assignment
 from players.router import router_player, router_player_season_stats, router_player_collection, router_friendship, router_achievement, router_player_achievement, router_crafting_recipe, router_crafting_ingredient
 from tournaments.router import router_season, router_tournament, router_tournament_judge, router_tournament_registration, router_tournament_round, router_match, router_game, router_tournament_prize, router_awarded_prize
-from marketplace.router import router_product, router_order, router_order_item, router_coupon, router_tradelisting, router_trade_bid, router_trade_transaction, router_card_price_history, router_trade_dispute
+from marketplace.router import router_product, router_order, router_order_item, router_coupon, router_trade_listing, router_trade_bid, router_trade_transaction, router_card_price_history, router_trade_dispute
 from content.router import router_draft_session, router_draft_participant, router_draft_pick, router_article, router_article_tag, router_article_tag_assignment, router_article_comment, router_stream
 
 Base.metadata.create_all(bind=engine)
@@ -63,7 +63,7 @@ app.include_router(router_product)
 app.include_router(router_order)
 app.include_router(router_order_item)
 app.include_router(router_coupon)
-app.include_router(router_tradelisting)
+app.include_router(router_trade_listing)
 app.include_router(router_trade_bid)
 app.include_router(router_trade_transaction)
 app.include_router(router_card_price_history)

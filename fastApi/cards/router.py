@@ -104,6 +104,32 @@ def calculate_value_card(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return result
 
+@router_card.post("/{item_id}/rarity-bonus", response_model=float)
+def apply_rarity_bonus_card(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Card).filter(Card.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+    result = obj.apply_rarity_bonus(body.get("multiplier"))
+    db.commit()
+    return result
+
+@router_card.get("/{item_id}/legal", response_model=bool)
+def is_legal_in_format_card(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Card).filter(Card.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+    result = obj.is_legal_in_format()
+    db.commit()
+    return result
+
+def _validate_card_set(obj: CardSet) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_card_set = APIRouter(prefix="/api/card_sets", tags=["Card Set"])
 
 @router_card_set.get("", response_model=list[CardSetRead])
@@ -115,6 +141,7 @@ def list_card_sets(
 @router_card_set.post("", response_model=CardSetRead, status_code=status.HTTP_201_CREATED)
 def create_card_set(data: CardSetCreate, db: Session = Depends(get_db)) -> CardSet:
     obj = CardSet(**data.model_dump(exclude_unset=True))
+    _validate_card_set(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -134,6 +161,7 @@ def update_card_set(item_id: int, data: CardSetUpdate, db: Session = Depends(get
         raise HTTPException(status_code=404, detail="CardSet not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_card_set(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -148,6 +176,41 @@ def delete_card_set(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="CardSet not found")
     db.delete(obj)
+    db.commit()
+
+@router_card_set.get("/{item_id}/api/card-sets/{id}/standard-legal", response_model=bool)
+def is_legal_in_standard_card_set(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardSet).filter(CardSet.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardSet not found")
+    result = obj.is_legal_in_standard()
+    db.commit()
+    return result
+
+@router_card_set.get("/{item_id}/api/card-sets/{id}/legal", response_model=bool)
+def is_legal_in_format_card_set(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardSet).filter(CardSet.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardSet not found")
+    result = obj.is_legal_in_format()
+    db.commit()
+    return result
+
+@router_card_set.get("/{item_id}/api/card-sets/{id}/rarity-count", response_model=int)
+def card_count_by_rarity_card_set(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardSet).filter(CardSet.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardSet not found")
+    result = obj.card_count_by_rarity()
+    db.commit()
+    return result
+
+@router_card_set.post("/{item_id}/api/card-sets/{id}/rotate", status_code=status.HTTP_204_NO_CONTENT)
+def rotate_out_card_set(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardSet).filter(CardSet.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardSet not found")
+    obj.rotate_out()
     db.commit()
 
 router_card_ruling = APIRouter(prefix="/api/card_rulings", tags=["Card Ruling"])
@@ -195,6 +258,24 @@ def delete_card_ruling(item_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail="CardRuling not found")
     db.delete(obj)
     db.commit()
+
+@router_card_ruling.get("/{item_id}/api/card-rulings/{id}/current", response_model=bool)
+def is_current_card_ruling(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardRuling).filter(CardRuling.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardRuling not found")
+    result = obj.is_current()
+    db.commit()
+    return result
+
+@router_card_ruling.get("/{item_id}/api/card-rulings/{id}/supersedes", response_model=bool)
+def supersedes_previous_card_ruling(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardRuling).filter(CardRuling.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardRuling not found")
+    result = obj.supersedes_previous()
+    db.commit()
+    return result
 
 def _validate_card_ability(obj: CardAbility) -> None:
     errors: list[str] = []
@@ -251,6 +332,32 @@ def delete_card_ability(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_card_ability.get("/{item_id}/api/card-abilities/{id}/usable", response_model=bool)
+def is_usable_at_card_ability(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardAbility).filter(CardAbility.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardAbility not found")
+    result = obj.is_usable_at()
+    db.commit()
+    return result
+
+@router_card_ability.get("/{item_id}/api/card-abilities/{id}/describe", response_model=str)
+def describe_card_ability(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CardAbility).filter(CardAbility.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CardAbility not found")
+    result = obj.describe()
+    db.commit()
+    return result
+
+def _validate_deck(obj: Deck) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_deck = APIRouter(prefix="/api/decks", tags=["Deck"])
 
 @router_deck.get("", response_model=list[DeckRead])
@@ -262,6 +369,7 @@ def list_decks(
 @router_deck.post("", response_model=DeckRead, status_code=status.HTTP_201_CREATED)
 def create_deck(data: DeckCreate, db: Session = Depends(get_db)) -> Deck:
     obj = Deck(**data.model_dump(exclude_unset=True))
+    _validate_deck(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -281,6 +389,7 @@ def update_deck(item_id: int, data: DeckUpdate, db: Session = Depends(get_db)) -
         raise HTTPException(status_code=404, detail="Deck not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_deck(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -303,6 +412,31 @@ def validate_size_deck(item_id: int, db: Session = Depends(get_db)):
     if obj is None:
         raise HTTPException(status_code=404, detail="Deck not found")
     result = obj.validate_size()
+    db.commit()
+    return result
+
+@router_deck.post("/{item_id}/cards", status_code=status.HTTP_204_NO_CONTENT)
+def add_card_deck(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Deck).filter(Deck.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    obj.add_card(body.get("card_id"), body.get("quantity"))
+    db.commit()
+
+@router_deck.delete("/{item_id}/cards/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_card_deck(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Deck).filter(Deck.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    obj.remove_card()
+    db.commit()
+
+@router_deck.get("/{item_id}/win-rate", response_model=float)
+def win_rate_deck(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Deck).filter(Deck.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    result = obj.win_rate()
     db.commit()
     return result
 
@@ -395,6 +529,29 @@ def delete_deck_card(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_deck_card.patch("/{item_id}/api/deck-cards/{id}/increment", status_code=status.HTTP_204_NO_CONTENT)
+def increment_deck_card(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DeckCard).filter(DeckCard.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DeckCard not found")
+    obj.increment(body.get("amount"))
+    db.commit()
+
+@router_deck_card.patch("/{item_id}/api/deck-cards/{id}/decrement", status_code=status.HTTP_204_NO_CONTENT)
+def decrement_deck_card(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DeckCard).filter(DeckCard.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DeckCard not found")
+    obj.decrement(body.get("amount"))
+    db.commit()
+
+def _validate_deck_sideboard_card(obj: DeckSideboardCard) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_deck_sideboard_card = APIRouter(prefix="/api/deck_sideboard_cards", tags=["Deck Sideboard Card"])
 
 @router_deck_sideboard_card.get("", response_model=list[DeckSideboardCardRead])
@@ -406,6 +563,7 @@ def list_deck_sideboard_cards(
 @router_deck_sideboard_card.post("", response_model=DeckSideboardCardRead, status_code=status.HTTP_201_CREATED)
 def create_deck_sideboard_card(data: DeckSideboardCardCreate, db: Session = Depends(get_db)) -> DeckSideboardCard:
     obj = DeckSideboardCard(**data.model_dump(exclude_unset=True))
+    _validate_deck_sideboard_card(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -425,6 +583,7 @@ def update_deck_sideboard_card(item_id: int, data: DeckSideboardCardUpdate, db: 
         raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_deck_sideboard_card(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -439,6 +598,22 @@ def delete_deck_sideboard_card(item_id: int, db: Session = Depends(get_db)) -> N
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
     db.delete(obj)
+    db.commit()
+
+@router_deck_sideboard_card.patch("/{item_id}/api/sideboard-cards/{id}/increment", status_code=status.HTTP_204_NO_CONTENT)
+def increment_deck_sideboard_card(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DeckSideboardCard).filter(DeckSideboardCard.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
+    obj.increment(body.get("amount"))
+    db.commit()
+
+@router_deck_sideboard_card.patch("/{item_id}/api/sideboard-cards/{id}/decrement", status_code=status.HTTP_204_NO_CONTENT)
+def decrement_deck_sideboard_card(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DeckSideboardCard).filter(DeckSideboardCard.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
+    obj.decrement(body.get("amount"))
     db.commit()
 
 router_deck_tag = APIRouter(prefix="/api/deck_tags", tags=["Deck Tag"])
@@ -485,6 +660,14 @@ def delete_deck_tag(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckTag not found")
     db.delete(obj)
+    db.commit()
+
+@router_deck_tag.patch("/{item_id}/api/deck-tags/{id}/rename", status_code=status.HTTP_204_NO_CONTENT)
+def rename_deck_tag(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(DeckTag).filter(DeckTag.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DeckTag not found")
+    obj.rename(body.get("new_name"))
     db.commit()
 
 @router_deck_tag.post("/{item_id}/api/deck-tags/{id}/merge", status_code=status.HTTP_204_NO_CONTENT)

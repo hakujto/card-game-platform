@@ -48,6 +48,16 @@ class Product(Base):
     def is_in_stock(self) -> bool:
         raise NotImplementedError("is_in_stock not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.price is None or self.price > 0)):
+            errors.append("Product price must be greater than zero")
+        if not ((self.stock is None or self.stock >= 0)):
+            errors.append("Product stock must not be negative")
+        if not ((self.discount_percent is None or (self.discount_percent >= 0 and self.discount_percent <= 100))):
+            errors.append("Product discount percent must be between 0 and 100")
+        return errors
     def __repr__(self) -> str:
         return f"<Product id={{self.id}}>"
 
@@ -110,6 +120,8 @@ class Order(Base):
             errors.append("Paid order must have paid_at set")
         if (self.status == "Shipped") and not (self.tracking_number is not None):
             errors.append("Shipped order must have a tracking number")
+        if (self.shipped_at is not None) and not (self.status == "Shipped"):
+            errors.append("shipped_at_requires_shipped_status")
         return errors
     def __repr__(self) -> str:
         return f"<Order id={{self.id}}>"
@@ -194,12 +206,12 @@ class Coupon(Base):
 
 from typing import Literal
 
-TradelistingListingTypeType = Literal["FixedPrice", "Auction", "TradeOffer"]
-TradelistingConditionType = Literal["Mint", "NearMint", "Excellent", "Good", "Played"]
-TradelistingStatusType = Literal["Active", "Sold", "Expired", "Cancelled", "Pending"]
+TradeListingListingTypeType = Literal["FixedPrice", "Auction", "TradeOffer"]
+TradeListingConditionType = Literal["Mint", "NearMint", "Excellent", "Good", "Played"]
+TradeListingStatusType = Literal["Active", "Sold", "Expired", "Cancelled", "Pending"]
 
-class Tradelisting(Base):
-    __tablename__ = "tradelisting"
+class TradeListing(Base):
+    __tablename__ = "trade_listing"
 
     id = Column(Integer, primary_key=True, index=True)
     listing_type = Column(String(20), default="FixedPrice")
@@ -249,7 +261,7 @@ class Tradelisting(Base):
             errors.append("Auction listing must have a start price and end time")
         return errors
     def __repr__(self) -> str:
-        return f"<Tradelisting id={{self.id}}>"
+        return f"<TradeListing id={{self.id}}>"
 
 
 class TradeBid(Base):
@@ -259,13 +271,16 @@ class TradeBid(Base):
     amount = Column(Numeric)
     placed_at = Column(DateTime)
     is_winning = Column(Boolean, default="false")
-    listing_id = Column(Integer, ForeignKey("tradelisting.id"), nullable=False)
-    listing = relationship("Tradelisting", foreign_keys=[listing_id])
+    listing_id = Column(Integer, ForeignKey("trade_listing.id"), nullable=False)
+    listing = relationship("TradeListing", foreign_keys=[listing_id])
     bidder_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     bidder = relationship("Player", foreign_keys=[bidder_id])
 
     def outbid_by(self, new_amount: float) -> bool:
         raise NotImplementedError("outbid_by not implemented")
+
+    def retract(self):
+        raise NotImplementedError("retract not implemented")
 
 
     def validate_rules(self) -> list[str]:
@@ -289,8 +304,8 @@ class TradeTransaction(Base):
     platform_fee = Column(Numeric)
     status = Column(String(20), default="Pending")
     completed_at = Column(DateTime, nullable=True)
-    listing_id = Column(Integer, ForeignKey("tradelisting.id"), nullable=False)
-    listing = relationship("Tradelisting", foreign_keys=[listing_id])
+    listing_id = Column(Integer, ForeignKey("trade_listing.id"), nullable=False)
+    listing = relationship("TradeListing", foreign_keys=[listing_id])
     buyer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     buyer = relationship("Player", foreign_keys=[buyer_id])
     seller_id = Column(Integer, ForeignKey("player.id"), nullable=False)
@@ -315,6 +330,8 @@ class TradeTransaction(Base):
             errors.append("Platform fee cannot exceed the final price")
         if not ((self.platform_fee is None or self.platform_fee >= 0)):
             errors.append("Platform fee must not be negative")
+        if not ((self.final_price is None or self.final_price > 0)):
+            errors.append("Transaction final price must be greater than zero")
         return errors
 
     def validate_implies(self) -> list[str]:
@@ -350,6 +367,10 @@ class CardPriceHistory(Base):
         errors = []
         if not (((self.min_price is None or (self.avg_price is not None and self.min_price <= self.avg_price)) and (self.avg_price is None or (self.max_price is not None and self.avg_price <= self.max_price)))):
             errors.append("min_price <= avg_price <= max_price must hold")
+        if not ((self.volume is None or self.volume >= 0)):
+            errors.append("Price history volume must not be negative")
+        if not ((self.min_price is None or self.min_price >= 0)):
+            errors.append("Prices must not be negative")
         return errors
     def __repr__(self) -> str:
         return f"<CardPriceHistory id={{self.id}}>"

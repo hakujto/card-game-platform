@@ -94,8 +94,8 @@ Interactive docs: `http://localhost:8000/docs`
 - `GET/PUT/PATCH/DELETE` `/api/order_items/{id}`
 - `GET/POST` `/api/coupons`
 - `GET/PUT/PATCH/DELETE` `/api/coupons/{id}`
-- `GET/POST` `/api/tradelistings`
-- `GET/PUT/PATCH/DELETE` `/api/tradelistings/{id}`
+- `GET/POST` `/api/trade_listings`
+- `GET/PUT/PATCH/DELETE` `/api/trade_listings/{id}`
 - `GET/POST` `/api/trade_bids`
 - `GET/PUT/PATCH/DELETE` `/api/trade_bids/{id}`
 - `GET/POST` `/api/trade_transactions`
@@ -138,7 +138,7 @@ Bounded Contexts:
 - **Cards BC** (`cards/`) — Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
 - **Players BC** (`players/`) — Player, PlayerSeasonStats, PlayerCollection, Friendship, Achievement, PlayerAchievement, CraftingRecipe, CraftingIngredient
 - **Tournaments BC** (`tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
-- **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+- **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
 
 ## Docker

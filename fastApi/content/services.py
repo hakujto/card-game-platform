@@ -39,6 +39,16 @@ class DraftSessionService:
         db.commit()
 
     @staticmethod
+    def is_full(db: Session, pk: int) -> bool:
+        obj = db.query(DraftSession).filter(DraftSession.id == pk).first()
+        if obj is None:
+            raise ValueError("DraftSession not found: " + str(pk))
+        result = obj.is_full()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -60,6 +70,16 @@ class DraftParticipantService:
         db.commit()
 
     @staticmethod
+    def drafted_card_count(db: Session, pk: int) -> int:
+        obj = db.query(DraftParticipant).filter(DraftParticipant.id == pk).first()
+        if obj is None:
+            raise ValueError("DraftParticipant not found: " + str(pk))
+        result = obj.drafted_card_count()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -70,6 +90,16 @@ class DraftParticipantService:
 
 class DraftPickService:
     """Domain service for DraftPick aggregate."""
+
+    @staticmethod
+    def is_first_pick(db: Session, pk: int) -> bool:
+        obj = db.query(DraftPick).filter(DraftPick.id == pk).first()
+        if obj is None:
+            raise ValueError("DraftPick not found: " + str(pk))
+        result = obj.is_first_pick()
+        db.add(obj)
+        db.commit()
+        return result
 
     @staticmethod
     def create(data: dict) -> None:
@@ -111,6 +141,16 @@ class ArticleService:
         db.commit()
 
     @staticmethod
+    def reading_time_minutes(db: Session, pk: int) -> int:
+        obj = db.query(Article).filter(Article.id == pk).first()
+        if obj is None:
+            raise ValueError("Article not found: " + str(pk))
+        result = obj.reading_time_minutes()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -121,6 +161,25 @@ class ArticleService:
 
 class ArticleTagService:
     """Domain service for ArticleTag aggregate."""
+
+    @staticmethod
+    def rename(db: Session, pk: int, new_name: str):
+        obj = db.query(ArticleTag).filter(ArticleTag.id == pk).first()
+        if obj is None:
+            raise ValueError("ArticleTag not found: " + str(pk))
+        obj.rename(new_name)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def article_count(db: Session, pk: int) -> int:
+        obj = db.query(ArticleTag).filter(ArticleTag.id == pk).first()
+        if obj is None:
+            raise ValueError("ArticleTag not found: " + str(pk))
+        result = obj.article_count()
+        db.add(obj)
+        db.commit()
+        return result
 
     @staticmethod
     def create(data: dict) -> None:
@@ -165,6 +224,16 @@ class ArticleCommentService:
         db.commit()
 
     @staticmethod
+    def is_reply(db: Session, pk: int) -> bool:
+        obj = db.query(ArticleComment).filter(ArticleComment.id == pk).first()
+        if obj is None:
+            raise ValueError("ArticleComment not found: " + str(pk))
+        result = obj.is_reply()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -202,6 +271,16 @@ class StreamService:
         obj.update_viewer_peak(count)
         db.add(obj)
         db.commit()
+
+    @staticmethod
+    def duration_minutes(db: Session, pk: int) -> int:
+        obj = db.query(Stream).filter(Stream.id == pk).first()
+        if obj is None:
+            raise ValueError("Stream not found: " + str(pk))
+        result = obj.duration_minutes()
+        db.add(obj)
+        db.commit()
+        return result
 
     @staticmethod
     def create(data: dict) -> None:

@@ -5,7 +5,7 @@ Abstracts data access from domain logic.
 
 from sqlalchemy.orm import Session
 
-from .models import Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 
 
 class ProductRepository:
@@ -56,16 +56,16 @@ class CouponRepository:
         return db.query(Coupon).all()
 
 
-class TradelistingRepository:
-    """Repository for Tradelisting."""
+class TradeListingRepository:
+    """Repository for TradeListing."""
 
     @staticmethod
-    def get_by_id(db: Session, pk: int) -> Tradelisting | None:
-        return db.query(Tradelisting).filter(Tradelisting.id == pk).first()
+    def get_by_id(db: Session, pk: int) -> TradeListing | None:
+        return db.query(TradeListing).filter(TradeListing.id == pk).first()
 
     @staticmethod
-    def find_all(db: Session) -> list[Tradelisting]:
-        return db.query(Tradelisting).all()
+    def find_all(db: Session) -> list[TradeListing]:
+        return db.query(TradeListing).all()
 
 
 class TradeBidRepository:

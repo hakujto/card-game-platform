@@ -121,6 +121,13 @@ def update_rating_player(item_id: int, body: dict = {}, db: Session = Depends(ge
     obj.update_rating(body.get("delta"))
     db.commit()
 
+def _validate_player_season_stats(obj: PlayerSeasonStats) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_player_season_stats = APIRouter(prefix="/api/player_season_statses", tags=["Player Season Stats"])
 
 @router_player_season_stats.get("", response_model=list[PlayerSeasonStatsRead])
@@ -132,6 +139,7 @@ def list_player_season_statses(
 @router_player_season_stats.post("", response_model=PlayerSeasonStatsRead, status_code=status.HTTP_201_CREATED)
 def create_player_season_stats(data: PlayerSeasonStatsCreate, db: Session = Depends(get_db)) -> PlayerSeasonStats:
     obj = PlayerSeasonStats(**data.model_dump(exclude_unset=True))
+    _validate_player_season_stats(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -151,6 +159,7 @@ def update_player_season_stats(item_id: int, data: PlayerSeasonStatsUpdate, db: 
         raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_player_season_stats(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -167,6 +176,38 @@ def delete_player_season_stats(item_id: int, db: Session = Depends(get_db)) -> N
     db.delete(obj)
     db.commit()
 
+@router_player_season_stats.get("/{item_id}/api/player-season-stats/{id}/win-rate", response_model=float)
+def win_rate_player_season_stats(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
+    result = obj.win_rate()
+    db.commit()
+    return result
+
+@router_player_season_stats.patch("/{item_id}/api/player-season-stats/{id}/points", status_code=status.HTTP_204_NO_CONTENT)
+def add_points_player_season_stats(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
+    obj.add_points(body.get("points"))
+    db.commit()
+
+@router_player_season_stats.post("/{item_id}/api/player-season-stats/{id}/tournament-win", status_code=status.HTTP_204_NO_CONTENT)
+def record_tournament_win_player_season_stats(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
+    obj.record_tournament_win()
+    db.commit()
+
+def _validate_player_collection(obj: PlayerCollection) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_player_collection = APIRouter(prefix="/api/player_collections", tags=["Player Collection"])
 
 @router_player_collection.get("", response_model=list[PlayerCollectionRead])
@@ -178,6 +219,7 @@ def list_player_collections(
 @router_player_collection.post("", response_model=PlayerCollectionRead, status_code=status.HTTP_201_CREATED)
 def create_player_collection(data: PlayerCollectionCreate, db: Session = Depends(get_db)) -> PlayerCollection:
     obj = PlayerCollection(**data.model_dump(exclude_unset=True))
+    _validate_player_collection(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -197,6 +239,7 @@ def update_player_collection(item_id: int, data: PlayerCollectionUpdate, db: Ses
         raise HTTPException(status_code=404, detail="PlayerCollection not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_player_collection(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -211,6 +254,22 @@ def delete_player_collection(item_id: int, db: Session = Depends(get_db)) -> Non
     if obj is None:
         raise HTTPException(status_code=404, detail="PlayerCollection not found")
     db.delete(obj)
+    db.commit()
+
+@router_player_collection.post("/{item_id}/api/collection/{id}/add", status_code=status.HTTP_204_NO_CONTENT)
+def add_player_collection(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(PlayerCollection).filter(PlayerCollection.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerCollection not found")
+    obj.add(body.get("quantity"))
+    db.commit()
+
+@router_player_collection.post("/{item_id}/api/collection/{id}/remove", status_code=status.HTTP_204_NO_CONTENT)
+def remove_player_collection(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(PlayerCollection).filter(PlayerCollection.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerCollection not found")
+    obj.remove(body.get("quantity"))
     db.commit()
 
 @router_player_collection.get("/{item_id}/api/collection/{id}/value", response_model=float)
@@ -292,6 +351,13 @@ def block_friendship(item_id: int, db: Session = Depends(get_db)):
     obj.block()
     db.commit()
 
+def _validate_achievement(obj: Achievement) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_achievement = APIRouter(prefix="/api/achievements", tags=["Achievement"])
 
 @router_achievement.get("", response_model=list[AchievementRead])
@@ -303,6 +369,7 @@ def list_achievements(
 @router_achievement.post("", response_model=AchievementRead, status_code=status.HTTP_201_CREATED)
 def create_achievement(data: AchievementCreate, db: Session = Depends(get_db)) -> Achievement:
     obj = Achievement(**data.model_dump(exclude_unset=True))
+    _validate_achievement(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -322,6 +389,7 @@ def update_achievement(item_id: int, data: AchievementUpdate, db: Session = Depe
         raise HTTPException(status_code=404, detail="Achievement not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_achievement(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -338,8 +406,26 @@ def delete_achievement(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_achievement.get("/{item_id}/point-value", response_model=int)
+def point_value_achievement(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Achievement).filter(Achievement.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    result = obj.point_value()
+    db.commit()
+    return result
+
+@router_achievement.post("/{item_id}/reveal", status_code=status.HTTP_204_NO_CONTENT)
+def reveal_achievement(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Achievement).filter(Achievement.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Achievement not found")
+    obj.reveal()
+    db.commit()
+
 def _validate_player_achievement(obj: PlayerAchievement) -> None:
     errors: list[str] = []
+    errors.extend(obj.validate_rules())
     errors.extend(obj.validate_implies())
     if errors:
         raise HTTPException(status_code=422, detail=errors)
@@ -391,6 +477,22 @@ def delete_player_achievement(item_id: int, db: Session = Depends(get_db)) -> No
     if obj is None:
         raise HTTPException(status_code=404, detail="PlayerAchievement not found")
     db.delete(obj)
+    db.commit()
+
+@router_player_achievement.patch("/{item_id}/api/player-achievements/{id}/progress", status_code=status.HTTP_204_NO_CONTENT)
+def increment_progress_player_achievement(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerAchievement not found")
+    obj.increment_progress(body.get("amount"))
+    db.commit()
+
+@router_player_achievement.post("/{item_id}/api/player-achievements/{id}/complete", status_code=status.HTTP_204_NO_CONTENT)
+def complete_player_achievement(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="PlayerAchievement not found")
+    obj.complete()
     db.commit()
 
 def _validate_crafting_recipe(obj: CraftingRecipe) -> None:
@@ -446,6 +548,39 @@ def delete_crafting_recipe(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="CraftingRecipe not found")
     db.delete(obj)
+    db.commit()
+
+@router_crafting_recipe.get("/{item_id}/api/crafting-recipes/{id}/can-craft", response_model=bool)
+def can_craft_crafting_recipe(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CraftingRecipe not found")
+    result = obj.can_craft()
+    db.commit()
+    return result
+
+@router_crafting_recipe.post("/{item_id}/api/crafting-recipes/{id}/craft", status_code=status.HTTP_204_NO_CONTENT)
+def execute_craft_crafting_recipe(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CraftingRecipe not found")
+    obj.execute_craft(body.get("player_id"))
+    db.commit()
+
+@router_crafting_recipe.post("/{item_id}/api/crafting-recipes/{id}/disable", status_code=status.HTTP_204_NO_CONTENT)
+def disable_crafting_recipe(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CraftingRecipe not found")
+    obj.disable()
+    db.commit()
+
+@router_crafting_recipe.post("/{item_id}/api/crafting-recipes/{id}/enable", status_code=status.HTTP_204_NO_CONTENT)
+def enable_crafting_recipe(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="CraftingRecipe not found")
+    obj.enable()
     db.commit()
 
 router_crafting_ingredient = APIRouter(prefix="/api/crafting_ingredients", tags=["Crafting Ingredient"])

@@ -86,6 +86,15 @@ def finalize_rewards_season(item_id: int, db: Session = Depends(get_db)):
     obj.finalize_rewards()
     db.commit()
 
+@router_season.get("/{item_id}/ongoing", response_model=bool)
+def is_ongoing_season(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Season).filter(Season.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Season not found")
+    result = obj.is_ongoing()
+    db.commit()
+    return result
+
 def _validate_tournament(obj: Tournament) -> None:
     errors: list[str] = []
     errors.extend(obj.validate_rules())
@@ -183,6 +192,23 @@ def calculate_prize_distribution_tournament(item_id: int, db: Session = Depends(
     db.commit()
     return result
 
+@router_tournament.post("/{item_id}/register", status_code=status.HTTP_204_NO_CONTENT)
+def register_player_tournament(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    obj.register_player(body.get("player_id"), body.get("deck_id"))
+    db.commit()
+
+@router_tournament.get("/{item_id}/full", response_model=bool)
+def is_full_tournament(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    result = obj.is_full()
+    db.commit()
+    return result
+
 router_tournament_judge = APIRouter(prefix="/api/tournament_judges", tags=["Tournament Judge"])
 
 @router_tournament_judge.get("", response_model=list[TournamentJudgeRead])
@@ -229,6 +255,30 @@ def delete_tournament_judge(item_id: int, db: Session = Depends(get_db)) -> None
     db.delete(obj)
     db.commit()
 
+@router_tournament_judge.post("/{item_id}/api/tournament-judges/{id}/promote", status_code=status.HTTP_204_NO_CONTENT)
+def promote_to_head_tournament_judge(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TournamentJudge).filter(TournamentJudge.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TournamentJudge not found")
+    obj.promote_to_head()
+    db.commit()
+
+@router_tournament_judge.delete("/{item_id}/api/tournament-judges/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_tournament_judge(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TournamentJudge).filter(TournamentJudge.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TournamentJudge not found")
+    obj.remove()
+    db.commit()
+
+def _validate_tournament_registration(obj: TournamentRegistration) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_tournament_registration = APIRouter(prefix="/api/tournament_registrations", tags=["Tournament Registration"])
 
 @router_tournament_registration.get("", response_model=list[TournamentRegistrationRead])
@@ -240,6 +290,7 @@ def list_tournament_registrations(
 @router_tournament_registration.post("", response_model=TournamentRegistrationRead, status_code=status.HTTP_201_CREATED)
 def create_tournament_registration(data: TournamentRegistrationCreate, db: Session = Depends(get_db)) -> TournamentRegistration:
     obj = TournamentRegistration(**data.model_dump(exclude_unset=True))
+    _validate_tournament_registration(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -259,6 +310,7 @@ def update_tournament_registration(item_id: int, data: TournamentRegistrationUpd
         raise HTTPException(status_code=404, detail="TournamentRegistration not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_tournament_registration(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -301,6 +353,7 @@ def promote_from_waitlist_tournament_registration(item_id: int, db: Session = De
 
 def _validate_tournament_round(obj: TournamentRound) -> None:
     errors: list[str] = []
+    errors.extend(obj.validate_rules())
     errors.extend(obj.validate_implies())
     if errors:
         raise HTTPException(status_code=422, detail=errors)
@@ -378,6 +431,15 @@ def generate_pairings_tournament_round(item_id: int, db: Session = Depends(get_d
     obj.generate_pairings()
     db.commit()
 
+@router_tournament_round.get("/{item_id}/api/rounds/{id}/time-expired", response_model=bool)
+def is_time_expired_tournament_round(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TournamentRound).filter(TournamentRound.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TournamentRound not found")
+    result = obj.is_time_expired()
+    db.commit()
+    return result
+
 def _validate_match(obj: Match) -> None:
     errors: list[str] = []
     errors.extend(obj.validate_rules())
@@ -451,6 +513,14 @@ def determine_winner_match(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return result
 
+@router_match.post("/{item_id}/concede", status_code=status.HTTP_204_NO_CONTENT)
+def concede_match(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    obj.concede(body.get("player_id"))
+    db.commit()
+
 @router_match.post("/{item_id}/draw", status_code=status.HTTP_204_NO_CONTENT)
 def draw_match(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(Match).filter(Match.id == item_id).first()
@@ -523,6 +593,15 @@ def record_winner_game(item_id: int, body: dict = {}, db: Session = Depends(get_
     obj.record_winner(body.get("winner_side"))
     db.commit()
 
+@router_game.get("/{item_id}/duration", response_model=float)
+def duration_minutes_game(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Game).filter(Game.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+    result = obj.duration_minutes()
+    db.commit()
+    return result
+
 def _validate_tournament_prize(obj: TournamentPrize) -> None:
     errors: list[str] = []
     errors.extend(obj.validate_rules())
@@ -576,6 +655,23 @@ def delete_tournament_prize(item_id: int, db: Session = Depends(get_db)) -> None
     if obj is None:
         raise HTTPException(status_code=404, detail="TournamentPrize not found")
     db.delete(obj)
+    db.commit()
+
+@router_tournament_prize.get("/{item_id}/api/prizes/{id}/applies", response_model=bool)
+def applies_to_placement_tournament_prize(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TournamentPrize).filter(TournamentPrize.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TournamentPrize not found")
+    result = obj.applies_to_placement()
+    db.commit()
+    return result
+
+@router_tournament_prize.post("/{item_id}/api/prizes/{id}/award", status_code=status.HTTP_204_NO_CONTENT)
+def award_to_player_tournament_prize(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(TournamentPrize).filter(TournamentPrize.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TournamentPrize not found")
+    obj.award_to_player(body.get("player_id"))
     db.commit()
 
 def _validate_awarded_prize(obj: AwardedPrize) -> None:
@@ -632,4 +728,12 @@ def delete_awarded_prize(item_id: int, db: Session = Depends(get_db)) -> None:
     if obj is None:
         raise HTTPException(status_code=404, detail="AwardedPrize not found")
     db.delete(obj)
+    db.commit()
+
+@router_awarded_prize.post("/{item_id}/api/awarded-prizes/{id}/claim", status_code=status.HTTP_204_NO_CONTENT)
+def claim_awarded_prize(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(AwardedPrize).filter(AwardedPrize.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="AwardedPrize not found")
+    obj.claim()
     db.commit()

@@ -40,29 +40,43 @@ class TestDraftSession:
         assert isinstance(res.json(), list)
 
     def test_create_returns_201(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        data = {"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 0, "created_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        data = {"status": "Completed", "draft_type": "Booster", "seats": 2, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}
         res = client.post("/api/draft_sessions", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
 
     def test_retrieve_returns_200(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        created = client.post("/api/draft_sessions", json={"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 0, "created_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
         res = client.get(f"/api/draft_sessions/{created['id']}")
         assert res.status_code == 200
 
     def test_update_returns_200(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        created = client.post("/api/draft_sessions", json={"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 0, "created_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}).json()
-        res = client.put(f"/api/draft_sessions/{created['id']}", json={"seats": 0})
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
+        res = client.put(f"/api/draft_sessions/{created['id']}", json={"seats": 2})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        created = client.post("/api/draft_sessions", json={"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 0, "created_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
         res = client.delete(f"/api/draft_sessions/{created['id']}")
         assert res.status_code == 204
+
+    def test_create_fails_when_seats_range_violated(self, client: TestClient):
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        # Simple rule violated → 422
+        data = {"status": "Completed", "draft_type": "Booster", "seats": 17, "created_at": "2024-01-01T00:00:00", "completed_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}
+        res = client.post("/api/draft_sessions", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_completed_at_requires_completed_status_violated(self, client: TestClient):
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        # IMPLIES: antecedent=true, consequent violated → 422
+        data = {"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 2, "created_at": "2024-01-01T00:00:00", "completed_at": "2024-01-01T00:00:00", "card_set_id": _dep_card_set["id"]}
+        res = client.post("/api/draft_sessions", json=data)
+        assert res.status_code == 422
 
 
 class TestDraftParticipant:
@@ -73,28 +87,35 @@ class TestDraftParticipant:
 
     def test_create_returns_201(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        data = {"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}
+        data = {"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}
         res = client.post("/api/draft_participants", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
 
     def test_retrieve_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        created = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
         res = client.get(f"/api/draft_participants/{created['id']}")
         assert res.status_code == 200
 
     def test_update_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        res = client.put(f"/api/draft_participants/{created['id']}", json={"seat_number": 0})
+        created = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        res = client.put(f"/api/draft_participants/{created['id']}", json={"seat_number": 1})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        created = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
         res = client.delete(f"/api/draft_participants/{created['id']}")
         assert res.status_code == 204
+
+    def test_create_fails_when_seat_number_positive_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        # Simple rule violated → 422
+        data = {"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}
+        res = client.post("/api/draft_participants", json=data)
+        assert res.status_code == 422
 
 
 class TestDraftPick:
@@ -105,40 +126,60 @@ class TestDraftPick:
 
     def test_create_returns_201(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": 0, "set_id": _dep_card_set["id"]}).json()
-        data = {"pick_number": 0, "pack_number": 0, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        data = {"pick_number": 1, "pack_number": 1, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/draft_picks", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
 
     def test_retrieve_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": 0, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/draft_picks", json={"pick_number": 0, "pack_number": 0, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/draft_picks", json={"pick_number": 1, "pack_number": 1, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
         res = client.get(f"/api/draft_picks/{created['id']}")
         assert res.status_code == 200
 
     def test_update_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": 0, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/draft_picks", json={"pick_number": 0, "pack_number": 0, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
-        res = client.put(f"/api/draft_picks/{created['id']}", json={"pick_number": 0})
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/draft_picks", json={"pick_number": 1, "pack_number": 1, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
+        res = client.put(f"/api/draft_picks/{created['id']}", json={"pick_number": 1})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 0, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 0}).json()
-        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": 0, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/draft_picks", json={"pick_number": 0, "pack_number": 0, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/draft_picks", json={"pick_number": 1, "pack_number": 1, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}).json()
         res = client.delete(f"/api/draft_picks/{created['id']}")
         assert res.status_code == 204
+
+    def test_create_fails_when_pick_number_positive_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        # Simple rule violated → 422
+        data = {"pick_number": 0, "pack_number": 1, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}
+        res = client.post("/api/draft_picks", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_pack_number_range_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_draft_participant = client.post("/api/draft_participants", json={"seat_number": 1, "joined_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        # Simple rule violated → 422
+        data = {"pick_number": 1, "pack_number": 4, "picked_at": "2024-01-01T00:00:00", "participant_id": _dep_draft_participant["id"], "card_id": _dep_card["id"]}
+        res = client.post("/api/draft_picks", json=data)
+        assert res.status_code == 422
 
 
 class TestArticle:
@@ -176,6 +217,13 @@ class TestArticle:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
         data = {"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "view_count": 0, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "published_at": None, "author_id": _dep_player["id"]}
+        res = client.post("/api/articles", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_view_count_not_negative_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        # Simple rule violated → 422
+        data = {"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "view_count": -1, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "published_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}
         res = client.post("/api/articles", json=data)
         assert res.status_code == 422
 
@@ -288,32 +336,46 @@ class TestStream:
 
     def test_create_returns_201(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}
+        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Ended", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}
         res = client.post("/api/streams", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
 
     def test_retrieve_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}).json()
+        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Ended", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
         res = client.get(f"/api/streams/{created['id']}")
         assert res.status_code == 200
 
     def test_update_returns_200(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}).json()
+        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Ended", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
         res = client.put(f"/api/streams/{created['id']}", json={"title": "test"})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}).json()
+        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Ended", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
         res = client.delete(f"/api/streams/{created['id']}")
         assert res.status_code == 204
 
     def test_create_fails_when_actual_start_requires_live_or_ended_violated(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
-        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"], "actual_start": "2024-01-01T00:00:00"}
+        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": "2024-01-01T00:00:00", "ended_at": None, "streamer_id": _dep_player["id"]}
+        res = client.post("/api/streams", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_ended_at_requires_ended_status_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        # IMPLIES: antecedent=true, consequent violated → 422
+        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}
+        res = client.post("/api/streams", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_viewer_count_not_negative_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        # Simple rule violated → 422
+        data = {"title": "test", "stream_url": "https://example.com", "platform": "Twitch", "status": "Ended", "viewer_count_peak": -1, "scheduled_start": "2024-01-01T00:00:00", "actual_start": "2024-01-01T00:00:00", "ended_at": "2024-01-01T00:00:00", "streamer_id": _dep_player["id"]}
         res = client.post("/api/streams", json=data)
         assert res.status_code == 422

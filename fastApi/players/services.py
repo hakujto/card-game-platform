@@ -90,6 +90,34 @@ class PlayerSeasonStatsService:
     """Domain service for PlayerSeasonStats aggregate."""
 
     @staticmethod
+    def win_rate(db: Session, pk: int) -> float:
+        obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerSeasonStats not found: " + str(pk))
+        result = obj.win_rate()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
+    def add_points(db: Session, pk: int, points: int):
+        obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerSeasonStats not found: " + str(pk))
+        obj.add_points(points)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def record_tournament_win(db: Session, pk: int):
+        obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerSeasonStats not found: " + str(pk))
+        obj.record_tournament_win()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -100,6 +128,24 @@ class PlayerSeasonStatsService:
 
 class PlayerCollectionService:
     """Domain service for PlayerCollection aggregate."""
+
+    @staticmethod
+    def add(db: Session, pk: int, quantity: int):
+        obj = db.query(PlayerCollection).filter(PlayerCollection.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerCollection not found: " + str(pk))
+        obj.add(quantity)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def remove(db: Session, pk: int, quantity: int):
+        obj = db.query(PlayerCollection).filter(PlayerCollection.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerCollection not found: " + str(pk))
+        obj.remove(quantity)
+        db.add(obj)
+        db.commit()
 
     @staticmethod
     def estimated_value(db: Session, pk: int) -> float:
@@ -163,6 +209,25 @@ class AchievementService:
     """Domain service for Achievement aggregate."""
 
     @staticmethod
+    def point_value(db: Session, pk: int, multiplier: int) -> int:
+        obj = db.query(Achievement).filter(Achievement.id == pk).first()
+        if obj is None:
+            raise ValueError("Achievement not found: " + str(pk))
+        result = obj.point_value(multiplier)
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
+    def reveal(db: Session, pk: int):
+        obj = db.query(Achievement).filter(Achievement.id == pk).first()
+        if obj is None:
+            raise ValueError("Achievement not found: " + str(pk))
+        obj.reveal()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -175,6 +240,35 @@ class PlayerAchievementService:
     """Domain service for PlayerAchievement aggregate."""
 
     @staticmethod
+    def increment_progress(db: Session, pk: int, amount: int):
+        obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerAchievement not found: " + str(pk))
+        obj.increment_progress(amount)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def complete(db: Session, pk: int):
+        obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerAchievement not found: " + str(pk))
+        obj.complete()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def set_is_completed(db: Session, pk: int, value: str) -> None:
+        obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == pk).first()
+        if obj is None:
+            raise ValueError("PlayerAchievement not found: " + str(pk))
+        obj.is_completed = value
+        if value == "TRUE":
+            obj.complete()  # @on(is_completed = true)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -185,6 +279,43 @@ class PlayerAchievementService:
 
 class CraftingRecipeService:
     """Domain service for CraftingRecipe aggregate."""
+
+    @staticmethod
+    def can_craft(db: Session, pk: int, player_id: int) -> bool:
+        obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == pk).first()
+        if obj is None:
+            raise ValueError("CraftingRecipe not found: " + str(pk))
+        result = obj.can_craft(player_id)
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
+    def execute_craft(db: Session, pk: int, player_id: int):
+        obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == pk).first()
+        if obj is None:
+            raise ValueError("CraftingRecipe not found: " + str(pk))
+        obj.execute_craft(player_id)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def disable(db: Session, pk: int):
+        obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == pk).first()
+        if obj is None:
+            raise ValueError("CraftingRecipe not found: " + str(pk))
+        obj.disable()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def enable(db: Session, pk: int):
+        obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == pk).first()
+        if obj is None:
+            raise ValueError("CraftingRecipe not found: " + str(pk))
+        obj.enable()
+        db.add(obj)
+        db.commit()
 
     @staticmethod
     def create(data: dict) -> None:

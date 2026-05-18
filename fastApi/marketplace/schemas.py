@@ -141,7 +141,7 @@ class CouponRead(CouponBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TradelistingBase(BaseModel):
+class TradeListingBase(BaseModel):
     listing_type: str
     asking_price: float | None = None
     auction_start_price: float | None = None
@@ -158,11 +158,11 @@ class TradelistingBase(BaseModel):
     card_id: int
 
 
-class TradelistingCreate(TradelistingBase):
+class TradeListingCreate(TradeListingBase):
     pass
 
 
-class TradelistingUpdate(BaseModel):
+class TradeListingUpdate(BaseModel):
     listing_type: str | None = None
     asking_price: float | None = None
     auction_start_price: float | None = None
@@ -179,7 +179,7 @@ class TradelistingUpdate(BaseModel):
     card_id: int | None = None
 
 
-class TradelistingRead(TradelistingBase):
+class TradeListingRead(TradeListingBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 

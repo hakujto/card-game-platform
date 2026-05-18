@@ -74,6 +74,12 @@ class Card(Base):
     def calculate_value(self) -> float:
         raise NotImplementedError("calculate_value not implemented")
 
+    def apply_rarity_bonus(self, multiplier: int) -> float:
+        raise NotImplementedError("apply_rarity_bonus not implemented")
+
+    def is_legal_in_format(self, format: str) -> bool:
+        raise NotImplementedError("is_legal_in_format not implemented")
+
 
     def validate_rules(self) -> list[str]:
         errors = []
@@ -91,6 +97,10 @@ class Card(Base):
             errors.append("Creature card must have attack and defense")
         if (self.card_type == "Planeswalker") and not (self.loyalty is not None):
             errors.append("Planeswalker card must have loyalty")
+        if (self.card_type != "Planeswalker") and not (self.loyalty is None):
+            errors.append("Only Planeswalker cards can have loyalty")
+        if (self.is_banned is True) and not (self.legal_formats == "message"):
+            errors.append("banned_card_not_in_legal_formats")
         return errors
     def __repr__(self) -> str:
         return f"<Card id={{self.id}}>"
@@ -107,14 +117,39 @@ class CardSet(Base):
     name = Column(String(200))
     code = Column(String(10))
     release_date = Column(Date)
+    rotation_date = Column(Date, nullable=True)
     set_type = Column(String(20), default="Expansion")
     total_cards = Column(Integer)
+    is_rotated = Column(Boolean, default="false")
     description = Column(Text, nullable=True)
     logo_url = Column(String(200), nullable=True)
 
     def is_legal_in_standard(self) -> bool:
         raise NotImplementedError("is_legal_in_standard not implemented")
 
+    def is_legal_in_format(self, format: str) -> bool:
+        raise NotImplementedError("is_legal_in_format not implemented")
+
+    def card_count_by_rarity(self, rarity: str) -> int:
+        raise NotImplementedError("card_count_by_rarity not implemented")
+
+    def rotate_out(self):
+        raise NotImplementedError("rotate_out not implemented")
+
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.total_cards is None or self.total_cards > 0)):
+            errors.append("Card set must have at least one card")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.rotation_date is not None) and not ((self.rotation_date is None or (self.release_date is not None and self.rotation_date > self.release_date))):
+            errors.append("Rotation date must be after release date")
+        if (self.is_rotated is True) and not (self.rotation_date is not None):
+            errors.append("Rotated set must have a rotation date")
+        return errors
     def __repr__(self) -> str:
         return f"<CardSet id={{self.id}}>"
 
@@ -188,6 +223,7 @@ class Deck(Base):
     archetype = Column(String(20), nullable=True)
     wins = Column(Integer, default="0")
     losses = Column(Integer, default="0")
+    draws = Column(Integer, default="0")
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
@@ -198,6 +234,15 @@ class Deck(Base):
 
     def validate_size(self) -> bool:
         raise NotImplementedError("validate_size not implemented")
+
+    def add_card(self, card_id: int, quantity: int):
+        raise NotImplementedError("add_card not implemented")
+
+    def remove_card(self, card_id: int):
+        raise NotImplementedError("remove_card not implemented")
+
+    def win_rate(self) -> float:
+        raise NotImplementedError("win_rate not implemented")
 
     def clone(self) -> None:
         raise NotImplementedError("clone not implemented")
@@ -211,6 +256,22 @@ class Deck(Base):
     def certify_tournament_legal(self) -> bool:
         raise NotImplementedError("certify_tournament_legal not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.wins is None or self.wins >= 0)):
+            errors.append("Deck wins count must not be negative")
+        if not ((self.losses is None or self.losses >= 0)):
+            errors.append("Deck losses count must not be negative")
+        if not ((self.draws is None or self.draws >= 0)):
+            errors.append("Deck draws count must not be negative")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.is_tournament_legal is True) and not (self.is_public is True):
+            errors.append("Tournament-legal deck must be made public")
+        return errors
     def __repr__(self) -> str:
         return f"<Deck id={{self.id}}>"
 
@@ -225,6 +286,13 @@ class DeckCard(Base):
     deck = relationship("Deck", foreign_keys=[deck_id])
     card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
     card = relationship("Card", foreign_keys=[card_id])
+
+    def increment(self, amount: int):
+        raise NotImplementedError("increment not implemented")
+
+    def decrement(self, amount: int):
+        raise NotImplementedError("decrement not implemented")
+
 
     def validate_rules(self) -> list[str]:
         errors = []
@@ -251,6 +319,12 @@ class DeckSideboardCard(Base):
     def decrement(self, amount: int):
         raise NotImplementedError("decrement not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 4))):
+            errors.append("Sideboard card quantity must be between 1 and 4 copies")
+        return errors
     def __repr__(self) -> str:
         return f"<DeckSideboardCard id={{self.id}}>"
 

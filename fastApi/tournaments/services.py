@@ -39,6 +39,16 @@ class SeasonService:
         db.commit()
 
     @staticmethod
+    def is_ongoing(db: Session, pk: int) -> bool:
+        obj = db.query(Season).filter(Season.id == pk).first()
+        if obj is None:
+            raise ValueError("Season not found: " + str(pk))
+        result = obj.is_ongoing()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -97,6 +107,25 @@ class TournamentService:
         return result
 
     @staticmethod
+    def register_player(db: Session, pk: int, player_id: int, deck_id: int):
+        obj = db.query(Tournament).filter(Tournament.id == pk).first()
+        if obj is None:
+            raise ValueError("Tournament not found: " + str(pk))
+        obj.register_player(player_id, deck_id)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def is_full(db: Session, pk: int) -> bool:
+        obj = db.query(Tournament).filter(Tournament.id == pk).first()
+        if obj is None:
+            raise ValueError("Tournament not found: " + str(pk))
+        result = obj.is_full()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -107,6 +136,24 @@ class TournamentService:
 
 class TournamentJudgeService:
     """Domain service for TournamentJudge aggregate."""
+
+    @staticmethod
+    def promote_to_head(db: Session, pk: int):
+        obj = db.query(TournamentJudge).filter(TournamentJudge.id == pk).first()
+        if obj is None:
+            raise ValueError("TournamentJudge not found: " + str(pk))
+        obj.promote_to_head()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def remove(db: Session, pk: int):
+        obj = db.query(TournamentJudge).filter(TournamentJudge.id == pk).first()
+        if obj is None:
+            raise ValueError("TournamentJudge not found: " + str(pk))
+        obj.remove()
+        db.add(obj)
+        db.commit()
 
     @staticmethod
     def create(data: dict) -> None:
@@ -187,6 +234,16 @@ class TournamentRoundService:
         db.commit()
 
     @staticmethod
+    def is_time_expired(db: Session, pk: int) -> bool:
+        obj = db.query(TournamentRound).filter(TournamentRound.id == pk).first()
+        if obj is None:
+            raise ValueError("TournamentRound not found: " + str(pk))
+        result = obj.is_time_expired()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -219,6 +276,15 @@ class MatchService:
         return result
 
     @staticmethod
+    def concede(db: Session, pk: int, player_id: int):
+        obj = db.query(Match).filter(Match.id == pk).first()
+        if obj is None:
+            raise ValueError("Match not found: " + str(pk))
+        obj.concede(player_id)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def draw(db: Session, pk: int):
         obj = db.query(Match).filter(Match.id == pk).first()
         if obj is None:
@@ -249,6 +315,16 @@ class GameService:
         db.commit()
 
     @staticmethod
+    def duration_minutes(db: Session, pk: int) -> float:
+        obj = db.query(Game).filter(Game.id == pk).first()
+        if obj is None:
+            raise ValueError("Game not found: " + str(pk))
+        result = obj.duration_minutes()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -261,6 +337,25 @@ class TournamentPrizeService:
     """Domain service for TournamentPrize aggregate."""
 
     @staticmethod
+    def applies_to_placement(db: Session, pk: int, placement: int) -> bool:
+        obj = db.query(TournamentPrize).filter(TournamentPrize.id == pk).first()
+        if obj is None:
+            raise ValueError("TournamentPrize not found: " + str(pk))
+        result = obj.applies_to_placement(placement)
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
+    def award_to_player(db: Session, pk: int, player_id: int):
+        obj = db.query(TournamentPrize).filter(TournamentPrize.id == pk).first()
+        if obj is None:
+            raise ValueError("TournamentPrize not found: " + str(pk))
+        obj.award_to_player(player_id)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def create(data: dict) -> None:
         raise NotImplementedError
 
@@ -271,6 +366,26 @@ class TournamentPrizeService:
 
 class AwardedPrizeService:
     """Domain service for AwardedPrize aggregate."""
+
+    @staticmethod
+    def claim(db: Session, pk: int):
+        obj = db.query(AwardedPrize).filter(AwardedPrize.id == pk).first()
+        if obj is None:
+            raise ValueError("AwardedPrize not found: " + str(pk))
+        obj.claim()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def set_claimed(db: Session, pk: int, value: str) -> None:
+        obj = db.query(AwardedPrize).filter(AwardedPrize.id == pk).first()
+        if obj is None:
+            raise ValueError("AwardedPrize not found: " + str(pk))
+        obj.claimed = value
+        if value == "TRUE":
+            obj.claim()  # @on(claimed = true)
+        db.add(obj)
+        db.commit()
 
     @staticmethod
     def create(data: dict) -> None:

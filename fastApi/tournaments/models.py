@@ -97,6 +97,9 @@ class Tournament(Base):
     def calculate_prize_distribution(self) -> float:
         raise NotImplementedError("calculate_prize_distribution not implemented")
 
+    def register_player(self, player_id: int, deck_id: int):
+        raise NotImplementedError("register_player not implemented")
+
     def is_full(self) -> bool:
         raise NotImplementedError("is_full not implemented")
 
@@ -133,6 +136,13 @@ class TournamentJudge(Base):
     tournament = relationship("Tournament", foreign_keys=[tournament_id])
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
+
+    def promote_to_head(self):
+        raise NotImplementedError("promote_to_head not implemented")
+
+    def remove(self):
+        raise NotImplementedError("remove not implemented")
+
     def __repr__(self) -> str:
         return f"<TournamentJudge id={{self.id}}>"
 
@@ -166,6 +176,20 @@ class TournamentRegistration(Base):
     def promote_from_waitlist(self):
         raise NotImplementedError("promote_from_waitlist not implemented")
 
+
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.points_earned is None or self.points_earned >= 0)):
+            errors.append("Points earned must not be negative")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.final_standing is not None) and not ((self.final_standing is None or self.final_standing > 0)):
+            errors.append("Final standing must be greater than zero")
+        if (self.seed is not None) and not ((self.seed is None or self.seed > 0)):
+            errors.append("Seed must be greater than zero")
+        return errors
     def __repr__(self) -> str:
         return f"<TournamentRegistration id={{self.id}}>"
 
@@ -199,10 +223,20 @@ class TournamentRound(Base):
         raise NotImplementedError("is_time_expired not implemented")
 
 
+    def validate_rules(self) -> list[str]:
+        errors = []
+        if not ((self.round_number is None or self.round_number > 0)):
+            errors.append("Round number must be greater than zero")
+        if not ((self.time_limit_minutes is None or self.time_limit_minutes > 0)):
+            errors.append("Round time limit must be greater than zero")
+        return errors
+
     def validate_implies(self) -> list[str]:
         errors = []
         if (self.ended_at is not None) and not ((self.ended_at is None or (self.started_at is not None and self.ended_at > self.started_at))):
             errors.append("Round end time must be after start time")
+        if (self.status == "Completed") and not (self.started_at is not None):
+            errors.append("Completed round must have a start time")
         return errors
     def __repr__(self) -> str:
         return f"<TournamentRound id={{self.id}}>"
@@ -236,6 +270,9 @@ class Match(Base):
     def determine_winner(self) -> bool:
         raise NotImplementedError("determine_winner not implemented")
 
+    def concede(self, player_id: int):
+        raise NotImplementedError("concede not implemented")
+
     def draw(self):
         raise NotImplementedError("draw not implemented")
 
@@ -252,6 +289,10 @@ class Match(Base):
         errors = []
         if (self.status == "BYE") and not (self.player2_id is None):
             errors.append("BYE match must not have a second player")
+        if (self.ended_at is not None) and not ((self.ended_at is None or (self.started_at is not None and self.ended_at > self.started_at))):
+            errors.append("Match end time must be after start time")
+        if (self.status == "Completed") and not (self.started_at is not None):
+            errors.append("Completed match must have a start time")
         return errors
     def __repr__(self) -> str:
         return f"<Match id={{self.id}}>"
@@ -296,6 +337,10 @@ class Game(Base):
             errors.append("Turns played must be greater than zero")
         if (self.duration_seconds is not None) and not ((self.duration_seconds is None or self.duration_seconds > 0)):
             errors.append("Game duration must be greater than zero")
+        if (self.winner_side == "Draw") and not (self.winner_id is None):
+            errors.append("A draw cannot have a winner")
+        if ((self.winner_side is not None and self.winner_side != "Draw")) and not (self.winner_id is not None):
+            errors.append("A decisive game must have a winner player set")
         return errors
     def __repr__(self) -> str:
         return f"<Game id={{self.id}}>"
@@ -321,6 +366,9 @@ class TournamentPrize(Base):
 
     def applies_to_placement(self, placement: int) -> bool:
         raise NotImplementedError("applies_to_placement not implemented")
+
+    def award_to_player(self, player_id: int):
+        raise NotImplementedError("award_to_player not implemented")
 
 
     def validate_rules(self) -> list[str]:
@@ -348,6 +396,10 @@ class AwardedPrize(Base):
     prize = relationship("TournamentPrize", foreign_keys=[prize_id])
     player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
     player = relationship("Player", foreign_keys=[player_id])
+
+    def claim(self):
+        raise NotImplementedError("claim not implemented")
+
 
     def validate_rules(self) -> list[str]:
         errors = []

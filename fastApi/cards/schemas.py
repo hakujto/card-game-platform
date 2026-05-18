@@ -58,8 +58,10 @@ class CardSetBase(BaseModel):
     name: str
     code: str
     release_date: date
+    rotation_date: date | None = None
     set_type: str
     total_cards: int
+    is_rotated: bool
     description: str | None = None
     logo_url: str | None = None
 
@@ -72,8 +74,10 @@ class CardSetUpdate(BaseModel):
     name: str | None = None
     code: str | None = None
     release_date: date | None = None
+    rotation_date: date | None = None
     set_type: str | None = None
     total_cards: int | None = None
+    is_rotated: bool | None = None
     description: str | None = None
     logo_url: str | None = None
 
@@ -140,6 +144,7 @@ class DeckBase(BaseModel):
     archetype: str | None = None
     wins: int
     losses: int
+    draws: int
     created_at: datetime
     updated_at: datetime
     player_id: int
@@ -161,6 +166,7 @@ class DeckUpdate(BaseModel):
     archetype: str | None = None
     wins: int | None = None
     losses: int | None = None
+    draws: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     player_id: int | None = None

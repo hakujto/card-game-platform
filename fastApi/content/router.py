@@ -7,6 +7,14 @@ from app.db import get_db
 from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
 from .schemas import DraftSessionCreate, DraftSessionUpdate, DraftSessionRead, DraftParticipantCreate, DraftParticipantUpdate, DraftParticipantRead, DraftPickCreate, DraftPickUpdate, DraftPickRead, ArticleCreate, ArticleUpdate, ArticleRead, ArticleTagCreate, ArticleTagUpdate, ArticleTagRead, ArticleTagAssignmentCreate, ArticleTagAssignmentUpdate, ArticleTagAssignmentRead, ArticleCommentCreate, ArticleCommentUpdate, ArticleCommentRead, StreamCreate, StreamUpdate, StreamRead
 
+def _validate_draft_session(obj: DraftSession) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_draft_session = APIRouter(prefix="/api/draft_sessions", tags=["Draft Session"])
 
 @router_draft_session.get("", response_model=list[DraftSessionRead])
@@ -18,6 +26,7 @@ def list_draft_sessions(
 @router_draft_session.post("", response_model=DraftSessionRead, status_code=status.HTTP_201_CREATED)
 def create_draft_session(data: DraftSessionCreate, db: Session = Depends(get_db)) -> DraftSession:
     obj = DraftSession(**data.model_dump(exclude_unset=True))
+    _validate_draft_session(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -37,6 +46,7 @@ def update_draft_session(item_id: int, data: DraftSessionUpdate, db: Session = D
         raise HTTPException(status_code=404, detail="DraftSession not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_draft_session(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -77,6 +87,22 @@ def complete_draft_session(item_id: int, db: Session = Depends(get_db)):
     obj.complete()
     db.commit()
 
+@router_draft_session.get("/{item_id}/api/draft-sessions/{id}/full", response_model=bool)
+def is_full_draft_session(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    result = obj.is_full()
+    db.commit()
+    return result
+
+def _validate_draft_participant(obj: DraftParticipant) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_draft_participant = APIRouter(prefix="/api/draft_participants", tags=["Draft Participant"])
 
 @router_draft_participant.get("", response_model=list[DraftParticipantRead])
@@ -88,6 +114,7 @@ def list_draft_participants(
 @router_draft_participant.post("", response_model=DraftParticipantRead, status_code=status.HTTP_201_CREATED)
 def create_draft_participant(data: DraftParticipantCreate, db: Session = Depends(get_db)) -> DraftParticipant:
     obj = DraftParticipant(**data.model_dump(exclude_unset=True))
+    _validate_draft_participant(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -107,6 +134,7 @@ def update_draft_participant(item_id: int, data: DraftParticipantUpdate, db: Ses
         raise HTTPException(status_code=404, detail="DraftParticipant not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_draft_participant(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -131,6 +159,22 @@ def pick_card_draft_participant(item_id: int, body: dict = {}, db: Session = Dep
     obj.pick_card(body.get("card_id"), body.get("pack_number"))
     db.commit()
 
+@router_draft_participant.get("/{item_id}/api/draft-participants/{id}/card-count", response_model=int)
+def drafted_card_count_draft_participant(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftParticipant).filter(DraftParticipant.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftParticipant not found")
+    result = obj.drafted_card_count()
+    db.commit()
+    return result
+
+def _validate_draft_pick(obj: DraftPick) -> None:
+    errors: list[str] = []
+    errors.extend(obj.validate_rules())
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+
 router_draft_pick = APIRouter(prefix="/api/draft_picks", tags=["Draft Pick"])
 
 @router_draft_pick.get("", response_model=list[DraftPickRead])
@@ -142,6 +186,7 @@ def list_draft_picks(
 @router_draft_pick.post("", response_model=DraftPickRead, status_code=status.HTTP_201_CREATED)
 def create_draft_pick(data: DraftPickCreate, db: Session = Depends(get_db)) -> DraftPick:
     obj = DraftPick(**data.model_dump(exclude_unset=True))
+    _validate_draft_pick(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -161,6 +206,7 @@ def update_draft_pick(item_id: int, data: DraftPickUpdate, db: Session = Depends
         raise HTTPException(status_code=404, detail="DraftPick not found")
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _validate_draft_pick(obj)
     db.commit()
     db.refresh(obj)
     return obj
@@ -177,8 +223,18 @@ def delete_draft_pick(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_draft_pick.get("/{item_id}/api/draft-picks/{id}/first-pick", response_model=bool)
+def is_first_pick_draft_pick(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(DraftPick).filter(DraftPick.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftPick not found")
+    result = obj.is_first_pick()
+    db.commit()
+    return result
+
 def _validate_article(obj: Article) -> None:
     errors: list[str] = []
+    errors.extend(obj.validate_rules())
     errors.extend(obj.validate_implies())
     if errors:
         raise HTTPException(status_code=422, detail=errors)
@@ -256,6 +312,15 @@ def increment_view_article(item_id: int, db: Session = Depends(get_db)):
     obj.increment_view()
     db.commit()
 
+@router_article.get("/{item_id}/reading-time", response_model=int)
+def reading_time_minutes_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    result = obj.reading_time_minutes()
+    db.commit()
+    return result
+
 router_article_tag = APIRouter(prefix="/api/article_tags", tags=["Article Tag"])
 
 @router_article_tag.get("", response_model=list[ArticleTagRead])
@@ -301,6 +366,23 @@ def delete_article_tag(item_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail="ArticleTag not found")
     db.delete(obj)
     db.commit()
+
+@router_article_tag.patch("/{item_id}/api/article-tags/{id}/rename", status_code=status.HTTP_204_NO_CONTENT)
+def rename_article_tag(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
+    obj = db.query(ArticleTag).filter(ArticleTag.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="ArticleTag not found")
+    obj.rename(body.get("new_name"))
+    db.commit()
+
+@router_article_tag.get("/{item_id}/api/article-tags/{id}/article-count", response_model=int)
+def article_count_article_tag(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(ArticleTag).filter(ArticleTag.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="ArticleTag not found")
+    result = obj.article_count()
+    db.commit()
+    return result
 
 router_article_tag_assignment = APIRouter(prefix="/api/article_tag_assignments", tags=["Article Tag Assignment"])
 
@@ -410,8 +492,18 @@ def unhide_article_comment(item_id: int, db: Session = Depends(get_db)):
     obj.unhide()
     db.commit()
 
+@router_article_comment.get("/{item_id}/api/comments/{id}/is-reply", response_model=bool)
+def is_reply_article_comment(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(ArticleComment).filter(ArticleComment.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="ArticleComment not found")
+    result = obj.is_reply()
+    db.commit()
+    return result
+
 def _validate_stream(obj: Stream) -> None:
     errors: list[str] = []
+    errors.extend(obj.validate_rules())
     errors.extend(obj.validate_implies())
     if errors:
         raise HTTPException(status_code=422, detail=errors)
@@ -488,3 +580,12 @@ def update_viewer_peak_stream(item_id: int, body: dict = {}, db: Session = Depen
         raise HTTPException(status_code=404, detail="Stream not found")
     obj.update_viewer_peak(body.get("count"))
     db.commit()
+
+@router_stream.get("/{item_id}/duration", response_model=int)
+def duration_minutes_stream(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    result = obj.duration_minutes()
+    db.commit()
+    return result
