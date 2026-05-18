@@ -48,10 +48,15 @@ public class TradeBidController {
         return ResponseEntity.ok(service.save(entity));
     }
 
+
+    @GetMapping("/{id}/outbid")
+    public ResponseEntity<Boolean> outbidBy(@PathVariable Long id, @RequestParam java.math.BigDecimal newAmount) {
+        return ResponseEntity.ok(service.outbidBy(id, newAmount));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
+    public ResponseEntity<Void> retract(@PathVariable Long id) {
+        service.retract(id);
         return ResponseEntity.noContent().build();
     }
 }

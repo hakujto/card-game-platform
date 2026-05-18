@@ -38,6 +38,10 @@ public class TradeBid {
     public Boolean outbidBy(java.math.BigDecimal newAmount) {
         throw new UnsupportedOperationException("outbidBy not implemented");
     }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void retract() {
+        throw new UnsupportedOperationException("retract not implemented");
+    }
 
     // ── Validation rules ─────────────────────────────────────────────
     @jakarta.validation.constraints.AssertTrue(message = "Bid amount must be greater than zero")

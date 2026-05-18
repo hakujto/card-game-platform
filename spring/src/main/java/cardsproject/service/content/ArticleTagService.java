@@ -30,4 +30,19 @@ public class ArticleTagService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void rename(Long id, String newName) {
+        ArticleTag entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("ArticleTag not found: " + id));
+        entity.rename(newName);
+        repository.save(entity);
+    }
+
+    public Integer articleCount(Long id) {
+        ArticleTag entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("ArticleTag not found: " + id));
+        Integer result = entity.articleCount();
+        repository.save(entity);
+        return result;
+    }
 }

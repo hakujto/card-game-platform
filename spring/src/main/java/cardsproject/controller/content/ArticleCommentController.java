@@ -66,4 +66,9 @@ public class ArticleCommentController {
         service.unhide(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/is-reply")
+    public ResponseEntity<Boolean> isReply(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isReply(id));
+    }
 }

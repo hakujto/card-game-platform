@@ -26,4 +26,14 @@ public class TournamentJudge {
     public void setTournamentId(Long tournamentId) { this.tournamentId = tournamentId; }
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void promoteToHead() {
+        throw new UnsupportedOperationException("promoteToHead not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void remove() {
+        throw new UnsupportedOperationException("remove not implemented");
+    }
 }

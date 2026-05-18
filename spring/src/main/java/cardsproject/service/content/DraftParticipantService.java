@@ -37,4 +37,12 @@ public class DraftParticipantService {
         entity.pickCard(cardId, packNumber);
         repository.save(entity);
     }
+
+    public Integer draftedCardCount(Long id) {
+        DraftParticipant entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftParticipant not found: " + id));
+        Integer result = entity.draftedCardCount();
+        repository.save(entity);
+        return result;
+    }
 }

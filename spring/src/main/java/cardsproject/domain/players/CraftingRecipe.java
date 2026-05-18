@@ -28,6 +28,12 @@ public class CraftingRecipe {
     public void setResultCardId(Long resultCardId) { this.resultCardId = resultCardId; }
 
     // ── Business operations ──────────────────────────────────────────
+    public Boolean canCraft(Integer playerId) {
+        throw new UnsupportedOperationException("canCraft not implemented");
+    }
+    public void executeCraft(Integer playerId) {
+        throw new UnsupportedOperationException("executeCraft not implemented");
+    }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void disable() {
         throw new UnsupportedOperationException("disable not implemented");

@@ -54,4 +54,25 @@ public class CardSetController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/standard-legal")
+    public ResponseEntity<Boolean> isLegalInStandard(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isLegalInStandard(id));
+    }
+
+    @GetMapping("/{id}/legal")
+    public ResponseEntity<Boolean> isLegalInFormat(@PathVariable Long id, @RequestParam String format) {
+        return ResponseEntity.ok(service.isLegalInFormat(id, format));
+    }
+
+    @GetMapping("/{id}/rarity-count")
+    public ResponseEntity<Integer> cardCountByRarity(@PathVariable Long id, @RequestParam String rarity) {
+        return ResponseEntity.ok(service.cardCountByRarity(id, rarity));
+    }
+
+    @PostMapping("/{id}/rotate")
+    public ResponseEntity<Void> rotateOut(@PathVariable Long id) {
+        service.rotateOut(id);
+        return ResponseEntity.noContent().build();
+    }
 }

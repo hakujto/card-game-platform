@@ -32,4 +32,20 @@ public class Achievement {
     public void setRarity(AchievementRarityType rarity) { this.rarity = rarity; }
     public Boolean getIsHidden() { return isHidden; }
     public void setIsHidden(Boolean isHidden) { this.isHidden = isHidden; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public Integer pointValue(Integer multiplier) {
+        throw new UnsupportedOperationException("pointValue not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void reveal() {
+        throw new UnsupportedOperationException("reveal not implemented");
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Achievement must award at least one point")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPointsPositiveValid() {
+        return (getPoints() == null || getPoints() > 0);
+    }
 }

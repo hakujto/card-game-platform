@@ -53,4 +53,16 @@ public class TournamentRound {
     public Boolean isTimeExpired() {
         throw new UnsupportedOperationException("isTimeExpired not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Round number must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isRoundNumberPositiveValid() {
+        return (getRoundNumber() == null || getRoundNumber() > 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Round time limit must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isTimeLimitPositiveValid() {
+        return (getTimeLimitMinutes() == null || getTimeLimitMinutes() > 0);
+    }
 }

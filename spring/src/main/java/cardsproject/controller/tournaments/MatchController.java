@@ -66,6 +66,12 @@ public class MatchController {
         return ResponseEntity.ok(service.determineWinner(id));
     }
 
+    @PostMapping("/{id}/concede")
+    public ResponseEntity<Void> concede(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.concede(id, (Integer) body.get("player_id"));
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/draw")
     public ResponseEntity<Void> draw(@PathVariable Long id) {
         service.draw(id);

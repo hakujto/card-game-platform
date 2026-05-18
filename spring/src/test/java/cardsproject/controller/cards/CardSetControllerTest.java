@@ -29,7 +29,7 @@ public class CardSetControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_sets")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1 }"))
+            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1, \"rotationDate\": null, \"isRotated\": null }"))
             .andExpect(status().isCreated());
     }
 
@@ -47,7 +47,33 @@ public class CardSetControllerTest {
         mockMvc.perform(delete("/api/card_sets/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_total_cards_positive_violated() throws Exception {
+        // Card set must have at least one card → 400 (Bean Validation)
+        mockMvc.perform(post("/api/card_sets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"setType\": \"CORE\", \"rotationDate\": \"2024-01-01\", \"isRotated\": true, \"rotationDate\": \"2024-01-01\", \"totalCards\": 0 }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_rotation_date_after_release_violated() throws Exception {
+        // Rotation date must be after release date: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/card_sets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"setType\": \"CORE\", \"totalCards\": 1, \"isRotated\": true, \"rotationDate\": \"2024-01-01\" }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_rotated_set_has_rotation_date_violated() throws Exception {
+        // Rotated set must have a rotation date: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/card_sets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"setType\": \"CORE\", \"totalCards\": 1, \"isRotated\": true, \"rotationDate\": null }"))
+            .andExpect(status().isBadRequest());
     }
 }

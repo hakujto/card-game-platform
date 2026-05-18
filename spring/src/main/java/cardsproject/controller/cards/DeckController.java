@@ -60,6 +60,23 @@ public class DeckController {
         return ResponseEntity.ok(service.validateSize(id));
     }
 
+    @PostMapping("/{id}/cards")
+    public ResponseEntity<Void> addCard(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.addCard(id, (Integer) body.get("card_id"), (Integer) body.get("quantity"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/cards/{card_id}")
+    public ResponseEntity<Void> removeCard(@PathVariable Long id, @PathVariable Long cardId) {
+        service.removeCard(id, cardId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/win-rate")
+    public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
+        return ResponseEntity.ok(service.winRate(id));
+    }
+
     @PostMapping("/{id}/clone")
     public ResponseEntity<Deck> clone(@PathVariable Long id) {
         return ResponseEntity.ok(service.clone(id));

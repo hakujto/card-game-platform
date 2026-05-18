@@ -31,6 +31,13 @@ public class DeckTagService {
         repository.deleteById(id);
     }
 
+    public void rename(Long id, String newName) {
+        DeckTag entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DeckTag not found: " + id));
+        entity.rename(newName);
+        repository.save(entity);
+    }
+
     public void mergeInto(Long id, Integer targetTagId) {
         DeckTag entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("DeckTag not found: " + id));

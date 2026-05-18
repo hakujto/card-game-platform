@@ -70,4 +70,19 @@ public class TournamentService {
         repository.save(entity);
         return result;
     }
+
+    public void registerPlayer(Long id, Integer playerId, Integer deckId) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.registerPlayer(playerId, deckId);
+        repository.save(entity);
+    }
+
+    public Boolean isFull(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        Boolean result = entity.isFull();
+        repository.save(entity);
+        return result;
+    }
 }

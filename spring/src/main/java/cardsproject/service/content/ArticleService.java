@@ -56,4 +56,12 @@ public class ArticleService {
         entity.incrementView();
         repository.save(entity);
     }
+
+    public Integer readingTimeMinutes(Long id) {
+        Article entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Article not found: " + id));
+        Integer result = entity.readingTimeMinutes();
+        repository.save(entity);
+        return result;
+    }
 }

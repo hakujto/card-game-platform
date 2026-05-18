@@ -48,10 +48,16 @@ public class TournamentJudgeController {
         return ResponseEntity.ok(service.save(entity));
     }
 
+
+    @PostMapping("/{id}/promote")
+    public ResponseEntity<Void> promoteToHead(@PathVariable Long id) {
+        service.promoteToHead(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
+    public ResponseEntity<Void> remove(@PathVariable Long id) {
+        service.remove(id);
         return ResponseEntity.noContent().build();
     }
 }

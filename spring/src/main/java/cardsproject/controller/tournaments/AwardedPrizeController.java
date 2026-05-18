@@ -54,4 +54,10 @@ public class AwardedPrizeController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/claim")
+    public ResponseEntity<Void> claim(@PathVariable Long id) {
+        service.claim(id);
+        return ResponseEntity.noContent().build();
+    }
 }

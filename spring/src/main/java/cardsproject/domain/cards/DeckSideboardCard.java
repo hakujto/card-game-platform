@@ -33,4 +33,11 @@ public class DeckSideboardCard {
     public void decrement(Integer amount) {
         throw new UnsupportedOperationException("decrement not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Sideboard card quantity must be between 1 and 4 copies")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isQuantityRangeValid() {
+        return (getQuantity() == null || (getQuantity() >= 1 && getQuantity() <= 4));
+    }
 }

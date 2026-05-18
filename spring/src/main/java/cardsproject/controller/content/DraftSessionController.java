@@ -72,4 +72,9 @@ public class DraftSessionController {
         service.complete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/full")
+    public ResponseEntity<Boolean> isFull(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isFull(id));
+    }
 }

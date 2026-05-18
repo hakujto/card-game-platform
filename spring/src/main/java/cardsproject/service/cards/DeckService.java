@@ -24,17 +24,43 @@ public class DeckService {
     }
 
     public Deck save(Deck entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
     }
+    private void validate(Deck entity) {
+        if (Boolean.TRUE.equals(entity.getIsTournamentLegal()) && !(Boolean.TRUE.equals(entity.getIsPublic()))) throw new IllegalStateException("Tournament-legal deck must be made public");
+    }
 
     public Boolean validateSize(Long id) {
         Deck entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
         Boolean result = entity.validateSize();
+        repository.save(entity);
+        return result;
+    }
+
+    public void addCard(Long id, Integer cardId, Integer quantity) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        entity.addCard(cardId, quantity);
+        repository.save(entity);
+    }
+
+    public void removeCard(Long id, Long cardId) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        entity.removeCard(cardId.intValue());
+        repository.save(entity);
+    }
+
+    public java.math.BigDecimal winRate(Long id) {
+        Deck entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Deck not found: " + id));
+        java.math.BigDecimal result = entity.winRate();
         repository.save(entity);
         return result;
     }

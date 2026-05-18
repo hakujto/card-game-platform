@@ -52,4 +52,11 @@ public class PlayerCollection {
     public java.math.BigDecimal estimatedValue() {
         throw new UnsupportedOperationException("estimatedValue not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Collection quantity must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isQuantityPositiveValid() {
+        return (getQuantity() == null || getQuantity() > 0);
+    }
 }

@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.GameRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.GameWinnerSideType;
 
 @Service
 public class GameService {
@@ -34,6 +35,8 @@ public class GameService {
     private void validate(Game entity) {
         if (entity.getTurnsPlayed() != null && !((entity.getTurnsPlayed() == null || entity.getTurnsPlayed() > 0))) throw new IllegalStateException("Turns played must be greater than zero");
         if (entity.getDurationSeconds() != null && !((entity.getDurationSeconds() == null || entity.getDurationSeconds() > 0))) throw new IllegalStateException("Game duration must be greater than zero");
+        if (GameWinnerSideType.DRAW.equals(entity.getWinnerSide()) && entity.getWinnerId() != null) throw new IllegalStateException("A draw cannot have a winner");
+        if ((entity.getWinnerSide() != null && !GameWinnerSideType.DRAW.equals(entity.getWinnerSide())) && entity.getWinnerId() == null) throw new IllegalStateException("A decisive game must have a winner player set");
     }
 
     public void recordWinner(Long id, String winnerSide) {
@@ -41,5 +44,13 @@ public class GameService {
             .orElseThrow(() -> new RuntimeException("Game not found: " + id));
         entity.recordWinner(winnerSide);
         repository.save(entity);
+    }
+
+    public java.math.BigDecimal durationMinutes(Long id) {
+        Game entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Game not found: " + id));
+        java.math.BigDecimal result = entity.durationMinutes();
+        repository.save(entity);
+        return result;
     }
 }

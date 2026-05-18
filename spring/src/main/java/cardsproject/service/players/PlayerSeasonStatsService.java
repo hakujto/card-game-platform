@@ -30,4 +30,26 @@ public class PlayerSeasonStatsService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public java.math.BigDecimal winRate(Long id) {
+        PlayerSeasonStats entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerSeasonStats not found: " + id));
+        java.math.BigDecimal result = entity.winRate();
+        repository.save(entity);
+        return result;
+    }
+
+    public void addPoints(Long id, Integer points) {
+        PlayerSeasonStats entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerSeasonStats not found: " + id));
+        entity.addPoints(points);
+        repository.save(entity);
+    }
+
+    public void recordTournamentWin(Long id) {
+        PlayerSeasonStats entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerSeasonStats not found: " + id));
+        entity.recordTournamentWin();
+        repository.save(entity);
+    }
 }

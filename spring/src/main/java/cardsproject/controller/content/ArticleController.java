@@ -72,4 +72,9 @@ public class ArticleController {
         service.incrementView(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/reading-time")
+    public ResponseEntity<Integer> readingTimeMinutes(@PathVariable Long id) {
+        return ResponseEntity.ok(service.readingTimeMinutes(id));
+    }
 }

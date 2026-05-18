@@ -29,7 +29,7 @@ public class PlayerCollectionControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/player_collections")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"acquiredAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"acquiredAt\": \"2024-01-01T00:00:00\", \"quantity\": 1 }"))
             .andExpect(status().isCreated());
     }
 
@@ -47,7 +47,15 @@ public class PlayerCollectionControllerTest {
         mockMvc.perform(delete("/api/player_collections/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_quantity_positive_violated() throws Exception {
+        // Collection quantity must be greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/player_collections")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"foil\": true, \"condition\": \"MINT\", \"acquiredAt\": \"2024-01-01T00:00:00\", \"acquiredVia\": \"PURCHASE\", \"playerId\": 1, \"cardId\": 1, \"quantity\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

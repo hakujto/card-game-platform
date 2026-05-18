@@ -72,4 +72,9 @@ public class SeasonController {
         service.finalizeRewards(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/ongoing")
+    public ResponseEntity<Boolean> isOngoing(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isOngoing(id));
+    }
 }

@@ -24,11 +24,16 @@ public class TournamentRegistrationService {
     }
 
     public TournamentRegistration save(TournamentRegistration entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(TournamentRegistration entity) {
+        if (entity.getFinalStanding() != null && !((entity.getFinalStanding() == null || entity.getFinalStanding() > 0))) throw new IllegalStateException("Final standing must be greater than zero");
+        if (entity.getSeed() != null && !((entity.getSeed() == null || entity.getSeed() > 0))) throw new IllegalStateException("Seed must be greater than zero");
     }
 
     public void withdraw(Long id) {

@@ -30,4 +30,18 @@ public class TournamentJudgeService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void promoteToHead(Long id) {
+        TournamentJudge entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentJudge not found: " + id));
+        entity.promoteToHead();
+        repository.save(entity);
+    }
+
+    public void remove(Long id) {
+        TournamentJudge entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentJudge not found: " + id));
+        entity.remove();
+        repository.save(entity);
+    }
 }

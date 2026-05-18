@@ -55,6 +55,18 @@ public class PlayerCollectionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/add")
+    public ResponseEntity<Void> add(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.add(id, (Integer) body.get("quantity"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/remove")
+    public ResponseEntity<Void> remove(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.remove(id, (Integer) body.get("quantity"));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/value")
     public ResponseEntity<java.math.BigDecimal> estimatedValue(@PathVariable Long id) {
         return ResponseEntity.ok(service.estimatedValue(id));

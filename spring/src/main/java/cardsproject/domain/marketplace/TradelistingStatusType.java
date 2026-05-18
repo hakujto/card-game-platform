@@ -1,3 +1,3 @@
 package cardsproject.domain.marketplace;
 
-public enum TradelistingStatusType { ACTIVE, SOLD, EXPIRED, CANCELLED, PENDING }
+public enum TradeListingStatusType { ACTIVE, SOLD, EXPIRED, CANCELLED, PENDING }

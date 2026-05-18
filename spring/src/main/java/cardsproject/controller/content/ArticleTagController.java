@@ -54,4 +54,15 @@ public class ArticleTagController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/rename")
+    public ResponseEntity<Void> rename(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.rename(id, (String) body.get("new_name"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/article-count")
+    public ResponseEntity<Integer> articleCount(@PathVariable Long id) {
+        return ResponseEntity.ok(service.articleCount(id));
+    }
 }

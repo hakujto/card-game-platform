@@ -56,4 +56,11 @@ public class TournamentRegistration {
     public void promoteFromWaitlist() {
         throw new UnsupportedOperationException("promoteFromWaitlist not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Points earned must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPointsEarnedNotNegativeValid() {
+        return (getPointsEarned() == null || getPointsEarned() >= 0);
+    }
 }

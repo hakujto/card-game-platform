@@ -54,4 +54,14 @@ public class CardRulingController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/current")
+    public ResponseEntity<Boolean> isCurrent(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isCurrent(id));
+    }
+
+    @GetMapping("/{id}/supersedes")
+    public ResponseEntity<Boolean> supersedesPrevious(@PathVariable Long id) {
+        return ResponseEntity.ok(service.supersedesPrevious(id));
+    }
 }

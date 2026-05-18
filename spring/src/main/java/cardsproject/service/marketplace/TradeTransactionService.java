@@ -56,4 +56,12 @@ public class TradeTransactionService {
         entity.openDispute(reason);
         repository.save(entity);
     }
+
+    public java.math.BigDecimal sellerNet(Long id) {
+        TradeTransaction entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeTransaction not found: " + id));
+        java.math.BigDecimal result = entity.sellerNet();
+        repository.save(entity);
+        return result;
+    }
 }

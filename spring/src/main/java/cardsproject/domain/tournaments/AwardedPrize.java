@@ -36,6 +36,12 @@ public class AwardedPrize {
     public Long getPlayerId() { return playerId; }
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
 
+    // ── Business operations ──────────────────────────────────────────
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void claim() {
+        throw new UnsupportedOperationException("claim not implemented");
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     @jakarta.validation.constraints.AssertTrue(message = "Final placement must be greater than zero")
     @com.fasterxml.jackson.annotation.JsonIgnore

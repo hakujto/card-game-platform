@@ -54,4 +54,11 @@ public class DraftSession {
     public Boolean isFull() {
         throw new UnsupportedOperationException("isFull not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Draft session must have between 2 and 16 seats")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isSeatsRangeValid() {
+        return (getSeats() == null || (getSeats() >= 2 && getSeats() <= 16));
+    }
 }

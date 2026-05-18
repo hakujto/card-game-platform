@@ -75,4 +75,21 @@ public class Product {
     public Boolean isInStock() {
         throw new UnsupportedOperationException("isInStock not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Product price must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPricePositiveValid() {
+        return (getPrice() == null || getPrice().compareTo(new java.math.BigDecimal("0")) > 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Product stock must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isStockNotNegativeValid() {
+        return (getStock() == null || getStock() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Product discount percent must be between 0 and 100")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDiscountPercentRangeValid() {
+        return (getDiscountPercent() == null || (getDiscountPercent() >= 0 && getDiscountPercent() <= 100));
+    }
 }

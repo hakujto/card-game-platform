@@ -51,4 +51,12 @@ public class SeasonService {
         entity.finalizeRewards();
         repository.save(entity);
     }
+
+    public Boolean isOngoing(Long id) {
+        Season entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Season not found: " + id));
+        Boolean result = entity.isOngoing();
+        repository.save(entity);
+        return result;
+    }
 }

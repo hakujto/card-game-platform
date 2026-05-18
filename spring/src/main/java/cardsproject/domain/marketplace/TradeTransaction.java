@@ -70,4 +70,9 @@ public class TradeTransaction {
     public boolean isFeeNotNegativeValid() {
         return (getPlatformFee() == null || getPlatformFee().compareTo(new java.math.BigDecimal("0")) >= 0);
     }
+    @jakarta.validation.constraints.AssertTrue(message = "Transaction final price must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isFinalPricePositiveValid() {
+        return (getFinalPrice() == null || getFinalPrice().compareTo(new java.math.BigDecimal("0")) > 0);
+    }
 }

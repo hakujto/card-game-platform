@@ -83,4 +83,15 @@ public class TournamentController {
     public ResponseEntity<java.math.BigDecimal> calculatePrizeDistribution(@PathVariable Long id) {
         return ResponseEntity.ok(service.calculatePrizeDistribution(id));
     }
+
+    @PostMapping("/{id}/register")
+    public ResponseEntity<Void> registerPlayer(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.registerPlayer(id, (Integer) body.get("player_id"), (Integer) body.get("deck_id"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/full")
+    public ResponseEntity<Boolean> isFull(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isFull(id));
+    }
 }

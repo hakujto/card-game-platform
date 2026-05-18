@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.TournamentRoundRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.TournamentRoundStatusType;
 
 @Service
 public class TournamentRoundService {
@@ -33,6 +34,7 @@ public class TournamentRoundService {
     }
     private void validate(TournamentRound entity) {
         if (entity.getEndedAt() != null && !((entity.getEndedAt() == null || (entity.getStartedAt() != null && entity.getEndedAt().isAfter(entity.getStartedAt()))))) throw new IllegalStateException("Round end time must be after start time");
+        if (TournamentRoundStatusType.COMPLETED.equals(entity.getStatus()) && entity.getStartedAt() == null) throw new IllegalStateException("Completed round must have a start time");
     }
 
     public void start(Long id) {
@@ -54,5 +56,13 @@ public class TournamentRoundService {
             .orElseThrow(() -> new RuntimeException("TournamentRound not found: " + id));
         entity.generatePairings();
         repository.save(entity);
+    }
+
+    public Boolean isTimeExpired(Long id) {
+        TournamentRound entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentRound not found: " + id));
+        Boolean result = entity.isTimeExpired();
+        repository.save(entity);
+        return result;
     }
 }

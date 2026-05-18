@@ -93,6 +93,9 @@ public class Tournament {
     public java.math.BigDecimal calculatePrizeDistribution() {
         throw new UnsupportedOperationException("calculatePrizeDistribution not implemented");
     }
+    public void registerPlayer(Integer playerId, Integer deckId) {
+        throw new UnsupportedOperationException("registerPlayer not implemented");
+    }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isFull() {
         throw new UnsupportedOperationException("isFull not implemented");

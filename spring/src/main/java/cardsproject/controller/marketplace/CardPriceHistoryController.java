@@ -54,4 +54,14 @@ public class CardPriceHistoryController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/change")
+    public ResponseEntity<java.math.BigDecimal> priceChangePercent(@PathVariable Long id, @RequestParam java.math.BigDecimal previousAvg) {
+        return ResponseEntity.ok(service.priceChangePercent(id, previousAvg));
+    }
+
+    @GetMapping("/{id}/spike")
+    public ResponseEntity<Boolean> isPriceSpike(@PathVariable Long id, @RequestParam Integer thresholdPercent) {
+        return ResponseEntity.ok(service.isPriceSpike(id, thresholdPercent));
+    }
 }

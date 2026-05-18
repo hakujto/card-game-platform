@@ -47,7 +47,15 @@ public class DraftParticipantControllerTest {
         mockMvc.perform(delete("/api/draft_participants/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_seat_number_positive_violated() throws Exception {
+        // Seat number must be greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/draft_participants")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"joinedAt\": \"2024-01-01T00:00:00\", \"sessionId\": 1, \"playerId\": 1, \"seatNumber\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

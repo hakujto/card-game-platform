@@ -59,4 +59,20 @@ public class ProductService {
         entity.restock(quantity);
         repository.save(entity);
     }
+
+    public java.math.BigDecimal effectivePrice(Long id) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        java.math.BigDecimal result = entity.effectivePrice();
+        repository.save(entity);
+        return result;
+    }
+
+    public Boolean isInStock(Long id) {
+        Product entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+        Boolean result = entity.isInStock();
+        repository.save(entity);
+        return result;
+    }
 }

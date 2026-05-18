@@ -30,4 +30,18 @@ public class DeckSideboardCardService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void increment(Long id, Integer amount) {
+        DeckSideboardCard entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DeckSideboardCard not found: " + id));
+        entity.increment(amount);
+        repository.save(entity);
+    }
+
+    public void decrement(Long id, Integer amount) {
+        DeckSideboardCard entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DeckSideboardCard not found: " + id));
+        entity.decrement(amount);
+        repository.save(entity);
+    }
 }

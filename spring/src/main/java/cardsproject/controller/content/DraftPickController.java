@@ -54,4 +54,9 @@ public class DraftPickController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/first-pick")
+    public ResponseEntity<Boolean> isFirstPick(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isFirstPick(id));
+    }
 }

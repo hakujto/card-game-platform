@@ -54,4 +54,16 @@ public class PlayerAchievementController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/progress")
+    public ResponseEntity<Void> incrementProgress(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.incrementProgress(id, (Integer) body.get("amount"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> complete(@PathVariable Long id) {
+        service.complete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

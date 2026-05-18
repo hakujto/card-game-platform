@@ -30,4 +30,19 @@ public class AchievementService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Integer pointValue(Long id, Integer multiplier) {
+        Achievement entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Achievement not found: " + id));
+        Integer result = entity.pointValue(multiplier);
+        repository.save(entity);
+        return result;
+    }
+
+    public void reveal(Long id) {
+        Achievement entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Achievement not found: " + id));
+        entity.reveal();
+        repository.save(entity);
+    }
 }

@@ -32,4 +32,20 @@ public class PlayerAchievement {
     public void setPlayerId(Long playerId) { this.playerId = playerId; }
     public Long getAchievementId() { return achievementId; }
     public void setAchievementId(Long achievementId) { this.achievementId = achievementId; }
+
+    // ── Business operations ──────────────────────────────────────────
+    public void incrementProgress(Integer amount) {
+        throw new UnsupportedOperationException("incrementProgress not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void complete() {
+        throw new UnsupportedOperationException("complete not implemented");
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Achievement progress must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isProgressNotNegativeValid() {
+        return (getProgress() == null || getProgress() >= 0);
+    }
 }

@@ -72,4 +72,9 @@ public class TradeTransactionController {
         service.openDispute(id, (String) body.get("reason"));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/seller-net")
+    public ResponseEntity<java.math.BigDecimal> sellerNet(@PathVariable Long id) {
+        return ResponseEntity.ok(service.sellerNet(id));
+    }
 }

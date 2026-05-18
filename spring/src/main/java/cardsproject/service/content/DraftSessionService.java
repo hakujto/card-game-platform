@@ -5,6 +5,7 @@ import cardsproject.repository.content.DraftSessionRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.content.DraftSessionStatusType;
 
 @Service
 public class DraftSessionService {
@@ -24,11 +25,15 @@ public class DraftSessionService {
     }
 
     public DraftSession save(DraftSession entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(DraftSession entity) {
+        if (entity.getCompletedAt() != null && !(DraftSessionStatusType.COMPLETED.equals(entity.getStatus()))) throw new IllegalStateException("completed_at can only be set when draft status is Completed");
     }
 
     public void start(Long id) {
@@ -50,5 +55,13 @@ public class DraftSessionService {
             .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
         entity.complete();
         repository.save(entity);
+    }
+
+    public Boolean isFull(Long id) {
+        DraftSession entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
+        Boolean result = entity.isFull();
+        repository.save(entity);
+        return result;
     }
 }

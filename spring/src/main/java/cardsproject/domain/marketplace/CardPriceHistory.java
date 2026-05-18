@@ -53,4 +53,14 @@ public class CardPriceHistory {
     public boolean isPriceBoundsConsistentValid() {
         return ((getMinPrice() == null || (getAvgPrice() != null && getMinPrice().compareTo(getAvgPrice()) <= 0)) && (getAvgPrice() == null || (getMaxPrice() != null && getAvgPrice().compareTo(getMaxPrice()) <= 0)));
     }
+    @jakarta.validation.constraints.AssertTrue(message = "Price history volume must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isVolumeNotNegativeValid() {
+        return (getVolume() == null || getVolume() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Prices must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPricesNotNegativeValid() {
+        return (getMinPrice() == null || getMinPrice().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
 }

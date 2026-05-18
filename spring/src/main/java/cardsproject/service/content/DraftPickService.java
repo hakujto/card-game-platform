@@ -30,4 +30,12 @@ public class DraftPickService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean isFirstPick(Long id) {
+        DraftPick entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftPick not found: " + id));
+        Boolean result = entity.isFirstPick();
+        repository.save(entity);
+        return result;
+    }
 }

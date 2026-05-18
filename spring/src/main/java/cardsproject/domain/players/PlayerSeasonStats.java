@@ -54,4 +54,26 @@ public class PlayerSeasonStats {
     public void recordTournamentWin() {
         throw new UnsupportedOperationException("recordTournamentWin not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Season wins must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isWinsNotNegativeValid() {
+        return (getWins() == null || getWins() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Season losses must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isLossesNotNegativeValid() {
+        return (getLosses() == null || getLosses() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Season tournament wins must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isTournamentWinsNotNegativeValid() {
+        return (getTournamentWins() == null || getTournamentWins() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Season points must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isSeasonPointsNotNegativeValid() {
+        return (getSeasonPoints() == null || getSeasonPoints() >= 0);
+    }
 }

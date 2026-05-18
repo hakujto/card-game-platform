@@ -34,4 +34,29 @@ public class PlayerAchievementService {
     private void validate(PlayerAchievement entity) {
         if (Boolean.TRUE.equals(entity.getIsCompleted()) && !((entity.getProgress() == null || entity.getProgress() > 0))) throw new IllegalStateException("Completed achievement must have progress greater than zero");
     }
+
+    public void incrementProgress(Long id, Integer amount) {
+        PlayerAchievement entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerAchievement not found: " + id));
+        entity.incrementProgress(amount);
+        repository.save(entity);
+    }
+
+    public void complete(Long id) {
+        PlayerAchievement entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerAchievement not found: " + id));
+        entity.complete();
+        repository.save(entity);
+    }
+
+    // triggered by @on(is_completed = true)
+    public void setIsCompleted(Long id, boolean isCompleted) {
+        PlayerAchievement entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerAchievement not found: " + id));
+        entity.setIsCompleted(isCompleted);
+        if (isCompleted) {
+            entity.complete();
+        }
+        repository.save(entity);
+    }
 }

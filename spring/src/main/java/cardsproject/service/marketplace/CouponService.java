@@ -37,6 +37,22 @@ public class CouponService {
         if (entity.getMaxUses() != null && !((entity.getUsesCount() == null || (entity.getMaxUses() != null && entity.getUsesCount() <= entity.getMaxUses())))) throw new IllegalStateException("Coupon uses count cannot exceed max_uses");
     }
 
+    public Boolean isValid(Long id) {
+        Coupon entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));
+        Boolean result = entity.isValid();
+        repository.save(entity);
+        return result;
+    }
+
+    public Boolean isApplicableToOrder(Long id, java.math.BigDecimal orderTotal) {
+        Coupon entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));
+        Boolean result = entity.isApplicableToOrder(orderTotal);
+        repository.save(entity);
+        return result;
+    }
+
     public void redeem(Long id) {
         Coupon entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));

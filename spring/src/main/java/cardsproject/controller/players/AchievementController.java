@@ -54,4 +54,15 @@ public class AchievementController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/point-value")
+    public ResponseEntity<Integer> pointValue(@PathVariable Long id, @RequestParam Integer multiplier) {
+        return ResponseEntity.ok(service.pointValue(id, multiplier));
+    }
+
+    @PostMapping("/{id}/reveal")
+    public ResponseEntity<Void> reveal(@PathVariable Long id) {
+        service.reveal(id);
+        return ResponseEntity.noContent().build();
+    }
 }

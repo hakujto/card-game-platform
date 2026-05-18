@@ -83,4 +83,14 @@ public class CardController {
     public ResponseEntity<java.math.BigDecimal> calculateValue(@PathVariable Long id) {
         return ResponseEntity.ok(service.calculateValue(id));
     }
+
+    @PostMapping("/{id}/rarity-bonus")
+    public ResponseEntity<java.math.BigDecimal> applyRarityBonus(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        return ResponseEntity.ok(service.applyRarityBonus(id, (Integer) body.get("multiplier")));
+    }
+
+    @GetMapping("/{id}/legal")
+    public ResponseEntity<Boolean> isLegalInFormat(@PathVariable Long id, @RequestParam String format) {
+        return ResponseEntity.ok(service.isLegalInFormat(id, format));
+    }
 }

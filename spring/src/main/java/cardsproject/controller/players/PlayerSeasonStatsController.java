@@ -54,4 +54,21 @@ public class PlayerSeasonStatsController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/win-rate")
+    public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
+        return ResponseEntity.ok(service.winRate(id));
+    }
+
+    @PatchMapping("/{id}/points")
+    public ResponseEntity<Void> addPoints(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.addPoints(id, (Integer) body.get("points"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/tournament-win")
+    public ResponseEntity<Void> recordTournamentWin(@PathVariable Long id) {
+        service.recordTournamentWin(id);
+        return ResponseEntity.noContent().build();
+    }
 }

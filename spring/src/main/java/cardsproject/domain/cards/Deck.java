@@ -21,6 +21,7 @@ public class Deck {
     private DeckArchetypeType archetype;
     private Integer wins = 0;
     private Integer losses = 0;
+    private Integer draws = 0;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -49,6 +50,8 @@ public class Deck {
     public void setWins(Integer wins) { this.wins = wins; }
     public Integer getLosses() { return losses; }
     public void setLosses(Integer losses) { this.losses = losses; }
+    public Integer getDraws() { return draws; }
+    public void setDraws(Integer draws) { this.draws = draws; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -60,6 +63,16 @@ public class Deck {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean validateSize() {
         throw new UnsupportedOperationException("validateSize not implemented");
+    }
+    public void addCard(Integer cardId, Integer quantity) {
+        throw new UnsupportedOperationException("addCard not implemented");
+    }
+    public void removeCard(Integer cardId) {
+        throw new UnsupportedOperationException("removeCard not implemented");
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal winRate() {
+        throw new UnsupportedOperationException("winRate not implemented");
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Deck clone() {
@@ -76,5 +89,22 @@ public class Deck {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean certifyTournamentLegal() {
         throw new UnsupportedOperationException("certifyTournamentLegal not implemented");
+    }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Deck wins count must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isWinsNotNegativeValid() {
+        return (getWins() == null || getWins() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Deck losses count must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isLossesNotNegativeValid() {
+        return (getLosses() == null || getLosses() >= 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Deck draws count must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDrawsNotNegativeValid() {
+        return (getDraws() == null || getDraws() >= 0);
     }
 }

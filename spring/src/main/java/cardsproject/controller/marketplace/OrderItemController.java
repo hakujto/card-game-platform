@@ -54,4 +54,9 @@ public class OrderItemController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/total")
+    public ResponseEntity<java.math.BigDecimal> lineTotal(@PathVariable Long id) {
+        return ResponseEntity.ok(service.lineTotal(id));
+    }
 }

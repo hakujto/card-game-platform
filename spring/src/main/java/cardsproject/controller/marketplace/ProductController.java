@@ -77,4 +77,14 @@ public class ProductController {
         service.restock(id, (Integer) body.get("quantity"));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/effective-price")
+    public ResponseEntity<java.math.BigDecimal> effectivePrice(@PathVariable Long id) {
+        return ResponseEntity.ok(service.effectivePrice(id));
+    }
+
+    @GetMapping("/{id}/in-stock")
+    public ResponseEntity<Boolean> isInStock(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isInStock(id));
+    }
 }

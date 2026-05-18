@@ -55,6 +55,16 @@ public class CouponController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/valid")
+    public ResponseEntity<Boolean> isValid(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isValid(id));
+    }
+
+    @GetMapping("/{id}/applicable")
+    public ResponseEntity<Boolean> isApplicableToOrder(@PathVariable Long id, @RequestParam java.math.BigDecimal orderTotal) {
+        return ResponseEntity.ok(service.isApplicableToOrder(id, orderTotal));
+    }
+
     @PostMapping("/{id}/redeem")
     public ResponseEntity<Void> redeem(@PathVariable Long id) {
         service.redeem(id);

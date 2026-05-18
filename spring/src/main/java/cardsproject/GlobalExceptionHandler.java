@@ -31,4 +31,12 @@ public class GlobalExceptionHandler {
         body.put("error", ex.getMessage());
         return ResponseEntity.badRequest().body(body);
     }
+
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Map<String, Object>> handleNotImplemented(UnsupportedOperationException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", 501);
+        body.put("error", ex.getMessage());
+        return ResponseEntity.status(501).body(body);
+    }
 }

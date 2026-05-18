@@ -35,6 +35,8 @@ public class CardService {
     private void validate(Card entity) {
         if (CardCardTypeType.CREATURE.equals(entity.getCardType()) && !(entity.getAttack() != null && entity.getDefense() != null)) throw new IllegalStateException("Creature card must have attack and defense");
         if (CardCardTypeType.PLANESWALKER.equals(entity.getCardType()) && entity.getLoyalty() == null) throw new IllegalStateException("Planeswalker card must have loyalty");
+        if (!CardCardTypeType.PLANESWALKER.equals(entity.getCardType()) && entity.getLoyalty() != null) throw new IllegalStateException("Only Planeswalker cards can have loyalty");
+        if (Boolean.TRUE.equals(entity.getIsBanned()) && true) throw new IllegalStateException("banned_card_not_in_legal_formats");
     }
 
     public void ban(Long id) {
@@ -69,6 +71,22 @@ public class CardService {
         Card entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Card not found: " + id));
         java.math.BigDecimal result = entity.calculateValue();
+        repository.save(entity);
+        return result;
+    }
+
+    public java.math.BigDecimal applyRarityBonus(Long id, Integer multiplier) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        java.math.BigDecimal result = entity.applyRarityBonus(multiplier);
+        repository.save(entity);
+        return result;
+    }
+
+    public Boolean isLegalInFormat(Long id, String format) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        Boolean result = entity.isLegalInFormat(format);
         repository.save(entity);
         return result;
     }

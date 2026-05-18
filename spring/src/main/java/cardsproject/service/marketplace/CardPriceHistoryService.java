@@ -30,4 +30,20 @@ public class CardPriceHistoryService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public java.math.BigDecimal priceChangePercent(Long id, java.math.BigDecimal previousAvg) {
+        CardPriceHistory entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardPriceHistory not found: " + id));
+        java.math.BigDecimal result = entity.priceChangePercent(previousAvg);
+        repository.save(entity);
+        return result;
+    }
+
+    public Boolean isPriceSpike(Long id, Integer thresholdPercent) {
+        CardPriceHistory entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardPriceHistory not found: " + id));
+        Boolean result = entity.isPriceSpike(thresholdPercent);
+        repository.save(entity);
+        return result;
+    }
 }

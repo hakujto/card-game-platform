@@ -30,4 +30,19 @@ public class TournamentPrizeService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean appliesToPlacement(Long id, Integer placement) {
+        TournamentPrize entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentPrize not found: " + id));
+        Boolean result = entity.appliesToPlacement(placement);
+        repository.save(entity);
+        return result;
+    }
+
+    public void awardToPlayer(Long id, Integer playerId) {
+        TournamentPrize entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TournamentPrize not found: " + id));
+        entity.awardToPlayer(playerId);
+        repository.save(entity);
+    }
 }

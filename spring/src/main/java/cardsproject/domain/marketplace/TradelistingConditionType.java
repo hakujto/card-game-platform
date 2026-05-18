@@ -1,3 +1,3 @@
 package cardsproject.domain.marketplace;
 
-public enum TradelistingConditionType { MINT, NEARMINT, EXCELLENT, GOOD, PLAYED }
+public enum TradeListingConditionType { MINT, NEARMINT, EXCELLENT, GOOD, PLAYED }

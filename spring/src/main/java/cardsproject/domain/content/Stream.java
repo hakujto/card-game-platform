@@ -69,4 +69,11 @@ public class Stream {
     public Integer durationMinutes() {
         throw new UnsupportedOperationException("durationMinutes not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Peak viewer count must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isViewerCountNotNegativeValid() {
+        return (getViewerCountPeak() == null || getViewerCountPeak() >= 0);
+    }
 }

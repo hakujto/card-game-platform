@@ -58,6 +58,9 @@ public class Match {
     public Boolean determineWinner() {
         throw new UnsupportedOperationException("determineWinner not implemented");
     }
+    public void concede(Integer playerId) {
+        throw new UnsupportedOperationException("concede not implemented");
+    }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void draw() {
         throw new UnsupportedOperationException("draw not implemented");

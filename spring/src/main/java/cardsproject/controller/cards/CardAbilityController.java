@@ -54,4 +54,14 @@ public class CardAbilityController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/usable")
+    public ResponseEntity<Boolean> isUsableAt(@PathVariable Long id, @RequestParam String timing) {
+        return ResponseEntity.ok(service.isUsableAt(id, timing));
+    }
+
+    @GetMapping("/{id}/describe")
+    public ResponseEntity<String> describe(@PathVariable Long id) {
+        return ResponseEntity.ok(service.describe(id));
+    }
 }

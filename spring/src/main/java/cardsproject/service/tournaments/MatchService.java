@@ -34,6 +34,8 @@ public class MatchService {
     }
     private void validate(Match entity) {
         if (MatchStatusType.BYE.equals(entity.getStatus()) && entity.getPlayer2Id() != null) throw new IllegalStateException("BYE match must not have a second player");
+        if (entity.getEndedAt() != null && !((entity.getEndedAt() == null || (entity.getStartedAt() != null && entity.getEndedAt().isAfter(entity.getStartedAt()))))) throw new IllegalStateException("Match end time must be after start time");
+        if (MatchStatusType.COMPLETED.equals(entity.getStatus()) && entity.getStartedAt() == null) throw new IllegalStateException("Completed match must have a start time");
     }
 
     public void recordResult(Long id, Integer p1Wins, Integer p2Wins) {
@@ -50,6 +52,13 @@ public class MatchService {
         Boolean result = entity.determineWinner();
         repository.save(entity);
         return result;
+    }
+
+    public void concede(Long id, Integer playerId) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.concede(playerId);
+        repository.save(entity);
     }
 
     public void draw(Long id) {

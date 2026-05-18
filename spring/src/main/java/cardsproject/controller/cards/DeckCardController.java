@@ -54,4 +54,16 @@ public class DeckCardController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/increment")
+    public ResponseEntity<Void> increment(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.increment(id, (Integer) body.get("amount"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/decrement")
+    public ResponseEntity<Void> decrement(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.decrement(id, (Integer) body.get("amount"));
+        return ResponseEntity.noContent().build();
+    }
 }

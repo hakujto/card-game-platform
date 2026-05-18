@@ -1,48 +1,48 @@
 package cardsproject.controller.marketplace;
 
-import cardsproject.domain.marketplace.Tradelisting;
-import cardsproject.service.marketplace.TradelistingService;
+import cardsproject.domain.marketplace.TradeListing;
+import cardsproject.service.marketplace.TradeListingService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tradelistings")
-public class TradelistingController {
+@RequestMapping("/api/trade_listings")
+public class TradeListingController {
 
-    private final TradelistingService service;
+    private final TradeListingService service;
 
-    public TradelistingController(TradelistingService service) {
+    public TradeListingController(TradeListingService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<Tradelisting> list() {
+    public List<TradeListing> list() {
         return service.findAll();
     }
 
     @PostMapping
-    public ResponseEntity<Tradelisting> create(@Valid @RequestBody Tradelisting entity) {
+    public ResponseEntity<TradeListing> create(@Valid @RequestBody TradeListing entity) {
         return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tradelisting> show(@PathVariable Long id) {
+    public ResponseEntity<TradeListing> show(@PathVariable Long id) {
         return service.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Tradelisting> update(@PathVariable Long id, @Valid @RequestBody Tradelisting entity) {
+    public ResponseEntity<TradeListing> update(@PathVariable Long id, @Valid @RequestBody TradeListing entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Tradelisting> patch(@PathVariable Long id, @Valid @RequestBody Tradelisting entity) {
+    public ResponseEntity<TradeListing> patch(@PathVariable Long id, @Valid @RequestBody TradeListing entity) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
@@ -70,6 +70,17 @@ public class TradelistingController {
     @DeleteMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
         service.cancel(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/expired")
+    public ResponseEntity<Boolean> isExpired(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isExpired(id));
+    }
+
+    @PostMapping("/{id}/finalize")
+    public ResponseEntity<Void> finalizeAuction(@PathVariable Long id) {
+        service.finalizeAuction(id);
         return ResponseEntity.noContent().build();
     }
 }

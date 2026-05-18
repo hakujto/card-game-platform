@@ -5,25 +5,25 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tradelistings")
-public class Tradelisting {
+@Table(name = "trade_listings")
+public class TradeListing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private TradelistingListingTypeType listingType;
+    private TradeListingListingTypeType listingType;
     private BigDecimal askingPrice;
     private BigDecimal auctionStartPrice;
     private BigDecimal auctionCurrentBid;
     private LocalDateTime auctionEndTime;
     private Boolean foil = false;
     @Enumerated(EnumType.STRING)
-    private TradelistingConditionType condition;
+    private TradeListingConditionType condition;
     private Integer quantity = 1;
     @Enumerated(EnumType.STRING)
-    private TradelistingStatusType status;
+    private TradeListingStatusType status;
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
@@ -35,8 +35,8 @@ public class Tradelisting {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public TradelistingListingTypeType getListingType() { return listingType; }
-    public void setListingType(TradelistingListingTypeType listingType) { this.listingType = listingType; }
+    public TradeListingListingTypeType getListingType() { return listingType; }
+    public void setListingType(TradeListingListingTypeType listingType) { this.listingType = listingType; }
     public BigDecimal getAskingPrice() { return askingPrice; }
     public void setAskingPrice(BigDecimal askingPrice) { this.askingPrice = askingPrice; }
     public BigDecimal getAuctionStartPrice() { return auctionStartPrice; }
@@ -47,12 +47,12 @@ public class Tradelisting {
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }
     public Boolean getFoil() { return foil; }
     public void setFoil(Boolean foil) { this.foil = foil; }
-    public TradelistingConditionType getCondition() { return condition; }
-    public void setCondition(TradelistingConditionType condition) { this.condition = condition; }
+    public TradeListingConditionType getCondition() { return condition; }
+    public void setCondition(TradeListingConditionType condition) { this.condition = condition; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public TradelistingStatusType getStatus() { return status; }
-    public void setStatus(TradelistingStatusType status) { this.status = status; }
+    public TradeListingStatusType getStatus() { return status; }
+    public void setStatus(TradeListingStatusType status) { this.status = status; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public LocalDateTime getCreatedAt() { return createdAt; }

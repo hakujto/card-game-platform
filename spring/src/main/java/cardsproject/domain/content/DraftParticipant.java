@@ -38,4 +38,11 @@ public class DraftParticipant {
     public Integer draftedCardCount() {
         throw new UnsupportedOperationException("draftedCardCount not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Seat number must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isSeatNumberPositiveValid() {
+        return (getSeatNumber() == null || getSeatNumber() > 0);
+    }
 }

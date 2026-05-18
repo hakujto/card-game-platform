@@ -38,4 +38,16 @@ public class DraftPick {
     public Boolean isFirstPick() {
         throw new UnsupportedOperationException("isFirstPick not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Pick number must be greater than zero")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPickNumberPositiveValid() {
+        return (getPickNumber() == null || getPickNumber() > 0);
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "Pack number must be between 1 and 3")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPackNumberRangeValid() {
+        return (getPackNumber() == null || (getPackNumber() >= 1 && getPackNumber() <= 3));
+    }
 }

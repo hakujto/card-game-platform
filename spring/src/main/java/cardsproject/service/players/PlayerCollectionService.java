@@ -31,6 +31,20 @@ public class PlayerCollectionService {
         repository.deleteById(id);
     }
 
+    public void add(Long id, Integer quantity) {
+        PlayerCollection entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerCollection not found: " + id));
+        entity.add(quantity);
+        repository.save(entity);
+    }
+
+    public void remove(Long id, Integer quantity) {
+        PlayerCollection entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("PlayerCollection not found: " + id));
+        entity.remove(quantity);
+        repository.save(entity);
+    }
+
     public java.math.BigDecimal estimatedValue(Long id) {
         PlayerCollection entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("PlayerCollection not found: " + id));

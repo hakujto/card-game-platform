@@ -30,4 +30,20 @@ public class CardRulingService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean isCurrent(Long id) {
+        CardRuling entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardRuling not found: " + id));
+        Boolean result = entity.isCurrent();
+        repository.save(entity);
+        return result;
+    }
+
+    public Boolean supersedesPrevious(Long id) {
+        CardRuling entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardRuling not found: " + id));
+        Boolean result = entity.supersedesPrevious();
+        repository.save(entity);
+        return result;
+    }
 }

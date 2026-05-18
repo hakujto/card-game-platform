@@ -29,6 +29,14 @@ public class DeckCard {
     public Long getCardId() { return cardId; }
     public void setCardId(Long cardId) { this.cardId = cardId; }
 
+    // ── Business operations ──────────────────────────────────────────
+    public void increment(Integer amount) {
+        throw new UnsupportedOperationException("increment not implemented");
+    }
+    public void decrement(Integer amount) {
+        throw new UnsupportedOperationException("decrement not implemented");
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     @jakarta.validation.constraints.AssertTrue(message = "A deck can contain between 1 and 4 copies of a card")
     @com.fasterxml.jackson.annotation.JsonIgnore

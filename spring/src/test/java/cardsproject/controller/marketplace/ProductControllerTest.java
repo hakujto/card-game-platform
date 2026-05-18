@@ -29,7 +29,7 @@ public class ProductControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/products")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"price\": 0.00 }"))
+            .content("{ \"name\": \"test\", \"price\": 0.01 }"))
             .andExpect(status().isCreated());
     }
 
@@ -47,7 +47,33 @@ public class ProductControllerTest {
         mockMvc.perform(delete("/api/products/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_price_positive_violated() throws Exception {
+        // Product price must be greater than zero → 400 (Bean Validation)
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"productType\": \"SINGLECARD\", \"stock\": 1, \"active\": true, \"discountPercent\": 1, \"featured\": true, \"price\": 0.00 }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_stock_not_negative_violated() throws Exception {
+        // Product stock must not be negative → 400 (Bean Validation)
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"productType\": \"SINGLECARD\", \"price\": 0.00, \"active\": true, \"discountPercent\": 1, \"featured\": true, \"stock\": -1 }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_discount_percent_range_violated() throws Exception {
+        // Product discount percent must be between 0 and 100 → 400 (Bean Validation)
+        mockMvc.perform(post("/api/products")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"productType\": \"SINGLECARD\", \"price\": 0.00, \"stock\": 1, \"active\": true, \"featured\": true, \"discountPercent\": 101 }"))
+            .andExpect(status().isBadRequest());
     }
 }

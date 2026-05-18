@@ -78,4 +78,11 @@ public class Article {
     public Integer readingTimeMinutes() {
         throw new UnsupportedOperationException("readingTimeMinutes not implemented");
     }
+
+    // ── Validation rules ─────────────────────────────────────────────
+    @jakarta.validation.constraints.AssertTrue(message = "Article view count must not be negative")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isViewCountNotNegativeValid() {
+        return (getViewCount() == null || getViewCount() >= 0);
+    }
 }

@@ -54,4 +54,15 @@ public class TournamentPrizeController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/applies")
+    public ResponseEntity<Boolean> appliesToPlacement(@PathVariable Long id, @RequestParam Integer placement) {
+        return ResponseEntity.ok(service.appliesToPlacement(id, placement));
+    }
+
+    @PostMapping("/{id}/award")
+    public ResponseEntity<Void> awardToPlayer(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.awardToPlayer(id, (Integer) body.get("player_id"));
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -72,4 +72,9 @@ public class TournamentRoundController {
         service.generatePairings(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/time-expired")
+    public ResponseEntity<Boolean> isTimeExpired(@PathVariable Long id) {
+        return ResponseEntity.ok(service.isTimeExpired(id));
+    }
 }

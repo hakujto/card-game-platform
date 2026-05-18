@@ -92,6 +92,12 @@ public class Card {
     public java.math.BigDecimal calculateValue() {
         throw new UnsupportedOperationException("calculateValue not implemented");
     }
+    public java.math.BigDecimal applyRarityBonus(Integer multiplier) {
+        throw new UnsupportedOperationException("applyRarityBonus not implemented");
+    }
+    public Boolean isLegalInFormat(String format) {
+        throw new UnsupportedOperationException("isLegalInFormat not implemented");
+    }
 
     // ── Validation rules ─────────────────────────────────────────────
     @jakarta.validation.constraints.AssertTrue(message = "mana_cost must be between 0 and 20")

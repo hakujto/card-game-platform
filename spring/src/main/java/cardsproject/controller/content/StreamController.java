@@ -72,4 +72,9 @@ public class StreamController {
         service.updateViewerPeak(id, (Integer) body.get("count"));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/duration")
+    public ResponseEntity<Integer> durationMinutes(@PathVariable Long id) {
+        return ResponseEntity.ok(service.durationMinutes(id));
+    }
 }

@@ -30,4 +30,33 @@ public class CraftingRecipeService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean canCraft(Long id, Integer playerId) {
+        CraftingRecipe entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CraftingRecipe not found: " + id));
+        Boolean result = entity.canCraft(playerId);
+        repository.save(entity);
+        return result;
+    }
+
+    public void executeCraft(Long id, Integer playerId) {
+        CraftingRecipe entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CraftingRecipe not found: " + id));
+        entity.executeCraft(playerId);
+        repository.save(entity);
+    }
+
+    public void disable(Long id) {
+        CraftingRecipe entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CraftingRecipe not found: " + id));
+        entity.disable();
+        repository.save(entity);
+    }
+
+    public void enable(Long id) {
+        CraftingRecipe entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CraftingRecipe not found: " + id));
+        entity.enable();
+        repository.save(entity);
+    }
 }

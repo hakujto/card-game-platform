@@ -30,4 +30,12 @@ public class OrderItemService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public java.math.BigDecimal lineTotal(Long id) {
+        OrderItem entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("OrderItem not found: " + id));
+        java.math.BigDecimal result = entity.lineTotal();
+        repository.save(entity);
+        return result;
+    }
 }

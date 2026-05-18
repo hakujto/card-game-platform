@@ -30,4 +30,19 @@ public class TradeBidService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public Boolean outbidBy(Long id, java.math.BigDecimal newAmount) {
+        TradeBid entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeBid not found: " + id));
+        Boolean result = entity.outbidBy(newAmount);
+        repository.save(entity);
+        return result;
+    }
+
+    public void retract(Long id) {
+        TradeBid entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeBid not found: " + id));
+        entity.retract();
+        repository.save(entity);
+    }
 }

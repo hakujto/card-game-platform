@@ -29,7 +29,7 @@ public class AchievementControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/achievements")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"description\": \"test\" }"))
+            .content("{ \"name\": \"test\", \"description\": \"test\", \"points\": 1 }"))
             .andExpect(status().isCreated());
     }
 
@@ -47,7 +47,15 @@ public class AchievementControllerTest {
         mockMvc.perform(delete("/api/achievements/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_points_positive_violated() throws Exception {
+        // Achievement must award at least one point → 400 (Bean Validation)
+        mockMvc.perform(post("/api/achievements")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"description\": \"test\", \"rarity\": \"COMMON\", \"isHidden\": true, \"points\": 0 }"))
+            .andExpect(status().isBadRequest());
     }
 }

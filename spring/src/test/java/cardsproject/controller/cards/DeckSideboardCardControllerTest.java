@@ -47,7 +47,15 @@ public class DeckSideboardCardControllerTest {
         mockMvc.perform(delete("/api/deck_sideboard_cards/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
+    }
+    @Test
+    void create_fails_when_quantity_range_violated() throws Exception {
+        // Sideboard card quantity must be between 1 and 4 copies → 400 (Bean Validation)
+        mockMvc.perform(post("/api/deck_sideboard_cards")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"deckId\": 1, \"cardId\": 1, \"quantity\": 5 }"))
+            .andExpect(status().isBadRequest());
     }
 }

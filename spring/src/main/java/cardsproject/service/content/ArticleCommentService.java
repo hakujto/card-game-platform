@@ -44,4 +44,12 @@ public class ArticleCommentService {
         entity.unhide();
         repository.save(entity);
     }
+
+    public Boolean isReply(Long id) {
+        ArticleComment entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("ArticleComment not found: " + id));
+        Boolean result = entity.isReply();
+        repository.save(entity);
+        return result;
+    }
 }

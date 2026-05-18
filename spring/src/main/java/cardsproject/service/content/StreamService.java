@@ -34,6 +34,7 @@ public class StreamService {
     }
     private void validate(Stream entity) {
         if (entity.getActualStart() != null && !(StreamStatusType.LIVE.equals(entity.getStatus()))) throw new IllegalStateException("actual_start_requires_live_or_ended");
+        if (entity.getEndedAt() != null && !(StreamStatusType.ENDED.equals(entity.getStatus()))) throw new IllegalStateException("ended_at can only be set when stream status is Ended");
     }
 
     public void goLive(Long id) {
@@ -55,5 +56,13 @@ public class StreamService {
             .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
         entity.updateViewerPeak(count);
         repository.save(entity);
+    }
+
+    public Integer durationMinutes(Long id) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        Integer result = entity.durationMinutes();
+        repository.save(entity);
+        return result;
     }
 }

@@ -54,4 +54,27 @@ public class CraftingRecipeController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/can-craft")
+    public ResponseEntity<Boolean> canCraft(@PathVariable Long id, @RequestParam Integer playerId) {
+        return ResponseEntity.ok(service.canCraft(id, playerId));
+    }
+
+    @PostMapping("/{id}/craft")
+    public ResponseEntity<Void> executeCraft(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.executeCraft(id, (Integer) body.get("player_id"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/disable")
+    public ResponseEntity<Void> disable(@PathVariable Long id) {
+        service.disable(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/enable")
+    public ResponseEntity<Void> enable(@PathVariable Long id) {
+        service.enable(id);
+        return ResponseEntity.noContent().build();
+    }
 }

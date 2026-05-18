@@ -55,6 +55,12 @@ public class DeckTagController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/rename")
+    public ResponseEntity<Void> rename(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
+        service.rename(id, (String) body.get("new_name"));
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/merge")
     public ResponseEntity<Void> mergeInto(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
         service.mergeInto(id, (Integer) body.get("target_tag_id"));

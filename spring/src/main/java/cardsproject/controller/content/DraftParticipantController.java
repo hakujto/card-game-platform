@@ -60,4 +60,9 @@ public class DraftParticipantController {
         service.pickCard(id, (Integer) body.get("card_id"), (Integer) body.get("pack_number"));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/card-count")
+    public ResponseEntity<Integer> draftedCardCount(@PathVariable Long id) {
+        return ResponseEntity.ok(service.draftedCardCount(id));
+    }
 }

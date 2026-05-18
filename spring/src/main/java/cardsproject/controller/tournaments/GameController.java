@@ -60,4 +60,9 @@ public class GameController {
         service.recordWinner(id, (String) body.get("winner_side"));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/duration")
+    public ResponseEntity<java.math.BigDecimal> durationMinutes(@PathVariable Long id) {
+        return ResponseEntity.ok(service.durationMinutes(id));
+    }
 }

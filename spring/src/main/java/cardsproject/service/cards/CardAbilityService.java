@@ -35,4 +35,20 @@ public class CardAbilityService {
     private void validate(CardAbility entity) {
         if (CardAbilityAbilityTypeType.KEYWORD.equals(entity.getAbilityType()) && entity.getKeyword() == null) throw new IllegalStateException("Keyword ability must have a keyword name");
     }
+
+    public Boolean isUsableAt(Long id, String timing) {
+        CardAbility entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardAbility not found: " + id));
+        Boolean result = entity.isUsableAt(timing);
+        repository.save(entity);
+        return result;
+    }
+
+    public String describe(Long id) {
+        CardAbility entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("CardAbility not found: " + id));
+        String result = entity.describe();
+        repository.save(entity);
+        return result;
+    }
 }

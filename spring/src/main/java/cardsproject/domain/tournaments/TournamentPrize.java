@@ -46,6 +46,9 @@ public class TournamentPrize {
     public Boolean appliesToPlacement(Integer placement) {
         throw new UnsupportedOperationException("appliesToPlacement not implemented");
     }
+    public void awardToPlayer(Integer playerId) {
+        throw new UnsupportedOperationException("awardToPlayer not implemented");
+    }
 
     // ── Validation rules ─────────────────────────────────────────────
     @jakarta.validation.constraints.AssertTrue(message = "placement_to must be greater than or equal to placement_from")
