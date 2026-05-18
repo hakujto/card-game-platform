@@ -59,4 +59,17 @@ class CardPriceHistoryController extends Controller
         $cardPriceHistory->delete();
         return response()->json(null, 204);
     }
+    public function priceChangePercent(Request $request, CardPriceHistory $cardPriceHistory): JsonResponse
+    {
+        $result = $cardPriceHistory->priceChangePercent();
+        $cardPriceHistory->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function isPriceSpike(Request $request, CardPriceHistory $cardPriceHistory): JsonResponse
+    {
+        $result = $cardPriceHistory->isPriceSpike();
+        $cardPriceHistory->save();
+        return response()->json(['result' => $result]);
+    }
 }

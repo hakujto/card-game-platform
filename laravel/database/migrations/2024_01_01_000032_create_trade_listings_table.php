@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tradelistings', function (Blueprint $table) {
+        Schema::create('trade_listings', function (Blueprint $table) {
             $table->id();
             $table->string('listing_type', 20)->default('FixedPrice');
             $table->decimal('asking_price', 10, 2)->nullable();
@@ -31,6 +31,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tradelistings');
+        Schema::dropIfExists('trade_listings');
     }
 };

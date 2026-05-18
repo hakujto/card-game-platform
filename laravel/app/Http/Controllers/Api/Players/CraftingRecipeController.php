@@ -51,4 +51,32 @@ class CraftingRecipeController extends Controller
         $craftingRecipe->delete();
         return response()->json(null, 204);
     }
+    public function canCraft(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $result = $craftingRecipe->canCraft();
+        $craftingRecipe->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function executeCraft(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $player_id = $request->input('player_id');
+        $craftingRecipe->executeCraft($player_id);
+        $craftingRecipe->save();
+        return response()->json(null, 204);
+    }
+
+    public function disable(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $craftingRecipe->disable();
+        $craftingRecipe->save();
+        return response()->json(null, 204);
+    }
+
+    public function enable(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
+    {
+        $craftingRecipe->enable();
+        $craftingRecipe->save();
+        return response()->json(null, 204);
+    }
 }

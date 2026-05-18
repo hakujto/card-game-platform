@@ -67,4 +67,11 @@ class ArticleCommentController extends Controller
         $articleComment->save();
         return response()->json(null, 204);
     }
+
+    public function isReply(Request $request, ArticleComment $articleComment): JsonResponse
+    {
+        $result = $articleComment->isReply();
+        $articleComment->save();
+        return response()->json(['result' => $result]);
+    }
 }

@@ -34,6 +34,12 @@ class CardPriceHistory extends Model
         if (!((($this->min_price === null || ($this->avg_price !== null && (float)$this->min_price <= (float)$this->avg_price)) && ($this->avg_price === null || ($this->max_price !== null && (float)$this->avg_price <= (float)$this->max_price))))) {
             $errors['price_bounds_consistent'] = 'min_price <= avg_price <= max_price must hold';
         }
+        if (!(($this->volume === null || $this->volume >= 0))) {
+            $errors['volume_not_negative'] = 'Price history volume must not be negative';
+        }
+        if (!(($this->min_price === null || (float)$this->min_price >= (float)0))) {
+            $errors['prices_not_negative'] = 'Prices must not be negative';
+        }
         if (!empty($errors)) {
             throw new \Illuminate\Validation\ValidationException(
                 \Illuminate\Support\Facades\Validator::make([], []),

@@ -70,6 +70,7 @@ class GameApiTest extends TestCase
         ]);
         $entity = Game::create([
             'game_number' => 1,
+            'winner_side' => null,
             'turns_played' => null,
             'duration_seconds' => null,
             'match_id' => $this->depMatch->id,
@@ -87,6 +88,7 @@ class GameApiTest extends TestCase
     {
         $response = $this->postJson('/api/games', [
             'game_number' => 1,
+            'winner_side' => null,
             'turns_played' => null,
             'duration_seconds' => null,
             'match_id' => $this->depMatch->id,
@@ -117,7 +119,7 @@ class GameApiTest extends TestCase
     public function test_create_fails_when_game_number_range_violated(): void
     {
         // Game number must be between 1 and 3 (best-of-3)
-        $response = $this->postJson('/api/games', ['match_id' => 1, 'turns_played' => 1, 'turns_played' => 1, 'duration_seconds' => 1, 'duration_seconds' => 1, 'game_number' => 4]);
+        $response = $this->postJson('/api/games', ['match_id' => 1, 'turns_played' => 1, 'turns_played' => 1, 'duration_seconds' => 1, 'duration_seconds' => 1, 'winner_side' => 'Draw', 'winner' => null, 'winner_side' => 'Player1', 'winner' => 'test', 'game_number' => 4]);
         $response->assertStatus(422);
     }
 
@@ -132,6 +134,20 @@ class GameApiTest extends TestCase
     {
         // Game duration must be greater than zero
         $response = $this->postJson('/api/games', ['game_number' => 1, 'match_id' => 1, 'duration_seconds' => 1, 'duration_seconds' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_draw_has_no_winner_violated(): void
+    {
+        // A draw cannot have a winner
+        $response = $this->postJson('/api/games', ['game_number' => 1, 'match_id' => 1, 'winner_side' => 'Draw', 'winner_id' => 1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_non_draw_requires_winner_violated(): void
+    {
+        // A decisive game must have a winner player set
+        $response = $this->postJson('/api/games', ['game_number' => 1, 'match_id' => 1, 'winner_side' => 'Player1', 'winner' => null]);
         $response->assertStatus(422);
     }
 }

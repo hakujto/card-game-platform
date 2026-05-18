@@ -63,4 +63,17 @@ class CardAbilityController extends Controller
         $cardAbility->delete();
         return response()->json(null, 204);
     }
+    public function isUsableAt(Request $request, CardAbility $cardAbility): JsonResponse
+    {
+        $result = $cardAbility->isUsableAt();
+        $cardAbility->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function describe(Request $request, CardAbility $cardAbility): JsonResponse
+    {
+        $result = $cardAbility->describe();
+        $cardAbility->save();
+        return response()->json(['result' => $result]);
+    }
 }

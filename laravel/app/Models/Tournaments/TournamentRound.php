@@ -25,11 +25,32 @@ class TournamentRound extends Model
         return $this->belongsTo(Tournament::class, 'tournament_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->round_number === null || $this->round_number > 0))) {
+            $errors['round_number_positive'] = 'Round number must be greater than zero';
+        }
+        if (!(($this->time_limit_minutes === null || $this->time_limit_minutes > 0))) {
+            $errors['time_limit_positive'] = 'Round time limit must be greater than zero';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->ended_at !== null && !(($this->ended_at === null || ($this->started_at !== null && $this->ended_at > $this->started_at)))) {
             throw new \RuntimeException('Round end time must be after start time');
+        }
+        if ($this->status === 'Completed' && $this->started_at === null) {
+            throw new \RuntimeException('Completed round must have a start time');
         }
     }
 

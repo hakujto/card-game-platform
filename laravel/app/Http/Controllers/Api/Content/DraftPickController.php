@@ -26,6 +26,8 @@ class DraftPickController extends Controller
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = DraftPick::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -44,6 +46,8 @@ class DraftPickController extends Controller
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $draftPick->update($validated);
+        $draftPick->validateRules();
+
         return response()->json($draftPick);
     }
 
@@ -51,5 +55,11 @@ class DraftPickController extends Controller
     {
         $draftPick->delete();
         return response()->json(null, 204);
+    }
+    public function isFirstPick(Request $request, DraftPick $draftPick): JsonResponse
+    {
+        $result = $draftPick->isFirstPick();
+        $draftPick->save();
+        return response()->json(['result' => $result]);
     }
 }

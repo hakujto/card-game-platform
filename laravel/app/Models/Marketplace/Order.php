@@ -61,6 +61,9 @@ class Order extends Model
         if ($this->status === 'Shipped' && $this->tracking_number === null) {
             throw new \RuntimeException('Shipped order must have a tracking number');
         }
+        if ($this->shipped_at !== null && !($this->status === 'Shipped')) {
+            throw new \RuntimeException('shipped_at_requires_shipped_status');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

@@ -23,6 +23,28 @@ class DeckService
         return $result;
     }
 
+    public function addCard(int $id, $card_id, $quantity): void
+    {
+        $deck = Deck::findOrFail($id);
+        $deck->addCard($card_id, $quantity);
+        $deck->save();
+    }
+
+    public function removeCard(int $id): void
+    {
+        $deck = Deck::findOrFail($id);
+        $deck->removeCard($card_id);
+        $deck->save();
+    }
+
+    public function winRate(int $id): string
+    {
+        $deck = Deck::findOrFail($id);
+        $result = $deck->winRate();
+        $deck->save();
+        return $result;
+    }
+
     public function clone(int $id): mixed
     {
         $deck = Deck::findOrFail($id);

@@ -36,6 +36,7 @@ class PlayerCollectionApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->depCard = Card::create([
             'name' => 'test',
@@ -102,4 +103,10 @@ class PlayerCollectionApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_quantity_positive_violated(): void
+    {
+        // Collection quantity must be greater than zero
+        $response = $this->postJson('/api/player_collections', ['acquired_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'card_id' => 1, 'quantity' => 0]);
+        $response->assertStatus(422);
+    }
 }

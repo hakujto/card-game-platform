@@ -92,6 +92,14 @@ class MatchRecordController extends Controller
         return response()->json(['result' => $result]);
     }
 
+    public function concede(Request $request, MatchRecord $matchRecord): JsonResponse
+    {
+        $player_id = $request->input('player_id');
+        $matchRecord->concede($player_id);
+        $matchRecord->save();
+        return response()->json(null, 204);
+    }
+
     public function draw(Request $request, MatchRecord $matchRecord): JsonResponse
     {
         $matchRecord->draw();

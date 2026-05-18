@@ -49,4 +49,17 @@ class CardRulingController extends Controller
         $cardRuling->delete();
         return response()->json(null, 204);
     }
+    public function isCurrent(Request $request, CardRuling $cardRuling): JsonResponse
+    {
+        $result = $cardRuling->isCurrent();
+        $cardRuling->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function supersedesPrevious(Request $request, CardRuling $cardRuling): JsonResponse
+    {
+        $result = $cardRuling->supersedesPrevious();
+        $cardRuling->save();
+        return response()->json(['result' => $result]);
+    }
 }

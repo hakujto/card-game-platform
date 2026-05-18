@@ -34,6 +34,7 @@ class ArticleController extends Controller
             'featured_deck_id' => 'nullable|exists:decks,id',
         ]);
         $item = Article::create($validated);
+        $item->validateRules();
         try {
             $item->validateImplies();
         } catch (\RuntimeException $e) {
@@ -66,6 +67,7 @@ class ArticleController extends Controller
             'featured_deck_id' => 'sometimes|nullable|exists:decks,id',
         ]);
         $article->update($validated);
+        $article->validateRules();
         try {
             $article->validateImplies();
         } catch (\RuntimeException $e) {
@@ -99,5 +101,12 @@ class ArticleController extends Controller
         $article->incrementView();
         $article->save();
         return response()->json(null, 204);
+    }
+
+    public function readingTimeMinutes(Request $request, Article $article): JsonResponse
+    {
+        $result = $article->readingTimeMinutes();
+        $article->save();
+        return response()->json(['result' => $result]);
     }
 }

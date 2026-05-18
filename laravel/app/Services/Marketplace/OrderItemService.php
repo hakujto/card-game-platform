@@ -15,4 +15,11 @@ class OrderItemService
     {
         throw new \LogicException('Not implemented');
     }
+    public function lineTotal(int $id): string
+    {
+        $orderItem = OrderItem::findOrFail($id);
+        $result = $orderItem->lineTotal();
+        $orderItem->save();
+        return $result;
+    }
 }

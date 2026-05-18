@@ -79,4 +79,11 @@ class GameController extends Controller
         $game->save();
         return response()->json(null, 204);
     }
+
+    public function durationMinutes(Request $request, Game $game): JsonResponse
+    {
+        $result = $game->durationMinutes();
+        $game->save();
+        return response()->json(['result' => $result]);
+    }
 }

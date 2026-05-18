@@ -15,6 +15,22 @@ class CouponService
     {
         throw new \LogicException('Not implemented');
     }
+    public function isValid(int $id): bool
+    {
+        $coupon = Coupon::findOrFail($id);
+        $result = $coupon->isValid();
+        $coupon->save();
+        return $result;
+    }
+
+    public function isApplicableToOrder(int $id): bool
+    {
+        $coupon = Coupon::findOrFail($id);
+        $result = $coupon->isApplicableToOrder($order_total);
+        $coupon->save();
+        return $result;
+    }
+
     public function redeem(int $id): void
     {
         $coupon = Coupon::findOrFail($id);

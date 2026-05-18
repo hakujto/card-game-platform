@@ -28,6 +28,24 @@ class DraftPick extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->pick_number === null || $this->pick_number > 0))) {
+            $errors['pick_number_positive'] = 'Pick number must be greater than zero';
+        }
+        if (!(($this->pack_number === null || ($this->pack_number >= 1 && $this->pack_number <= 3)))) {
+            $errors['pack_number_range'] = 'Pack number must be between 1 and 3';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function isFirstPick(): bool

@@ -34,6 +34,7 @@ class StreamApiTest extends TestCase
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
             'actual_start' => null,
+            'ended_at' => null,
             'streamer_id' => $this->depStreamer->id,
         ]);
         $this->entityId = $entity->id;
@@ -55,6 +56,7 @@ class StreamApiTest extends TestCase
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
             'actual_start' => null,
+            'ended_at' => null,
             'streamer_id' => $this->depStreamer->id,
         ]);
         $response->assertStatus(201);
@@ -83,7 +85,21 @@ class StreamApiTest extends TestCase
     public function test_create_fails_when_actual_start_requires_live_or_ended_violated(): void
     {
         // actual_start_requires_live_or_ended
-        $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'actual_start' => '2024-01-01 00:00:00']);
+        $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'actual_start' => '2024-01-01 00:00:00', 'status' => 'Scheduled']);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_ended_at_requires_ended_status_violated(): void
+    {
+        // ended_at can only be set when stream status is Ended
+        $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Scheduled']);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_viewer_count_not_negative_violated(): void
+    {
+        // Peak viewer count must not be negative
+        $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'actual_start' => '2024-01-01 00:00:00', 'status' => 'Live', 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Ended', 'viewer_count_peak' => -1]);
         $response->assertStatus(422);
     }
 }

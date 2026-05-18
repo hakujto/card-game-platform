@@ -38,7 +38,7 @@ class PlayerAchievementApiTest extends TestCase
         $entity = PlayerAchievement::create([
             'earned_at' => '2024-01-01 00:00:00',
             'progress' => 1,
-            'is_completed' => true,
+            'is_completed' => false,
             'player_id' => $this->depPlayer->id,
             'achievement_id' => $this->depAchievement->id,
         ]);
@@ -56,7 +56,7 @@ class PlayerAchievementApiTest extends TestCase
         $response = $this->postJson('/api/player_achievements', [
             'earned_at' => '2024-01-01 00:00:00',
             'progress' => 1,
-            'is_completed' => true,
+            'is_completed' => false,
             'player_id' => $this->depPlayer->id,
             'achievement_id' => $this->depAchievement->id,
         ]);
@@ -87,6 +87,13 @@ class PlayerAchievementApiTest extends TestCase
     {
         // Completed achievement must have progress greater than zero
         $response = $this->postJson('/api/player_achievements', ['earned_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'achievement_id' => 1, 'is_completed' => true, 'progress' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_progress_not_negative_violated(): void
+    {
+        // Achievement progress must not be negative
+        $response = $this->postJson('/api/player_achievements', ['earned_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'achievement_id' => 1, 'is_completed' => true, 'progress' => -1]);
         $response->assertStatus(422);
     }
 }

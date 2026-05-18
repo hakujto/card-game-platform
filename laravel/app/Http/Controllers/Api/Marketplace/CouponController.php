@@ -72,6 +72,20 @@ class CouponController extends Controller
         $coupon->delete();
         return response()->json(null, 204);
     }
+    public function isValid(Request $request, Coupon $coupon): JsonResponse
+    {
+        $result = $coupon->isValid();
+        $coupon->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function isApplicableToOrder(Request $request, Coupon $coupon): JsonResponse
+    {
+        $result = $coupon->isApplicableToOrder();
+        $coupon->save();
+        return response()->json(['result' => $result]);
+    }
+
     public function redeem(Request $request, Coupon $coupon): JsonResponse
     {
         $coupon->redeem();

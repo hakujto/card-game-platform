@@ -25,6 +25,8 @@ class AchievementController extends Controller
             'is_hidden' => 'required|boolean',
         ]);
         $item = Achievement::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -44,12 +46,27 @@ class AchievementController extends Controller
             'is_hidden' => 'sometimes|nullable|boolean',
         ]);
         $achievement->update($validated);
+        $achievement->validateRules();
+
         return response()->json($achievement);
     }
 
     public function destroy(Achievement $achievement): JsonResponse
     {
         $achievement->delete();
+        return response()->json(null, 204);
+    }
+    public function pointValue(Request $request, Achievement $achievement): JsonResponse
+    {
+        $result = $achievement->pointValue();
+        $achievement->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function reveal(Request $request, Achievement $achievement): JsonResponse
+    {
+        $achievement->reveal();
+        $achievement->save();
         return response()->json(null, 204);
     }
 }

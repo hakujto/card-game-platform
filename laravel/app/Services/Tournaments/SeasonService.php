@@ -35,4 +35,12 @@ class SeasonService
         $season->finalizeRewards();
         $season->save();
     }
+
+    public function isOngoing(int $id): bool
+    {
+        $season = Season::findOrFail($id);
+        $result = $season->isOngoing();
+        $season->save();
+        return $result;
+    }
 }

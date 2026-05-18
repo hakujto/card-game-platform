@@ -32,6 +32,7 @@ class DraftPickApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->auxDraftSession = DraftSession::create([
             'status' => 'WaitingForPlayers',
@@ -115,4 +116,17 @@ class DraftPickApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_pick_number_positive_violated(): void
+    {
+        // Pick number must be greater than zero
+        $response = $this->postJson('/api/draft_picks', ['pack_number' => 1, 'picked_at' => '2024-01-01 00:00:00', 'participant_id' => 1, 'card_id' => 1, 'pick_number' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_pack_number_range_violated(): void
+    {
+        // Pack number must be between 1 and 3
+        $response = $this->postJson('/api/draft_picks', ['pick_number' => 1, 'picked_at' => '2024-01-01 00:00:00', 'participant_id' => 1, 'card_id' => 1, 'pack_number' => 4]);
+        $response->assertStatus(422);
+    }
 }

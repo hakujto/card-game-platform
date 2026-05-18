@@ -58,6 +58,12 @@ class Card extends Model
         if ($this->card_type === 'Planeswalker' && $this->loyalty === null) {
             throw new \RuntimeException('Planeswalker card must have loyalty');
         }
+        if ($this->card_type !== 'Planeswalker' && $this->loyalty !== null) {
+            throw new \RuntimeException('Only Planeswalker cards can have loyalty');
+        }
+        if ($this->is_banned === true && !($this->legal_formats === "message")) {
+            throw new \RuntimeException('banned_card_not_in_legal_formats');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────
@@ -85,6 +91,16 @@ class Card extends Model
     public function calculateValue(): string
     {
         throw new \RuntimeException('calculate_value not implemented');
+    }
+
+    public function applyRarityBonus($multiplier): string
+    {
+        throw new \RuntimeException('apply_rarity_bonus not implemented');
+    }
+
+    public function isLegalInFormat($format): bool
+    {
+        throw new \RuntimeException('is_legal_in_format not implemented');
     }
 
 }

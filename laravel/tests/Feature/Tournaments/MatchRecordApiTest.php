@@ -30,6 +30,8 @@ class MatchRecordApiTest extends TestCase
             'status' => 'Pending',
             'player1_wins' => 1,
             'player2_wins' => 1,
+            'started_at' => '2024-01-01 00:00:00',
+            'ended_at' => null,
             'player1_id' => $this->depPlayer1->id,
         ]);
         $this->entityId = $entity->id;
@@ -47,6 +49,8 @@ class MatchRecordApiTest extends TestCase
             'status' => 'Pending',
             'player1_wins' => 1,
             'player2_wins' => 1,
+            'started_at' => '2024-01-01 00:00:00',
+            'ended_at' => null,
             'player1_id' => $this->depPlayer1->id,
         ]);
         $response->assertStatus(201);
@@ -75,21 +79,35 @@ class MatchRecordApiTest extends TestCase
     public function test_create_fails_when_wins_not_negative_violated(): void
     {
         // Win counts must not be negative
-        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'player1_wins' => -1]);
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'started_at' => '2024-01-01 00:00:00', 'player1_wins' => -1]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_max_three_games_violated(): void
     {
         // Win counts cannot exceed 2 in a best-of-3 match
-        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'player1_wins' => 3]);
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => null, 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'started_at' => '2024-01-01 00:00:00', 'player1_wins' => 3]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_bye_has_no_player2_violated(): void
     {
         // BYE match must not have a second player
-        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2' => 'test']);
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'BYE', 'player2_id' => 1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_ended_after_started_violated(): void
+    {
+        // Match end time must be after start time
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'ended_at' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_completed_requires_started_at_violated(): void
+    {
+        // Completed match must have a start time
+        $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'Completed', 'started_at' => null]);
         $response->assertStatus(422);
     }
 }

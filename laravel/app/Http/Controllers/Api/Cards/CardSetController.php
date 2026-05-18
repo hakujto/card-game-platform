@@ -20,12 +20,21 @@ class CardSetController extends Controller
             'name' => 'required|string|max:200',
             'code' => 'required|string|max:10',
             'release_date' => 'required|date',
+            'rotation_date' => 'nullable|date',
             'set_type' => 'required|string|in:Core,Expansion,Supplemental,Masters,Draft|max:20',
             'total_cards' => 'required|integer',
+            'is_rotated' => 'required|boolean',
             'description' => 'nullable|string|max:200',
             'logo_url' => 'nullable|string|url|max:200',
         ]);
         $item = CardSet::create($validated);
+        $item->validateRules();
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -40,18 +49,54 @@ class CardSetController extends Controller
             'name' => 'sometimes|nullable|string|max:200',
             'code' => 'sometimes|nullable|string|max:10',
             'release_date' => 'sometimes|nullable|date',
+            'rotation_date' => 'sometimes|nullable|date',
             'set_type' => 'sometimes|nullable|string|max:20',
             'total_cards' => 'sometimes|nullable|integer',
+            'is_rotated' => 'sometimes|nullable|boolean',
             'description' => 'sometimes|nullable|string|max:200',
             'logo_url' => 'sometimes|nullable|string|url|max:200',
         ]);
         $cardSet->update($validated);
+        $cardSet->validateRules();
+        try {
+            $cardSet->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($cardSet);
     }
 
     public function destroy(CardSet $cardSet): JsonResponse
     {
         $cardSet->delete();
+        return response()->json(null, 204);
+    }
+    public function isLegalInStandard(Request $request, CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->isLegalInStandard();
+        $cardSet->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function isLegalInFormat(Request $request, CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->isLegalInFormat();
+        $cardSet->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function cardCountByRarity(Request $request, CardSet $cardSet): JsonResponse
+    {
+        $result = $cardSet->cardCountByRarity();
+        $cardSet->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function rotateOut(Request $request, CardSet $cardSet): JsonResponse
+    {
+        $cardSet->rotateOut();
+        $cardSet->save();
         return response()->json(null, 204);
     }
 }

@@ -35,4 +35,12 @@ class TradeTransactionService
         $tradeTransaction->openDispute($reason);
         $tradeTransaction->save();
     }
+
+    public function sellerNet(int $id): string
+    {
+        $tradeTransaction = TradeTransaction::findOrFail($id);
+        $result = $tradeTransaction->sellerNet();
+        $tradeTransaction->save();
+        return $result;
+    }
 }

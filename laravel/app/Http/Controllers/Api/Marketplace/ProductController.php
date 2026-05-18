@@ -32,6 +32,8 @@ class ProductController extends Controller
             'card_set_id' => 'nullable|exists:card_sets,id',
         ]);
         $item = Product::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -56,6 +58,8 @@ class ProductController extends Controller
             'card_set_id' => 'sometimes|nullable|exists:card_sets,id',
         ]);
         $product->update($validated);
+        $product->validateRules();
+
         return response()->json($product);
     }
 
@@ -92,5 +96,19 @@ class ProductController extends Controller
         $product->restock($quantity);
         $product->save();
         return response()->json(null, 204);
+    }
+
+    public function effectivePrice(Request $request, Product $product): JsonResponse
+    {
+        $result = $product->effectivePrice();
+        $product->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function isInStock(Request $request, Product $product): JsonResponse
+    {
+        $result = $product->isInStock();
+        $product->save();
+        return response()->json(['result' => $result]);
     }
 }

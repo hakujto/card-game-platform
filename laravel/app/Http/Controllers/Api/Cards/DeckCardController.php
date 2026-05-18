@@ -54,4 +54,19 @@ class DeckCardController extends Controller
         $deckCard->delete();
         return response()->json(null, 204);
     }
+    public function incrementAction(Request $request, DeckCard $deckCard): JsonResponse
+    {
+        $amount = $request->input('amount');
+        $deckCard->incrementAction($amount);
+        $deckCard->save();
+        return response()->json(null, 204);
+    }
+
+    public function decrementAction(Request $request, DeckCard $deckCard): JsonResponse
+    {
+        $amount = $request->input('amount');
+        $deckCard->decrementAction($amount);
+        $deckCard->save();
+        return response()->json(null, 204);
+    }
 }

@@ -25,6 +25,8 @@ class DraftParticipantController extends Controller
             'player_id' => 'required|exists:players,id',
         ]);
         $item = DraftParticipant::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -42,6 +44,8 @@ class DraftParticipantController extends Controller
             'player_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $draftParticipant->update($validated);
+        $draftParticipant->validateRules();
+
         return response()->json($draftParticipant);
     }
 
@@ -57,5 +61,12 @@ class DraftParticipantController extends Controller
         $draftParticipant->pickCard($card_id, $pack_number);
         $draftParticipant->save();
         return response()->json(null, 204);
+    }
+
+    public function draftedCardCount(Request $request, DraftParticipant $draftParticipant): JsonResponse
+    {
+        $result = $draftParticipant->draftedCardCount();
+        $draftParticipant->save();
+        return response()->json(['result' => $result]);
     }
 }

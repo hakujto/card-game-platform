@@ -90,4 +90,11 @@ class ArticleApiTest extends TestCase
         $response = $this->postJson('/api/articles', ['title' => 'test', 'slug' => 'test', 'body' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'author_id' => 1, 'status' => 'Published', 'published_at' => null]);
         $response->assertStatus(422);
     }
+
+    public function test_create_fails_when_view_count_not_negative_violated(): void
+    {
+        // Article view count must not be negative
+        $response = $this->postJson('/api/articles', ['title' => 'test', 'slug' => 'test', 'body' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'author_id' => 1, 'status' => 'Published', 'published_at' => '2024-01-01 00:00:00', 'view_count' => -1]);
+        $response->assertStatus(422);
+    }
 }

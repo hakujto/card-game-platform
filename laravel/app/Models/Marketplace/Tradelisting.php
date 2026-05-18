@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Players\Player;
 use App\Models\Cards\Card;
 
-class Tradelisting extends Model
+class TradeListing extends Model
 {
-    protected $table = 'tradelistings';
+    protected $table = 'trade_listings';
 
     protected $fillable = ['listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'status', 'description', 'expires_at', 'seller_id', 'card_id'];
 

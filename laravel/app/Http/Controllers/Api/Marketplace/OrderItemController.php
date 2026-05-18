@@ -56,4 +56,10 @@ class OrderItemController extends Controller
         $orderItem->delete();
         return response()->json(null, 204);
     }
+    public function lineTotal(Request $request, OrderItem $orderItem): JsonResponse
+    {
+        $result = $orderItem->lineTotal();
+        $orderItem->save();
+        return response()->json(['result' => $result]);
+    }
 }

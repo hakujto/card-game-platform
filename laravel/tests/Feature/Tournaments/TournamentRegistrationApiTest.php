@@ -69,12 +69,15 @@ class TournamentRegistrationApiTest extends TestCase
             'is_tournament_legal' => true,
             'wins' => 1,
             'losses' => 1,
+            'draws' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'player_id' => $this->depPlayer->id,
         ]);
         $entity = TournamentRegistration::create([
             'status' => 'Registered',
+            'seed' => null,
+            'final_standing' => null,
             'points_earned' => 1,
             'registered_at' => '2024-01-01 00:00:00',
             'tournament_id' => $this->depTournament->id,
@@ -94,6 +97,8 @@ class TournamentRegistrationApiTest extends TestCase
     {
         $response = $this->postJson('/api/tournament_registrations', [
             'status' => 'Registered',
+            'seed' => null,
+            'final_standing' => null,
             'points_earned' => 1,
             'registered_at' => '2024-01-01 00:00:00',
             'tournament_id' => $this->depTournament->id,
@@ -123,4 +128,24 @@ class TournamentRegistrationApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_points_earned_not_negative_violated(): void
+    {
+        // Points earned must not be negative
+        $response = $this->postJson('/api/tournament_registrations', ['registered_at' => '2024-01-01 00:00:00', 'tournament_id' => 1, 'player_id' => 1, 'deck_id' => 1, 'final_standing' => 1, 'final_standing' => 1, 'seed' => 1, 'seed' => 1, 'points_earned' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_final_standing_positive_violated(): void
+    {
+        // Final standing must be greater than zero
+        $response = $this->postJson('/api/tournament_registrations', ['registered_at' => '2024-01-01 00:00:00', 'tournament_id' => 1, 'player_id' => 1, 'deck_id' => 1, 'final_standing' => 1, 'final_standing' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_seed_positive_violated(): void
+    {
+        // Seed must be greater than zero
+        $response = $this->postJson('/api/tournament_registrations', ['registered_at' => '2024-01-01 00:00:00', 'tournament_id' => 1, 'player_id' => 1, 'deck_id' => 1, 'seed' => 1, 'seed' => 0]);
+        $response->assertStatus(422);
+    }
 }

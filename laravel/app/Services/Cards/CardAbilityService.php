@@ -15,4 +15,19 @@ class CardAbilityService
     {
         throw new \LogicException('Not implemented');
     }
+    public function isUsableAt(int $id): bool
+    {
+        $cardAbility = CardAbility::findOrFail($id);
+        $result = $cardAbility->isUsableAt($timing);
+        $cardAbility->save();
+        return $result;
+    }
+
+    public function describe(int $id): string
+    {
+        $cardAbility = CardAbility::findOrFail($id);
+        $result = $cardAbility->describe();
+        $cardAbility->save();
+        return $result;
+    }
 }

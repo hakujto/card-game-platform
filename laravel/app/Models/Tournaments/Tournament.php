@@ -97,6 +97,11 @@ class Tournament extends Model
         throw new \RuntimeException('calculate_prize_distribution not implemented');
     }
 
+    public function registerPlayer($player_id, $deck_id): void
+    {
+        throw new \RuntimeException('register_player not implemented');
+    }
+
     public function isFull(): bool
     {
         throw new \RuntimeException('is_full not implemented');

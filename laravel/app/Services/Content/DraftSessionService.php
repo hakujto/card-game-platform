@@ -35,4 +35,12 @@ class DraftSessionService
         $draftSession->complete();
         $draftSession->save();
     }
+
+    public function isFull(int $id): bool
+    {
+        $draftSession = DraftSession::findOrFail($id);
+        $result = $draftSession->isFull();
+        $draftSession->save();
+        return $result;
+    }
 }

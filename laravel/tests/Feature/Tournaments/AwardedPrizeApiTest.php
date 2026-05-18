@@ -73,7 +73,7 @@ class AwardedPrizeApiTest extends TestCase
         $entity = AwardedPrize::create([
             'final_placement' => 1,
             'awarded_at' => '2024-01-01 00:00:00',
-            'claimed' => true,
+            'claimed' => false,
             'claimed_at' => '2024-01-01 00:00:00',
             'prize_id' => $this->depPrize->id,
             'player_id' => $this->depPlayer->id,
@@ -92,7 +92,7 @@ class AwardedPrizeApiTest extends TestCase
         $response = $this->postJson('/api/awarded_prizes', [
             'final_placement' => 1,
             'awarded_at' => '2024-01-01 00:00:00',
-            'claimed' => true,
+            'claimed' => false,
             'claimed_at' => '2024-01-01 00:00:00',
             'prize_id' => $this->depPrize->id,
             'player_id' => $this->depPlayer->id,

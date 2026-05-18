@@ -26,6 +26,7 @@ class TournamentRoundController extends Controller
             'tournament_id' => 'required|exists:tournaments,id',
         ]);
         $item = TournamentRound::create($validated);
+        $item->validateRules();
         try {
             $item->validateImplies();
         } catch (\RuntimeException $e) {
@@ -51,6 +52,7 @@ class TournamentRoundController extends Controller
             'tournament_id' => 'sometimes|nullable|exists:tournaments,id',
         ]);
         $tournamentRound->update($validated);
+        $tournamentRound->validateRules();
         try {
             $tournamentRound->validateImplies();
         } catch (\RuntimeException $e) {
@@ -84,5 +86,12 @@ class TournamentRoundController extends Controller
         $tournamentRound->generatePairings();
         $tournamentRound->save();
         return response()->json(null, 204);
+    }
+
+    public function isTimeExpired(Request $request, TournamentRound $tournamentRound): JsonResponse
+    {
+        $result = $tournamentRound->isTimeExpired();
+        $tournamentRound->save();
+        return response()->json(['result' => $result]);
     }
 }

@@ -26,6 +26,7 @@ class PlayerAchievementController extends Controller
             'achievement_id' => 'required|exists:achievements,id',
         ]);
         $item = PlayerAchievement::create($validated);
+        $item->validateRules();
         try {
             $item->validateImplies();
         } catch (\RuntimeException $e) {
@@ -50,6 +51,7 @@ class PlayerAchievementController extends Controller
             'achievement_id' => 'sometimes|nullable|exists:achievements,id',
         ]);
         $playerAchievement->update($validated);
+        $playerAchievement->validateRules();
         try {
             $playerAchievement->validateImplies();
         } catch (\RuntimeException $e) {
@@ -62,6 +64,20 @@ class PlayerAchievementController extends Controller
     public function destroy(PlayerAchievement $playerAchievement): JsonResponse
     {
         $playerAchievement->delete();
+        return response()->json(null, 204);
+    }
+    public function incrementProgress(Request $request, PlayerAchievement $playerAchievement): JsonResponse
+    {
+        $amount = $request->input('amount');
+        $playerAchievement->incrementProgress($amount);
+        $playerAchievement->save();
+        return response()->json(null, 204);
+    }
+
+    public function complete(Request $request, PlayerAchievement $playerAchievement): JsonResponse
+    {
+        $playerAchievement->complete();
+        $playerAchievement->save();
         return response()->json(null, 204);
     }
 }

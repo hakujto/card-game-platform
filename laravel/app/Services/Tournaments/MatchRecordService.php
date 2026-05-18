@@ -31,6 +31,13 @@ class MatchRecordService
         return $result;
     }
 
+    public function concede(int $id, $player_id): void
+    {
+        $matchRecord = MatchRecord::findOrFail($id);
+        $matchRecord->concede($player_id);
+        $matchRecord->save();
+    }
+
     public function draw(int $id): void
     {
         $matchRecord = MatchRecord::findOrFail($id);

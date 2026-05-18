@@ -36,6 +36,32 @@ class TournamentRegistration extends Model
         return $this->belongsTo(Deck::class, 'deck_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->points_earned === null || $this->points_earned >= 0))) {
+            $errors['points_earned_not_negative'] = 'Points earned must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->final_standing !== null && !(($this->final_standing === null || $this->final_standing > 0))) {
+            throw new \RuntimeException('Final standing must be greater than zero');
+        }
+        if ($this->seed !== null && !(($this->seed === null || $this->seed > 0))) {
+            throw new \RuntimeException('Seed must be greater than zero');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function withdraw(): void

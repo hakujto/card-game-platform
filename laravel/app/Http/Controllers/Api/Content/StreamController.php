@@ -32,6 +32,7 @@ class StreamController extends Controller
             'streamer_id' => 'required|exists:players,id',
         ]);
         $item = Stream::create($validated);
+        $item->validateRules();
         try {
             $item->validateImplies();
         } catch (\RuntimeException $e) {
@@ -62,6 +63,7 @@ class StreamController extends Controller
             'streamer_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $stream->update($validated);
+        $stream->validateRules();
         try {
             $stream->validateImplies();
         } catch (\RuntimeException $e) {
@@ -96,5 +98,12 @@ class StreamController extends Controller
         $stream->updateViewerPeak($count);
         $stream->save();
         return response()->json(null, 204);
+    }
+
+    public function durationMinutes(Request $request, Stream $stream): JsonResponse
+    {
+        $result = $stream->durationMinutes();
+        $stream->save();
+        return response()->json(['result' => $result]);
     }
 }

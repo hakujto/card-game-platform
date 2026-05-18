@@ -22,7 +22,7 @@ class TradeBid extends Model
 
     public function listing(): BelongsTo
     {
-        return $this->belongsTo(Tradelisting::class, 'listing_id');
+        return $this->belongsTo(TradeListing::class, 'listing_id');
     }
 
     public function bidder(): BelongsTo
@@ -50,6 +50,11 @@ class TradeBid extends Model
     public function outbidBy($new_amount): bool
     {
         throw new \RuntimeException('outbid_by not implemented');
+    }
+
+    public function retract(): void
+    {
+        throw new \RuntimeException('retract not implemented');
     }
 
 }

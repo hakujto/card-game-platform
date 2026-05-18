@@ -30,9 +30,10 @@ class DeckApiTest extends TestCase
             'name' => 'test',
             'format' => 'Standard',
             'is_public' => true,
-            'is_tournament_legal' => true,
+            'is_tournament_legal' => false,
             'wins' => 1,
             'losses' => 1,
+            'draws' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'player_id' => $this->depPlayer->id,
@@ -52,9 +53,10 @@ class DeckApiTest extends TestCase
             'name' => 'test',
             'format' => 'Standard',
             'is_public' => true,
-            'is_tournament_legal' => true,
+            'is_tournament_legal' => false,
             'wins' => 1,
             'losses' => 1,
+            'draws' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'player_id' => $this->depPlayer->id,
@@ -82,4 +84,31 @@ class DeckApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_wins_not_negative_violated(): void
+    {
+        // Deck wins count must not be negative
+        $response = $this->postJson('/api/decks', ['name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'is_tournament_legal' => true, 'is_public' => true, 'wins' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_losses_not_negative_violated(): void
+    {
+        // Deck losses count must not be negative
+        $response = $this->postJson('/api/decks', ['name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'is_tournament_legal' => true, 'is_public' => true, 'losses' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_draws_not_negative_violated(): void
+    {
+        // Deck draws count must not be negative
+        $response = $this->postJson('/api/decks', ['name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'is_tournament_legal' => true, 'is_public' => true, 'draws' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_tournament_legal_deck_must_be_validated_violated(): void
+    {
+        // Tournament-legal deck must be made public
+        $response = $this->postJson('/api/decks', ['name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'is_tournament_legal' => true, 'is_public' => false]);
+        $response->assertStatus(422);
+    }
 }

@@ -26,6 +26,7 @@ class CardPriceHistoryApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->depCard = Card::create([
             'name' => 'test',
@@ -92,4 +93,17 @@ class CardPriceHistoryApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_volume_not_negative_violated(): void
+    {
+        // Price history volume must not be negative
+        $response = $this->postJson('/api/card_price_histories', ['price_date' => '2024-01-01', 'avg_price' => '0.00', 'min_price' => '0.00', 'max_price' => '0.00', 'card_id' => 1, 'volume' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_prices_not_negative_violated(): void
+    {
+        // Prices must not be negative
+        $response = $this->postJson('/api/card_price_histories', ['price_date' => '2024-01-01', 'avg_price' => '0.00', 'max_price' => '0.00', 'volume' => 1, 'card_id' => 1, 'min_price' => -1]);
+        $response->assertStatus(422);
+    }
 }

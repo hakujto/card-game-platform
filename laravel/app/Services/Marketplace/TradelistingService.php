@@ -2,48 +2,63 @@
 
 namespace App\Services\Marketplace;
 
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 
-class TradelistingService
+class TradeListingService
 {
-    public function create(array $data): Tradelisting
+    public function create(array $data): TradeListing
     {
         throw new \LogicException('Not implemented');
     }
 
-    public function update(Tradelisting $tradelisting, array $data): Tradelisting
+    public function update(TradeListing $tradeListing, array $data): TradeListing
     {
         throw new \LogicException('Not implemented');
     }
     public function close(int $id): void
     {
-        $tradelisting = Tradelisting::findOrFail($id);
-        $tradelisting->close();
-        $tradelisting->save();
+        $tradeListing = TradeListing::findOrFail($id);
+        $tradeListing->close();
+        $tradeListing->save();
     }
 
     public function extend(int $id, $days): void
     {
-        $tradelisting = Tradelisting::findOrFail($id);
-        $tradelisting->extend($days);
-        $tradelisting->save();
+        $tradeListing = TradeListing::findOrFail($id);
+        $tradeListing->extend($days);
+        $tradeListing->save();
     }
 
     public function cancel(int $id): void
     {
-        $tradelisting = Tradelisting::findOrFail($id);
-        $tradelisting->cancel();
-        $tradelisting->save();
+        $tradeListing = TradeListing::findOrFail($id);
+        $tradeListing->cancel();
+        $tradeListing->save();
+    }
+
+    public function isExpired(int $id): bool
+    {
+        $tradeListing = TradeListing::findOrFail($id);
+        $result = $tradeListing->isExpired();
+        $tradeListing->save();
+        return $result;
+    }
+
+    public function finalizeAuction(int $id): void
+    {
+        $tradeListing = TradeListing::findOrFail($id);
+        $tradeListing->finalizeAuction();
+        $tradeListing->save();
     }
 
     // triggered by @on(status = Sold)
     public function setStatus(int $id, string $value): void
     {
-        $tradelisting = Tradelisting::findOrFail($id);
-        $tradelisting->status = $value;
+        $tradeListing = TradeListing::findOrFail($id);
+        $tradeListing->status = $value;
         if ($value === 'Sold') {
-            $tradelisting->finalizeAuction();
+            $tradeListing->finalizeAuction();
         }
-        $tradelisting->save();
+        $tradeListing->save();
     }
 }

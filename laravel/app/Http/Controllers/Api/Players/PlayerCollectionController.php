@@ -28,6 +28,8 @@ class PlayerCollectionController extends Controller
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = PlayerCollection::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -48,6 +50,8 @@ class PlayerCollectionController extends Controller
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $playerCollection->update($validated);
+        $playerCollection->validateRules();
+
         return response()->json($playerCollection);
     }
 
@@ -56,6 +60,22 @@ class PlayerCollectionController extends Controller
         $playerCollection->delete();
         return response()->json(null, 204);
     }
+    public function add(Request $request, PlayerCollection $playerCollection): JsonResponse
+    {
+        $quantity = $request->input('quantity');
+        $playerCollection->add($quantity);
+        $playerCollection->save();
+        return response()->json(null, 204);
+    }
+
+    public function remove(Request $request, PlayerCollection $playerCollection): JsonResponse
+    {
+        $quantity = $request->input('quantity');
+        $playerCollection->remove($quantity);
+        $playerCollection->save();
+        return response()->json(null, 204);
+    }
+
     public function estimatedValue(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
         $result = $playerCollection->estimatedValue();

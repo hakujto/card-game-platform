@@ -5,7 +5,7 @@ namespace App\Http\Resources\Marketplace;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TradelistingResource extends JsonResource
+class TradeListingResource extends JsonResource
 {
     public function toArray(Request $request): array
     {

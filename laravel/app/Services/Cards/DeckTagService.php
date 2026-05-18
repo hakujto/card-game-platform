@@ -15,6 +15,13 @@ class DeckTagService
     {
         throw new \LogicException('Not implemented');
     }
+    public function rename(int $id, $new_name): void
+    {
+        $deckTag = DeckTag::findOrFail($id);
+        $deckTag->rename($new_name);
+        $deckTag->save();
+    }
+
     public function mergeInto(int $id, $target_tag_id): void
     {
         $deckTag = DeckTag::findOrFail($id);

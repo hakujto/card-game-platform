@@ -63,4 +63,10 @@ class AchievementApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_points_positive_violated(): void
+    {
+        // Achievement must award at least one point
+        $response = $this->postJson('/api/achievements', ['name' => 'test', 'description' => 'test', 'points' => 0]);
+        $response->assertStatus(422);
+    }
 }

@@ -30,6 +30,13 @@ class TournamentRegistrationController extends Controller
             'deck_id' => 'required|exists:decks,id',
         ]);
         $item = TournamentRegistration::create($validated);
+        $item->validateRules();
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -51,6 +58,13 @@ class TournamentRegistrationController extends Controller
             'deck_id' => 'sometimes|nullable|exists:decks,id',
         ]);
         $tournamentRegistration->update($validated);
+        $tournamentRegistration->validateRules();
+        try {
+            $tournamentRegistration->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($tournamentRegistration);
     }
 

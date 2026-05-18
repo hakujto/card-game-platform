@@ -176,11 +176,11 @@ API: http://localhost:8000/api/
 - `GET` `/api/coupons/{id}` — show
 - `PUT/PATCH` `/api/coupons/{id}` — update
 - `DELETE` `/api/coupons/{id}` — delete
-- `GET` `/api/tradelistings` — list
-- `POST` `/api/tradelistings` — create
-- `GET` `/api/tradelistings/{id}` — show
-- `PUT/PATCH` `/api/tradelistings/{id}` — update
-- `DELETE` `/api/tradelistings/{id}` — delete
+- `GET` `/api/trade_listings` — list
+- `POST` `/api/trade_listings` — create
+- `GET` `/api/trade_listings/{id}` — show
+- `PUT/PATCH` `/api/trade_listings/{id}` — update
+- `DELETE` `/api/trade_listings/{id}` — delete
 - `GET` `/api/trade_bids` — list
 - `POST` `/api/trade_bids` — create
 - `GET` `/api/trade_bids/{id}` — show

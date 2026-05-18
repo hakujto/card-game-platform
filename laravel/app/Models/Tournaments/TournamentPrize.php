@@ -52,4 +52,9 @@ class TournamentPrize extends Model
         throw new \RuntimeException('applies_to_placement not implemented');
     }
 
+    public function awardToPlayer($player_id): void
+    {
+        throw new \RuntimeException('award_to_player not implemented');
+    }
+
 }

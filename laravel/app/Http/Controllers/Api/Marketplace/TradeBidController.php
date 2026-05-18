@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Marketplace\TradeBid;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 use App\Models\Players\Player;
 
 class TradeBidController extends Controller
@@ -22,7 +22,7 @@ class TradeBidController extends Controller
             'amount' => 'required',
             'placed_at' => 'required|date',
             'is_winning' => 'required|boolean',
-            'listing_id' => 'required|exists:tradelistings,id',
+            'listing_id' => 'required|exists:trade_listings,id',
             'bidder_id' => 'required|exists:players,id',
         ]);
         $item = TradeBid::create($validated);
@@ -42,7 +42,7 @@ class TradeBidController extends Controller
             'amount' => 'sometimes|nullable',
             'placed_at' => 'sometimes|nullable|date',
             'is_winning' => 'sometimes|nullable|boolean',
-            'listing_id' => 'sometimes|nullable|exists:tradelistings,id',
+            'listing_id' => 'sometimes|nullable|exists:trade_listings,id',
             'bidder_id' => 'sometimes|nullable|exists:players,id',
         ]);
         $tradeBid->update($validated);
@@ -54,6 +54,19 @@ class TradeBidController extends Controller
     public function destroy(TradeBid $tradeBid): JsonResponse
     {
         $tradeBid->delete();
+        return response()->json(null, 204);
+    }
+    public function outbidBy(Request $request, TradeBid $tradeBid): JsonResponse
+    {
+        $result = $tradeBid->outbidBy();
+        $tradeBid->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function retract(Request $request, TradeBid $tradeBid): JsonResponse
+    {
+        $tradeBid->retract();
+        $tradeBid->save();
         return response()->json(null, 204);
     }
 }

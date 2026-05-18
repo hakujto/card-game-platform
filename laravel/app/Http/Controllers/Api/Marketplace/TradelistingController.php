@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Api\Marketplace;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 use App\Models\Players\Player;
 use App\Models\Cards\Card;
 
-class TradelistingController extends Controller
+class TradeListingController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(Tradelisting::all());
+        return response()->json(TradeListing::all());
     }
 
     public function store(Request $request): JsonResponse
@@ -34,7 +34,7 @@ class TradelistingController extends Controller
             'seller_id' => 'required|exists:players,id',
             'card_id' => 'required|exists:cards,id',
         ]);
-        $item = Tradelisting::create($validated);
+        $item = TradeListing::create($validated);
         $item->validateRules();
         try {
             $item->validateImplies();
@@ -45,12 +45,12 @@ class TradelistingController extends Controller
         return response()->json($item, 201);
     }
 
-    public function show(Tradelisting $tradelisting): JsonResponse
+    public function show(TradeListing $tradeListing): JsonResponse
     {
-        return response()->json($tradelisting);
+        return response()->json($tradeListing);
     }
 
-    public function update(Request $request, Tradelisting $tradelisting): JsonResponse
+    public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $validated = $request->validate([
             'listing_type' => 'sometimes|nullable|string|max:20',
@@ -68,41 +68,55 @@ class TradelistingController extends Controller
             'seller_id' => 'sometimes|nullable|exists:players,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
-        $tradelisting->update($validated);
-        $tradelisting->validateRules();
+        $tradeListing->update($validated);
+        $tradeListing->validateRules();
         try {
-            $tradelisting->validateImplies();
+            $tradeListing->validateImplies();
         } catch (\RuntimeException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
 
-        return response()->json($tradelisting);
+        return response()->json($tradeListing);
     }
 
-    public function destroy(Tradelisting $tradelisting): JsonResponse
+    public function destroy(TradeListing $tradeListing): JsonResponse
     {
-        $tradelisting->delete();
+        $tradeListing->delete();
         return response()->json(null, 204);
     }
-    public function close(Request $request, Tradelisting $tradelisting): JsonResponse
+    public function close(Request $request, TradeListing $tradeListing): JsonResponse
     {
-        $tradelisting->close();
-        $tradelisting->save();
+        $tradeListing->close();
+        $tradeListing->save();
         return response()->json(null, 204);
     }
 
-    public function extend(Request $request, Tradelisting $tradelisting): JsonResponse
+    public function extend(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $days = $request->input('days');
-        $tradelisting->extend($days);
-        $tradelisting->save();
+        $tradeListing->extend($days);
+        $tradeListing->save();
         return response()->json(null, 204);
     }
 
-    public function cancel(Request $request, Tradelisting $tradelisting): JsonResponse
+    public function cancel(Request $request, TradeListing $tradeListing): JsonResponse
     {
-        $tradelisting->cancel();
-        $tradelisting->save();
+        $tradeListing->cancel();
+        $tradeListing->save();
+        return response()->json(null, 204);
+    }
+
+    public function isExpired(Request $request, TradeListing $tradeListing): JsonResponse
+    {
+        $result = $tradeListing->isExpired();
+        $tradeListing->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function finalizeAuction(Request $request, TradeListing $tradeListing): JsonResponse
+    {
+        $tradeListing->finalizeAuction();
+        $tradeListing->save();
         return response()->json(null, 204);
     }
 }

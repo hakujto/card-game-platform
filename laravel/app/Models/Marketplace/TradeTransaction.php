@@ -24,7 +24,7 @@ class TradeTransaction extends Model
 
     public function listing(): BelongsTo
     {
-        return $this->belongsTo(Tradelisting::class, 'listing_id');
+        return $this->belongsTo(TradeListing::class, 'listing_id');
     }
 
     public function buyer(): BelongsTo
@@ -46,6 +46,9 @@ class TradeTransaction extends Model
         }
         if (!(($this->platform_fee === null || (float)$this->platform_fee >= (float)0))) {
             $errors['fee_not_negative'] = 'Platform fee must not be negative';
+        }
+        if (!(($this->final_price === null || (float)$this->final_price > (float)0))) {
+            $errors['final_price_positive'] = 'Transaction final price must be greater than zero';
         }
         if (!empty($errors)) {
             throw new \Illuminate\Validation\ValidationException(

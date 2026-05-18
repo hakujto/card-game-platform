@@ -51,6 +51,12 @@ class Game extends Model
         if ($this->duration_seconds !== null && !(($this->duration_seconds === null || $this->duration_seconds > 0))) {
             throw new \RuntimeException('Game duration must be greater than zero');
         }
+        if ($this->winner_side === 'Draw' && $this->winner !== null) {
+            throw new \RuntimeException('A draw cannot have a winner');
+        }
+        if (($this->winner_side !== null && $this->winner_side !== 'Draw') && $this->winner === null) {
+            throw new \RuntimeException('A decisive game must have a winner player set');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────

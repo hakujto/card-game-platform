@@ -15,4 +15,19 @@ class CardRulingService
     {
         throw new \LogicException('Not implemented');
     }
+    public function isCurrent(int $id): bool
+    {
+        $cardRuling = CardRuling::findOrFail($id);
+        $result = $cardRuling->isCurrent();
+        $cardRuling->save();
+        return $result;
+    }
+
+    public function supersedesPrevious(int $id): bool
+    {
+        $cardRuling = CardRuling::findOrFail($id);
+        $result = $cardRuling->supersedesPrevious();
+        $cardRuling->save();
+        return $result;
+    }
 }

@@ -60,6 +60,12 @@ class MatchRecord extends Model
         if ($this->status === 'BYE' && $this->player2 !== null) {
             throw new \RuntimeException('BYE match must not have a second player');
         }
+        if ($this->ended_at !== null && !(($this->ended_at === null || ($this->started_at !== null && $this->ended_at > $this->started_at)))) {
+            throw new \RuntimeException('Match end time must be after start time');
+        }
+        if ($this->status === 'Completed' && $this->started_at === null) {
+            throw new \RuntimeException('Completed match must have a start time');
+        }
     }
 
     // ── Business operations ──────────────────────────────────────────
@@ -72,6 +78,11 @@ class MatchRecord extends Model
     public function determineWinner(): bool
     {
         throw new \RuntimeException('determine_winner not implemented');
+    }
+
+    public function concede($player_id): void
+    {
+        throw new \RuntimeException('concede not implemented');
     }
 
     public function draw(): void

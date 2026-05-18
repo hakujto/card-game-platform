@@ -123,4 +123,19 @@ class CardController extends Controller
         $card->save();
         return response()->json(['result' => $result]);
     }
+
+    public function applyRarityBonus(Request $request, Card $card): JsonResponse
+    {
+        $multiplier = $request->input('multiplier');
+        $result = $card->applyRarityBonus($multiplier);
+        $card->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function isLegalInFormat(Request $request, Card $card): JsonResponse
+    {
+        $result = $card->isLegalInFormat();
+        $card->save();
+        return response()->json(['result' => $result]);
+    }
 }

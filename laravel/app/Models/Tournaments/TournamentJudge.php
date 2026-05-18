@@ -26,4 +26,16 @@ class TournamentJudge extends Model
         return $this->belongsTo(Player::class, 'player_id');
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function promoteToHead(): void
+    {
+        throw new \RuntimeException('promote_to_head not implemented');
+    }
+
+    public function remove(): void
+    {
+        throw new \RuntimeException('remove not implemented');
+    }
+
 }

@@ -19,6 +19,7 @@ class DeckResource extends JsonResource
             'archetype' => $this->archetype,
             'wins' => $this->wins,
             'losses' => $this->losses,
+            'draws' => $this->draws,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'player_id' => $this->player_id,

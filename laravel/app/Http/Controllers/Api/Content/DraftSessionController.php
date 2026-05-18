@@ -26,6 +26,13 @@ class DraftSessionController extends Controller
             'card_set_id' => 'required|exists:card_sets,id',
         ]);
         $item = DraftSession::create($validated);
+        $item->validateRules();
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($item, 201);
     }
 
@@ -45,6 +52,13 @@ class DraftSessionController extends Controller
             'card_set_id' => 'sometimes|nullable|exists:card_sets,id',
         ]);
         $draftSession->update($validated);
+        $draftSession->validateRules();
+        try {
+            $draftSession->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
         return response()->json($draftSession);
     }
 
@@ -72,5 +86,12 @@ class DraftSessionController extends Controller
         $draftSession->complete();
         $draftSession->save();
         return response()->json(null, 204);
+    }
+
+    public function isFull(Request $request, DraftSession $draftSession): JsonResponse
+    {
+        $result = $draftSession->isFull();
+        $draftSession->save();
+        return response()->json(['result' => $result]);
     }
 }

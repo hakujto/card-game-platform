@@ -70,4 +70,10 @@ class DraftParticipantApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_seat_number_positive_violated(): void
+    {
+        // Seat number must be greater than zero
+        $response = $this->postJson('/api/draft_participants', ['joined_at' => '2024-01-01 00:00:00', 'session_id' => 1, 'player_id' => 1, 'seat_number' => 0]);
+        $response->assertStatus(422);
+    }
 }

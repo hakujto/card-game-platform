@@ -54,6 +54,7 @@ class TournamentRoundApiTest extends TestCase
         $entity = TournamentRound::create([
             'round_number' => 1,
             'status' => 'Pending',
+            'started_at' => '2024-01-01 00:00:00',
             'ended_at' => null,
             'time_limit_minutes' => 1,
             'tournament_id' => $this->depTournament->id,
@@ -72,6 +73,7 @@ class TournamentRoundApiTest extends TestCase
         $response = $this->postJson('/api/tournament_rounds', [
             'round_number' => 1,
             'status' => 'Pending',
+            'started_at' => '2024-01-01 00:00:00',
             'ended_at' => null,
             'time_limit_minutes' => 1,
             'tournament_id' => $this->depTournament->id,
@@ -103,6 +105,27 @@ class TournamentRoundApiTest extends TestCase
     {
         // Round end time must be after start time
         $response = $this->postJson('/api/tournament_rounds', ['round_number' => 1, 'tournament_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'ended_at' => '2024-01-01 00:00:00']);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_completed_requires_started_at_violated(): void
+    {
+        // Completed round must have a start time
+        $response = $this->postJson('/api/tournament_rounds', ['round_number' => 1, 'tournament_id' => 1, 'status' => 'Completed', 'started_at' => null]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_round_number_positive_violated(): void
+    {
+        // Round number must be greater than zero
+        $response = $this->postJson('/api/tournament_rounds', ['tournament_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'started_at' => '2024-01-01 00:00:00', 'round_number' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_time_limit_positive_violated(): void
+    {
+        // Round time limit must be greater than zero
+        $response = $this->postJson('/api/tournament_rounds', ['round_number' => 1, 'tournament_id' => 1, 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'started_at' => '2024-01-01 00:00:00', 'time_limit_minutes' => 0]);
         $response->assertStatus(422);
     }
 }

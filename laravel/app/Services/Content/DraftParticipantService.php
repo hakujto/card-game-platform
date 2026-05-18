@@ -21,4 +21,12 @@ class DraftParticipantService
         $draftParticipant->pickCard($card_id, $pack_number);
         $draftParticipant->save();
     }
+
+    public function draftedCardCount(int $id): int
+    {
+        $draftParticipant = DraftParticipant::findOrFail($id);
+        $result = $draftParticipant->draftedCardCount();
+        $draftParticipant->save();
+        return $result;
+    }
 }

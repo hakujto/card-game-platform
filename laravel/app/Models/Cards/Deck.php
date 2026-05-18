@@ -12,7 +12,7 @@ class Deck extends Model
 {
     protected $table = 'decks';
 
-    protected $fillable = ['name', 'description', 'format', 'is_public', 'is_tournament_legal', 'archetype', 'wins', 'losses', 'player_id'];
+    protected $fillable = ['name', 'description', 'format', 'is_public', 'is_tournament_legal', 'archetype', 'wins', 'losses', 'draws', 'player_id'];
 
     protected $casts = [
         'is_public' => 'boolean',
@@ -42,11 +42,55 @@ class Deck extends Model
         return $this->belongsToMany(DeckTag::class, 'deck_tags_pivot', 'deck_id', 'deck_tag_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->wins === null || $this->wins >= 0))) {
+            $errors['wins_not_negative'] = 'Deck wins count must not be negative';
+        }
+        if (!(($this->losses === null || $this->losses >= 0))) {
+            $errors['losses_not_negative'] = 'Deck losses count must not be negative';
+        }
+        if (!(($this->draws === null || $this->draws >= 0))) {
+            $errors['draws_not_negative'] = 'Deck draws count must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->is_tournament_legal === true && !($this->is_public === true)) {
+            throw new \RuntimeException('Tournament-legal deck must be made public');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function validateSize(): bool
     {
         throw new \RuntimeException('validate_size not implemented');
+    }
+
+    public function addCard($card_id, $quantity): void
+    {
+        throw new \RuntimeException('add_card not implemented');
+    }
+
+    public function removeCard($card_id): void
+    {
+        throw new \RuntimeException('remove_card not implemented');
+    }
+
+    public function winRate(): string
+    {
+        throw new \RuntimeException('win_rate not implemented');
     }
 
     public function clone(): mixed

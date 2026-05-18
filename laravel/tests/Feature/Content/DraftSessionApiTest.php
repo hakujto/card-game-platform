@@ -24,12 +24,14 @@ class DraftSessionApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $entity = DraftSession::create([
-            'status' => 'WaitingForPlayers',
+            'status' => 'Completed',
             'draft_type' => 'Booster',
-            'seats' => 1,
+            'seats' => 2,
             'created_at' => '2024-01-01 00:00:00',
+            'completed_at' => null,
             'card_set_id' => $this->depCardSet->id,
         ]);
         $this->entityId = $entity->id;
@@ -44,10 +46,11 @@ class DraftSessionApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/draft_sessions', [
-            'status' => 'WaitingForPlayers',
+            'status' => 'Completed',
             'draft_type' => 'Booster',
-            'seats' => 1,
+            'seats' => 2,
             'created_at' => '2024-01-01 00:00:00',
+            'completed_at' => null,
             'card_set_id' => $this->depCardSet->id,
         ]);
         $response->assertStatus(201);
@@ -62,7 +65,7 @@ class DraftSessionApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/draft_sessions/{$this->entityId}", [
-            'seats' => 1,
+            'seats' => 2,
         ]);
         $response->assertStatus(200);
     }
@@ -73,4 +76,17 @@ class DraftSessionApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_seats_range_violated(): void
+    {
+        // Draft session must have between 2 and 16 seats
+        $response = $this->postJson('/api/draft_sessions', ['created_at' => '2024-01-01 00:00:00', 'card_set_id' => 1, 'completed_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'seats' => 17]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_completed_at_requires_completed_status_violated(): void
+    {
+        // completed_at can only be set when draft status is Completed
+        $response = $this->postJson('/api/draft_sessions', ['created_at' => '2024-01-01 00:00:00', 'card_set_id' => 1, 'completed_at' => '2024-01-01 00:00:00', 'status' => 'WaitingForPlayers']);
+        $response->assertStatus(422);
+    }
 }

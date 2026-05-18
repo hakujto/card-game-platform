@@ -14,7 +14,7 @@ return new class extends Migration
             $table->dateTime('placed_at');
             $table->boolean('is_winning')->default(false);
             $table->unsignedBigInteger('listing_id');
-            $table->foreign('listing_id')->references('id')->on('tradelistings')->cascadeOnDelete();
+            $table->foreign('listing_id')->references('id')->on('trade_listings')->cascadeOnDelete();
             $table->unsignedBigInteger('bidder_id');
             $table->foreign('bidder_id')->references('id')->on('players')->cascadeOnDelete();
             $table->timestamps();

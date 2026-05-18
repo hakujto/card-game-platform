@@ -24,6 +24,8 @@ class DeckSideboardCardController extends Controller
             'card_id' => 'required|exists:cards,id',
         ]);
         $item = DeckSideboardCard::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -40,12 +42,29 @@ class DeckSideboardCardController extends Controller
             'card_id' => 'sometimes|nullable|exists:cards,id',
         ]);
         $deckSideboardCard->update($validated);
+        $deckSideboardCard->validateRules();
+
         return response()->json($deckSideboardCard);
     }
 
     public function destroy(DeckSideboardCard $deckSideboardCard): JsonResponse
     {
         $deckSideboardCard->delete();
+        return response()->json(null, 204);
+    }
+    public function incrementAction(Request $request, DeckSideboardCard $deckSideboardCard): JsonResponse
+    {
+        $amount = $request->input('amount');
+        $deckSideboardCard->incrementAction($amount);
+        $deckSideboardCard->save();
+        return response()->json(null, 204);
+    }
+
+    public function decrementAction(Request $request, DeckSideboardCard $deckSideboardCard): JsonResponse
+    {
+        $amount = $request->input('amount');
+        $deckSideboardCard->decrementAction($amount);
+        $deckSideboardCard->save();
         return response()->json(null, 204);
     }
 }

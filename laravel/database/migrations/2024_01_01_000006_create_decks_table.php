@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('archetype', 20)->nullable();
             $table->integer('wins')->default(0);
             $table->integer('losses')->default(0);
+            $table->integer('draws')->default(0);
             $table->unsignedBigInteger('player_id');
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->timestamps();

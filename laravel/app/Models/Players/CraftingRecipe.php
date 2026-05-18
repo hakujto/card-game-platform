@@ -45,6 +45,16 @@ class CraftingRecipe extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
+    public function canCraft($player_id): bool
+    {
+        throw new \RuntimeException('can_craft not implemented');
+    }
+
+    public function executeCraft($player_id): void
+    {
+        throw new \RuntimeException('execute_craft not implemented');
+    }
+
     public function disable(): void
     {
         throw new \RuntimeException('disable not implemented');

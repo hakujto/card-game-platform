@@ -15,4 +15,17 @@ class DeckSideboardCardService
     {
         throw new \LogicException('Not implemented');
     }
+    public function incrementAction(int $id, $amount): void
+    {
+        $deckSideboardCard = DeckSideboardCard::findOrFail($id);
+        $deckSideboardCard->incrementAction($amount);
+        $deckSideboardCard->save();
+    }
+
+    public function decrementAction(int $id, $amount): void
+    {
+        $deckSideboardCard = DeckSideboardCard::findOrFail($id);
+        $deckSideboardCard->decrementAction($amount);
+        $deckSideboardCard->save();
+    }
 }

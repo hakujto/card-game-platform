@@ -50,4 +50,20 @@ class CardService
         $card->save();
         return $result;
     }
+
+    public function applyRarityBonus(int $id, $multiplier): string
+    {
+        $card = Card::findOrFail($id);
+        $result = $card->applyRarityBonus($multiplier);
+        $card->save();
+        return $result;
+    }
+
+    public function isLegalInFormat(int $id): bool
+    {
+        $card = Card::findOrFail($id);
+        $result = $card->isLegalInFormat($format);
+        $card->save();
+        return $result;
+    }
 }

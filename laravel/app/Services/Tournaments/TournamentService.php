@@ -50,4 +50,19 @@ class TournamentService
         $tournament->save();
         return $result;
     }
+
+    public function registerPlayer(int $id, $player_id, $deck_id): void
+    {
+        $tournament = Tournament::findOrFail($id);
+        $tournament->registerPlayer($player_id, $deck_id);
+        $tournament->save();
+    }
+
+    public function isFull(int $id): bool
+    {
+        $tournament = Tournament::findOrFail($id);
+        $result = $tournament->isFull();
+        $tournament->save();
+        return $result;
+    }
 }

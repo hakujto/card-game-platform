@@ -68,4 +68,10 @@ class AwardedPrizeController extends Controller
         $awardedPrize->delete();
         return response()->json(null, 204);
     }
+    public function claim(Request $request, AwardedPrize $awardedPrize): JsonResponse
+    {
+        $awardedPrize->claim();
+        $awardedPrize->save();
+        return response()->json(null, 204);
+    }
 }

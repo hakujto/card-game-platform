@@ -37,6 +37,21 @@ class Article extends Model
         return $this->belongsToMany(ArticleTag::class, 'article_tags_pivot', 'article_id', 'article_tag_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->view_count === null || $this->view_count >= 0))) {
+            $errors['view_count_not_negative'] = 'Article view count must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {

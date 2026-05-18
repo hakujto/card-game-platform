@@ -35,4 +35,12 @@ class ArticleService
         $article->incrementView();
         $article->save();
     }
+
+    public function readingTimeMinutes(int $id): int
+    {
+        $article = Article::findOrFail($id);
+        $result = $article->readingTimeMinutes();
+        $article->save();
+        return $result;
+    }
 }

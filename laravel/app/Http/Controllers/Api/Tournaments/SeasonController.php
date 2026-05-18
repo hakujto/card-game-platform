@@ -76,4 +76,11 @@ class SeasonController extends Controller
         $season->save();
         return response()->json(null, 204);
     }
+
+    public function isOngoing(Request $request, Season $season): JsonResponse
+    {
+        $result = $season->isOngoing();
+        $season->save();
+        return response()->json(['result' => $result]);
+    }
 }

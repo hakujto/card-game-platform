@@ -29,6 +29,8 @@ class PlayerSeasonStatsController extends Controller
             'season_id' => 'required|exists:seasons,id',
         ]);
         $item = PlayerSeasonStats::create($validated);
+        $item->validateRules();
+
         return response()->json($item, 201);
     }
 
@@ -50,12 +52,35 @@ class PlayerSeasonStatsController extends Controller
             'season_id' => 'sometimes|nullable|exists:seasons,id',
         ]);
         $playerSeasonStats->update($validated);
+        $playerSeasonStats->validateRules();
+
         return response()->json($playerSeasonStats);
     }
 
     public function destroy(PlayerSeasonStats $playerSeasonStats): JsonResponse
     {
         $playerSeasonStats->delete();
+        return response()->json(null, 204);
+    }
+    public function winRate(Request $request, PlayerSeasonStats $playerSeasonStats): JsonResponse
+    {
+        $result = $playerSeasonStats->winRate();
+        $playerSeasonStats->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function addPoints(Request $request, PlayerSeasonStats $playerSeasonStats): JsonResponse
+    {
+        $points = $request->input('points');
+        $playerSeasonStats->addPoints($points);
+        $playerSeasonStats->save();
+        return response()->json(null, 204);
+    }
+
+    public function recordTournamentWin(Request $request, PlayerSeasonStats $playerSeasonStats): JsonResponse
+    {
+        $playerSeasonStats->recordTournamentWin();
+        $playerSeasonStats->save();
         return response()->json(null, 204);
     }
 }

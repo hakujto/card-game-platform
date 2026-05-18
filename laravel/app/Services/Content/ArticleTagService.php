@@ -15,4 +15,18 @@ class ArticleTagService
     {
         throw new \LogicException('Not implemented');
     }
+    public function rename(int $id, $new_name): void
+    {
+        $articleTag = ArticleTag::findOrFail($id);
+        $articleTag->rename($new_name);
+        $articleTag->save();
+    }
+
+    public function articleCount(int $id): int
+    {
+        $articleTag = ArticleTag::findOrFail($id);
+        $result = $articleTag->articleCount();
+        $articleTag->save();
+        return $result;
+    }
 }

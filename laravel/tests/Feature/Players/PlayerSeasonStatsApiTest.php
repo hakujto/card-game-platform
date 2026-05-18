@@ -75,4 +75,31 @@ class PlayerSeasonStatsApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_wins_not_negative_violated(): void
+    {
+        // Season wins must not be negative
+        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'wins' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_losses_not_negative_violated(): void
+    {
+        // Season losses must not be negative
+        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'losses' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_tournament_wins_not_negative_violated(): void
+    {
+        // Season tournament wins must not be negative
+        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'tournament_wins' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_season_points_not_negative_violated(): void
+    {
+        // Season points must not be negative
+        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'season_points' => -1]);
+        $response->assertStatus(422);
+    }
 }

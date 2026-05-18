@@ -32,6 +32,21 @@ class PlayerCollection extends Model
         return $this->belongsTo(Card::class, 'card_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->quantity === null || $this->quantity > 0))) {
+            $errors['quantity_positive'] = 'Collection quantity must be greater than zero';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function add($quantity): void

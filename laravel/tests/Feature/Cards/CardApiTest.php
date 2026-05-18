@@ -24,6 +24,7 @@ class CardApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $entity = Card::create([
             'name' => 'test',
@@ -33,7 +34,7 @@ class CardApiTest extends TestCase
             'mana_colors' => 'White',
             'attack' => 1,
             'defense' => 1,
-            'loyalty' => 1,
+            'loyalty' => null,
             'description' => 'test',
             'legal_formats' => 'Standard',
             'is_banned' => false,
@@ -60,7 +61,7 @@ class CardApiTest extends TestCase
             'mana_colors' => 'White',
             'attack' => 1,
             'defense' => 1,
-            'loyalty' => 1,
+            'loyalty' => null,
             'description' => 'test',
             'legal_formats' => 'Standard',
             'is_banned' => false,
@@ -105,24 +106,38 @@ class CardApiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_create_fails_when_spell_or_artifact_no_loyalty_violated(): void
+    {
+        // Only Planeswalker cards can have loyalty
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'loyalty' => 1]);
+        $response->assertStatus(422);
+    }
+
     public function test_create_fails_when_mana_cost_range_violated(): void
     {
         // mana_cost must be between 0 and 20
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'mana_cost' => 21]);
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'loyalty' => null, 'is_banned' => true, 'mana_cost' => 21]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_power_level_range_violated(): void
     {
         // power_level must be between 1 and 10
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'power_level' => 11]);
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'loyalty' => null, 'is_banned' => true, 'power_level' => 11]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_not_banned_and_restricted_violated(): void
     {
         // Card cannot be both banned and restricted at the same time
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'is_banned' => true, 'is_restricted' => true]);
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'loyalty' => null, 'is_banned' => true, 'is_restricted' => true]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_banned_card_not_in_legal_formats_violated(): void
+    {
+        // banned_card_not_in_legal_formats
+        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'is_banned' => true]);
         $response->assertStatus(422);
     }
 }

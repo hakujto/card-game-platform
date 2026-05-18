@@ -44,4 +44,18 @@ class ArticleTagController extends Controller
         $articleTag->delete();
         return response()->json(null, 204);
     }
+    public function rename(Request $request, ArticleTag $articleTag): JsonResponse
+    {
+        $new_name = $request->input('new_name');
+        $articleTag->rename($new_name);
+        $articleTag->save();
+        return response()->json(null, 204);
+    }
+
+    public function articleCount(Request $request, ArticleTag $articleTag): JsonResponse
+    {
+        $result = $articleTag->articleCount();
+        $articleTag->save();
+        return response()->json(['result' => $result]);
+    }
 }

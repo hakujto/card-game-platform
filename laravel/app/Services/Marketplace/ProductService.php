@@ -43,4 +43,20 @@ class ProductService
         $product->restock($quantity);
         $product->save();
     }
+
+    public function effectivePrice(int $id): string
+    {
+        $product = Product::findOrFail($id);
+        $result = $product->effectivePrice();
+        $product->save();
+        return $result;
+    }
+
+    public function isInStock(int $id): bool
+    {
+        $product = Product::findOrFail($id);
+        $result = $product->isInStock();
+        $product->save();
+        return $result;
+    }
 }

@@ -33,6 +33,27 @@ class Product extends Model
         return $this->belongsTo(CardSet::class, 'card_set_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->price === null || (float)$this->price > (float)0))) {
+            $errors['price_positive'] = 'Product price must be greater than zero';
+        }
+        if (!(($this->stock === null || $this->stock >= 0))) {
+            $errors['stock_not_negative'] = 'Product stock must not be negative';
+        }
+        if (!(($this->discount_percent === null || ($this->discount_percent >= 0 && $this->discount_percent <= 100)))) {
+            $errors['discount_percent_range'] = 'Product discount percent must be between 0 and 100';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function activate(): void

@@ -21,4 +21,12 @@ class GameService
         $game->recordWinner($winner_side);
         $game->save();
     }
+
+    public function durationMinutes(int $id): string
+    {
+        $game = Game::findOrFail($id);
+        $result = $game->durationMinutes();
+        $game->save();
+        return $result;
+    }
 }

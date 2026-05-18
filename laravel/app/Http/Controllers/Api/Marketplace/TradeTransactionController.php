@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Marketplace\TradeTransaction;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 use App\Models\Players\Player;
 
 class TradeTransactionController extends Controller
@@ -23,7 +23,7 @@ class TradeTransactionController extends Controller
             'platform_fee' => 'required',
             'status' => 'required|string|in:Pending,Completed,Disputed,Refunded|max:20',
             'completed_at' => 'nullable|date',
-            'listing_id' => 'required|exists:tradelistings,id',
+            'listing_id' => 'required|exists:trade_listings,id',
             'buyer_id' => 'required|exists:players,id',
             'seller_id' => 'required|exists:players,id',
         ]);
@@ -50,7 +50,7 @@ class TradeTransactionController extends Controller
             'platform_fee' => 'sometimes|nullable',
             'status' => 'sometimes|nullable|string|max:20',
             'completed_at' => 'sometimes|nullable|date',
-            'listing_id' => 'sometimes|nullable|exists:tradelistings,id',
+            'listing_id' => 'sometimes|nullable|exists:trade_listings,id',
             'buyer_id' => 'sometimes|nullable|exists:players,id',
             'seller_id' => 'sometimes|nullable|exists:players,id',
         ]);
@@ -90,5 +90,12 @@ class TradeTransactionController extends Controller
         $tradeTransaction->openDispute($reason);
         $tradeTransaction->save();
         return response()->json(null, 204);
+    }
+
+    public function sellerNet(Request $request, TradeTransaction $tradeTransaction): JsonResponse
+    {
+        $result = $tradeTransaction->sellerNet();
+        $tradeTransaction->save();
+        return response()->json(['result' => $result]);
     }
 }

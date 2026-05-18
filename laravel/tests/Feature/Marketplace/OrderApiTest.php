@@ -27,13 +27,14 @@ class OrderApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $entity = Order::create([
-            'status' => 'Pending',
+            'status' => 'Shipped',
             'total' => '0.00',
             'discount_applied' => '0.00',
             'currency' => 'xxx',
             'tracking_number' => 'test',
             'created_at' => '2024-01-01 00:00:00',
             'paid_at' => '2024-01-01 00:00:00',
+            'shipped_at' => null,
             'player_id' => $this->depPlayer->id,
         ]);
         $this->entityId = $entity->id;
@@ -48,13 +49,14 @@ class OrderApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/orders', [
-            'status' => 'Pending',
+            'status' => 'Shipped',
             'total' => '0.00',
             'discount_applied' => '0.00',
             'currency' => 'xxx',
             'tracking_number' => 'test',
             'created_at' => '2024-01-01 00:00:00',
             'paid_at' => '2024-01-01 00:00:00',
+            'shipped_at' => null,
             'player_id' => $this->depPlayer->id,
         ]);
         $response->assertStatus(201);
@@ -69,7 +71,7 @@ class OrderApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/orders/{$this->entityId}", [
-            'total' => '0.00',
+            'currency' => 'tes',
         ]);
         $response->assertStatus(200);
     }
@@ -94,10 +96,17 @@ class OrderApiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_create_fails_when_shipped_at_requires_shipped_status_violated(): void
+    {
+        // shipped_at_requires_shipped_status
+        $response = $this->postJson('/api/orders', ['created_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'shipped_at' => '2024-01-01 00:00:00', 'status' => 'Pending']);
+        $response->assertStatus(422);
+    }
+
     public function test_create_fails_when_total_not_negative_violated(): void
     {
         // Order total must not be negative
-        $response = $this->postJson('/api/orders', ['created_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'status' => 'Paid', 'paid_at' => '2024-01-01 00:00:00', 'status' => 'Shipped', 'tracking_number' => 'test', 'total' => -1]);
+        $response = $this->postJson('/api/orders', ['created_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'status' => 'Paid', 'paid_at' => '2024-01-01 00:00:00', 'status' => 'Shipped', 'tracking_number' => 'test', 'shipped_at' => '2024-01-01 00:00:00', 'status' => 'Shipped', 'total' => -1]);
         $response->assertStatus(422);
     }
 }

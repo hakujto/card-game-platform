@@ -35,4 +35,12 @@ class TournamentRoundService
         $tournamentRound->generatePairings();
         $tournamentRound->save();
     }
+
+    public function isTimeExpired(int $id): bool
+    {
+        $tournamentRound = TournamentRound::findOrFail($id);
+        $result = $tournamentRound->isTimeExpired();
+        $tournamentRound->save();
+        return $result;
+    }
 }

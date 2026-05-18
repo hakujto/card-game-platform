@@ -8,7 +8,7 @@ use Tests\TestCase;
 use App\Models\Players\Player;
 use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 
 class TradeTransactionApiTest extends TestCase
 {
@@ -19,7 +19,7 @@ class TradeTransactionApiTest extends TestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $depListing;
+    private TradeListing $depListing;
     private Player $depBuyer;
     private Player $depSeller;
 
@@ -40,6 +40,7 @@ class TradeTransactionApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->auxCard = Card::create([
             'name' => 'test',
@@ -54,7 +55,7 @@ class TradeTransactionApiTest extends TestCase
             'power_level' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
-        $this->depListing = Tradelisting::create([
+        $this->depListing = TradeListing::create([
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
@@ -81,8 +82,8 @@ class TradeTransactionApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $entity = TradeTransaction::create([
-            'final_price' => '0.00',
-            'platform_fee' => '0.00',
+            'final_price' => '0.01',
+            'platform_fee' => '0.01',
             'status' => 'Pending',
             'completed_at' => '2024-01-01 00:00:00',
             'listing_id' => $this->depListing->id,
@@ -100,10 +101,10 @@ class TradeTransactionApiTest extends TestCase
 
     public function test_create_returns_201(): void
     {
-        $freshListing = Tradelisting::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
+        $freshListing = TradeListing::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
         $response = $this->postJson('/api/trade_transactions', [
-            'final_price' => '0.00',
-            'platform_fee' => '0.00',
+            'final_price' => '0.01',
+            'platform_fee' => '0.01',
             'status' => 'Pending',
             'completed_at' => '2024-01-01 00:00:00',
             'listing_id' => $freshListing->id,
@@ -122,7 +123,7 @@ class TradeTransactionApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/trade_transactions/{$this->entityId}", [
-            'final_price' => '0.00',
+            'completed_at' => '2024-01-01 00:00:00',
         ]);
         $response->assertStatus(200);
     }
@@ -137,6 +138,13 @@ class TradeTransactionApiTest extends TestCase
     {
         // Platform fee must not be negative
         $response = $this->postJson('/api/trade_transactions', ['final_price' => '0.00', 'listing_id' => 1, 'buyer_id' => 1, 'seller_id' => 1, 'status' => 'Completed', 'completed_at' => '2024-01-01 00:00:00', 'platform_fee' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_final_price_positive_violated(): void
+    {
+        // Transaction final price must be greater than zero
+        $response = $this->postJson('/api/trade_transactions', ['platform_fee' => '0.00', 'listing_id' => 1, 'buyer_id' => 1, 'seller_id' => 1, 'status' => 'Completed', 'completed_at' => '2024-01-01 00:00:00', 'final_price' => 0]);
         $response->assertStatus(422);
     }
 

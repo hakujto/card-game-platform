@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('status', 20)->default('Pending');
             $table->dateTime('completed_at')->nullable();
             $table->unsignedBigInteger('listing_id');
-            $table->foreign('listing_id')->references('id')->on('tradelistings')->cascadeOnDelete();
+            $table->foreign('listing_id')->references('id')->on('trade_listings')->cascadeOnDelete();
             $table->unsignedBigInteger('buyer_id');
             $table->foreign('buyer_id')->references('id')->on('players')->cascadeOnDelete();
             $table->unsignedBigInteger('seller_id');

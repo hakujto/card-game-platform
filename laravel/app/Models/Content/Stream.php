@@ -34,11 +34,29 @@ class Stream extends Model
         return $this->belongsTo(Player::class, 'streamer_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->viewer_count_peak === null || $this->viewer_count_peak >= 0))) {
+            $errors['viewer_count_not_negative'] = 'Peak viewer count must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->actual_start !== null && !($this->status === 'Live')) {
             throw new \RuntimeException('actual_start_requires_live_or_ended');
+        }
+        if ($this->ended_at !== null && !($this->status === 'Ended')) {
+            throw new \RuntimeException('ended_at can only be set when stream status is Ended');
         }
     }
 

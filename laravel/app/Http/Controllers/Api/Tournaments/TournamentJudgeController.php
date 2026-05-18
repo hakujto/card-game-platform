@@ -48,4 +48,17 @@ class TournamentJudgeController extends Controller
         $tournamentJudge->delete();
         return response()->json(null, 204);
     }
+    public function promoteToHead(Request $request, TournamentJudge $tournamentJudge): JsonResponse
+    {
+        $tournamentJudge->promoteToHead();
+        $tournamentJudge->save();
+        return response()->json(null, 204);
+    }
+
+    public function remove(Request $request, TournamentJudge $tournamentJudge): JsonResponse
+    {
+        $tournamentJudge->remove();
+        $tournamentJudge->save();
+        return response()->json(null, 204);
+    }
 }

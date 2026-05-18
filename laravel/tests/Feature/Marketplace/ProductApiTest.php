@@ -18,7 +18,7 @@ class ProductApiTest extends TestCase
         $entity = Product::create([
             'name' => 'test',
             'product_type' => 'SingleCard',
-            'price' => '0.00',
+            'price' => '0.01',
             'stock' => 1,
             'active' => true,
             'discount_percent' => 1,
@@ -38,7 +38,7 @@ class ProductApiTest extends TestCase
         $response = $this->postJson('/api/products', [
             'name' => 'test',
             'product_type' => 'SingleCard',
-            'price' => '0.00',
+            'price' => '0.01',
             'stock' => 1,
             'active' => true,
             'discount_percent' => 1,
@@ -67,4 +67,24 @@ class ProductApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_price_positive_violated(): void
+    {
+        // Product price must be greater than zero
+        $response = $this->postJson('/api/products', ['name' => 'test', 'price' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_stock_not_negative_violated(): void
+    {
+        // Product stock must not be negative
+        $response = $this->postJson('/api/products', ['name' => 'test', 'price' => '0.00', 'stock' => -1]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_discount_percent_range_violated(): void
+    {
+        // Product discount percent must be between 0 and 100
+        $response = $this->postJson('/api/products', ['name' => 'test', 'price' => '0.00', 'discount_percent' => 101]);
+        $response->assertStatus(422);
+    }
 }

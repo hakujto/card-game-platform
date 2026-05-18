@@ -39,6 +39,7 @@ class DeckCardApiTest extends TestCase
             'is_tournament_legal' => true,
             'wins' => 1,
             'losses' => 1,
+            'draws' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
             'player_id' => $this->auxPlayer->id,
@@ -49,6 +50,7 @@ class DeckCardApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->depCard = Card::create([
             'name' => 'test',

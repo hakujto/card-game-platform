@@ -122,4 +122,20 @@ class TournamentController extends Controller
         $tournament->save();
         return response()->json(['result' => $result]);
     }
+
+    public function registerPlayer(Request $request, Tournament $tournament): JsonResponse
+    {
+        $player_id = $request->input('player_id');
+        $deck_id = $request->input('deck_id');
+        $tournament->registerPlayer($player_id, $deck_id);
+        $tournament->save();
+        return response()->json(null, 204);
+    }
+
+    public function isFull(Request $request, Tournament $tournament): JsonResponse
+    {
+        $result = $tournament->isFull();
+        $tournament->save();
+        return response()->json(['result' => $result]);
+    }
 }

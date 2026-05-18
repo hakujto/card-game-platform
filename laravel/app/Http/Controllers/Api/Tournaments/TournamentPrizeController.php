@@ -61,4 +61,18 @@ class TournamentPrizeController extends Controller
         $tournamentPrize->delete();
         return response()->json(null, 204);
     }
+    public function appliesToPlacement(Request $request, TournamentPrize $tournamentPrize): JsonResponse
+    {
+        $result = $tournamentPrize->appliesToPlacement();
+        $tournamentPrize->save();
+        return response()->json(['result' => $result]);
+    }
+
+    public function awardToPlayer(Request $request, TournamentPrize $tournamentPrize): JsonResponse
+    {
+        $player_id = $request->input('player_id');
+        $tournamentPrize->awardToPlayer($player_id);
+        $tournamentPrize->save();
+        return response()->json(null, 204);
+    }
 }

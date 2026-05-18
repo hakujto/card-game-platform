@@ -35,4 +35,12 @@ class StreamService
         $stream->updateViewerPeak($count);
         $stream->save();
     }
+
+    public function durationMinutes(int $id): int
+    {
+        $stream = Stream::findOrFail($id);
+        $result = $stream->durationMinutes();
+        $stream->save();
+        return $result;
+    }
 }

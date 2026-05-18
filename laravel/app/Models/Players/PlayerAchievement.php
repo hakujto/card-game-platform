@@ -28,12 +28,39 @@ class PlayerAchievement extends Model
         return $this->belongsTo(Achievement::class, 'achievement_id');
     }
 
+    // ── Validation rules ─────────────────────────────────────────────
+    public function validateRules(): void
+    {
+        $errors = [];
+        if (!(($this->progress === null || $this->progress >= 0))) {
+            $errors['progress_not_negative'] = 'Achievement progress must not be negative';
+        }
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                \Illuminate\Support\Facades\Validator::make([], []),
+                response()->json(['errors' => $errors], 422)
+            );
+        }
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
         if ($this->is_completed === true && !(($this->progress === null || $this->progress > 0))) {
             throw new \RuntimeException('Completed achievement must have progress greater than zero');
         }
+    }
+
+    // ── Business operations ──────────────────────────────────────────
+
+    public function incrementProgress($amount): void
+    {
+        throw new \RuntimeException('increment_progress not implemented');
+    }
+
+    public function complete(): void
+    {
+        throw new \RuntimeException('complete not implemented');
     }
 
 }

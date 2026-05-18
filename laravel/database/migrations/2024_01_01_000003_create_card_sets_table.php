@@ -13,8 +13,10 @@ return new class extends Migration
             $table->string('name', 200);
             $table->string('code', 10);
             $table->date('release_date');
+            $table->date('rotation_date')->nullable();
             $table->string('set_type', 20)->default('Expansion');
             $table->integer('total_cards');
+            $table->boolean('is_rotated')->default(false);
             $table->text('description')->nullable();
             $table->string('logo_url', 200)->nullable();
             $table->timestamps();

@@ -26,6 +26,7 @@ class CraftingRecipeApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->depResultCard = Card::create([
             'name' => 'test',

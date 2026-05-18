@@ -19,8 +19,10 @@ class CardSetApiTest extends TestCase
             'name' => 'test',
             'code' => 'test',
             'release_date' => '2024-01-01',
+            'rotation_date' => null,
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => false,
         ]);
         $this->entityId = $entity->id;
     }
@@ -37,8 +39,10 @@ class CardSetApiTest extends TestCase
             'name' => 'test',
             'code' => 'test',
             'release_date' => '2024-01-01',
+            'rotation_date' => null,
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => false,
         ]);
         $response->assertStatus(201);
     }
@@ -63,4 +67,24 @@ class CardSetApiTest extends TestCase
         $response->assertStatus(204);
     }
 
+    public function test_create_fails_when_total_cards_positive_violated(): void
+    {
+        // Card set must have at least one card
+        $response = $this->postJson('/api/card_sets', ['name' => 'test', 'code' => 'test', 'release_date' => '2024-01-01', 'rotation_date' => '2024-01-01', 'is_rotated' => true, 'rotation_date' => '2024-01-01', 'total_cards' => 0]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_rotation_date_after_release_violated(): void
+    {
+        // Rotation date must be after release date
+        $response = $this->postJson('/api/card_sets', ['name' => 'test', 'code' => 'test', 'release_date' => '2024-01-01', 'total_cards' => 1, 'rotation_date' => '2024-01-01', 'rotation_date' => '2024-01-01']);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_rotated_set_has_rotation_date_violated(): void
+    {
+        // Rotated set must have a rotation date
+        $response = $this->postJson('/api/card_sets', ['name' => 'test', 'code' => 'test', 'release_date' => '2024-01-01', 'total_cards' => 1, 'is_rotated' => true, 'rotation_date' => null]);
+        $response->assertStatus(422);
+    }
 }

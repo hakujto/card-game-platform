@@ -15,4 +15,11 @@ class DraftPickService
     {
         throw new \LogicException('Not implemented');
     }
+    public function isFirstPick(int $id): bool
+    {
+        $draftPick = DraftPick::findOrFail($id);
+        $result = $draftPick->isFirstPick();
+        $draftPick->save();
+        return $result;
+    }
 }

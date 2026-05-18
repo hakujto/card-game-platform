@@ -8,7 +8,7 @@ use Tests\TestCase;
 use App\Models\Players\Player;
 use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 use App\Models\Marketplace\TradeTransaction;
 
 class TradeDisputeApiTest extends TestCase
@@ -20,7 +20,7 @@ class TradeDisputeApiTest extends TestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $auxTradelisting;
+    private TradeListing $auxTradeListing;
     private TradeTransaction $depTransaction;
     private Player $depOpenedBy;
 
@@ -41,6 +41,7 @@ class TradeDisputeApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->auxCard = Card::create([
             'name' => 'test',
@@ -55,7 +56,7 @@ class TradeDisputeApiTest extends TestCase
             'power_level' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
-        $this->auxTradelisting = Tradelisting::create([
+        $this->auxTradeListing = TradeListing::create([
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
@@ -69,7 +70,7 @@ class TradeDisputeApiTest extends TestCase
             'final_price' => '0.00',
             'platform_fee' => '0.00',
             'status' => 'Pending',
-            'listing_id' => $this->auxTradelisting->id,
+            'listing_id' => $this->auxTradeListing->id,
             'buyer_id' => $this->auxPlayer->id,
             'seller_id' => $this->auxPlayer->id,
         ]);
@@ -101,7 +102,7 @@ class TradeDisputeApiTest extends TestCase
 
     public function test_create_returns_201(): void
     {
-        $freshSubListing = Tradelisting::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
+        $freshSubListing = TradeListing::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
         $freshTransaction = TradeTransaction::create(['final_price' => '0.00', 'platform_fee' => '0.00', 'status' => 'Pending', 'listing_id' => $freshSubListing->id, 'buyer_id' => $this->auxPlayer->id, 'seller_id' => $this->auxPlayer->id]);
         $response = $this->postJson('/api/trade_disputes', [
             'reason' => 'ItemNotReceived',
@@ -138,7 +139,7 @@ class TradeDisputeApiTest extends TestCase
     public function test_create_fails_when_resolved_at_requires_terminal_status_violated(): void
     {
         // resolved_at_requires_terminal_status
-        $response = $this->postJson('/api/trade_disputes', ['reason' => 'ItemNotReceived', 'description' => 'test', 'opened_at' => '2024-01-01 00:00:00', 'transaction_id' => 1, 'opened_by_id' => 1, 'resolved_at' => '2024-01-01 00:00:00']);
+        $response = $this->postJson('/api/trade_disputes', ['reason' => 'ItemNotReceived', 'description' => 'test', 'opened_at' => '2024-01-01 00:00:00', 'transaction_id' => 1, 'opened_by_id' => 1, 'resolved_at' => '2024-01-01 00:00:00', 'status' => 'Open']);
         $response->assertStatus(422);
     }
 }

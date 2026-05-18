@@ -8,7 +8,7 @@ use Tests\TestCase;
 use App\Models\Players\Player;
 use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
-use App\Models\Marketplace\Tradelisting;
+use App\Models\Marketplace\TradeListing;
 
 class TradeBidApiTest extends TestCase
 {
@@ -19,7 +19,7 @@ class TradeBidApiTest extends TestCase
     private Player $auxPlayer;
     private CardSet $auxCardSet;
     private Card $auxCard;
-    private Tradelisting $depListing;
+    private TradeListing $depListing;
     private Player $depBidder;
 
     protected function setUp(): void
@@ -39,6 +39,7 @@ class TradeBidApiTest extends TestCase
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
+            'is_rotated' => true,
         ]);
         $this->auxCard = Card::create([
             'name' => 'test',
@@ -53,7 +54,7 @@ class TradeBidApiTest extends TestCase
             'power_level' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
-        $this->depListing = Tradelisting::create([
+        $this->depListing = TradeListing::create([
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
@@ -108,7 +109,7 @@ class TradeBidApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/trade_bids/{$this->entityId}", [
-            'amount' => '0.01',
+            'placed_at' => '2024-01-01 00:00:00',
         ]);
         $response->assertStatus(200);
     }

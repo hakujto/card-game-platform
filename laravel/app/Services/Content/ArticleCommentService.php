@@ -28,4 +28,12 @@ class ArticleCommentService
         $articleComment->unhide();
         $articleComment->save();
     }
+
+    public function isReply(int $id): bool
+    {
+        $articleComment = ArticleComment::findOrFail($id);
+        $result = $articleComment->isReply();
+        $articleComment->save();
+        return $result;
+    }
 }

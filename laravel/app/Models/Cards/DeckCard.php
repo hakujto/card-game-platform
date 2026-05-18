@@ -42,4 +42,16 @@ class DeckCard extends Model
         }
     }
 
+    // ── Business operations ──────────────────────────────────────────
+
+    public function incrementAction($amount): void
+    {
+        throw new \RuntimeException('increment not implemented');
+    }
+
+    public function decrementAction($amount): void
+    {
+        throw new \RuntimeException('decrement not implemented');
+    }
+
 }
