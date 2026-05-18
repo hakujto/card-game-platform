@@ -36,8 +36,10 @@ class CardSetSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "release_date",
+            "rotation_date",
             "set_type",
             "total_cards",
+            "is_rotated",
             "description",
             "logo_url",
         ]
@@ -84,6 +86,7 @@ class DeckSerializer(serializers.ModelSerializer):
             "archetype",
             "wins",
             "losses",
+            "draws",
             "created_at",
             "updated_at",
             "player",

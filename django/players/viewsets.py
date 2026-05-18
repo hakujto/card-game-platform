@@ -92,6 +92,48 @@ class PlayerSeasonStatsViewSet(viewsets.ModelViewSet):
     filterset_fields = ["highest_rank", "player", "season"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["get"], url_path="win-rate")
+    def win_rate(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.win_rate()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["patch"], url_path="points")
+    def add_points(self, request, pk=None):
+        instance = self.get_object()
+        points = request.data.get("points")
+        result = instance.add_points(points)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="tournament-win")
+    def record_tournament_win(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.record_tournament_win()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class PlayerCollectionViewSet(viewsets.ModelViewSet):
     queryset = PlayerCollection.objects.select_related().all()
@@ -101,12 +143,48 @@ class PlayerCollectionViewSet(viewsets.ModelViewSet):
     filterset_fields = ["condition", "acquired_via", "player", "card"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["post"], url_path="add")
+    def add(self, request, pk=None):
+        instance = self.get_object()
+        quantity = request.data.get("quantity")
+        result = instance.add(quantity)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="remove")
+    def remove(self, request, pk=None):
+        instance = self.get_object()
+        quantity = request.data.get("quantity")
+        result = instance.remove(quantity)
+        from rest_framework.response import Response
+        return Response(status=204)
+
     @action(detail=True, methods=["get"], url_path="value")
     def estimated_value(self, request, pk=None):
         instance = self.get_object()
         result = instance.estimated_value()
         from rest_framework.response import Response
         return Response({"result": result})
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
 
 
 class FriendshipViewSet(viewsets.ModelViewSet):
@@ -147,6 +225,40 @@ class AchievementViewSet(viewsets.ModelViewSet):
     filterset_fields = ["rarity"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["get"], url_path="point-value")
+    def point_value(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.point_value(multiplier)
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="reveal")
+    def reveal(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.reveal()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class PlayerAchievementViewSet(viewsets.ModelViewSet):
     queryset = PlayerAchievement.objects.select_related().all()
@@ -154,6 +266,21 @@ class PlayerAchievementViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["player", "achievement"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["patch"], url_path="progress")
+    def increment_progress(self, request, pk=None):
+        instance = self.get_object()
+        amount = request.data.get("amount")
+        result = instance.increment_progress(amount)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="complete")
+    def complete(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.complete()
+        from rest_framework.response import Response
+        return Response(status=204)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -183,6 +310,35 @@ class CraftingRecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["result_card"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["get"], url_path="can-craft")
+    def can_craft(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.can_craft(player_id)
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="craft")
+    def execute_craft(self, request, pk=None):
+        instance = self.get_object()
+        player_id = request.data.get("player_id")
+        result = instance.execute_craft(player_id)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="disable")
+    def disable(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.disable()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], url_path="enable")
+    def enable(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.enable()
+        from rest_framework.response import Response
+        return Response(status=204)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

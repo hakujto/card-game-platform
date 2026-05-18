@@ -1,8 +1,8 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
-from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, CouponSerializer, TradelistingSerializer, TradeBidSerializer, TradeTransactionSerializer, CardPriceHistorySerializer, TradeDisputeSerializer
+from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, CouponSerializer, TradeListingSerializer, TradeBidSerializer, TradeTransactionSerializer, CardPriceHistorySerializer, TradeDisputeSerializer
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -42,6 +42,40 @@ class ProductViewSet(viewsets.ModelViewSet):
         result = instance.restock(quantity)
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="effective-price")
+    def effective_price(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.effective_price()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["get"], url_path="in-stock")
+    def is_in_stock(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_in_stock()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -118,6 +152,13 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     filterset_fields = ["order", "product"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["get"], url_path="total")
+    def line_total(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.line_total()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -146,6 +187,20 @@ class CouponViewSet(viewsets.ModelViewSet):
     search_fields = ["code", "discount_type"]
     filterset_fields = ["discount_type"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["get"], url_path="valid")
+    def is_valid(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_valid()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["get"], url_path="applicable")
+    def is_applicable_to_order(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_applicable_to_order(order_total)
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     @action(detail=True, methods=["post"], url_path="redeem")
     def redeem(self, request, pk=None):
@@ -183,9 +238,9 @@ class CouponViewSet(viewsets.ModelViewSet):
             self._validate_instance(instance)
 
 
-class TradelistingViewSet(viewsets.ModelViewSet):
-    queryset = Tradelisting.objects.select_related().all()
-    serializer_class = TradelistingSerializer
+class TradeListingViewSet(viewsets.ModelViewSet):
+    queryset = TradeListing.objects.select_related().all()
+    serializer_class = TradeListingSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["listing_type", "condition", "status"]
     filterset_fields = ["listing_type", "condition", "status", "seller", "card"]
@@ -210,6 +265,20 @@ class TradelistingViewSet(viewsets.ModelViewSet):
     def cancel(self, request, pk=None):
         instance = self.get_object()
         result = instance.cancel()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="expired")
+    def is_expired(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_expired()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="finalize")
+    def finalize_auction(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.finalize_auction()
         from rest_framework.response import Response
         return Response(status=204)
 
@@ -241,6 +310,20 @@ class TradeBidViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["listing", "bidder"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["get"], url_path="outbid")
+    def outbid_by(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.outbid_by(new_amount)
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["delete"], url_path="retract")
+    def retract(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.retract()
+        from rest_framework.response import Response
+        return Response(status=204)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -293,6 +376,13 @@ class TradeTransactionViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="seller-net")
+    def seller_net(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.seller_net()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -321,6 +411,20 @@ class CardPriceHistoryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["card"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["get"], url_path="change")
+    def price_change_percent(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.price_change_percent(previous_avg)
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["get"], url_path="spike")
+    def is_price_spike(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_price_spike(threshold_percent)
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

@@ -11,7 +11,7 @@ class CardAdmin(admin.ModelAdmin):
 
 @admin.register(CardSet)
 class CardSetAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "code", "release_date", "set_type"]
+    list_display = ["id", "name", "code", "release_date", "rotation_date"]
     search_fields = ["name", "code", "set_type"]
     list_filter = ["set_type"]
 

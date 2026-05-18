@@ -60,18 +60,18 @@ class CouponRepository:
         return Coupon.objects.all()
 
 
-class TradelistingRepository:
-    """Repository for Tradelisting."""
+class TradeListingRepository:
+    """Repository for TradeListing."""
 
     @staticmethod
     def get_by_id(pk: int):
-        from .models import Tradelisting
-        return Tradelisting.objects.filter(pk=pk).first()
+        from .models import TradeListing
+        return TradeListing.objects.filter(pk=pk).first()
 
     @staticmethod
     def find_all():
-        from .models import Tradelisting
-        return Tradelisting.objects.all()
+        from .models import TradeListing
+        return TradeListing.objects.all()
 
 
 class TradeBidRepository:

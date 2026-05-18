@@ -81,6 +81,12 @@ class Card(models.Model):
     def calculate_value(self):
         raise NotImplementedError("calculate_value not implemented")
 
+    def apply_rarity_bonus(self, multiplier):
+        raise NotImplementedError("apply_rarity_bonus not implemented")
+
+    def is_legal_in_format(self, format):
+        raise NotImplementedError("is_legal_in_format not implemented")
+
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
@@ -99,6 +105,10 @@ class Card(models.Model):
             raise ValidationError({"creature_requires_stats": "Creature card must have attack and defense"})
         if (self.card_type == CardCardTypeChoices.PLANESWALKER) and (self.loyalty is None):
             raise ValidationError({"planeswalker_requires_loyalty": "Planeswalker card must have loyalty"})
+        if (self.card_type != CardCardTypeChoices.PLANESWALKER) and (self.loyalty is not None):
+            raise ValidationError({"spell_or_artifact_no_loyalty": "Only Planeswalker cards can have loyalty"})
+        if (self.is_banned is True) and (not (self.legal_formats == "message")):
+            raise ValidationError({"banned_card_not_in_legal_formats": "banned_card_not_in_legal_formats"})
 
 
 class CardSetSetTypeChoices(models.TextChoices):
@@ -113,8 +123,10 @@ class CardSet(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=10)
     release_date = models.DateField()
+    rotation_date = models.DateField(null=True, blank=True)
     set_type = models.CharField(max_length=20, choices=CardSetSetTypeChoices.choices, default=CardSetSetTypeChoices.EXPANSION)
     total_cards = models.IntegerField()
+    is_rotated = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)
     logo_url = models.URLField(max_length=200, null=True, blank=True)
 
@@ -130,6 +142,30 @@ class CardSet(models.Model):
 
     def is_legal_in_standard(self):
         raise NotImplementedError("is_legal_in_standard not implemented")
+
+    def is_legal_in_format(self, format):
+        raise NotImplementedError("is_legal_in_format not implemented")
+
+    def card_count_by_rarity(self, rarity):
+        raise NotImplementedError("card_count_by_rarity not implemented")
+
+    def rotate_out(self):
+        raise NotImplementedError("rotate_out not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.total_cards is None or self.total_cards > 0)):
+            errors["total_cards_positive"] = "Card set must have at least one card"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.rotation_date is not None) and (not ((self.rotation_date is None or (self.release_date is not None and self.rotation_date > self.release_date)))):
+            raise ValidationError({"rotation_date_after_release": "Rotation date must be after release date"})
+        if (self.is_rotated is True) and (self.rotation_date is None):
+            raise ValidationError({"rotated_set_has_rotation_date": "Rotated set must have a rotation date"})
 
 
 class CardRuling(models.Model):
@@ -225,6 +261,7 @@ class Deck(models.Model):
     archetype = models.CharField(max_length=20, choices=DeckArchetypeChoices.choices, null=True, blank=True)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="decks")
@@ -245,6 +282,15 @@ class Deck(models.Model):
     def validate_size(self):
         raise NotImplementedError("validate_size not implemented")
 
+    def add_card(self, card_id, quantity):
+        raise NotImplementedError("add_card not implemented")
+
+    def remove_card(self, card_id):
+        raise NotImplementedError("remove_card not implemented")
+
+    def win_rate(self):
+        raise NotImplementedError("win_rate not implemented")
+
     def clone(self):
         raise NotImplementedError("clone not implemented")
 
@@ -256,6 +302,23 @@ class Deck(models.Model):
 
     def certify_tournament_legal(self):
         raise NotImplementedError("certify_tournament_legal not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.wins is None or self.wins >= 0)):
+            errors["wins_not_negative"] = "Deck wins count must not be negative"
+        if not ((self.losses is None or self.losses >= 0)):
+            errors["losses_not_negative"] = "Deck losses count must not be negative"
+        if not ((self.draws is None or self.draws >= 0)):
+            errors["draws_not_negative"] = "Deck draws count must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.is_tournament_legal is True) and (not (self.is_public is True)):
+            raise ValidationError({"tournament_legal_deck_must_be_validated": "Tournament-legal deck must be made public"})
 
 
 class DeckCard(models.Model):
@@ -271,6 +334,14 @@ class DeckCard(models.Model):
 
     def __str__(self):
         return str(self.quantity)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def increment(self, amount):
+        raise NotImplementedError("increment not implemented")
+
+    def decrement(self, amount):
+        raise NotImplementedError("decrement not implemented")
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -301,6 +372,14 @@ class DeckSideboardCard(models.Model):
 
     def decrement(self, amount):
         raise NotImplementedError("decrement not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 4))):
+            errors["quantity_range"] = "Sideboard card quantity must be between 1 and 4 copies"
+        if errors:
+            raise ValidationError(errors)
 
 
 class DeckTag(models.Model):

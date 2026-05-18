@@ -34,6 +34,34 @@ class DraftSessionViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="full")
+    def is_full(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_full()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class DraftParticipantViewSet(viewsets.ModelViewSet):
     queryset = DraftParticipant.objects.select_related().all()
@@ -51,6 +79,33 @@ class DraftParticipantViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="card-count")
+    def drafted_card_count(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.drafted_card_count()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class DraftPickViewSet(viewsets.ModelViewSet):
     queryset = DraftPick.objects.select_related().all()
@@ -58,6 +113,33 @@ class DraftPickViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["participant", "card"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["get"], url_path="first-pick")
+    def is_first_pick(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_first_pick()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
@@ -89,6 +171,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="reading-time")
+    def reading_time_minutes(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.reading_time_minutes()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -117,6 +206,21 @@ class ArticleTagViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "slug"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["patch"], url_path="rename")
+    def rename(self, request, pk=None):
+        instance = self.get_object()
+        new_name = request.data.get("new_name")
+        result = instance.rename(new_name)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="article-count")
+    def article_count(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.article_count()
+        from rest_framework.response import Response
+        return Response({"result": result})
 
 
 class ArticleTagAssignmentViewSet(viewsets.ModelViewSet):
@@ -149,6 +253,13 @@ class ArticleCommentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="is-reply")
+    def is_reply(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_reply()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
 
 class StreamViewSet(viewsets.ModelViewSet):
     queryset = Stream.objects.select_related().all()
@@ -179,6 +290,13 @@ class StreamViewSet(viewsets.ModelViewSet):
         result = instance.update_viewer_peak(count)
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="duration")
+    def duration_minutes(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.duration_minutes()
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

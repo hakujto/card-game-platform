@@ -83,6 +83,28 @@ class PlayerSeasonStatsService:
         """Update an existing PlayerSeasonStats."""
         raise NotImplementedError
 
+    @staticmethod
+    def win_rate(id):
+        from .models import PlayerSeasonStats
+        instance = PlayerSeasonStats.objects.get(pk=id)
+        result = instance.win_rate()
+        instance.save()
+        return result
+
+    @staticmethod
+    def add_points(id, points):
+        from .models import PlayerSeasonStats
+        instance = PlayerSeasonStats.objects.get(pk=id)
+        instance.add_points(points)
+        instance.save()
+
+    @staticmethod
+    def record_tournament_win(id):
+        from .models import PlayerSeasonStats
+        instance = PlayerSeasonStats.objects.get(pk=id)
+        instance.record_tournament_win()
+        instance.save()
+
 
 class PlayerCollectionService:
     """Domain service for PlayerCollection aggregate."""
@@ -96,6 +118,20 @@ class PlayerCollectionService:
     def update(instance, data: dict):
         """Update an existing PlayerCollection."""
         raise NotImplementedError
+
+    @staticmethod
+    def add(id, quantity):
+        from .models import PlayerCollection
+        instance = PlayerCollection.objects.get(pk=id)
+        instance.add(quantity)
+        instance.save()
+
+    @staticmethod
+    def remove(id, quantity):
+        from .models import PlayerCollection
+        instance = PlayerCollection.objects.get(pk=id)
+        instance.remove(quantity)
+        instance.save()
 
     @staticmethod
     def estimated_value(id):
@@ -154,6 +190,21 @@ class AchievementService:
         """Update an existing Achievement."""
         raise NotImplementedError
 
+    @staticmethod
+    def point_value(id):
+        from .models import Achievement
+        instance = Achievement.objects.get(pk=id)
+        result = instance.point_value(multiplier)
+        instance.save()
+        return result
+
+    @staticmethod
+    def reveal(id):
+        from .models import Achievement
+        instance = Achievement.objects.get(pk=id)
+        instance.reveal()
+        instance.save()
+
 
 class PlayerAchievementService:
     """Domain service for PlayerAchievement aggregate."""
@@ -168,6 +219,30 @@ class PlayerAchievementService:
         """Update an existing PlayerAchievement."""
         raise NotImplementedError
 
+    @staticmethod
+    def increment_progress(id, amount):
+        from .models import PlayerAchievement
+        instance = PlayerAchievement.objects.get(pk=id)
+        instance.increment_progress(amount)
+        instance.save()
+
+    @staticmethod
+    def complete(id):
+        from .models import PlayerAchievement
+        instance = PlayerAchievement.objects.get(pk=id)
+        instance.complete()
+        instance.save()
+
+    # triggered by @on(is_completed = true)
+    @staticmethod
+    def set_is_completed(pk, value):
+        from .models import PlayerAchievement, PlayerAchievementIsCompletedChoices
+        instance = PlayerAchievement.objects.get(pk=pk)
+        instance.is_completed = value
+        if value == PlayerAchievementIsCompletedChoices.TRUE:
+            instance.complete()
+        instance.save()
+
 
 class CraftingRecipeService:
     """Domain service for CraftingRecipe aggregate."""
@@ -181,6 +256,35 @@ class CraftingRecipeService:
     def update(instance, data: dict):
         """Update an existing CraftingRecipe."""
         raise NotImplementedError
+
+    @staticmethod
+    def can_craft(id):
+        from .models import CraftingRecipe
+        instance = CraftingRecipe.objects.get(pk=id)
+        result = instance.can_craft(player_id)
+        instance.save()
+        return result
+
+    @staticmethod
+    def execute_craft(id, player_id):
+        from .models import CraftingRecipe
+        instance = CraftingRecipe.objects.get(pk=id)
+        instance.execute_craft(player_id)
+        instance.save()
+
+    @staticmethod
+    def disable(id):
+        from .models import CraftingRecipe
+        instance = CraftingRecipe.objects.get(pk=id)
+        instance.disable()
+        instance.save()
+
+    @staticmethod
+    def enable(id):
+        from .models import CraftingRecipe
+        instance = CraftingRecipe.objects.get(pk=id)
+        instance.enable()
+        instance.save()
 
 
 class CraftingIngredientService:

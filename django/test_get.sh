@@ -23,7 +23,7 @@ ID_CardRuling=1
 ID_CardAbility=1
 ID_PlayerCollection=1
 ID_CraftingRecipe=1
-ID_Tradelisting=1
+ID_TradeListing=1
 ID_CardPriceHistory=1
 ID_DraftParticipant=1
 ID_DeckCard=1
@@ -155,10 +155,10 @@ curl -s "$BASE/crafting_recipes/" | python3 -m json.tool
 echo && echo "=== GET crafting_recipes/$ID_CraftingRecipe ==="
 curl -s "$BASE/crafting_recipes/$ID_CraftingRecipe/" | python3 -m json.tool
 
-echo && echo "=== GET tradelistings ==="
-curl -s "$BASE/tradelistings/" | python3 -m json.tool
-echo && echo "=== GET tradelistings/$ID_Tradelisting ==="
-curl -s "$BASE/tradelistings/$ID_Tradelisting/" | python3 -m json.tool
+echo && echo "=== GET trade_listings ==="
+curl -s "$BASE/trade_listings/" | python3 -m json.tool
+echo && echo "=== GET trade_listings/$ID_TradeListing ==="
+curl -s "$BASE/trade_listings/$ID_TradeListing/" | python3 -m json.tool
 
 echo && echo "=== GET card_price_histories ==="
 curl -s "$BASE/card_price_histories/" | python3 -m json.tool

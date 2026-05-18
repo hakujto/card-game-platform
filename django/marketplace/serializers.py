@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -76,9 +76,9 @@ class CouponSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
-class TradelistingSerializer(serializers.ModelSerializer):
+class TradeListingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tradelisting
+        model = TradeListing
         fields = [
             "id",
             "listing_type",

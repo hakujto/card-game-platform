@@ -46,6 +46,22 @@ class ProductService:
         instance.restock(quantity)
         instance.save()
 
+    @staticmethod
+    def effective_price(id):
+        from .models import Product
+        instance = Product.objects.get(pk=id)
+        result = instance.effective_price()
+        instance.save()
+        return result
+
+    @staticmethod
+    def is_in_stock(id):
+        from .models import Product
+        instance = Product.objects.get(pk=id)
+        result = instance.is_in_stock()
+        instance.save()
+        return result
+
 
 class OrderService:
     """Domain service for Order aggregate."""
@@ -122,6 +138,14 @@ class OrderItemService:
         """Update an existing OrderItem."""
         raise NotImplementedError
 
+    @staticmethod
+    def line_total(id):
+        from .models import OrderItem
+        instance = OrderItem.objects.get(pk=id)
+        result = instance.line_total()
+        instance.save()
+        return result
+
 
 class CouponService:
     """Domain service for Coupon aggregate."""
@@ -135,6 +159,22 @@ class CouponService:
     def update(instance, data: dict):
         """Update an existing Coupon."""
         raise NotImplementedError
+
+    @staticmethod
+    def is_valid(id):
+        from .models import Coupon
+        instance = Coupon.objects.get(pk=id)
+        result = instance.is_valid()
+        instance.save()
+        return result
+
+    @staticmethod
+    def is_applicable_to_order(id):
+        from .models import Coupon
+        instance = Coupon.objects.get(pk=id)
+        result = instance.is_applicable_to_order(order_total)
+        instance.save()
+        return result
 
     @staticmethod
     def redeem(id):
@@ -151,47 +191,62 @@ class CouponService:
         instance.save()
 
 
-class TradelistingService:
-    """Domain service for Tradelisting aggregate."""
+class TradeListingService:
+    """Domain service for TradeListing aggregate."""
 
     @staticmethod
     def create(data: dict):
-        """Create a new Tradelisting."""
+        """Create a new TradeListing."""
         raise NotImplementedError
 
     @staticmethod
     def update(instance, data: dict):
-        """Update an existing Tradelisting."""
+        """Update an existing TradeListing."""
         raise NotImplementedError
 
     @staticmethod
     def close(id):
-        from .models import Tradelisting
-        instance = Tradelisting.objects.get(pk=id)
+        from .models import TradeListing
+        instance = TradeListing.objects.get(pk=id)
         instance.close()
         instance.save()
 
     @staticmethod
     def extend(id, days):
-        from .models import Tradelisting
-        instance = Tradelisting.objects.get(pk=id)
+        from .models import TradeListing
+        instance = TradeListing.objects.get(pk=id)
         instance.extend(days)
         instance.save()
 
     @staticmethod
     def cancel(id):
-        from .models import Tradelisting
-        instance = Tradelisting.objects.get(pk=id)
+        from .models import TradeListing
+        instance = TradeListing.objects.get(pk=id)
         instance.cancel()
+        instance.save()
+
+    @staticmethod
+    def is_expired(id):
+        from .models import TradeListing
+        instance = TradeListing.objects.get(pk=id)
+        result = instance.is_expired()
+        instance.save()
+        return result
+
+    @staticmethod
+    def finalize_auction(id):
+        from .models import TradeListing
+        instance = TradeListing.objects.get(pk=id)
+        instance.finalize_auction()
         instance.save()
 
     # triggered by @on(status = Sold)
     @staticmethod
     def set_status(pk, value):
-        from .models import Tradelisting, TradelistingStatusChoices
-        instance = Tradelisting.objects.get(pk=pk)
+        from .models import TradeListing, TradeListingStatusChoices
+        instance = TradeListing.objects.get(pk=pk)
         instance.status = value
-        if value == TradelistingStatusChoices.SOLD:
+        if value == TradeListingStatusChoices.SOLD:
             instance.finalize_auction()
         instance.save()
 
@@ -208,6 +263,21 @@ class TradeBidService:
     def update(instance, data: dict):
         """Update an existing TradeBid."""
         raise NotImplementedError
+
+    @staticmethod
+    def outbid_by(id):
+        from .models import TradeBid
+        instance = TradeBid.objects.get(pk=id)
+        result = instance.outbid_by(new_amount)
+        instance.save()
+        return result
+
+    @staticmethod
+    def retract(id):
+        from .models import TradeBid
+        instance = TradeBid.objects.get(pk=id)
+        instance.retract()
+        instance.save()
 
 
 class TradeTransactionService:
@@ -244,6 +314,14 @@ class TradeTransactionService:
         instance.open_dispute(reason)
         instance.save()
 
+    @staticmethod
+    def seller_net(id):
+        from .models import TradeTransaction
+        instance = TradeTransaction.objects.get(pk=id)
+        result = instance.seller_net()
+        instance.save()
+        return result
+
 
 class CardPriceHistoryService:
     """Domain service for CardPriceHistory aggregate."""
@@ -257,6 +335,22 @@ class CardPriceHistoryService:
     def update(instance, data: dict):
         """Update an existing CardPriceHistory."""
         raise NotImplementedError
+
+    @staticmethod
+    def price_change_percent(id):
+        from .models import CardPriceHistory
+        instance = CardPriceHistory.objects.get(pk=id)
+        result = instance.price_change_percent(previous_avg)
+        instance.save()
+        return result
+
+    @staticmethod
+    def is_price_spike(id):
+        from .models import CardPriceHistory
+        instance = CardPriceHistory.objects.get(pk=id)
+        result = instance.is_price_spike(threshold_percent)
+        instance.save()
+        return result
 
 
 class TradeDisputeService:

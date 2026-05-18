@@ -23,7 +23,7 @@ ID_CardRuling=1
 ID_CardAbility=1
 ID_PlayerCollection=1
 ID_CraftingRecipe=1
-ID_Tradelisting=1
+ID_TradeListing=1
 ID_CardPriceHistory=1
 ID_DraftParticipant=1
 ID_DeckCard=1
@@ -105,8 +105,8 @@ curl -s -X DELETE "$BASE/draft_participants/$ID_DraftParticipant/" -o /dev/null 
 echo && echo "=== DELETE card_price_histories/$ID_CardPriceHistory ==="
 curl -s -X DELETE "$BASE/card_price_histories/$ID_CardPriceHistory/" -o /dev/null -w "HTTP %{http_code}\n"
 
-echo && echo "=== DELETE tradelistings/$ID_Tradelisting ==="
-curl -s -X DELETE "$BASE/tradelistings/$ID_Tradelisting/" -o /dev/null -w "HTTP %{http_code}\n"
+echo && echo "=== DELETE trade_listings/$ID_TradeListing ==="
+curl -s -X DELETE "$BASE/trade_listings/$ID_TradeListing/" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE crafting_recipes/$ID_CraftingRecipe ==="
 curl -s -X DELETE "$BASE/crafting_recipes/$ID_CraftingRecipe/" -o /dev/null -w "HTTP %{http_code}\n"

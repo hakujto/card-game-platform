@@ -51,6 +51,18 @@ class Product(models.Model):
     def is_in_stock(self):
         raise NotImplementedError("is_in_stock not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.price is None or self.price > 0)):
+            errors["price_positive"] = "Product price must be greater than zero"
+        if not ((self.stock is None or self.stock >= 0)):
+            errors["stock_not_negative"] = "Product stock must not be negative"
+        if not ((self.discount_percent is None or (self.discount_percent >= 0 and self.discount_percent <= 100))):
+            errors["discount_percent_range"] = "Product discount percent must be between 0 and 100"
+        if errors:
+            raise ValidationError(errors)
+
 
 class OrderStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -117,7 +129,7 @@ class Order(models.Model):
         errors = {}
         if not ((self.total is None or self.total >= 0)):
             errors["total_not_negative"] = "Order total must not be negative"
-        if not ((self.discount_applied is None or self.total is None or self.discount_applied <= self.total)):
+        if not ((self.discount_applied is None or (self.total is not None and self.discount_applied <= self.total))):
             errors["discount_not_exceed_total"] = "Discount applied cannot exceed order total"
         if errors:
             raise ValidationError(errors)
@@ -128,6 +140,8 @@ class Order(models.Model):
             raise ValidationError({"paid_requires_paid_at": "Paid order must have paid_at set"})
         if (self.status == OrderStatusChoices.SHIPPED) and (self.tracking_number is None):
             raise ValidationError({"shipped_requires_tracking": "Shipped order must have a tracking number"})
+        if (self.shipped_at is not None) and (not (self.status == OrderStatusChoices.SHIPPED)):
+            raise ValidationError({"shipped_at_requires_shipped_status": "shipped_at_requires_shipped_status"})
 
 
 class OrderItem(models.Model):
@@ -202,7 +216,7 @@ class Coupon(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.valid_until is None or self.valid_from is None or self.valid_until > self.valid_from)):
+        if not ((self.valid_until is None or (self.valid_from is not None and self.valid_until > self.valid_from))):
             errors["valid_until_after_valid_from"] = "Coupon expiry must be after its start date"
         if not ((self.discount_value is None or self.discount_value > 0)):
             errors["discount_value_positive"] = "Discount value must be greater than zero"
@@ -213,17 +227,17 @@ class Coupon(models.Model):
         from django.core.exceptions import ValidationError
         if (self.discount_type == CouponDiscountTypeChoices.PERCENT) and (not ((self.discount_value is None or (self.discount_value >= 1 and self.discount_value <= 100)))):
             raise ValidationError({"percent_discount_range": "Percent discount must be between 1 and 100"})
-        if (self.max_uses is not None) and (not ((self.uses_count is None or self.max_uses is None or self.uses_count <= self.max_uses))):
+        if (self.max_uses is not None) and (not ((self.uses_count is None or (self.max_uses is not None and self.uses_count <= self.max_uses)))):
             raise ValidationError({"uses_not_exceed_max": "Coupon uses count cannot exceed max_uses"})
 
 
-class TradelistingListingTypeChoices(models.TextChoices):
+class TradeListingListingTypeChoices(models.TextChoices):
     FIXEDPRICE = "FixedPrice", "Fixedprice"
     AUCTION = "Auction", "Auction"
     TRADEOFFER = "TradeOffer", "Tradeoffer"
 
 
-class TradelistingConditionChoices(models.TextChoices):
+class TradeListingConditionChoices(models.TextChoices):
     MINT = "Mint", "Mint"
     NEARMINT = "NearMint", "Nearmint"
     EXCELLENT = "Excellent", "Excellent"
@@ -231,7 +245,7 @@ class TradelistingConditionChoices(models.TextChoices):
     PLAYED = "Played", "Played"
 
 
-class TradelistingStatusChoices(models.TextChoices):
+class TradeListingStatusChoices(models.TextChoices):
     ACTIVE = "Active", "Active"
     SOLD = "Sold", "Sold"
     EXPIRED = "Expired", "Expired"
@@ -239,16 +253,16 @@ class TradelistingStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
 
 
-class Tradelisting(models.Model):
-    listing_type = models.CharField(max_length=20, choices=TradelistingListingTypeChoices.choices, default=TradelistingListingTypeChoices.FIXEDPRICE)
+class TradeListing(models.Model):
+    listing_type = models.CharField(max_length=20, choices=TradeListingListingTypeChoices.choices, default=TradeListingListingTypeChoices.FIXEDPRICE)
     asking_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_start_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_current_bid = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_end_time = models.DateTimeField(null=True, blank=True)
     foil = models.BooleanField(default=False)
-    condition = models.CharField(max_length=20, choices=TradelistingConditionChoices.choices, default=TradelistingConditionChoices.MINT)
+    condition = models.CharField(max_length=20, choices=TradeListingConditionChoices.choices, default=TradeListingConditionChoices.MINT)
     quantity = models.IntegerField(default=1)
-    status = models.CharField(max_length=20, choices=TradelistingStatusChoices.choices, default=TradelistingStatusChoices.ACTIVE)
+    status = models.CharField(max_length=20, choices=TradeListingStatusChoices.choices, default=TradeListingStatusChoices.ACTIVE)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField(null=True, blank=True)
@@ -256,8 +270,8 @@ class Tradelisting(models.Model):
     card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="trade_listings")
 
     class Meta:
-        verbose_name = "Tradelisting"
-        verbose_name_plural = "Tradelistings"
+        verbose_name = "Trade Listing"
+        verbose_name_plural = "Trade Listings"
         ordering = ["-id"]
 
     def __str__(self):
@@ -290,9 +304,9 @@ class Tradelisting(models.Model):
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
-        if (self.listing_type == TradelistingListingTypeChoices.FIXEDPRICE) and (self.asking_price is None):
+        if (self.listing_type == TradeListingListingTypeChoices.FIXEDPRICE) and (self.asking_price is None):
             raise ValidationError({"fixed_price_requires_asking_price": "Fixed price listing must have an asking price"})
-        if (self.listing_type == TradelistingListingTypeChoices.AUCTION) and (not ((self.auction_start_price is not None and self.auction_end_time is not None))):
+        if (self.listing_type == TradeListingListingTypeChoices.AUCTION) and (not ((self.auction_start_price is not None and self.auction_end_time is not None))):
             raise ValidationError({"auction_requires_start_price_and_end_time": "Auction listing must have a start price and end time"})
 
 
@@ -315,6 +329,9 @@ class TradeBid(models.Model):
 
     def outbid_by(self, new_amount):
         raise NotImplementedError("outbid_by not implemented")
+
+    def retract(self):
+        raise NotImplementedError("retract not implemented")
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -366,10 +383,12 @@ class TradeTransaction(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.platform_fee is None or self.final_price is None or self.platform_fee <= self.final_price)):
+        if not ((self.platform_fee is None or (self.final_price is not None and self.platform_fee <= self.final_price))):
             errors["fee_not_exceed_price"] = "Platform fee cannot exceed the final price"
         if not ((self.platform_fee is None or self.platform_fee >= 0)):
             errors["fee_not_negative"] = "Platform fee must not be negative"
+        if not ((self.final_price is None or self.final_price > 0)):
+            errors["final_price_positive"] = "Transaction final price must be greater than zero"
         if errors:
             raise ValidationError(errors)
 
@@ -407,8 +426,12 @@ class CardPriceHistory(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not (((self.min_price is None or self.avg_price is None or self.min_price <= self.avg_price) and (self.avg_price is None or self.max_price is None or self.avg_price <= self.max_price))):
+        if not (((self.min_price is None or (self.avg_price is not None and self.min_price <= self.avg_price)) and (self.avg_price is None or (self.max_price is not None and self.avg_price <= self.max_price)))):
             errors["price_bounds_consistent"] = "min_price <= avg_price <= max_price must hold"
+        if not ((self.volume is None or self.volume >= 0)):
+            errors["volume_not_negative"] = "Price history volume must not be negative"
+        if not ((self.min_price is None or self.min_price >= 0)):
+            errors["prices_not_negative"] = "Prices must not be negative"
         if errors:
             raise ValidationError(errors)
 

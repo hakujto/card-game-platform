@@ -73,7 +73,7 @@ class Player(models.Model):
         errors = {}
         if not ((self.rating is None or (self.rating >= 0 and self.rating <= 9999))):
             errors["rating_range"] = "Rating must be between 0 and 9999"
-        if not ((self.peak_rating is None or self.rating is None or self.peak_rating >= self.rating)):
+        if not ((self.peak_rating is None or (self.rating is not None and self.peak_rating >= self.rating))):
             errors["peak_rating_gte_rating"] = "Peak rating must be greater than or equal to current rating"
         if not (self.display_name is not None):
             errors["display_name_not_empty"] = "Display name must not be empty"
@@ -120,6 +120,20 @@ class PlayerSeasonStats(models.Model):
     def record_tournament_win(self):
         raise NotImplementedError("record_tournament_win not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.wins is None or self.wins >= 0)):
+            errors["wins_not_negative"] = "Season wins must not be negative"
+        if not ((self.losses is None or self.losses >= 0)):
+            errors["losses_not_negative"] = "Season losses must not be negative"
+        if not ((self.tournament_wins is None or self.tournament_wins >= 0)):
+            errors["tournament_wins_not_negative"] = "Season tournament wins must not be negative"
+        if not ((self.season_points is None or self.season_points >= 0)):
+            errors["season_points_not_negative"] = "Season points must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
 
 class PlayerCollectionConditionChoices(models.TextChoices):
     MINT = "Mint", "Mint"
@@ -164,6 +178,14 @@ class PlayerCollection(models.Model):
 
     def estimated_value(self):
         raise NotImplementedError("estimated_value not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.quantity is None or self.quantity > 0)):
+            errors["quantity_positive"] = "Collection quantity must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
 
 
 class FriendshipStatusChoices(models.TextChoices):
@@ -222,6 +244,22 @@ class Achievement(models.Model):
     def __str__(self):
         return str(self.name)
 
+    # ── Business operations ──────────────────────────────────────────
+
+    def point_value(self, multiplier):
+        raise NotImplementedError("point_value not implemented")
+
+    def reveal(self):
+        raise NotImplementedError("reveal not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.points is None or self.points > 0)):
+            errors["points_positive"] = "Achievement must award at least one point"
+        if errors:
+            raise ValidationError(errors)
+
 
 class PlayerAchievement(models.Model):
     earned_at = models.DateTimeField()
@@ -237,6 +275,22 @@ class PlayerAchievement(models.Model):
 
     def __str__(self):
         return str(self.earned_at)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def increment_progress(self, amount):
+        raise NotImplementedError("increment_progress not implemented")
+
+    def complete(self):
+        raise NotImplementedError("complete not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.progress is None or self.progress >= 0)):
+            errors["progress_not_negative"] = "Achievement progress must not be negative"
+        if errors:
+            raise ValidationError(errors)
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
@@ -259,6 +313,12 @@ class CraftingRecipe(models.Model):
         return str(self.dust_cost)
 
     # ── Business operations ──────────────────────────────────────────
+
+    def can_craft(self, player_id):
+        raise NotImplementedError("can_craft not implemented")
+
+    def execute_craft(self, player_id):
+        raise NotImplementedError("execute_craft not implemented")
 
     def disable(self):
         raise NotImplementedError("disable not implemented")

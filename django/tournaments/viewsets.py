@@ -34,6 +34,13 @@ class SeasonViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="ongoing")
+    def is_ongoing(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_ongoing()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -98,6 +105,22 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response({"result": result})
 
+    @action(detail=True, methods=["post"], url_path="register")
+    def register_player(self, request, pk=None):
+        instance = self.get_object()
+        player_id = request.data.get("player_id")
+        deck_id = request.data.get("deck_id")
+        result = instance.register_player(player_id, deck_id)
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="full")
+    def is_full(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_full()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -127,6 +150,20 @@ class TournamentJudgeViewSet(viewsets.ModelViewSet):
     search_fields = ["role"]
     filterset_fields = ["role", "tournament", "player"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["post"], url_path="promote")
+    def promote_to_head(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.promote_to_head()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["delete"], url_path="remove")
+    def remove(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.remove()
+        from rest_framework.response import Response
+        return Response(status=204)
 
 
 class TournamentRegistrationViewSet(viewsets.ModelViewSet):
@@ -159,6 +196,27 @@ class TournamentRegistrationViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    def _validate_instance(self, instance):
+        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            instance.full_clean()
+            instance.validate_implies()
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict)
+
+    def perform_create(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
+    def perform_update(self, serializer):
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            self._validate_instance(instance)
+
 
 class TournamentRoundViewSet(viewsets.ModelViewSet):
     queryset = TournamentRound.objects.select_related().all()
@@ -188,6 +246,13 @@ class TournamentRoundViewSet(viewsets.ModelViewSet):
         result = instance.generate_pairings()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["get"], url_path="time-expired")
+    def is_time_expired(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.is_time_expired()
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -235,6 +300,14 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response({"result": result})
 
+    @action(detail=True, methods=["post"], url_path="concede")
+    def concede(self, request, pk=None):
+        instance = self.get_object()
+        player_id = request.data.get("player_id")
+        result = instance.concede(player_id)
+        from rest_framework.response import Response
+        return Response(status=204)
+
     @action(detail=True, methods=["post"], url_path="draw")
     def draw(self, request, pk=None):
         instance = self.get_object()
@@ -280,6 +353,13 @@ class GameViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="duration")
+    def duration_minutes(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.duration_minutes()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -310,6 +390,21 @@ class TournamentPrizeViewSet(viewsets.ModelViewSet):
     filterset_fields = ["prize_type", "tournament"]
     ordering_fields = "__all__"
 
+    @action(detail=True, methods=["get"], url_path="applies")
+    def applies_to_placement(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.applies_to_placement(placement)
+        from rest_framework.response import Response
+        return Response({"result": result})
+
+    @action(detail=True, methods=["post"], url_path="award")
+    def award_to_player(self, request, pk=None):
+        instance = self.get_object()
+        player_id = request.data.get("player_id")
+        result = instance.award_to_player(player_id)
+        from rest_framework.response import Response
+        return Response(status=204)
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -337,6 +432,13 @@ class AwardedPrizeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["prize", "player"]
     ordering_fields = "__all__"
+
+    @action(detail=True, methods=["post"], url_path="claim")
+    def claim(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.claim()
+        from rest_framework.response import Response
+        return Response(status=204)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

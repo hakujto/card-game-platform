@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Order, OrderItem, Coupon, Tradelisting, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 
 
 @admin.register(Product)
@@ -29,8 +29,8 @@ class CouponAdmin(admin.ModelAdmin):
     list_filter = ["discount_type"]
 
 
-@admin.register(Tradelisting)
-class TradelistingAdmin(admin.ModelAdmin):
+@admin.register(TradeListing)
+class TradeListingAdmin(admin.ModelAdmin):
     list_display = ["id", "listing_type", "asking_price", "auction_start_price", "auction_current_bid"]
     search_fields = ["listing_type", "condition", "status"]
     list_filter = ["listing_type", "condition", "status", "seller", "card"]

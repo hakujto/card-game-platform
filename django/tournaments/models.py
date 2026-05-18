@@ -44,7 +44,7 @@ class Season(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.end_date is None or self.start_date is None or self.end_date > self.start_date)):
+        if not ((self.end_date is None or (self.start_date is not None and self.end_date > self.start_date))):
             errors["end_date_after_start_date"] = "Season end date must be after start date"
         if errors:
             raise ValidationError(errors)
@@ -118,6 +118,9 @@ class Tournament(models.Model):
     def calculate_prize_distribution(self):
         raise NotImplementedError("calculate_prize_distribution not implemented")
 
+    def register_player(self, player_id, deck_id):
+        raise NotImplementedError("register_player not implemented")
+
     def is_full(self):
         raise NotImplementedError("is_full not implemented")
 
@@ -135,7 +138,7 @@ class Tournament(models.Model):
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
-        if (self.end_time is not None) and (not ((self.end_time is None or self.start_time is None or self.end_time > self.start_time))):
+        if (self.end_time is not None) and (not ((self.end_time is None or (self.start_time is not None and self.end_time > self.start_time)))):
             raise ValidationError({"end_time_after_start": "End time must be after start time"})
 
 
@@ -157,6 +160,14 @@ class TournamentJudge(models.Model):
 
     def __str__(self):
         return str(self.role)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def promote_to_head(self):
+        raise NotImplementedError("promote_to_head not implemented")
+
+    def remove(self):
+        raise NotImplementedError("remove not implemented")
 
 
 class TournamentRegistrationStatusChoices(models.TextChoices):
@@ -195,6 +206,21 @@ class TournamentRegistration(models.Model):
     def promote_from_waitlist(self):
         raise NotImplementedError("promote_from_waitlist not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.points_earned is None or self.points_earned >= 0)):
+            errors["points_earned_not_negative"] = "Points earned must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.final_standing is not None) and (not ((self.final_standing is None or self.final_standing > 0))):
+            raise ValidationError({"final_standing_positive": "Final standing must be greater than zero"})
+        if (self.seed is not None) and (not ((self.seed is None or self.seed > 0))):
+            raise ValidationError({"seed_positive": "Seed must be greater than zero"})
+
 
 class TournamentRoundStatusChoices(models.TextChoices):
     PENDING = "Pending", "Pending"
@@ -232,10 +258,22 @@ class TournamentRound(models.Model):
     def is_time_expired(self):
         raise NotImplementedError("is_time_expired not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.round_number is None or self.round_number > 0)):
+            errors["round_number_positive"] = "Round number must be greater than zero"
+        if not ((self.time_limit_minutes is None or self.time_limit_minutes > 0)):
+            errors["time_limit_positive"] = "Round time limit must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
+
     def validate_implies(self):
         from django.core.exceptions import ValidationError
-        if (self.ended_at is not None) and (not ((self.ended_at is None or self.started_at is None or self.ended_at > self.started_at))):
+        if (self.ended_at is not None) and (not ((self.ended_at is None or (self.started_at is not None and self.ended_at > self.started_at)))):
             raise ValidationError({"ended_after_started": "Round end time must be after start time"})
+        if (self.status == TournamentRoundStatusChoices.COMPLETED) and (self.started_at is None):
+            raise ValidationError({"completed_requires_started_at": "Completed round must have a start time"})
 
 
 class MatchStatusChoices(models.TextChoices):
@@ -274,6 +312,9 @@ class Match(models.Model):
     def determine_winner(self):
         raise NotImplementedError("determine_winner not implemented")
 
+    def concede(self, player_id):
+        raise NotImplementedError("concede not implemented")
+
     def draw(self):
         raise NotImplementedError("draw not implemented")
 
@@ -291,6 +332,10 @@ class Match(models.Model):
         from django.core.exceptions import ValidationError
         if (self.status == MatchStatusChoices.BYE) and (self.player2 is not None):
             raise ValidationError({"bye_has_no_player2": "BYE match must not have a second player"})
+        if (self.ended_at is not None) and (not ((self.ended_at is None or (self.started_at is not None and self.ended_at > self.started_at)))):
+            raise ValidationError({"ended_after_started": "Match end time must be after start time"})
+        if (self.status == MatchStatusChoices.COMPLETED) and (self.started_at is None):
+            raise ValidationError({"completed_requires_started_at": "Completed match must have a start time"})
 
 
 class GameWinnerSideChoices(models.TextChoices):
@@ -346,6 +391,10 @@ class Game(models.Model):
             raise ValidationError({"turns_played_positive": "Turns played must be greater than zero"})
         if (self.duration_seconds is not None) and (not ((self.duration_seconds is None or self.duration_seconds > 0))):
             raise ValidationError({"duration_positive": "Game duration must be greater than zero"})
+        if (self.winner_side == GameWinnerSideChoices.DRAW) and (self.winner is not None):
+            raise ValidationError({"draw_has_no_winner": "A draw cannot have a winner"})
+        if ((self.winner_side is not None and self.winner_side != GameWinnerSideChoices.DRAW)) and (self.winner is None):
+            raise ValidationError({"non_draw_requires_winner": "A decisive game must have a winner player set"})
 
 
 class TournamentPrizePrizeTypeChoices(models.TextChoices):
@@ -380,10 +429,13 @@ class TournamentPrize(models.Model):
     def applies_to_placement(self, placement):
         raise NotImplementedError("applies_to_placement not implemented")
 
+    def award_to_player(self, player_id):
+        raise NotImplementedError("award_to_player not implemented")
+
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
-        if not ((self.placement_to is None or self.placement_from is None or self.placement_to >= self.placement_from)):
+        if not ((self.placement_to is None or (self.placement_from is not None and self.placement_to >= self.placement_from))):
             errors["placement_range_valid"] = "placement_to must be greater than or equal to placement_from"
         if not ((self.placement_from is None or self.placement_from > 0)):
             errors["placement_from_positive"] = "placement_from must be greater than zero"
@@ -408,6 +460,11 @@ class AwardedPrize(models.Model):
 
     def __str__(self):
         return str(self.final_placement)
+
+    # ── Business operations ──────────────────────────────────────────
+
+    def claim(self):
+        raise NotImplementedError("claim not implemented")
 
     def clean(self):
         from django.core.exceptions import ValidationError

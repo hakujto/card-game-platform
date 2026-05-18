@@ -45,6 +45,19 @@ class DraftSession(models.Model):
     def is_full(self):
         raise NotImplementedError("is_full not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.seats is None or (self.seats >= 2 and self.seats <= 16))):
+            errors["seats_range"] = "Draft session must have between 2 and 16 seats"
+        if errors:
+            raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.completed_at is not None) and (not (self.status == DraftSessionStatusChoices.COMPLETED)):
+            raise ValidationError({"completed_at_requires_completed_status": "completed_at can only be set when draft status is Completed"})
+
 
 class DraftParticipant(models.Model):
     seat_number = models.IntegerField()
@@ -68,6 +81,14 @@ class DraftParticipant(models.Model):
     def drafted_card_count(self):
         raise NotImplementedError("drafted_card_count not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.seat_number is None or self.seat_number > 0)):
+            errors["seat_number_positive"] = "Seat number must be greater than zero"
+        if errors:
+            raise ValidationError(errors)
+
 
 class DraftPick(models.Model):
     pick_number = models.IntegerField()
@@ -88,6 +109,16 @@ class DraftPick(models.Model):
 
     def is_first_pick(self):
         raise NotImplementedError("is_first_pick not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.pick_number is None or self.pick_number > 0)):
+            errors["pick_number_positive"] = "Pick number must be greater than zero"
+        if not ((self.pack_number is None or (self.pack_number >= 1 and self.pack_number <= 3))):
+            errors["pack_number_range"] = "Pack number must be between 1 and 3"
+        if errors:
+            raise ValidationError(errors)
 
 
 class ArticleStatusChoices(models.TextChoices):
@@ -142,6 +173,14 @@ class Article(models.Model):
 
     def reading_time_minutes(self):
         raise NotImplementedError("reading_time_minutes not implemented")
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.view_count is None or self.view_count >= 0)):
+            errors["view_count_not_negative"] = "Article view count must not be negative"
+        if errors:
+            raise ValidationError(errors)
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
@@ -259,7 +298,17 @@ class Stream(models.Model):
     def duration_minutes(self):
         raise NotImplementedError("duration_minutes not implemented")
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        errors = {}
+        if not ((self.viewer_count_peak is None or self.viewer_count_peak >= 0)):
+            errors["viewer_count_not_negative"] = "Peak viewer count must not be negative"
+        if errors:
+            raise ValidationError(errors)
+
     def validate_implies(self):
         from django.core.exceptions import ValidationError
         if (self.actual_start is not None) and (not (self.status == StreamStatusChoices.LIVE)):
             raise ValidationError({"actual_start_requires_live_or_ended": "actual_start_requires_live_or_ended"})
+        if (self.ended_at is not None) and (not (self.status == StreamStatusChoices.ENDED)):
+            raise ValidationError({"ended_at_requires_ended_status": "ended_at can only be set when stream status is Ended"})

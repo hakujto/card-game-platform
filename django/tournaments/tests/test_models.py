@@ -50,7 +50,7 @@ class TournamentRegistrationModelTest(TestCase):
         _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
         from cards.models import Deck as _DeckCls
         _dep_deck = _DeckCls.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
-        self.obj = TournamentRegistration.objects.create(tournament=_dep_tournament, player=_dep_player, deck=_dep_deck, registered_at="2024-01-01T00:00:00Z")
+        self.obj = TournamentRegistration.objects.create(tournament=_dep_tournament, player=_dep_player, deck=_dep_deck, seed=1, final_standing=1, points_earned=0, registered_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -65,7 +65,7 @@ class TournamentRoundModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_tournament = Tournament.objects.create(name="test", max_players=2, start_time="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", season=_dep_season, organizer=_dep_player)
-        self.obj = TournamentRound.objects.create(tournament=_dep_tournament, round_number=0, ended_at=None)
+        self.obj = TournamentRound.objects.create(tournament=_dep_tournament, round_number=1, started_at="2024-01-01T00:00:00Z", ended_at=None, time_limit_minutes=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -78,7 +78,7 @@ class MatchModelTest(TestCase):
     def setUp(self):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        self.obj = Match.objects.create(player1=_dep_player, player1_wins=0, player2_wins=0)
+        self.obj = Match.objects.create(player1=_dep_player, player1_wins=0, player2_wins=0, started_at="2024-01-01T00:00:00Z", ended_at=None)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))

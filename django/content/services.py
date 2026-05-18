@@ -38,6 +38,14 @@ class DraftSessionService:
         instance.complete()
         instance.save()
 
+    @staticmethod
+    def is_full(id):
+        from .models import DraftSession
+        instance = DraftSession.objects.get(pk=id)
+        result = instance.is_full()
+        instance.save()
+        return result
+
 
 class DraftParticipantService:
     """Domain service for DraftParticipant aggregate."""
@@ -59,6 +67,14 @@ class DraftParticipantService:
         instance.pick_card(card_id, pack_number)
         instance.save()
 
+    @staticmethod
+    def drafted_card_count(id):
+        from .models import DraftParticipant
+        instance = DraftParticipant.objects.get(pk=id)
+        result = instance.drafted_card_count()
+        instance.save()
+        return result
+
 
 class DraftPickService:
     """Domain service for DraftPick aggregate."""
@@ -72,6 +88,14 @@ class DraftPickService:
     def update(instance, data: dict):
         """Update an existing DraftPick."""
         raise NotImplementedError
+
+    @staticmethod
+    def is_first_pick(id):
+        from .models import DraftPick
+        instance = DraftPick.objects.get(pk=id)
+        result = instance.is_first_pick()
+        instance.save()
+        return result
 
 
 class ArticleService:
@@ -108,6 +132,14 @@ class ArticleService:
         instance.increment_view()
         instance.save()
 
+    @staticmethod
+    def reading_time_minutes(id):
+        from .models import Article
+        instance = Article.objects.get(pk=id)
+        result = instance.reading_time_minutes()
+        instance.save()
+        return result
+
 
 class ArticleTagService:
     """Domain service for ArticleTag aggregate."""
@@ -121,6 +153,21 @@ class ArticleTagService:
     def update(instance, data: dict):
         """Update an existing ArticleTag."""
         raise NotImplementedError
+
+    @staticmethod
+    def rename(id, new_name):
+        from .models import ArticleTag
+        instance = ArticleTag.objects.get(pk=id)
+        instance.rename(new_name)
+        instance.save()
+
+    @staticmethod
+    def article_count(id):
+        from .models import ArticleTag
+        instance = ArticleTag.objects.get(pk=id)
+        result = instance.article_count()
+        instance.save()
+        return result
 
 
 class ArticleTagAssignmentService:
@@ -164,6 +211,14 @@ class ArticleCommentService:
         instance.unhide()
         instance.save()
 
+    @staticmethod
+    def is_reply(id):
+        from .models import ArticleComment
+        instance = ArticleComment.objects.get(pk=id)
+        result = instance.is_reply()
+        instance.save()
+        return result
+
 
 class StreamService:
     """Domain service for Stream aggregate."""
@@ -198,3 +253,11 @@ class StreamService:
         instance = Stream.objects.get(pk=id)
         instance.update_viewer_peak(count)
         instance.save()
+
+    @staticmethod
+    def duration_minutes(id):
+        from .models import Stream
+        instance = Stream.objects.get(pk=id)
+        result = instance.duration_minutes()
+        instance.save()
+        return result
