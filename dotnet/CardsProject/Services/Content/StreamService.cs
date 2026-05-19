@@ -112,6 +112,36 @@ public class StreamService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async Task<Stream> TransitionScheduledToLiveAsync(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id)
+            ?? throw new KeyNotFoundException("Stream not found: " + id);
+        entity.AssertTransition(StreamStatusType.Live);
+        if (entity.StreamUrl == null)
+            throw new ArgumentException("stream_url is required for Scheduled -> Live");
+        entity.Status = StreamStatusType.Live;
+        entity.GoLive(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Stream> TransitionLiveToEndedAsync(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id)
+            ?? throw new KeyNotFoundException("Stream not found: " + id);
+        entity.AssertTransition(StreamStatusType.Ended);
+        entity.Status = StreamStatusType.Ended;
+        entity.End(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Stream> TransitionEndedToLiveAsync(int id)
+    {
+        var entity = await _db.Streams.FindAsync(id)
+            ?? throw new KeyNotFoundException("Stream not found: " + id);
+        throw new InvalidOperationException("Transition Ended -> Live is not allowed");
+    }
     public void Validate(Stream entity)
     {
         if (entity.ActualStart != null && !(entity.Status == StreamStatusType.Live)) throw new InvalidOperationException("actual_start_requires_live_or_ended");

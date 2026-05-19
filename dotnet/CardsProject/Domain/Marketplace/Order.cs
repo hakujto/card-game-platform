@@ -87,6 +87,22 @@ public class Order : IValidatableObject
         // TODO: implement notify_shipped
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<OrderStatusType, OrderStatusType[]> AllowedTransitions = new()
+    {
+        [OrderStatusType.Pending] = new[] { OrderStatusType.Paid, OrderStatusType.Cancelled },
+        [OrderStatusType.Paid] = new[] { OrderStatusType.Processing, OrderStatusType.Cancelled },
+        [OrderStatusType.Processing] = new[] { OrderStatusType.Shipped },
+        [OrderStatusType.Shipped] = new[] { OrderStatusType.Completed },
+        [OrderStatusType.Completed] = new[] { OrderStatusType.Refunded }
+    };
+
+    public void AssertTransition(OrderStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

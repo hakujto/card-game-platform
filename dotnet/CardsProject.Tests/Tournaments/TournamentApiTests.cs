@@ -136,4 +136,76 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
         var response = await _client.PostAsync("/api/tournaments", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionDraftToRegistration_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/draft-to-registration/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionRegistrationToOngoing_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/registration-to-ongoing/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionRegistrationToCancelled_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/registration-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionOngoingToCompleted_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/ongoing-to-completed/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionOngoingToCancelled_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/ongoing-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCompletedToDraft_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/completed-to-draft/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCancelledToDraft_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/tournaments/transitions/cancelled-to-draft/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

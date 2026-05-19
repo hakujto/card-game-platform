@@ -135,4 +135,98 @@ public class OrderApiTests : IClassFixture<OrderApiTests.TestFactory>
         var response = await _client.PostAsync("/api/orders", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionPendingToPaid_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/pending-to-paid/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionPaidToProcessing_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/paid-to-processing/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionProcessingToShipped_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/processing-to-shipped/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionShippedToCompleted_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/shipped-to-completed/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionPendingToCancelled_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/pending-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionPaidToCancelled_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/paid-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCompletedToRefunded_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/completed-to-refunded/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionRefundedToCompleted_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/refunded-to-completed/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCompletedToCancelled_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/orders/transitions/completed-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

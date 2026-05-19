@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/articles")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class ArticleController : ControllerBase
 {
     private readonly ArticleService _svc;
 
     public ArticleController(ArticleService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class ArticleController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ArticleDto dto)
     {
@@ -33,6 +34,7 @@ public class ArticleController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class ArticleController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleDto dto)
@@ -55,6 +58,7 @@ public class ArticleController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -126,6 +130,45 @@ public class ArticleController : ControllerBase
             var result = await _svc.ReadingTimeMinutesAsync(id);
             return Ok(result);
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Editor")]
+    [HttpPatch("{id:int}/transitions/draft-to-published")]
+    public async Task<IActionResult> TransitionDraftToPublished(int id)
+    {
+        try { return Ok(await _svc.TransitionDraftToPublishedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Editor")]
+    [HttpPatch("{id:int}/transitions/published-to-archived")]
+    public async Task<IActionResult> TransitionPublishedToArchived(int id)
+    {
+        try { return Ok(await _svc.TransitionPublishedToArchivedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/archived-to-draft")]
+    public async Task<IActionResult> TransitionArchivedToDraft(int id)
+    {
+        try { return Ok(await _svc.TransitionArchivedToDraftAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/published-to-draft")]
+    public async Task<IActionResult> TransitionPublishedToDraft(int id)
+    {
+        try { return Ok(await _svc.TransitionPublishedToDraftAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

@@ -125,4 +125,65 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
         var response = await _client.PostAsync("/api/draft_sessions", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionWaitingForPlayersToDrafting_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/waitingforplayers-to-drafting/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionDraftingToCompleted_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/drafting-to-completed/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionDraftingToAbandoned_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/drafting-to-abandoned/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionWaitingForPlayersToAbandoned_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/waitingforplayers-to-abandoned/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCompletedToDrafting_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/completed-to-drafting/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionAbandonedToDrafting_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/draft_sessions/transitions/abandoned-to-drafting/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

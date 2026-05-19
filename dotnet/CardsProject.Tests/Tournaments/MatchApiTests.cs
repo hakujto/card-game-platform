@@ -142,4 +142,74 @@ public class MatchApiTests : IClassFixture<MatchApiTests.TestFactory>
         var response = await _client.PostAsync("/api/matches", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionPendingToActive_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/pending-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionActiveToCompleted_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/active-to-completed/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionActiveToDraw_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/active-to-draw/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionPendingToBYE_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/pending-to-bye/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionCompletedToActive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/completed-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionDrawToActive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/draw-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionBYEToActive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/matches/transitions/bye-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

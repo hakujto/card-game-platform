@@ -133,6 +133,48 @@ public class ArticleService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async Task<Article> TransitionDraftToPublishedAsync(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id)
+            ?? throw new KeyNotFoundException("Article not found: " + id);
+        entity.AssertTransition(ArticleStatusType.Published);
+        if (entity.Title == null)
+            throw new ArgumentException("title is required for Draft -> Published");
+        if (entity.Body == null)
+            throw new ArgumentException("body is required for Draft -> Published");
+        entity.Status = ArticleStatusType.Published;
+        entity.Publish(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Article> TransitionPublishedToArchivedAsync(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id)
+            ?? throw new KeyNotFoundException("Article not found: " + id);
+        entity.AssertTransition(ArticleStatusType.Archived);
+        entity.Status = ArticleStatusType.Archived;
+        entity.Archive(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Article> TransitionArchivedToDraftAsync(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id)
+            ?? throw new KeyNotFoundException("Article not found: " + id);
+        entity.AssertTransition(ArticleStatusType.Draft);
+        entity.Status = ArticleStatusType.Draft;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Article> TransitionPublishedToDraftAsync(int id)
+    {
+        var entity = await _db.Articles.FindAsync(id)
+            ?? throw new KeyNotFoundException("Article not found: " + id);
+        throw new InvalidOperationException("Transition Published -> Draft is not allowed");
+    }
     public void Validate(Article entity)
     {
         if (entity.Status == ArticleStatusType.Published && entity.PublishedAt == null) throw new InvalidOperationException("Published article must have a published_at timestamp");

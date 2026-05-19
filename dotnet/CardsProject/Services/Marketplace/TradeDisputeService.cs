@@ -103,6 +103,60 @@ public class TradeDisputeService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async Task<TradeDispute> TransitionOpenToUnderReviewAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeDispute not found: " + id);
+        entity.AssertTransition(TradeDisputeStatusType.UnderReview);
+        entity.Status = TradeDisputeStatusType.UnderReview;
+        entity.Review(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeDispute> TransitionUnderReviewToResolvedAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeDispute not found: " + id);
+        entity.AssertTransition(TradeDisputeStatusType.Resolved);
+        if (entity.Resolution == null)
+            throw new ArgumentException("resolution is required for UnderReview -> Resolved");
+        entity.Status = TradeDisputeStatusType.Resolved;
+        entity.CloseResolved(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeDispute> TransitionUnderReviewToEscalatedAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeDispute not found: " + id);
+        entity.AssertTransition(TradeDisputeStatusType.Escalated);
+        entity.Status = TradeDisputeStatusType.Escalated;
+        entity.Escalate(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeDispute> TransitionEscalatedToResolvedAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeDispute not found: " + id);
+        entity.AssertTransition(TradeDisputeStatusType.Resolved);
+        if (entity.Resolution == null)
+            throw new ArgumentException("resolution is required for Escalated -> Resolved");
+        entity.Status = TradeDisputeStatusType.Resolved;
+        entity.CloseResolved(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeDispute> TransitionResolvedToOpenAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeDispute not found: " + id);
+        throw new InvalidOperationException("Transition Resolved -> Open is not allowed");
+    }
     public void Validate(TradeDispute entity)
     {
         if (entity.ResolvedAt != null && !(entity.Status == TradeDisputeStatusType.Resolved)) throw new InvalidOperationException("resolved_at_requires_terminal_status");

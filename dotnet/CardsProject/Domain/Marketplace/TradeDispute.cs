@@ -61,4 +61,18 @@ public class TradeDispute
     {
         // TODO: implement review
     }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<TradeDisputeStatusType, TradeDisputeStatusType[]> AllowedTransitions = new()
+    {
+        [TradeDisputeStatusType.Open] = new[] { TradeDisputeStatusType.UnderReview },
+        [TradeDisputeStatusType.UnderReview] = new[] { TradeDisputeStatusType.Resolved, TradeDisputeStatusType.Escalated },
+        [TradeDisputeStatusType.Escalated] = new[] { TradeDisputeStatusType.Resolved }
+    };
+
+    public void AssertTransition(TradeDisputeStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
 }

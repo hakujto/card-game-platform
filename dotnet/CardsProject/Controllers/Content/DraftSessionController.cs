@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/draft_sessions")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class DraftSessionController : ControllerBase
 {
     private readonly DraftSessionService _svc;
 
     public DraftSessionController(DraftSessionService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class DraftSessionController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] DraftSessionDto dto)
     {
@@ -33,6 +34,7 @@ public class DraftSessionController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class DraftSessionController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DraftSessionDto dto)
@@ -55,6 +58,7 @@ public class DraftSessionController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -104,6 +108,62 @@ public class DraftSessionController : ControllerBase
             var result = await _svc.IsFullAsync(id);
             return Ok(result);
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/waitingforplayers-to-drafting")]
+    public async Task<IActionResult> TransitionWaitingForPlayersToDrafting(int id)
+    {
+        try { return Ok(await _svc.TransitionWaitingForPlayersToDraftingAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/drafting-to-completed")]
+    public async Task<IActionResult> TransitionDraftingToCompleted(int id)
+    {
+        try { return Ok(await _svc.TransitionDraftingToCompletedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/drafting-to-abandoned")]
+    public async Task<IActionResult> TransitionDraftingToAbandoned(int id)
+    {
+        try { return Ok(await _svc.TransitionDraftingToAbandonedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/waitingforplayers-to-abandoned")]
+    public async Task<IActionResult> TransitionWaitingForPlayersToAbandoned(int id)
+    {
+        try { return Ok(await _svc.TransitionWaitingForPlayersToAbandonedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/completed-to-drafting")]
+    public async Task<IActionResult> TransitionCompletedToDrafting(int id)
+    {
+        try { return Ok(await _svc.TransitionCompletedToDraftingAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/abandoned-to-drafting")]
+    public async Task<IActionResult> TransitionAbandonedToDrafting(int id)
+    {
+        try { return Ok(await _svc.TransitionAbandonedToDraftingAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

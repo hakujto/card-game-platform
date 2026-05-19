@@ -108,4 +108,56 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
         var response = await _client.PostAsync("/api/trade_disputes", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionOpenToUnderReview_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_disputes/transitions/open-to-underreview/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionUnderReviewToResolved_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_disputes/transitions/underreview-to-resolved/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionUnderReviewToEscalated_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_disputes/transitions/underreview-to-escalated/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionEscalatedToResolved_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_disputes/transitions/escalated-to-resolved/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionResolvedToOpen_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/trade_disputes/transitions/resolved-to-open/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

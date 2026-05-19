@@ -115,6 +115,68 @@ public class MatchService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async Task<Match> TransitionPendingToActiveAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        entity.AssertTransition(MatchStatusType.Active);
+        entity.Status = MatchStatusType.Active;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Match> TransitionActiveToCompletedAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        entity.AssertTransition(MatchStatusType.Completed);
+        entity.Status = MatchStatusType.Completed;
+        entity.FinalizeResult(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Match> TransitionActiveToDrawAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        entity.AssertTransition(MatchStatusType.Draw);
+        entity.Status = MatchStatusType.Draw;
+        entity.Draw(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Match> TransitionPendingToBYEAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        entity.AssertTransition(MatchStatusType.BYE);
+        entity.Status = MatchStatusType.BYE;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Match> TransitionCompletedToActiveAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        throw new InvalidOperationException("Transition Completed -> Active is not allowed");
+    }
+
+    public async Task<Match> TransitionDrawToActiveAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        throw new InvalidOperationException("Transition Draw -> Active is not allowed");
+    }
+
+    public async Task<Match> TransitionBYEToActiveAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id)
+            ?? throw new KeyNotFoundException("Match not found: " + id);
+        throw new InvalidOperationException("Transition BYE -> Active is not allowed");
+    }
     public void Validate(Match entity)
     {
         if (entity.Status == MatchStatusType.BYE && entity.Player2Id != null) throw new InvalidOperationException("BYE match must not have a second player");

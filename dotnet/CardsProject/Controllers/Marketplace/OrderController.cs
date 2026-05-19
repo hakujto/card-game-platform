@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/orders")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class OrderController : ControllerBase
 {
     private readonly OrderService _svc;
 
     public OrderController(OrderService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class OrderController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] OrderDto dto)
     {
@@ -33,6 +34,7 @@ public class OrderController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class OrderController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] OrderDto dto)
@@ -55,6 +58,7 @@ public class OrderController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -128,6 +132,92 @@ public class OrderController : ControllerBase
             await _svc.RefundAsync(id);
             return NoContent();
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/pending-to-paid")]
+    public async Task<IActionResult> TransitionPendingToPaid(int id)
+    {
+        try { return Ok(await _svc.TransitionPendingToPaidAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/paid-to-processing")]
+    public async Task<IActionResult> TransitionPaidToProcessing(int id)
+    {
+        try { return Ok(await _svc.TransitionPaidToProcessingAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/processing-to-shipped")]
+    public async Task<IActionResult> TransitionProcessingToShipped(int id)
+    {
+        try { return Ok(await _svc.TransitionProcessingToShippedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/shipped-to-completed")]
+    public async Task<IActionResult> TransitionShippedToCompleted(int id)
+    {
+        try { return Ok(await _svc.TransitionShippedToCompletedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/pending-to-cancelled")]
+    public async Task<IActionResult> TransitionPendingToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionPendingToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/paid-to-cancelled")]
+    public async Task<IActionResult> TransitionPaidToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionPaidToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/completed-to-refunded")]
+    public async Task<IActionResult> TransitionCompletedToRefunded(int id)
+    {
+        try { return Ok(await _svc.TransitionCompletedToRefundedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/refunded-to-completed")]
+    public async Task<IActionResult> TransitionRefundedToCompleted(int id)
+    {
+        try { return Ok(await _svc.TransitionRefundedToCompletedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/completed-to-cancelled")]
+    public async Task<IActionResult> TransitionCompletedToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionCompletedToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

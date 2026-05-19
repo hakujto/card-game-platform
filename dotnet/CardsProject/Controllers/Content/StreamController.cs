@@ -7,13 +7,13 @@ namespace CardsProject.Controllers.Content;
 
 [ApiController]
 [Route("api/streams")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class StreamController : ControllerBase
 {
     private readonly StreamService _svc;
 
     public StreamController(StreamService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -21,6 +21,7 @@ public class StreamController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] StreamDto dto)
     {
@@ -34,6 +35,7 @@ public class StreamController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -42,6 +44,7 @@ public class StreamController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] StreamDto dto)
@@ -56,6 +59,7 @@ public class StreamController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -106,6 +110,35 @@ public class StreamController : ControllerBase
             var result = await _svc.DurationMinutesAsync(id);
             return Ok(result);
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer")]
+    [HttpPatch("{id:int}/transitions/scheduled-to-live")]
+    public async Task<IActionResult> TransitionScheduledToLive(int id)
+    {
+        try { return Ok(await _svc.TransitionScheduledToLiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer")]
+    [HttpPatch("{id:int}/transitions/live-to-ended")]
+    public async Task<IActionResult> TransitionLiveToEnded(int id)
+    {
+        try { return Ok(await _svc.TransitionLiveToEndedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/ended-to-live")]
+    public async Task<IActionResult> TransitionEndedToLive(int id)
+    {
+        try { return Ok(await _svc.TransitionEndedToLiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

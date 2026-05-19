@@ -133,6 +133,64 @@ public class TradeListingService
         }
         await _db.SaveChangesAsync();
     }
+    public async Task<TradeListing> TransitionPendingToActiveAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        entity.AssertTransition(TradeListingStatusType.Active);
+        if (entity.Quantity == null)
+            throw new ArgumentException("quantity is required for Pending -> Active");
+        entity.Status = TradeListingStatusType.Active;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeListing> TransitionActiveToSoldAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        entity.AssertTransition(TradeListingStatusType.Sold);
+        entity.Status = TradeListingStatusType.Sold;
+        entity.FinalizeAuction(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeListing> TransitionActiveToExpiredAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        entity.AssertTransition(TradeListingStatusType.Expired);
+        entity.Status = TradeListingStatusType.Expired;
+        entity.Close(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeListing> TransitionActiveToCancelledAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        entity.AssertTransition(TradeListingStatusType.Cancelled);
+        entity.Status = TradeListingStatusType.Cancelled;
+        entity.Cancel(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<TradeListing> TransitionSoldToActiveAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        throw new InvalidOperationException("Transition Sold -> Active is not allowed");
+    }
+
+    public async Task<TradeListing> TransitionExpiredToActiveAsync(int id)
+    {
+        var entity = await _db.TradeListings.FindAsync(id)
+            ?? throw new KeyNotFoundException("TradeListing not found: " + id);
+        throw new InvalidOperationException("Transition Expired -> Active is not allowed");
+    }
     public void Validate(TradeListing entity)
     {
         if (entity.ListingType == TradeListingListingTypeType.FixedPrice && entity.AskingPrice == null) throw new InvalidOperationException("Fixed price listing must have an asking price");

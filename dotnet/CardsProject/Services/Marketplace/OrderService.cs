@@ -139,6 +139,98 @@ public class OrderService
         }
         await _db.SaveChangesAsync();
     }
+    public async Task<Order> TransitionPendingToPaidAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Paid);
+        if (entity.PaymentMethod == null)
+            throw new ArgumentException("payment_method is required for Pending -> Paid");
+        entity.Status = OrderStatusType.Paid;
+        entity.ProcessPayment(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionPaidToProcessingAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Processing);
+        entity.Status = OrderStatusType.Processing;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionProcessingToShippedAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Shipped);
+        if (entity.TrackingNumber == null)
+            throw new ArgumentException("tracking_number is required for Processing -> Shipped");
+        entity.Status = OrderStatusType.Shipped;
+        entity.NotifyShipped(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionShippedToCompletedAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Completed);
+        entity.Status = OrderStatusType.Completed;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionPendingToCancelledAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Cancelled);
+        entity.Status = OrderStatusType.Cancelled;
+        entity.Cancel(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionPaidToCancelledAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Cancelled);
+        entity.Status = OrderStatusType.Cancelled;
+        entity.Cancel(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionCompletedToRefundedAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        entity.AssertTransition(OrderStatusType.Refunded);
+        entity.Status = OrderStatusType.Refunded;
+        entity.Refund(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Order> TransitionRefundedToCompletedAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        throw new InvalidOperationException("Transition Refunded -> Completed is not allowed");
+    }
+
+    public async Task<Order> TransitionCompletedToCancelledAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id)
+            ?? throw new KeyNotFoundException("Order not found: " + id);
+        throw new InvalidOperationException("Transition Completed -> Cancelled is not allowed");
+    }
     public void Validate(Order entity)
     {
         if (entity.Status == OrderStatusType.Paid && entity.PaidAt == null) throw new InvalidOperationException("Paid order must have paid_at set");

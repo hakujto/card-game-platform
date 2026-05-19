@@ -94,6 +94,20 @@ public class Article : IValidatableObject
         return default;
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<ArticleStatusType, ArticleStatusType[]> AllowedTransitions = new()
+    {
+        [ArticleStatusType.Draft] = new[] { ArticleStatusType.Published },
+        [ArticleStatusType.Published] = new[] { ArticleStatusType.Archived },
+        [ArticleStatusType.Archived] = new[] { ArticleStatusType.Draft }
+    };
+
+    public void AssertTransition(ArticleStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

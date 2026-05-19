@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/tournaments")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TournamentController : ControllerBase
 {
     private readonly TournamentService _svc;
 
     public TournamentController(TournamentService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class TournamentController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TournamentDto dto)
     {
@@ -33,6 +34,7 @@ public class TournamentController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class TournamentController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TournamentDto dto)
@@ -55,6 +58,7 @@ public class TournamentController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -139,6 +143,74 @@ public class TournamentController : ControllerBase
             var result = await _svc.IsFullAsync(id);
             return Ok(result);
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/draft-to-registration")]
+    public async Task<IActionResult> TransitionDraftToRegistration(int id)
+    {
+        try { return Ok(await _svc.TransitionDraftToRegistrationAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/registration-to-ongoing")]
+    public async Task<IActionResult> TransitionRegistrationToOngoing(int id)
+    {
+        try { return Ok(await _svc.TransitionRegistrationToOngoingAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/registration-to-cancelled")]
+    public async Task<IActionResult> TransitionRegistrationToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionRegistrationToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/ongoing-to-completed")]
+    public async Task<IActionResult> TransitionOngoingToCompleted(int id)
+    {
+        try { return Ok(await _svc.TransitionOngoingToCompletedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/ongoing-to-cancelled")]
+    public async Task<IActionResult> TransitionOngoingToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionOngoingToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/completed-to-draft")]
+    public async Task<IActionResult> TransitionCompletedToDraft(int id)
+    {
+        try { return Ok(await _svc.TransitionCompletedToDraftAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/cancelled-to-draft")]
+    public async Task<IActionResult> TransitionCancelledToDraft(int id)
+    {
+        try { return Ok(await _svc.TransitionCancelledToDraftAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

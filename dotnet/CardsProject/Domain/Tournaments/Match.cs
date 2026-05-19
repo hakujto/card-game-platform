@@ -63,6 +63,19 @@ public class Match : IValidatableObject
         // TODO: implement draw
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<MatchStatusType, MatchStatusType[]> AllowedTransitions = new()
+    {
+        [MatchStatusType.Pending] = new[] { MatchStatusType.Active, MatchStatusType.BYE },
+        [MatchStatusType.Active] = new[] { MatchStatusType.Completed, MatchStatusType.Draw }
+    };
+
+    public void AssertTransition(MatchStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

@@ -82,6 +82,19 @@ public class TradeListing : IValidatableObject
         // TODO: implement finalize_auction
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<TradeListingStatusType, TradeListingStatusType[]> AllowedTransitions = new()
+    {
+        [TradeListingStatusType.Pending] = new[] { TradeListingStatusType.Active },
+        [TradeListingStatusType.Active] = new[] { TradeListingStatusType.Sold, TradeListingStatusType.Expired, TradeListingStatusType.Cancelled }
+    };
+
+    public void AssertTransition(TradeListingStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

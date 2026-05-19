@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/trade_listings")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TradeListingController : ControllerBase
 {
     private readonly TradeListingService _svc;
 
     public TradeListingController(TradeListingService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class TradeListingController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TradeListingDto dto)
     {
@@ -33,6 +34,7 @@ public class TradeListingController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class TradeListingController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TradeListingDto dto)
@@ -55,6 +58,7 @@ public class TradeListingController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -116,6 +120,62 @@ public class TradeListingController : ControllerBase
             await _svc.FinalizeAuctionAsync(id);
             return NoContent();
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Seller")]
+    [HttpPatch("{id:int}/transitions/pending-to-active")]
+    public async Task<IActionResult> TransitionPendingToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionPendingToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/active-to-sold")]
+    public async Task<IActionResult> TransitionActiveToSold(int id)
+    {
+        try { return Ok(await _svc.TransitionActiveToSoldAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/active-to-expired")]
+    public async Task<IActionResult> TransitionActiveToExpired(int id)
+    {
+        try { return Ok(await _svc.TransitionActiveToExpiredAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Seller")]
+    [HttpPatch("{id:int}/transitions/active-to-cancelled")]
+    public async Task<IActionResult> TransitionActiveToCancelled(int id)
+    {
+        try { return Ok(await _svc.TransitionActiveToCancelledAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/sold-to-active")]
+    public async Task<IActionResult> TransitionSoldToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionSoldToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/expired-to-active")]
+    public async Task<IActionResult> TransitionExpiredToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionExpiredToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

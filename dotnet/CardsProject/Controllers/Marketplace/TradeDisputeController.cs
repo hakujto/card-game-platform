@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Marketplace;
 
 [ApiController]
 [Route("api/trade_disputes")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class TradeDisputeController : ControllerBase
 {
     private readonly TradeDisputeService _svc;
 
     public TradeDisputeController(TradeDisputeService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class TradeDisputeController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TradeDisputeDto dto)
     {
@@ -33,6 +34,7 @@ public class TradeDisputeController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class TradeDisputeController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TradeDisputeDto dto)
@@ -55,6 +58,7 @@ public class TradeDisputeController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -105,6 +109,55 @@ public class TradeDisputeController : ControllerBase
             await _svc.ReviewAsync(id);
             return NoContent();
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/open-to-underreview")]
+    public async Task<IActionResult> TransitionOpenToUnderReview(int id)
+    {
+        try { return Ok(await _svc.TransitionOpenToUnderReviewAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/underreview-to-resolved")]
+    public async Task<IActionResult> TransitionUnderReviewToResolved(int id)
+    {
+        try { return Ok(await _svc.TransitionUnderReviewToResolvedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/underreview-to-escalated")]
+    public async Task<IActionResult> TransitionUnderReviewToEscalated(int id)
+    {
+        try { return Ok(await _svc.TransitionUnderReviewToEscalatedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [HttpPatch("{id:int}/transitions/escalated-to-resolved")]
+    public async Task<IActionResult> TransitionEscalatedToResolved(int id)
+    {
+        try { return Ok(await _svc.TransitionEscalatedToResolvedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/resolved-to-open")]
+    public async Task<IActionResult> TransitionResolvedToOpen(int id)
+    {
+        try { return Ok(await _svc.TransitionResolvedToOpenAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

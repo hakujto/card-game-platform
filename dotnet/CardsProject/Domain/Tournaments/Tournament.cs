@@ -98,6 +98,20 @@ public class Tournament : IValidatableObject
         return default;
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static readonly System.Collections.Generic.Dictionary<TournamentStatusType, TournamentStatusType[]> AllowedTransitions = new()
+    {
+        [TournamentStatusType.Draft] = new[] { TournamentStatusType.Registration },
+        [TournamentStatusType.Registration] = new[] { TournamentStatusType.Ongoing, TournamentStatusType.Cancelled },
+        [TournamentStatusType.Ongoing] = new[] { TournamentStatusType.Completed, TournamentStatusType.Cancelled }
+    };
+
+    public void AssertTransition(TournamentStatusType to)
+    {
+        if (!AllowedTransitions.TryGetValue(Status, out var allowed) || !System.Array.Exists(allowed, s => s == to))
+            throw new InvalidOperationException($"Transition {Status} -> {to} not allowed");
+    }
+
     // ── Domain invariants (simple rules) ──────────────────────────────
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

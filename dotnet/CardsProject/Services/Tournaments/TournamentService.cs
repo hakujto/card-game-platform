@@ -141,6 +141,78 @@ public class TournamentService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async Task<Tournament> TransitionDraftToRegistrationAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.AssertTransition(TournamentStatusType.Registration);
+        if (entity.Name == null)
+            throw new ArgumentException("name is required for Draft -> Registration");
+        if (entity.StartTime == null)
+            throw new ArgumentException("start_time is required for Draft -> Registration");
+        entity.Status = TournamentStatusType.Registration;
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Tournament> TransitionRegistrationToOngoingAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.AssertTransition(TournamentStatusType.Ongoing);
+        entity.Status = TournamentStatusType.Ongoing;
+        entity.Start(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Tournament> TransitionRegistrationToCancelledAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.AssertTransition(TournamentStatusType.Cancelled);
+        entity.Status = TournamentStatusType.Cancelled;
+        entity.Cancel(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Tournament> TransitionOngoingToCompletedAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.AssertTransition(TournamentStatusType.Completed);
+        entity.Status = TournamentStatusType.Completed;
+        entity.Complete(); // @after
+        entity.CalculatePrizeDistribution(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Tournament> TransitionOngoingToCancelledAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        entity.AssertTransition(TournamentStatusType.Cancelled);
+        entity.Status = TournamentStatusType.Cancelled;
+        entity.Cancel(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Tournament> TransitionCompletedToDraftAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        throw new InvalidOperationException("Transition Completed -> Draft is not allowed");
+    }
+
+    public async Task<Tournament> TransitionCancelledToDraftAsync(int id)
+    {
+        var entity = await _db.Tournaments.FindAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found: " + id);
+        throw new InvalidOperationException("Transition Cancelled -> Draft is not allowed");
+    }
     public void Validate(Tournament entity)
     {
         if (entity.EndTime != null && !((entity.EndTime == null || (entity.StartTime != null && entity.EndTime > entity.StartTime)))) throw new InvalidOperationException("End time must be after start time");

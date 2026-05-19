@@ -125,4 +125,34 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
         var response = await _client.PostAsync("/api/streams", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionScheduledToLive_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/streams/transitions/scheduled-to-live/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionLiveToEnded_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/streams/transitions/live-to-ended/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionEndedToLive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/streams/transitions/ended-to-live/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }

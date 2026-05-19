@@ -6,13 +6,13 @@ namespace CardsProject.Controllers.Tournaments;
 
 [ApiController]
 [Route("api/matches")]
-[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 public class MatchController : ControllerBase
 {
     private readonly MatchService _svc;
 
     public MatchController(MatchService svc) => _svc = svc;
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> List()
     {
@@ -20,6 +20,7 @@ public class MatchController : ControllerBase
         return Ok(items);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] MatchDto dto)
     {
@@ -33,6 +34,7 @@ public class MatchController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Show(int id)
     {
@@ -41,6 +43,7 @@ public class MatchController : ControllerBase
         return Ok(entity);
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] MatchDto dto)
@@ -55,6 +58,7 @@ public class MatchController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -118,6 +122,73 @@ public class MatchController : ControllerBase
             await _svc.DrawAsync(id);
             return NoContent();
         }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [HttpPatch("{id:int}/transitions/pending-to-active")]
+    public async Task<IActionResult> TransitionPendingToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionPendingToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [HttpPatch("{id:int}/transitions/active-to-completed")]
+    public async Task<IActionResult> TransitionActiveToCompleted(int id)
+    {
+        try { return Ok(await _svc.TransitionActiveToCompletedAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [HttpPatch("{id:int}/transitions/active-to-draw")]
+    public async Task<IActionResult> TransitionActiveToDraw(int id)
+    {
+        try { return Ok(await _svc.TransitionActiveToDrawAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [HttpPatch("{id:int}/transitions/pending-to-bye")]
+    public async Task<IActionResult> TransitionPendingToBYE(int id)
+    {
+        try { return Ok(await _svc.TransitionPendingToBYEAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/completed-to-active")]
+    public async Task<IActionResult> TransitionCompletedToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionCompletedToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/draw-to-active")]
+    public async Task<IActionResult> TransitionDrawToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionDrawToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPatch("{id:int}/transitions/bye-to-active")]
+    public async Task<IActionResult> TransitionBYEToActive(int id)
+    {
+        try { return Ok(await _svc.TransitionBYEToActiveAsync(id)); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

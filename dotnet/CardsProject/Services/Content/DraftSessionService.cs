@@ -99,6 +99,63 @@ public class DraftSessionService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async Task<DraftSession> TransitionWaitingForPlayersToDraftingAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        entity.AssertTransition(DraftSessionStatusType.Drafting);
+        entity.Status = DraftSessionStatusType.Drafting;
+        entity.Start(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<DraftSession> TransitionDraftingToCompletedAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        entity.AssertTransition(DraftSessionStatusType.Completed);
+        entity.Status = DraftSessionStatusType.Completed;
+        entity.Complete(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<DraftSession> TransitionDraftingToAbandonedAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        entity.AssertTransition(DraftSessionStatusType.Abandoned);
+        entity.Status = DraftSessionStatusType.Abandoned;
+        entity.Abandon(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<DraftSession> TransitionWaitingForPlayersToAbandonedAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        entity.AssertTransition(DraftSessionStatusType.Abandoned);
+        entity.Status = DraftSessionStatusType.Abandoned;
+        entity.Abandon(); // @after
+        await _db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<DraftSession> TransitionCompletedToDraftingAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        throw new InvalidOperationException("Transition Completed -> Drafting is not allowed");
+    }
+
+    public async Task<DraftSession> TransitionAbandonedToDraftingAsync(int id)
+    {
+        var entity = await _db.DraftSessions.FindAsync(id)
+            ?? throw new KeyNotFoundException("DraftSession not found: " + id);
+        throw new InvalidOperationException("Transition Abandoned -> Drafting is not allowed");
+    }
     public void Validate(DraftSession entity)
     {
         if (entity.CompletedAt != null && !(entity.Status == DraftSessionStatusType.Completed)) throw new InvalidOperationException("completed_at can only be set when draft status is Completed");

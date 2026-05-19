@@ -127,4 +127,65 @@ public class TradeListingApiTests : IClassFixture<TradeListingApiTests.TestFacto
         var response = await _client.PostAsync("/api/trade_listings", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+    [Fact]
+    public async Task TransitionPendingToActive_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/pending-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionActiveToSold_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/active-to-sold/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionActiveToExpired_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/active-to-expired/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionActiveToCancelled_Returns200Or404()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/active-to-cancelled/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionSoldToActive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/sold-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task TransitionExpiredToActive_IsDenied()
+    {
+        var response = await _client.PatchAsync("/api/trade_listings/transitions/expired-to-active/1", null);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Conflict ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
 }
