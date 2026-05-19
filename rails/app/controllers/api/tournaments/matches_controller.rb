@@ -50,6 +50,15 @@ module Api
         render json: { error: 'Match not found' }, status: :not_found
       end
 
+      # POST /api/matches/:id/finalize
+      def finalize_result
+        @match = Match.find(params[:id])
+        @match.finalize_result()
+        head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
       # GET /api/matches/:id/winner
       def determine_winner
         @match = Match.find(params[:id])
@@ -74,6 +83,101 @@ module Api
         @match = Match.find(params[:id])
         @match.draw()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+      # PATCH /api/:id/transitions/pending-to-active
+      def transition_pending_to_active
+        @match = Match.find(params[:id])
+        @match.assert_transition!('active')
+        @match.status = 'active'
+        if @match.save
+          render json: @match
+        else
+          render json: { errors: @match.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/active-to-completed
+      def transition_active_to_completed
+        @match = Match.find(params[:id])
+        @match.assert_transition!('completed')
+        @match.status = 'completed'
+        @match.finalize_result  # @after
+        if @match.save
+          render json: @match
+        else
+          render json: { errors: @match.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/active-to-draw
+      def transition_active_to_draw
+        @match = Match.find(params[:id])
+        @match.assert_transition!('draw')
+        @match.status = 'draw'
+        @match.draw  # @after
+        if @match.save
+          render json: @match
+        else
+          render json: { errors: @match.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/pending-to-bye
+      def transition_pending_to_bye
+        @match = Match.find(params[:id])
+        @match.assert_transition!('b_y_e')
+        @match.status = 'b_y_e'
+        if @match.save
+          render json: @match
+        else
+          render json: { errors: @match.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/completed-to-active
+      def transition_completed_to_active
+        render json: { error: 'Transition Completed -> Active is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/draw-to-active
+      def transition_draw_to_active
+        render json: { error: 'Transition Draw -> Active is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Match not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/bye-to-active
+      def transition_bye_to_active
+        render json: { error: 'Transition BYE -> Active is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Match not found' }, status: :not_found
       end

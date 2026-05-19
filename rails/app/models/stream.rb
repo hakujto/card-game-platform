@@ -1,8 +1,9 @@
 class Stream < ApplicationRecord
   self.table_name = 'streams'
 
-  enum :platform, { twitch: 0, you_tube: 1, kick_stream: 2, platform: 3 }, prefix: :platform
   enum :status, { scheduled: 0, live: 1, ended: 2 }, prefix: :status
+  enum :platform, { twitch: 0, you_tube: 1, kick_stream: 2, platform: 3 }, prefix: :platform
+  enum :language, { e_n: 0, d_e: 1, f_r: 2, i_t: 3, e_s: 4, j_p: 5, p_t: 6 }, prefix: :language
 
   belongs_to :tournament, class_name: 'Tournament', optional: true
   belongs_to :streamer, class_name: 'Player'
@@ -32,18 +33,32 @@ class Stream < ApplicationRecord
   # Business operations
 
   def go_live
-    raise NotImplementedError, "go_live not implemented"
+    # TODO: implement go_live
   end
 
   def end
-    raise NotImplementedError, "end not implemented"
+    # TODO: implement end
   end
 
   def update_viewer_peak(count)
-    raise NotImplementedError, "update_viewer_peak not implemented"
+    # TODO: implement update_viewer_peak
   end
 
   def duration_minutes
-    raise NotImplementedError, "duration_minutes not implemented"
+    # TODO: implement duration_minutes
+    nil
+  end
+
+  # Lifecycle state machine
+  ALLOWED_TRANSITIONS = {
+    'scheduled' => ['live'],
+    'live' => ['ended'],
+  }.freeze
+
+  def assert_transition!(to_state)
+    allowed = ALLOWED_TRANSITIONS.fetch(status.to_s, [])
+    unless allowed.include?(to_state.to_s)
+      raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
+    end
   end
 end

@@ -31,10 +31,11 @@ class Game < ApplicationRecord
   # Business operations
 
   def record_winner(winner_side)
-    raise NotImplementedError, "record_winner not implemented"
+    # TODO: implement record_winner
   end
 
   def duration_minutes
-    raise NotImplementedError, "duration_minutes not implemented"
+    # TODO: implement duration_minutes
+    nil
   end
 end

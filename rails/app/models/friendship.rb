@@ -13,14 +13,14 @@ class Friendship < ApplicationRecord
   # Business operations
 
   def accept
-    raise NotImplementedError, "accept not implemented"
+    # TODO: implement accept
   end
 
   def decline
-    raise NotImplementedError, "decline not implemented"
+    # TODO: implement decline
   end
 
   def block
-    raise NotImplementedError, "block not implemented"
+    # TODO: implement block
   end
 end

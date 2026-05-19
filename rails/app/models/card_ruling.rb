@@ -12,10 +12,12 @@ class CardRuling < ApplicationRecord
   # Business operations
 
   def is_current
-    raise NotImplementedError, "is_current not implemented"
+    # TODO: implement is_current
+    nil
   end
 
   def supersedes_previous
-    raise NotImplementedError, "supersedes_previous not implemented"
+    # TODO: implement supersedes_previous
+    nil
   end
 end

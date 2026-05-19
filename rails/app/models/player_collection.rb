@@ -21,14 +21,15 @@ class PlayerCollection < ApplicationRecord
   # Business operations
 
   def add(quantity)
-    raise NotImplementedError, "add not implemented"
+    # TODO: implement add
   end
 
   def remove(quantity)
-    raise NotImplementedError, "remove not implemented"
+    # TODO: implement remove
   end
 
   def estimated_value
-    raise NotImplementedError, "estimated_value not implemented"
+    # TODO: implement estimated_value
+    nil
   end
 end

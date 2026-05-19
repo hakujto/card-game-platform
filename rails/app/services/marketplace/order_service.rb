@@ -25,6 +25,13 @@ module Marketplace
       result
     end
 
+    def process_payment(id)
+      instance = Order.find(id)
+      result = instance.process_payment()
+      instance.save!
+      result
+    end
+
     def calculate_total(id)
       instance = Order.find(id)
       result = instance.calculate_total()

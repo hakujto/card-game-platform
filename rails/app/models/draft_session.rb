@@ -11,6 +11,7 @@ class DraftSession < ApplicationRecord
 
   def validate_rules
     errors.add(:seats_range, 'Draft session must have between 2 and 16 seats') unless ((seats.nil? || (seats >= 2 && seats <= 16)))
+    errors.add(:time_per_pick_positive, 'Time per pick must be greater than zero') unless ((time_per_pick_seconds.nil? || time_per_pick_seconds > 0))
   end
 
   # Domain invariants — IMPLIES rules
@@ -27,18 +28,32 @@ class DraftSession < ApplicationRecord
   # Business operations
 
   def start
-    raise NotImplementedError, "start not implemented"
+    # TODO: implement start
   end
 
   def abandon
-    raise NotImplementedError, "abandon not implemented"
+    # TODO: implement abandon
   end
 
   def complete
-    raise NotImplementedError, "complete not implemented"
+    # TODO: implement complete
   end
 
   def is_full
-    raise NotImplementedError, "is_full not implemented"
+    # TODO: implement is_full
+    nil
+  end
+
+  # Lifecycle state machine
+  ALLOWED_TRANSITIONS = {
+    'waiting_for_players' => ['drafting', 'abandoned'],
+    'drafting' => ['completed', 'abandoned'],
+  }.freeze
+
+  def assert_transition!(to_state)
+    allowed = ALLOWED_TRANSITIONS.fetch(status.to_s, [])
+    unless allowed.include?(to_state.to_s)
+      raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
+    end
   end
 end

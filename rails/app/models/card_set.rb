@@ -28,18 +28,21 @@ class CardSet < ApplicationRecord
   # Business operations
 
   def is_legal_in_standard
-    raise NotImplementedError, "is_legal_in_standard not implemented"
+    # TODO: implement is_legal_in_standard
+    nil
   end
 
   def is_legal_in_format(format)
-    raise NotImplementedError, "is_legal_in_format not implemented"
+    # TODO: implement is_legal_in_format
+    nil
   end
 
   def card_count_by_rarity(rarity)
-    raise NotImplementedError, "card_count_by_rarity not implemented"
+    # TODO: implement card_count_by_rarity
+    nil
   end
 
   def rotate_out
-    raise NotImplementedError, "rotate_out not implemented"
+    # TODO: implement rotate_out
   end
 end

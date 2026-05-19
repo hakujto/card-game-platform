@@ -12,14 +12,15 @@ class ArticleComment < ApplicationRecord
   # Business operations
 
   def hide
-    raise NotImplementedError, "hide not implemented"
+    # TODO: implement hide
   end
 
   def unhide
-    raise NotImplementedError, "unhide not implemented"
+    # TODO: implement unhide
   end
 
   def is_reply
-    raise NotImplementedError, "is_reply not implemented"
+    # TODO: implement is_reply
+    nil
   end
 end

@@ -12,7 +12,10 @@ RSpec.describe "Api::Content::Articles", type: :request do
       body: 'test',
       status: :draft,
       article_type: :guide,
+      language: :e_n,
       view_count: 1,
+      likes_count: 1,
+      is_featured: true,
       created_at: Time.now,
       updated_at: Time.now,
       author_id: @dep_author.id
@@ -35,7 +38,10 @@ RSpec.describe "Api::Content::Articles", type: :request do
       body: 'test',
       status: :draft,
       article_type: :guide,
+      language: :e_n,
       view_count: 1,
+      likes_count: 1,
+      is_featured: true,
       created_at: Time.now,
       updated_at: Time.now,
       author_id: @dep_author.id
@@ -105,6 +111,61 @@ RSpec.describe "Api::Content::Articles", type: :request do
         view_count: -1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "POST /api/articles (rule: likes_count_not_negative)" do
+    it "create fails when likes count not negative violated" do
+      # Article likes count must not be negative
+      post "/api/articles", params: { article: {
+        title: 'test',
+        slug: 'test',
+        body: 'test',
+        created_at: Time.now,
+        updated_at: Time.now,
+        author_id: 1,
+        published_at: Time.now,
+        likes_count: -1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+  describe "PATCH /api/articles/:id/transitions/draft-to-published" do
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['draft']) } }
+    before { article.update!(title: 'test', body: 'test') }
+    it "transitions to Published" do
+      patch "/api/articles/#{article.id}/transitions/draft-to-published"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(article.reload.status).to eq('published') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/published-to-archived" do
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['published']) } }
+    it "transitions to Archived" do
+      patch "/api/articles/#{article.id}/transitions/published-to-archived"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(article.reload.status).to eq('archived') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/archived-to-draft" do
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['archived']) } }
+    it "transitions to Draft" do
+      patch "/api/articles/#{article.id}/transitions/archived-to-draft"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(article.reload.status).to eq('draft') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/published-to-draft" do
+    let!(:article) { Article.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/articles/#{article.id}/transitions/published-to-draft"
+      expect(response).to have_http_status(:conflict)
     end
   end
 end

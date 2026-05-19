@@ -74,6 +74,93 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'DraftSession not found' }, status: :not_found
       end
+      # PATCH /api/:id/transitions/waitingforplayers-to-drafting
+      def transition_waitingforplayers_to_drafting
+        @draftSession = DraftSession.find(params[:id])
+        @draftSession.assert_transition!('drafting')
+        @draftSession.status = 'drafting'
+        @draftSession.start  # @after
+        if @draftSession.save
+          render json: @draftSession
+        else
+          render json: { errors: @draftSession.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/drafting-to-completed
+      def transition_drafting_to_completed
+        @draftSession = DraftSession.find(params[:id])
+        @draftSession.assert_transition!('completed')
+        @draftSession.status = 'completed'
+        @draftSession.complete  # @after
+        if @draftSession.save
+          render json: @draftSession
+        else
+          render json: { errors: @draftSession.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/drafting-to-abandoned
+      def transition_drafting_to_abandoned
+        @draftSession = DraftSession.find(params[:id])
+        @draftSession.assert_transition!('abandoned')
+        @draftSession.status = 'abandoned'
+        @draftSession.abandon  # @after
+        if @draftSession.save
+          render json: @draftSession
+        else
+          render json: { errors: @draftSession.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/waitingforplayers-to-abandoned
+      def transition_waitingforplayers_to_abandoned
+        @draftSession = DraftSession.find(params[:id])
+        @draftSession.assert_transition!('abandoned')
+        @draftSession.status = 'abandoned'
+        @draftSession.abandon  # @after
+        if @draftSession.save
+          render json: @draftSession
+        else
+          render json: { errors: @draftSession.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/completed-to-drafting
+      def transition_completed_to_drafting
+        render json: { error: 'Transition Completed -> Drafting is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/abandoned-to-drafting
+      def transition_abandoned_to_drafting
+        render json: { error: 'Transition Abandoned -> Drafting is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'DraftSession not found' }, status: :not_found
+      end
 
       private
 
@@ -84,11 +171,11 @@ module Api
       end
 
       def draft_session_params
-        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :created_at, :completed_at, :card_set_id)
+        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
       end
 
       def draft_session_update_params
-        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :created_at, :completed_at, :card_set_id)
+        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
       end
     end
   end

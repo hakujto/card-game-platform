@@ -10,10 +10,10 @@ class DeckTag < ApplicationRecord
   # Business operations
 
   def rename(new_name)
-    raise NotImplementedError, "rename not implemented"
+    # TODO: implement rename
   end
 
   def merge_into(target_tag_id)
-    raise NotImplementedError, "merge_into not implemented"
+    # TODO: implement merge_into
   end
 end

@@ -132,6 +132,13 @@ Rails.application.routes.draw do
         get :prizes, action: :calculate_prize_distribution
         post :register, action: :register_player
         get :full, action: :is_full
+        patch 'transitions/draft-to-registration', action: :transition_draft_to_registration
+        patch 'transitions/registration-to-ongoing', action: :transition_registration_to_ongoing
+        patch 'transitions/registration-to-cancelled', action: :transition_registration_to_cancelled
+        patch 'transitions/ongoing-to-completed', action: :transition_ongoing_to_completed
+        patch 'transitions/ongoing-to-cancelled', action: :transition_ongoing_to_cancelled
+        patch 'transitions/completed-to-draft', action: :transition_completed_to_draft
+        patch 'transitions/cancelled-to-draft', action: :transition_cancelled_to_draft
       end
     end
     resources :tournament_judges, module: 'tournaments' do
@@ -158,9 +165,17 @@ Rails.application.routes.draw do
     resources :matches, module: 'tournaments' do
       member do
         post :record, action: :record_result
+        post :finalize, action: :finalize_result
         get :winner, action: :determine_winner
         post :concede, action: :concede
         post :draw, action: :draw
+        patch 'transitions/pending-to-active', action: :transition_pending_to_active
+        patch 'transitions/active-to-completed', action: :transition_active_to_completed
+        patch 'transitions/active-to-draw', action: :transition_active_to_draw
+        patch 'transitions/pending-to-bye', action: :transition_pending_to_bye
+        patch 'transitions/completed-to-active', action: :transition_completed_to_active
+        patch 'transitions/draw-to-active', action: :transition_draw_to_active
+        patch 'transitions/bye-to-active', action: :transition_bye_to_active
       end
     end
     resources :games, module: 'tournaments' do
@@ -194,9 +209,19 @@ Rails.application.routes.draw do
       member do
         delete :cancel, action: :cancel
         post :pay, action: :pay
+        post :process_payment, action: :process_payment
         get :total, action: :calculate_total
         patch :discount, action: :apply_discount
         post :refund, action: :refund
+        patch 'transitions/pending-to-paid', action: :transition_pending_to_paid
+        patch 'transitions/paid-to-processing', action: :transition_paid_to_processing
+        patch 'transitions/processing-to-shipped', action: :transition_processing_to_shipped
+        patch 'transitions/shipped-to-completed', action: :transition_shipped_to_completed
+        patch 'transitions/pending-to-cancelled', action: :transition_pending_to_cancelled
+        patch 'transitions/paid-to-cancelled', action: :transition_paid_to_cancelled
+        patch 'transitions/completed-to-refunded', action: :transition_completed_to_refunded
+        patch 'transitions/refunded-to-completed', action: :transition_refunded_to_completed
+        patch 'transitions/completed-to-cancelled', action: :transition_completed_to_cancelled
       end
     end
     resources :order_items, module: 'marketplace' do
@@ -219,6 +244,12 @@ Rails.application.routes.draw do
         delete :cancel, action: :cancel
         get :expired, action: :is_expired
         post :finalize, action: :finalize_auction
+        patch 'transitions/pending-to-active', action: :transition_pending_to_active
+        patch 'transitions/active-to-sold', action: :transition_active_to_sold
+        patch 'transitions/active-to-expired', action: :transition_active_to_expired
+        patch 'transitions/active-to-cancelled', action: :transition_active_to_cancelled
+        patch 'transitions/sold-to-active', action: :transition_sold_to_active
+        patch 'transitions/expired-to-active', action: :transition_expired_to_active
       end
     end
     resources :trade_bids, module: 'marketplace' do
@@ -245,7 +276,13 @@ Rails.application.routes.draw do
       member do
         post :escalate, action: :escalate
         post :resolve, action: :resolve
+        post :close, action: :close_resolved
         post :review, action: :review
+        patch 'transitions/open-to-underreview', action: :transition_open_to_underreview
+        patch 'transitions/underreview-to-resolved', action: :transition_underreview_to_resolved
+        patch 'transitions/underreview-to-escalated', action: :transition_underreview_to_escalated
+        patch 'transitions/escalated-to-resolved', action: :transition_escalated_to_resolved
+        patch 'transitions/resolved-to-open', action: :transition_resolved_to_open
       end
     end
     resources :draft_sessions, module: 'content' do
@@ -254,6 +291,12 @@ Rails.application.routes.draw do
         post :abandon, action: :abandon
         post :complete, action: :complete
         get :full, action: :is_full
+        patch 'transitions/waitingforplayers-to-drafting', action: :transition_waitingforplayers_to_drafting
+        patch 'transitions/drafting-to-completed', action: :transition_drafting_to_completed
+        patch 'transitions/drafting-to-abandoned', action: :transition_drafting_to_abandoned
+        patch 'transitions/waitingforplayers-to-abandoned', action: :transition_waitingforplayers_to_abandoned
+        patch 'transitions/completed-to-drafting', action: :transition_completed_to_drafting
+        patch 'transitions/abandoned-to-drafting', action: :transition_abandoned_to_drafting
       end
     end
     resources :draft_participants, module: 'content' do
@@ -272,7 +315,13 @@ Rails.application.routes.draw do
         post :publish, action: :publish
         post :archive, action: :archive
         post :view, action: :increment_view
+        post :like, action: :like
+        delete :like, action: :unlike
         get :reading_time, action: :reading_time_minutes
+        patch 'transitions/draft-to-published', action: :transition_draft_to_published
+        patch 'transitions/published-to-archived', action: :transition_published_to_archived
+        patch 'transitions/archived-to-draft', action: :transition_archived_to_draft
+        patch 'transitions/published-to-draft', action: :transition_published_to_draft
       end
     end
     resources :article_tags, module: 'content' do
@@ -295,6 +344,9 @@ Rails.application.routes.draw do
         post :end, action: :end
         patch :viewers, action: :update_viewer_peak
         get :duration, action: :duration_minutes
+        patch 'transitions/scheduled-to-live', action: :transition_scheduled_to_live
+        patch 'transitions/live-to-ended', action: :transition_live_to_ended
+        patch 'transitions/ended-to-live', action: :transition_ended_to_live
       end
     end
   end

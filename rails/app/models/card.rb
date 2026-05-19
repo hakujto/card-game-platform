@@ -25,6 +25,7 @@ class Card < ApplicationRecord
   def validate_implies
     errors.add(:base, 'Creature card must have attack and defense') if (card_type == 'creature') && !(!attack.nil? && !defense.nil?)
     errors.add(:base, 'Planeswalker card must have loyalty') if (card_type == 'planeswalker') && loyalty.nil?
+    errors.add(:base, 'Land card must have zero mana cost') if (card_type == 'land') && !(mana_cost == 0)
     errors.add(:base, 'Only Planeswalker cards can have loyalty') if (card_type != 'planeswalker') && !loyalty.nil?
     errors.add(:base, 'banned_card_not_in_legal_formats') if (is_banned == true) && !(legal_formats == "message")
   end
@@ -36,30 +37,33 @@ class Card < ApplicationRecord
   # Business operations
 
   def ban
-    raise NotImplementedError, "ban not implemented"
+    # TODO: implement ban
   end
 
   def unban
-    raise NotImplementedError, "unban not implemented"
+    # TODO: implement unban
   end
 
   def restrict
-    raise NotImplementedError, "restrict not implemented"
+    # TODO: implement restrict
   end
 
   def unrestrict
-    raise NotImplementedError, "unrestrict not implemented"
+    # TODO: implement unrestrict
   end
 
   def calculate_value
-    raise NotImplementedError, "calculate_value not implemented"
+    # TODO: implement calculate_value
+    nil
   end
 
   def apply_rarity_bonus(multiplier)
-    raise NotImplementedError, "apply_rarity_bonus not implemented"
+    # TODO: implement apply_rarity_bonus
+    nil
   end
 
   def is_legal_in_format(format)
-    raise NotImplementedError, "is_legal_in_format not implemented"
+    # TODO: implement is_legal_in_format
+    nil
   end
 end

@@ -75,6 +75,53 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Stream not found' }, status: :not_found
       end
+      # PATCH /api/:id/transitions/scheduled-to-live
+      def transition_scheduled_to_live
+        @stream = Stream.find(params[:id])
+        @stream.assert_transition!('live')
+        if @stream.stream_url.nil?
+          render json: { error: 'stream_url is required for Scheduled -> Live' }, status: :unprocessable_content
+          return
+        end
+        @stream.status = 'live'
+        @stream.go_live  # @after
+        if @stream.save
+          render json: @stream
+        else
+          render json: { errors: @stream.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Stream not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/live-to-ended
+      def transition_live_to_ended
+        @stream = Stream.find(params[:id])
+        @stream.assert_transition!('ended')
+        @stream.status = 'ended'
+        @stream.end  # @after
+        if @stream.save
+          render json: @stream
+        else
+          render json: { errors: @stream.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Stream not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/ended-to-live
+      def transition_ended_to_live
+        render json: { error: 'Transition Ended -> Live is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Stream not found' }, status: :not_found
+      end
 
       private
 
@@ -85,11 +132,11 @@ module Api
       end
 
       def stream_params
-        params.fetch(:stream, params).permit(:title, :stream_url, :platform, :status, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id)
+        params.fetch(:stream, params).permit(:title, :stream_url, :status, :platform, :language, :is_official, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id)
       end
 
       def stream_update_params
-        params.fetch(:stream, params).permit(:title, :stream_url, :platform, :status, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id)
+        params.fetch(:stream, params).permit(:title, :stream_url, :status, :platform, :language, :is_official, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id)
       end
     end
   end

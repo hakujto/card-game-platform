@@ -28,18 +28,20 @@ class Coupon < ApplicationRecord
   # Business operations
 
   def is_valid
-    raise NotImplementedError, "is_valid not implemented"
+    # TODO: implement is_valid
+    nil
   end
 
   def is_applicable_to_order(order_total)
-    raise NotImplementedError, "is_applicable_to_order not implemented"
+    # TODO: implement is_applicable_to_order
+    nil
   end
 
   def redeem
-    raise NotImplementedError, "redeem not implemented"
+    # TODO: implement redeem
   end
 
   def deactivate
-    raise NotImplementedError, "deactivate not implemented"
+    # TODO: implement deactivate
   end
 end

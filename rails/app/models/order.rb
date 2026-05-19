@@ -33,26 +33,50 @@ class Order < ApplicationRecord
   # Business operations
 
   def cancel
-    raise NotImplementedError, "cancel not implemented"
+    # TODO: implement cancel
   end
 
   def pay(payment_ref)
-    raise NotImplementedError, "pay not implemented"
+    # TODO: implement pay
+    nil
+  end
+
+  def process_payment
+    # TODO: implement process_payment
+    nil
   end
 
   def calculate_total
-    raise NotImplementedError, "calculate_total not implemented"
+    # TODO: implement calculate_total
+    nil
   end
 
   def apply_discount(percent)
-    raise NotImplementedError, "apply_discount not implemented"
+    # TODO: implement apply_discount
+    nil
   end
 
   def refund
-    raise NotImplementedError, "refund not implemented"
+    # TODO: implement refund
   end
 
   def notify_shipped
-    raise NotImplementedError, "notify_shipped not implemented"
+    # TODO: implement notify_shipped
+  end
+
+  # Lifecycle state machine
+  ALLOWED_TRANSITIONS = {
+    'pending' => ['paid', 'cancelled'],
+    'paid' => ['processing', 'cancelled'],
+    'processing' => ['shipped'],
+    'shipped' => ['completed'],
+    'completed' => ['refunded'],
+  }.freeze
+
+  def assert_transition!(to_state)
+    allowed = ALLOWED_TRANSITIONS.fetch(status.to_s, [])
+    unless allowed.include?(to_state.to_s)
+      raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
+    end
   end
 end

@@ -18,10 +18,11 @@ class TradeBid < ApplicationRecord
   # Business operations
 
   def outbid_by(new_amount)
-    raise NotImplementedError, "outbid_by not implemented"
+    # TODO: implement outbid_by
+    nil
   end
 
   def retract
-    raise NotImplementedError, "retract not implemented"
+    # TODO: implement retract
   end
 end

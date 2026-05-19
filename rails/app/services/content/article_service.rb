@@ -30,6 +30,18 @@ module Content
       instance.save!
     end
 
+    def like(id)
+      instance = Article.find(id)
+      instance.like()
+      instance.save!
+    end
+
+    def unlike(id)
+      instance = Article.find(id)
+      instance.unlike()
+      instance.save!
+    end
+
     def reading_time_minutes(id)
       instance = Article.find(id)
       result = instance.reading_time_minutes()

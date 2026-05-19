@@ -20,10 +20,12 @@ class CardAbility < ApplicationRecord
   # Business operations
 
   def is_usable_at(timing)
-    raise NotImplementedError, "is_usable_at not implemented"
+    # TODO: implement is_usable_at
+    nil
   end
 
   def describe
-    raise NotImplementedError, "describe not implemented"
+    # TODO: implement describe
+    nil
   end
 end

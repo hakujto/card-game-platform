@@ -29,14 +29,14 @@ class TournamentRegistration < ApplicationRecord
   # Business operations
 
   def withdraw
-    raise NotImplementedError, "withdraw not implemented"
+    # TODO: implement withdraw
   end
 
   def disqualify(reason)
-    raise NotImplementedError, "disqualify not implemented"
+    # TODO: implement disqualify
   end
 
   def promote_from_waitlist
-    raise NotImplementedError, "promote_from_waitlist not implemented"
+    # TODO: implement promote_from_waitlist
   end
 end

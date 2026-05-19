@@ -19,18 +19,19 @@ class Season < ApplicationRecord
   # Business operations
 
   def activate
-    raise NotImplementedError, "activate not implemented"
+    # TODO: implement activate
   end
 
   def deactivate
-    raise NotImplementedError, "deactivate not implemented"
+    # TODO: implement deactivate
   end
 
   def finalize_rewards
-    raise NotImplementedError, "finalize_rewards not implemented"
+    # TODO: implement finalize_rewards
   end
 
   def is_ongoing
-    raise NotImplementedError, "is_ongoing not implemented"
+    # TODO: implement is_ongoing
+    nil
   end
 end

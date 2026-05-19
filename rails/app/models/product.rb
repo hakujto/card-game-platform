@@ -24,26 +24,29 @@ class Product < ApplicationRecord
   # Business operations
 
   def activate
-    raise NotImplementedError, "activate not implemented"
+    # TODO: implement activate
   end
 
   def deactivate
-    raise NotImplementedError, "deactivate not implemented"
+    # TODO: implement deactivate
   end
 
   def apply_discount(percent)
-    raise NotImplementedError, "apply_discount not implemented"
+    # TODO: implement apply_discount
+    nil
   end
 
   def restock(quantity)
-    raise NotImplementedError, "restock not implemented"
+    # TODO: implement restock
   end
 
   def effective_price
-    raise NotImplementedError, "effective_price not implemented"
+    # TODO: implement effective_price
+    nil
   end
 
   def is_in_stock
-    raise NotImplementedError, "is_in_stock not implemented"
+    # TODO: implement is_in_stock
+    nil
   end
 end

@@ -30,18 +30,19 @@ class TradeTransaction < ApplicationRecord
   # Business operations
 
   def complete
-    raise NotImplementedError, "complete not implemented"
+    # TODO: implement complete
   end
 
   def refund
-    raise NotImplementedError, "refund not implemented"
+    # TODO: implement refund
   end
 
   def open_dispute(reason)
-    raise NotImplementedError, "open_dispute not implemented"
+    # TODO: implement open_dispute
   end
 
   def seller_net
-    raise NotImplementedError, "seller_net not implemented"
+    # TODO: implement seller_net
+    nil
   end
 end

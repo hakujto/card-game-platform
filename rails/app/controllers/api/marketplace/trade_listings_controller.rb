@@ -84,6 +84,96 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TradeListing not found' }, status: :not_found
       end
+      # PATCH /api/:id/transitions/pending-to-active
+      def transition_pending_to_active
+        @tradeListing = TradeListing.find(params[:id])
+        @tradeListing.assert_transition!('active')
+        if @tradeListing.quantity.nil?
+          render json: { error: 'quantity is required for Pending -> Active' }, status: :unprocessable_content
+          return
+        end
+        @tradeListing.status = 'active'
+        if @tradeListing.save
+          render json: @tradeListing
+        else
+          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/active-to-sold
+      def transition_active_to_sold
+        @tradeListing = TradeListing.find(params[:id])
+        @tradeListing.assert_transition!('sold')
+        @tradeListing.status = 'sold'
+        @tradeListing.finalize_auction  # @after
+        if @tradeListing.save
+          render json: @tradeListing
+        else
+          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/active-to-expired
+      def transition_active_to_expired
+        @tradeListing = TradeListing.find(params[:id])
+        @tradeListing.assert_transition!('expired')
+        @tradeListing.status = 'expired'
+        @tradeListing.close  # @after
+        if @tradeListing.save
+          render json: @tradeListing
+        else
+          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/active-to-cancelled
+      def transition_active_to_cancelled
+        @tradeListing = TradeListing.find(params[:id])
+        @tradeListing.assert_transition!('cancelled')
+        @tradeListing.status = 'cancelled'
+        @tradeListing.cancel  # @after
+        if @tradeListing.save
+          render json: @tradeListing
+        else
+          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/sold-to-active
+      def transition_sold_to_active
+        render json: { error: 'Transition Sold -> Active is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/expired-to-active
+      def transition_expired_to_active
+        render json: { error: 'Transition Expired -> Active is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'TradeListing not found' }, status: :not_found
+      end
 
       private
 
@@ -94,11 +184,11 @@ module Api
       end
 
       def trade_listing_params
-        params.fetch(:trade_listing, params).permit(:listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id)
+        params.fetch(:trade_listing, params).permit(:status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id)
       end
 
       def trade_listing_update_params
-        params.fetch(:trade_listing, params).permit(:listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id)
+        params.fetch(:trade_listing, params).permit(:status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id)
       end
     end
   end

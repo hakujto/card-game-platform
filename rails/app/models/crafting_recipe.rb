@@ -18,18 +18,19 @@ class CraftingRecipe < ApplicationRecord
   # Business operations
 
   def can_craft(player_id)
-    raise NotImplementedError, "can_craft not implemented"
+    # TODO: implement can_craft
+    nil
   end
 
   def execute_craft(player_id)
-    raise NotImplementedError, "execute_craft not implemented"
+    # TODO: implement execute_craft
   end
 
   def disable
-    raise NotImplementedError, "disable not implemented"
+    # TODO: implement disable
   end
 
   def enable
-    raise NotImplementedError, "enable not implemented"
+    # TODO: implement enable
   end
 end

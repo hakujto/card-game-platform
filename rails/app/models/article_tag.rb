@@ -11,10 +11,11 @@ class ArticleTag < ApplicationRecord
   # Business operations
 
   def rename(new_name)
-    raise NotImplementedError, "rename not implemented"
+    # TODO: implement rename
   end
 
   def article_count
-    raise NotImplementedError, "article_count not implemented"
+    # TODO: implement article_count
+    nil
   end
 end

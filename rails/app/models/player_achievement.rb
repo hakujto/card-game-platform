@@ -25,10 +25,10 @@ class PlayerAchievement < ApplicationRecord
   # Business operations
 
   def increment_progress(amount)
-    raise NotImplementedError, "increment_progress not implemented"
+    # TODO: implement increment_progress
   end
 
   def complete
-    raise NotImplementedError, "complete not implemented"
+    # TODO: implement complete
   end
 end

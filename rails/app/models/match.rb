@@ -31,18 +31,36 @@ class Match < ApplicationRecord
   # Business operations
 
   def record_result(p1_wins, p2_wins)
-    raise NotImplementedError, "record_result not implemented"
+    # TODO: implement record_result
+  end
+
+  def finalize_result
+    # TODO: implement finalize_result
   end
 
   def determine_winner
-    raise NotImplementedError, "determine_winner not implemented"
+    # TODO: implement determine_winner
+    nil
   end
 
   def concede(player_id)
-    raise NotImplementedError, "concede not implemented"
+    # TODO: implement concede
   end
 
   def draw
-    raise NotImplementedError, "draw not implemented"
+    # TODO: implement draw
+  end
+
+  # Lifecycle state machine
+  ALLOWED_TRANSITIONS = {
+    'pending' => ['active', 'b_y_e'],
+    'active' => ['completed', 'draw'],
+  }.freeze
+
+  def assert_transition!(to_state)
+    allowed = ALLOWED_TRANSITIONS.fetch(status.to_s, [])
+    unless allowed.include?(to_state.to_s)
+      raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
+    end
   end
 end

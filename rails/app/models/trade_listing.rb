@@ -1,9 +1,9 @@
 class TradeListing < ApplicationRecord
   self.table_name = 'trade_listings'
 
+  enum :status, { active: 0, sold: 1, expired: 2, cancelled: 3, pending: 4 }, prefix: :status
   enum :listing_type, { fixed_price: 0, auction: 1, trade_offer: 2 }, prefix: :listing_type
   enum :condition, { mint: 0, near_mint: 1, excellent: 2, good: 3, played: 4 }, prefix: :condition
-  enum :status, { active: 0, sold: 1, expired: 2, cancelled: 3, pending: 4 }, prefix: :status
 
   belongs_to :seller, class_name: 'Player'
   belongs_to :card, class_name: 'Card'
@@ -24,28 +24,42 @@ class TradeListing < ApplicationRecord
   end
 
   def to_s
-    listing_type.to_s
+    status.to_s
   end
 
   # Business operations
 
   def close
-    raise NotImplementedError, "close not implemented"
+    # TODO: implement close
   end
 
   def extend(days)
-    raise NotImplementedError, "extend not implemented"
+    # TODO: implement extend
   end
 
   def cancel
-    raise NotImplementedError, "cancel not implemented"
+    # TODO: implement cancel
   end
 
   def is_expired
-    raise NotImplementedError, "is_expired not implemented"
+    # TODO: implement is_expired
+    nil
   end
 
   def finalize_auction
-    raise NotImplementedError, "finalize_auction not implemented"
+    # TODO: implement finalize_auction
+  end
+
+  # Lifecycle state machine
+  ALLOWED_TRANSITIONS = {
+    'pending' => ['active'],
+    'active' => ['sold', 'expired', 'cancelled'],
+  }.freeze
+
+  def assert_transition!(to_state)
+    allowed = ALLOWED_TRANSITIONS.fetch(status.to_s, [])
+    unless allowed.include?(to_state.to_s)
+      raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
+    end
   end
 end

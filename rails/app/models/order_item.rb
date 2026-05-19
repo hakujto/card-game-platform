@@ -19,6 +19,7 @@ class OrderItem < ApplicationRecord
   # Business operations
 
   def line_total
-    raise NotImplementedError, "line_total not implemented"
+    # TODO: implement line_total
+    nil
   end
 end

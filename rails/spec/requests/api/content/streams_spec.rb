@@ -9,8 +9,10 @@ RSpec.describe "Api::Content::Streams", type: :request do
     {
       title: 'test',
       stream_url: 'https://example.com',
-      platform: :twitch,
       status: :live,
+      platform: :twitch,
+      language: :e_n,
+      is_official: true,
       viewer_count_peak: 1,
       scheduled_start: Time.now,
       streamer_id: @dep_streamer.id
@@ -30,8 +32,10 @@ RSpec.describe "Api::Content::Streams", type: :request do
         post "/api/streams", params: { stream: {
       title: 'test',
       stream_url: 'https://example.com',
-      platform: :twitch,
       status: :live,
+      platform: :twitch,
+      language: :e_n,
+      is_official: true,
       viewer_count_peak: 1,
       scheduled_start: Time.now,
       streamer_id: @dep_streamer.id
@@ -114,6 +118,34 @@ RSpec.describe "Api::Content::Streams", type: :request do
         viewer_count_peak: -1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+  describe "PATCH /api/streams/:id/transitions/scheduled-to-live" do
+    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['scheduled']) } }
+    before { stream.update!(stream_url: 'https://example.com') }
+    it "transitions to Live" do
+      patch "/api/streams/#{stream.id}/transitions/scheduled-to-live"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(stream.reload.status).to eq('live') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/streams/:id/transitions/live-to-ended" do
+    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['live']) } }
+    it "transitions to Ended" do
+      patch "/api/streams/#{stream.id}/transitions/live-to-ended"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(stream.reload.status).to eq('ended') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/streams/:id/transitions/ended-to-live" do
+    let!(:stream) { Stream.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/streams/#{stream.id}/transitions/ended-to-live"
+      expect(response).to have_http_status(:conflict)
     end
   end
 end

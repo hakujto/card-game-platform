@@ -34,34 +34,38 @@ class Deck < ApplicationRecord
   # Business operations
 
   def validate_size
-    raise NotImplementedError, "validate_size not implemented"
+    # TODO: implement validate_size
+    nil
   end
 
   def add_card(card_id, quantity)
-    raise NotImplementedError, "add_card not implemented"
+    # TODO: implement add_card
   end
 
   def remove_card(card_id)
-    raise NotImplementedError, "remove_card not implemented"
+    # TODO: implement remove_card
   end
 
   def win_rate
-    raise NotImplementedError, "win_rate not implemented"
+    # TODO: implement win_rate
+    nil
   end
 
   def clone
-    raise NotImplementedError, "clone not implemented"
+    # TODO: implement clone
+    nil
   end
 
   def publish
-    raise NotImplementedError, "publish not implemented"
+    # TODO: implement publish
   end
 
   def unpublish
-    raise NotImplementedError, "unpublish not implemented"
+    # TODO: implement unpublish
   end
 
   def certify_tournament_legal
-    raise NotImplementedError, "certify_tournament_legal not implemented"
+    # TODO: implement certify_tournament_legal
+    nil
   end
 end

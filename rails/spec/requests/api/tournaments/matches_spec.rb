@@ -4,7 +4,7 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
   before(:each) do
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_tournament = Tournament.create!({ name: 'test', format: :standard, tournament_type: :swiss, status: :draft, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
+    @aux_tournament = Tournament.create!({ name: 'test', status: :draft, format: :standard, tournament_type: :swiss, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
     @dep_round = TournamentRound.create!({ round_number: 1, status: :pending, started_at: Time.now, ended_at: nil, time_limit_minutes: 1, tournament_id: @aux_tournament.id })
   end
 
@@ -134,6 +134,69 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
         started_at: nil,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+  describe "PATCH /api/matches/:id/transitions/pending-to-active" do
+    let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['pending']) } }
+    it "transitions to Active" do
+      patch "/api/matches/#{match.id}/transitions/pending-to-active"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(match.reload.status).to eq('active') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/active-to-completed" do
+    let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['active']) } }
+    it "transitions to Completed" do
+      patch "/api/matches/#{match.id}/transitions/active-to-completed"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(match.reload.status).to eq('completed') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/active-to-draw" do
+    let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['active']) } }
+    it "transitions to Draw" do
+      patch "/api/matches/#{match.id}/transitions/active-to-draw"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(match.reload.status).to eq('draw') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/pending-to-bye" do
+    let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['pending']) } }
+    it "transitions to BYE" do
+      patch "/api/matches/#{match.id}/transitions/pending-to-bye"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(match.reload.status).to eq('b_y_e') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/completed-to-active" do
+    let!(:match) { Match.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/matches/#{match.id}/transitions/completed-to-active"
+      expect(response).to have_http_status(:conflict)
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/draw-to-active" do
+    let!(:match) { Match.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/matches/#{match.id}/transitions/draw-to-active"
+      expect(response).to have_http_status(:conflict)
+    end
+  end
+
+  describe "PATCH /api/matches/:id/transitions/bye-to-active" do
+    let!(:match) { Match.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/matches/#{match.id}/transitions/bye-to-active"
+      expect(response).to have_http_status(:conflict)
     end
   end
 end

@@ -23,14 +23,15 @@ class PlayerSeasonStats < ApplicationRecord
   # Business operations
 
   def win_rate
-    raise NotImplementedError, "win_rate not implemented"
+    # TODO: implement win_rate
+    nil
   end
 
   def add_points(points)
-    raise NotImplementedError, "add_points not implemented"
+    # TODO: implement add_points
   end
 
   def record_tournament_win
-    raise NotImplementedError, "record_tournament_win not implemented"
+    # TODO: implement record_tournament_win
   end
 end

@@ -24,6 +24,12 @@ module Marketplace
       instance.save!
     end
 
+    def close_resolved(id)
+      instance = TradeDispute.find(id)
+      instance.close_resolved()
+      instance.save!
+    end
+
     def review(id)
       instance = TradeDispute.find(id)
       instance.review()

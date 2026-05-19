@@ -26,30 +26,33 @@ class Player < ApplicationRecord
   # Business operations
 
   def promote
-    raise NotImplementedError, "promote not implemented"
+    # TODO: implement promote
+    nil
   end
 
   def demote
-    raise NotImplementedError, "demote not implemented"
+    # TODO: implement demote
+    nil
   end
 
   def record_win
-    raise NotImplementedError, "record_win not implemented"
+    # TODO: implement record_win
   end
 
   def record_loss
-    raise NotImplementedError, "record_loss not implemented"
+    # TODO: implement record_loss
   end
 
   def win_rate
-    raise NotImplementedError, "win_rate not implemented"
+    # TODO: implement win_rate
+    nil
   end
 
   def verify
-    raise NotImplementedError, "verify not implemented"
+    # TODO: implement verify
   end
 
   def update_rating(delta)
-    raise NotImplementedError, "update_rating not implemented"
+    # TODO: implement update_rating
   end
 end

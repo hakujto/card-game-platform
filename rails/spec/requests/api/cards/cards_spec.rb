@@ -10,7 +10,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
       name: 'test',
       card_type: :spell,
       rarity: :common,
-      mana_cost: 1,
+      mana_cost: 0,
       mana_colors: :white,
       description: 'test',
       legal_formats: :standard,
@@ -35,7 +35,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
       name: 'test',
       card_type: :spell,
       rarity: :common,
-      mana_cost: 1,
+      mana_cost: 0,
       mana_colors: :white,
       description: 'test',
       legal_formats: :standard,
@@ -110,6 +110,22 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     end
   end
 
+  describe "POST /api/cards (rule: land_has_no_mana_cost)" do
+    it "create fails when land has no mana cost violated" do
+      # Land card must have zero mana cost
+      post "/api/cards", params: { card: {
+        name: 'test',
+        mana_colors: :white,
+        description: 'test',
+        legal_formats: :standard,
+        set_id: 1,
+        card_type: :land,
+        mana_cost: 1,
+      } }, as: :json
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
   describe "POST /api/cards (rule: spell_or_artifact_no_loyalty)" do
     it "create fails when spell or artifact no loyalty violated" do
       # Only Planeswalker cards can have loyalty
@@ -155,6 +171,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
         attack: 1,
         defense: 1,
         loyalty: 1,
+        mana_cost: 0,
         power_level: 11,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
@@ -173,6 +190,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
         attack: 1,
         defense: 1,
         loyalty: 1,
+        mana_cost: 0,
         is_banned: true,
         is_restricted: true,
       } }, as: :json

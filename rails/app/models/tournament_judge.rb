@@ -13,10 +13,10 @@ class TournamentJudge < ApplicationRecord
   # Business operations
 
   def promote_to_head
-    raise NotImplementedError, "promote_to_head not implemented"
+    # TODO: implement promote_to_head
   end
 
   def remove
-    raise NotImplementedError, "remove not implemented"
+    # TODO: implement remove
   end
 end

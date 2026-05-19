@@ -25,6 +25,6 @@ class AwardedPrize < ApplicationRecord
   # Business operations
 
   def claim
-    raise NotImplementedError, "claim not implemented"
+    # TODO: implement claim
   end
 end

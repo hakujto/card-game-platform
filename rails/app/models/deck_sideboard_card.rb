@@ -18,10 +18,10 @@ class DeckSideboardCard < ApplicationRecord
   # Business operations
 
   def increment(amount)
-    raise NotImplementedError, "increment not implemented"
+    # TODO: implement increment
   end
 
   def decrement(amount)
-    raise NotImplementedError, "decrement not implemented"
+    # TODO: implement decrement
   end
 end

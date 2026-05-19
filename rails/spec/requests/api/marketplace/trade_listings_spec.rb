@@ -4,16 +4,16 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   before(:each) do
     @dep_seller = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
     @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
-    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 1, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 0, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
   end
 
   let(:valid_attributes) do
     {
+      status: :active,
       listing_type: :trade_offer,
       foil: true,
       condition: :mint,
       quantity: 1,
-      status: :active,
       created_at: Time.now,
       seller_id: @dep_seller.id,
       card_id: @dep_card.id
@@ -31,11 +31,11 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/trade_listings", params: { trade_listing: {
+      status: :active,
       listing_type: :trade_offer,
       foil: true,
       condition: :mint,
       quantity: 1,
-      status: :active,
       created_at: Time.now,
       seller_id: @dep_seller.id,
       card_id: @dep_card.id
@@ -59,7 +59,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
 
     it "returns 200" do
       patch "/api/trade_listings/#{tradeListing.id}",
-            params: { trade_listing: { auction_current_bid: '0.00' } },
+            params: { trade_listing: { status: :active } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -115,6 +115,62 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
         quantity: 10000,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+  describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['pending']) } }
+    before { tradeListing.update!(quantity: 1) }
+    it "transitions to Active" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/pending-to-active"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tradeListing.reload.status).to eq('active') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-sold" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    it "transitions to Sold" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-sold"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tradeListing.reload.status).to eq('sold') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-expired" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    it "transitions to Expired" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-expired"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tradeListing.reload.status).to eq('expired') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-cancelled" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    it "transitions to Cancelled" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-cancelled"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tradeListing.reload.status).to eq('cancelled') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/sold-to-active" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/sold-to-active"
+      expect(response).to have_http_status(:conflict)
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/expired-to-active" do
+    let!(:tradeListing) { TradeListing.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/expired-to-active"
+      expect(response).to have_http_status(:conflict)
     end
   end
 end

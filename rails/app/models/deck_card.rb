@@ -11,6 +11,13 @@ class DeckCard < ApplicationRecord
     errors.add(:quantity_range, 'A deck can contain between 1 and 4 copies of a card') unless ((quantity.nil? || (quantity >= 1 && quantity <= 4)))
   end
 
+  # Domain invariants — IMPLIES rules
+  validate :validate_implies
+
+  def validate_implies
+    errors.add(:base, 'Commander card must appear exactly once in the deck') if (is_commander == true) && !(quantity == 1)
+  end
+
   def to_s
     quantity.to_s
   end
@@ -18,10 +25,10 @@ class DeckCard < ApplicationRecord
   # Business operations
 
   def increment(amount)
-    raise NotImplementedError, "increment not implemented"
+    # TODO: implement increment
   end
 
   def decrement(amount)
-    raise NotImplementedError, "decrement not implemented"
+    # TODO: implement decrement
   end
 end

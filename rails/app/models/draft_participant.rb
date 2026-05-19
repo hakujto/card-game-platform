@@ -18,10 +18,11 @@ class DraftParticipant < ApplicationRecord
   # Business operations
 
   def pick_card(card_id, pack_number)
-    raise NotImplementedError, "pick_card not implemented"
+    # TODO: implement pick_card
   end
 
   def drafted_card_count
-    raise NotImplementedError, "drafted_card_count not implemented"
+    # TODO: implement drafted_card_count
+    nil
   end
 end

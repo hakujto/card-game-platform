@@ -28,18 +28,19 @@ class TournamentRound < ApplicationRecord
   # Business operations
 
   def start
-    raise NotImplementedError, "start not implemented"
+    # TODO: implement start
   end
 
   def complete
-    raise NotImplementedError, "complete not implemented"
+    # TODO: implement complete
   end
 
   def generate_pairings
-    raise NotImplementedError, "generate_pairings not implemented"
+    # TODO: implement generate_pairings
   end
 
   def is_time_expired
-    raise NotImplementedError, "is_time_expired not implemented"
+    # TODO: implement is_time_expired
+    nil
   end
 end

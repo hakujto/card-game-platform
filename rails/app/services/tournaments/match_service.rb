@@ -15,7 +15,14 @@ module Tournaments
     def record_result(id, p1_wins, p2_wins)
       instance = Match.find(id)
       instance.record_result(p1_wins, p2_wins)
-      instance.determine_winner()  # @after
+      instance.determine_winner  # @after
+      instance.save!
+    end
+
+    def finalize_result(id)
+      instance = Match.find(id)
+      instance.finalize_result()
+      instance.determine_winner  # @after
       instance.save!
     end
 

@@ -103,6 +103,118 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Tournament not found' }, status: :not_found
       end
+      # PATCH /api/:id/transitions/draft-to-registration
+      def transition_draft_to_registration
+        @tournament = Tournament.find(params[:id])
+        @tournament.assert_transition!('registration')
+        if @tournament.name.nil?
+          render json: { error: 'name is required for Draft -> Registration' }, status: :unprocessable_content
+          return
+        end
+        if @tournament.start_time.nil?
+          render json: { error: 'start_time is required for Draft -> Registration' }, status: :unprocessable_content
+          return
+        end
+        @tournament.status = 'registration'
+        if @tournament.save
+          render json: @tournament
+        else
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/registration-to-ongoing
+      def transition_registration_to_ongoing
+        @tournament = Tournament.find(params[:id])
+        @tournament.assert_transition!('ongoing')
+        @tournament.status = 'ongoing'
+        @tournament.start  # @after
+        if @tournament.save
+          render json: @tournament
+        else
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/registration-to-cancelled
+      def transition_registration_to_cancelled
+        @tournament = Tournament.find(params[:id])
+        @tournament.assert_transition!('cancelled')
+        @tournament.status = 'cancelled'
+        @tournament.cancel  # @after
+        if @tournament.save
+          render json: @tournament
+        else
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/ongoing-to-completed
+      def transition_ongoing_to_completed
+        @tournament = Tournament.find(params[:id])
+        @tournament.assert_transition!('completed')
+        @tournament.status = 'completed'
+        @tournament.complete  # @after
+        @tournament.calculate_prize_distribution  # @after
+        if @tournament.save
+          render json: @tournament
+        else
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/ongoing-to-cancelled
+      def transition_ongoing_to_cancelled
+        @tournament = Tournament.find(params[:id])
+        @tournament.assert_transition!('cancelled')
+        @tournament.status = 'cancelled'
+        @tournament.cancel  # @after
+        if @tournament.save
+          render json: @tournament
+        else
+          render json: { errors: @tournament.errors }, status: :unprocessable_content
+        end
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/completed-to-draft
+      def transition_completed_to_draft
+        render json: { error: 'Transition Completed -> Draft is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
+
+      # PATCH /api/:id/transitions/cancelled-to-draft
+      def transition_cancelled_to_draft
+        render json: { error: 'Transition Cancelled -> Draft is not allowed' }, status: :conflict
+        return
+      rescue ArgumentError => e
+        render json: { error: e.message }, status: :conflict
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Tournament not found' }, status: :not_found
+      end
 
       private
 
@@ -113,11 +225,11 @@ module Api
       end
 
       def tournament_params
-        params.fetch(:tournament, params).permit(:name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
+        params.fetch(:tournament, params).permit(:name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
       end
 
       def tournament_update_params
-        params.fetch(:tournament, params).permit(:name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
+        params.fetch(:tournament, params).permit(:name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
       end
     end
   end

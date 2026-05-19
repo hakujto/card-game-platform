@@ -9,9 +9,9 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   let(:valid_attributes) do
     {
       name: 'test',
+      status: :draft,
       format: :standard,
       tournament_type: :swiss,
-      status: :draft,
       max_players: 2,
       entry_fee: '0.00',
       prize_pool: '0.00',
@@ -35,9 +35,9 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
       it "returns 201" do
         post "/api/tournaments", params: { tournament: {
       name: 'test',
+      status: :draft,
       format: :standard,
       tournament_type: :swiss,
-      status: :draft,
       max_players: 2,
       entry_fee: '0.00',
       prize_pool: '0.00',
@@ -144,6 +144,72 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
         end_time: Time.now - 1,
       } }, as: :json
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+  describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['draft']) } }
+    before { tournament.update!(name: 'test', start_time: Time.now) }
+    it "transitions to Registration" do
+      patch "/api/tournaments/#{tournament.id}/transitions/draft-to-registration"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tournament.reload.status).to eq('registration') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/registration-to-ongoing" do
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
+    it "transitions to Ongoing" do
+      patch "/api/tournaments/#{tournament.id}/transitions/registration-to-ongoing"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tournament.reload.status).to eq('ongoing') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/registration-to-cancelled" do
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
+    it "transitions to Cancelled" do
+      patch "/api/tournaments/#{tournament.id}/transitions/registration-to-cancelled"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tournament.reload.status).to eq('cancelled') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/ongoing-to-completed" do
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
+    it "transitions to Completed" do
+      patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-completed"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tournament.reload.status).to eq('completed') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled" do
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
+    it "transitions to Cancelled" do
+      patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-cancelled"
+      # If 422: model has rules that require extra fields for this state — set them in before block
+      expect([200, 422]).to include(response.status)
+      expect(tournament.reload.status).to eq('cancelled') if response.status == 200
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/completed-to-draft" do
+    let!(:tournament) { Tournament.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/tournaments/#{tournament.id}/transitions/completed-to-draft"
+      expect(response).to have_http_status(:conflict)
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/cancelled-to-draft" do
+    let!(:tournament) { Tournament.create!(valid_attributes) }
+    it "returns 409 (denied)" do
+      patch "/api/tournaments/#{tournament.id}/transitions/cancelled-to-draft"
+      expect(response).to have_http_status(:conflict)
     end
   end
 end

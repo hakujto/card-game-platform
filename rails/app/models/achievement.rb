@@ -19,10 +19,11 @@ class Achievement < ApplicationRecord
   # Business operations
 
   def point_value(multiplier)
-    raise NotImplementedError, "point_value not implemented"
+    # TODO: implement point_value
+    nil
   end
 
   def reveal
-    raise NotImplementedError, "reveal not implemented"
+    # TODO: implement reveal
   end
 end

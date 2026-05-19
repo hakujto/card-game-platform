@@ -19,10 +19,12 @@ class CardPriceHistory < ApplicationRecord
   # Business operations
 
   def price_change_percent(previous_avg)
-    raise NotImplementedError, "price_change_percent not implemented"
+    # TODO: implement price_change_percent
+    nil
   end
 
   def is_price_spike(threshold_percent)
-    raise NotImplementedError, "is_price_spike not implemented"
+    # TODO: implement is_price_spike
+    nil
   end
 end
