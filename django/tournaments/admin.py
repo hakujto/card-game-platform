@@ -11,9 +11,9 @@ class SeasonAdmin(admin.ModelAdmin):
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "description", "format", "tournament_type"]
-    search_fields = ["name", "description", "format"]
-    list_filter = ["format", "tournament_type", "status", "season", "organizer"]
+    list_display = ["id", "name", "description", "status", "format"]
+    search_fields = ["name", "description", "status"]
+    list_filter = ["status", "format", "tournament_type", "season", "organizer"]
 
 
 @admin.register(TournamentJudge)

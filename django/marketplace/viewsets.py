@@ -101,6 +101,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response({"result": result})
 
+    @action(detail=True, methods=["post"], url_path="process-payment")
+    def process_payment(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.process_payment()
+        from rest_framework.response import Response
+        return Response({"result": result})
+
     @action(detail=True, methods=["get"], url_path="total")
     def calculate_total(self, request, pk=None):
         instance = self.get_object()
@@ -122,6 +129,150 @@ class OrderViewSet(viewsets.ModelViewSet):
         result = instance.refund()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/pending-to-paid")
+    def transition_pending_to_paid(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Paid" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Paid not allowed"}, status=409)
+        try:
+            if instance.payment_method is None:
+                raise DjangoValidationError({"payment_method": "payment_method is required for Pending -> Paid"})
+            instance.status = "Paid"
+            instance.process_payment()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/paid-to-processing")
+    def transition_paid_to_processing(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Processing" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Processing not allowed"}, status=409)
+        try:
+            instance.status = "Processing"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/processing-to-shipped")
+    def transition_processing_to_shipped(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Shipped" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Shipped not allowed"}, status=409)
+        try:
+            if instance.tracking_number is None:
+                raise DjangoValidationError({"tracking_number": "tracking_number is required for Processing -> Shipped"})
+            instance.status = "Shipped"
+            # TODO: instance.notify_shipped()  # @after stub
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/shipped-to-completed")
+    def transition_shipped_to_completed(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Completed" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
+        try:
+            instance.status = "Completed"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/pending-to-cancelled")
+    def transition_pending_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Cancelled" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
+        try:
+            instance.status = "Cancelled"
+            instance.cancel()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/paid-to-cancelled")
+    def transition_paid_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Cancelled" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
+        try:
+            instance.status = "Cancelled"
+            instance.cancel()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/completed-to-refunded")
+    def transition_completed_to_refunded(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Refunded" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Refunded not allowed"}, status=409)
+        try:
+            instance.status = "Refunded"
+            instance.refund()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/refunded-to-completed")
+    def transition_refunded_to_completed(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Refunded -> Completed is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/completed-to-cancelled")
+    def transition_completed_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Completed -> Cancelled is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -242,8 +393,8 @@ class TradeListingViewSet(viewsets.ModelViewSet):
     queryset = TradeListing.objects.select_related().all()
     serializer_class = TradeListingSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["listing_type", "condition", "status"]
-    filterset_fields = ["listing_type", "condition", "status", "seller", "card"]
+    search_fields = ["status", "listing_type", "condition"]
+    filterset_fields = ["status", "listing_type", "condition", "seller", "card"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["post"], url_path="close")
@@ -281,6 +432,95 @@ class TradeListingViewSet(viewsets.ModelViewSet):
         result = instance.finalize_auction()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/pending-to-active")
+    def transition_pending_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Active" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Active not allowed"}, status=409)
+        try:
+            if instance.quantity is None:
+                raise DjangoValidationError({"quantity": "quantity is required for Pending -> Active"})
+            instance.status = "Active"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/active-to-sold")
+    def transition_active_to_sold(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Sold" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Sold not allowed"}, status=409)
+        try:
+            instance.status = "Sold"
+            instance.finalize_auction()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/active-to-expired")
+    def transition_active_to_expired(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Expired" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Expired not allowed"}, status=409)
+        try:
+            instance.status = "Expired"
+            instance.close()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/active-to-cancelled")
+    def transition_active_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Cancelled" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
+        try:
+            instance.status = "Cancelled"
+            instance.cancel()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/sold-to-active")
+    def transition_sold_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Sold -> Active is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/expired-to-active")
+    def transition_expired_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Expired -> Active is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -451,8 +691,8 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
     queryset = TradeDispute.objects.select_related().all()
     serializer_class = TradeDisputeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["reason", "description", "status"]
-    filterset_fields = ["reason", "status", "transaction", "opened_by", "resolved_by"]
+    search_fields = ["status", "reason", "description"]
+    filterset_fields = ["status", "reason", "transaction", "opened_by", "resolved_by"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["post"], url_path="escalate")
@@ -470,12 +710,103 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["post"], url_path="close")
+    def close_resolved(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.close_resolved()
+        from rest_framework.response import Response
+        return Response(status=204)
+
     @action(detail=True, methods=["post"], url_path="review")
     def review(self, request, pk=None):
         instance = self.get_object()
         result = instance.review()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/open-to-underreview")
+    def transition_open_to_underreview(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "UnderReview" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> UnderReview not allowed"}, status=409)
+        try:
+            instance.status = "UnderReview"
+            instance.review()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/underreview-to-resolved")
+    def transition_underreview_to_resolved(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Resolved" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Resolved not allowed"}, status=409)
+        try:
+            if instance.resolution is None:
+                raise DjangoValidationError({"resolution": "resolution is required for UnderReview -> Resolved"})
+            instance.status = "Resolved"
+            instance.close_resolved()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/underreview-to-escalated")
+    def transition_underreview_to_escalated(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Escalated" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Escalated not allowed"}, status=409)
+        try:
+            instance.status = "Escalated"
+            instance.escalate()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/escalated-to-resolved")
+    def transition_escalated_to_resolved(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Resolved" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Resolved not allowed"}, status=409)
+        try:
+            if instance.resolution is None:
+                raise DjangoValidationError({"resolution": "resolution is required for Escalated -> Resolved"})
+            instance.status = "Resolved"
+            instance.close_resolved()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/resolved-to-open")
+    def transition_resolved_to_open(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Resolved -> Open is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

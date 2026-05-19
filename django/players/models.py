@@ -48,25 +48,32 @@ class Player(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def promote(self):
-        raise NotImplementedError("promote not implemented")
+        # TODO: implement promote
+        return None
 
     def demote(self):
-        raise NotImplementedError("demote not implemented")
+        # TODO: implement demote
+        return None
 
     def record_win(self):
-        raise NotImplementedError("record_win not implemented")
+        # TODO: implement record_win
+        pass
 
     def record_loss(self):
-        raise NotImplementedError("record_loss not implemented")
+        # TODO: implement record_loss
+        pass
 
     def win_rate(self):
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None
 
     def verify(self):
-        raise NotImplementedError("verify not implemented")
+        # TODO: implement verify
+        pass
 
     def update_rating(self, delta):
-        raise NotImplementedError("update_rating not implemented")
+        # TODO: implement update_rating
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -112,13 +119,16 @@ class PlayerSeasonStats(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def win_rate(self):
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None
 
     def add_points(self, points):
-        raise NotImplementedError("add_points not implemented")
+        # TODO: implement add_points
+        pass
 
     def record_tournament_win(self):
-        raise NotImplementedError("record_tournament_win not implemented")
+        # TODO: implement record_tournament_win
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -171,13 +181,16 @@ class PlayerCollection(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def add(self, quantity):
-        raise NotImplementedError("add not implemented")
+        # TODO: implement add
+        pass
 
     def remove(self, quantity):
-        raise NotImplementedError("remove not implemented")
+        # TODO: implement remove
+        pass
 
     def estimated_value(self):
-        raise NotImplementedError("estimated_value not implemented")
+        # TODO: implement estimated_value
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -211,13 +224,16 @@ class Friendship(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def accept(self):
-        raise NotImplementedError("accept not implemented")
+        # TODO: implement accept
+        pass
 
     def decline(self):
-        raise NotImplementedError("decline not implemented")
+        # TODO: implement decline
+        pass
 
     def block(self):
-        raise NotImplementedError("block not implemented")
+        # TODO: implement block
+        pass
 
 
 class AchievementRarityChoices(models.TextChoices):
@@ -247,10 +263,12 @@ class Achievement(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def point_value(self, multiplier):
-        raise NotImplementedError("point_value not implemented")
+        # TODO: implement point_value
+        return None
 
     def reveal(self):
-        raise NotImplementedError("reveal not implemented")
+        # TODO: implement reveal
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -279,10 +297,12 @@ class PlayerAchievement(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def increment_progress(self, amount):
-        raise NotImplementedError("increment_progress not implemented")
+        # TODO: implement increment_progress
+        pass
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -315,16 +335,20 @@ class CraftingRecipe(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def can_craft(self, player_id):
-        raise NotImplementedError("can_craft not implemented")
+        # TODO: implement can_craft
+        return None
 
     def execute_craft(self, player_id):
-        raise NotImplementedError("execute_craft not implemented")
+        # TODO: implement execute_craft
+        pass
 
     def disable(self):
-        raise NotImplementedError("disable not implemented")
+        # TODO: implement disable
+        pass
 
     def enable(self):
-        raise NotImplementedError("enable not implemented")
+        # TODO: implement enable
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError

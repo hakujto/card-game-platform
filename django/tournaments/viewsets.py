@@ -66,8 +66,8 @@ class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.select_related().all()
     serializer_class = TournamentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "description", "format"]
-    filterset_fields = ["format", "tournament_type", "status", "season", "organizer"]
+    search_fields = ["name", "description", "status"]
+    filterset_fields = ["status", "format", "tournament_type", "season", "organizer"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["post"], url_path="start")
@@ -120,6 +120,116 @@ class TournamentViewSet(viewsets.ModelViewSet):
         result = instance.is_full()
         from rest_framework.response import Response
         return Response({"result": result})
+
+    @action(detail=True, methods=["patch"], url_path="transitions/draft-to-registration")
+    def transition_draft_to_registration(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Registration" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Registration not allowed"}, status=409)
+        try:
+            if instance.name is None:
+                raise DjangoValidationError({"name": "name is required for Draft -> Registration"})
+            if instance.start_time is None:
+                raise DjangoValidationError({"start_time": "start_time is required for Draft -> Registration"})
+            instance.status = "Registration"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/registration-to-ongoing")
+    def transition_registration_to_ongoing(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Ongoing" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Ongoing not allowed"}, status=409)
+        try:
+            instance.status = "Ongoing"
+            instance.start()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/registration-to-cancelled")
+    def transition_registration_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Cancelled" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
+        try:
+            instance.status = "Cancelled"
+            instance.cancel()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/ongoing-to-completed")
+    def transition_ongoing_to_completed(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Completed" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
+        try:
+            instance.status = "Completed"
+            instance.complete()  # @after
+            instance.calculate_prize_distribution()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/ongoing-to-cancelled")
+    def transition_ongoing_to_cancelled(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Cancelled" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
+        try:
+            instance.status = "Cancelled"
+            instance.cancel()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/completed-to-draft")
+    def transition_completed_to_draft(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Completed -> Draft is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/cancelled-to-draft")
+    def transition_cancelled_to_draft(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Cancelled -> Draft is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -293,6 +403,13 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["post"], url_path="finalize")
+    def finalize_result(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.finalize_result()
+        from rest_framework.response import Response
+        return Response(status=204)
+
     @action(detail=True, methods=["get"], url_path="winner")
     def determine_winner(self, request, pk=None):
         instance = self.get_object()
@@ -314,6 +431,100 @@ class MatchViewSet(viewsets.ModelViewSet):
         result = instance.draw()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/pending-to-active")
+    def transition_pending_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Active" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Active not allowed"}, status=409)
+        try:
+            instance.status = "Active"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/active-to-completed")
+    def transition_active_to_completed(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Completed" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
+        try:
+            instance.status = "Completed"
+            instance.finalize_result()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/active-to-draw")
+    def transition_active_to_draw(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Draw" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Draw not allowed"}, status=409)
+        try:
+            instance.status = "Draw"
+            instance.draw()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/pending-to-bye")
+    def transition_pending_to_bye(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "BYE" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> BYE not allowed"}, status=409)
+        try:
+            instance.status = "BYE"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/completed-to-active")
+    def transition_completed_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Completed -> Active is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/draw-to-active")
+    def transition_draw_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Draw -> Active is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/bye-to-active")
+    def transition_bye_to_active(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition BYE -> Active is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

@@ -133,6 +133,20 @@ class ArticleService:
         instance.save()
 
     @staticmethod
+    def like(id):
+        from .models import Article
+        instance = Article.objects.get(pk=id)
+        instance.like()
+        instance.save()
+
+    @staticmethod
+    def unlike(id):
+        from .models import Article
+        instance = Article.objects.get(pk=id)
+        instance.unlike()
+        instance.save()
+
+    @staticmethod
     def reading_time_minutes(id):
         from .models import Article
         instance = Article.objects.get(pk=id)

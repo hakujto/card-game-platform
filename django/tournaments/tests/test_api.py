@@ -102,6 +102,63 @@ class TournamentAPITest(APITestCase):
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_transition_draft_to_registration_succeeds(self):
+        self.obj.status = "Draft"
+        self.obj.name = "test"  # @on: name != null
+        self.obj.start_time = "2024-01-01T00:00:00Z"  # @on: start_time != null
+        self.obj.save()
+        url = reverse("tournament-transition-draft-to-registration", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Registration")
+
+    def test_transition_registration_to_ongoing_succeeds(self):
+        self.obj.status = "Registration"
+        self.obj.save()
+        url = reverse("tournament-transition-registration-to-ongoing", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Ongoing")
+
+    def test_transition_registration_to_cancelled_succeeds(self):
+        self.obj.status = "Registration"
+        self.obj.save()
+        url = reverse("tournament-transition-registration-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Cancelled")
+
+    def test_transition_ongoing_to_completed_succeeds(self):
+        self.obj.status = "Ongoing"
+        self.obj.save()
+        url = reverse("tournament-transition-ongoing-to-completed", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Completed")
+
+    def test_transition_ongoing_to_cancelled_succeeds(self):
+        self.obj.status = "Ongoing"
+        self.obj.save()
+        url = reverse("tournament-transition-ongoing-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Cancelled")
+
+    def test_transition_completed_to_draft_is_denied(self):
+        url = reverse("tournament-transition-completed-to-draft", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_cancelled_to_draft_is_denied(self):
+        url = reverse("tournament-transition-cancelled-to-draft", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
 
 class TournamentJudgeAPITest(APITestCase):
     def setUp(self):
@@ -335,6 +392,57 @@ class MatchAPITest(APITestCase):
         data = {"player1": self.player.pk, "status": "Completed", "started_at": None}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_pending_to_active_succeeds(self):
+        self.obj.status = "Pending"
+        self.obj.save()
+        url = reverse("match-transition-pending-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Active")
+
+    def test_transition_active_to_completed_succeeds(self):
+        self.obj.status = "Active"
+        self.obj.save()
+        url = reverse("match-transition-active-to-completed", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Completed")
+
+    def test_transition_active_to_draw_succeeds(self):
+        self.obj.status = "Active"
+        self.obj.save()
+        url = reverse("match-transition-active-to-draw", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Draw")
+
+    def test_transition_pending_to_bye_succeeds(self):
+        self.obj.status = "Pending"
+        self.obj.save()
+        url = reverse("match-transition-pending-to-bye", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "BYE")
+
+    def test_transition_completed_to_active_is_denied(self):
+        url = reverse("match-transition-completed-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_draw_to_active_is_denied(self):
+        url = reverse("match-transition-draw-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_bye_to_active_is_denied(self):
+        url = reverse("match-transition-bye-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
 
 
 class GameAPITest(APITestCase):

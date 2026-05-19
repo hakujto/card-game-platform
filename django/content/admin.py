@@ -4,7 +4,7 @@ from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleT
 
 @admin.register(DraftSession)
 class DraftSessionAdmin(admin.ModelAdmin):
-    list_display = ["id", "status", "draft_type", "seats", "created_at"]
+    list_display = ["id", "status", "draft_type", "seats", "time_per_pick_seconds"]
     search_fields = ["status", "draft_type"]
     list_filter = ["status", "draft_type", "card_set"]
 
@@ -25,7 +25,7 @@ class DraftPickAdmin(admin.ModelAdmin):
 class ArticleAdmin(admin.ModelAdmin):
     list_display = ["id", "title", "slug", "body", "excerpt"]
     search_fields = ["title", "slug", "body"]
-    list_filter = ["status", "article_type", "author", "featured_deck"]
+    list_filter = ["status", "article_type", "language", "author", "featured_deck"]
 
 
 @admin.register(ArticleTag)
@@ -49,6 +49,6 @@ class ArticleCommentAdmin(admin.ModelAdmin):
 
 @admin.register(Stream)
 class StreamAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "stream_url", "platform", "status"]
-    search_fields = ["title", "platform", "status"]
-    list_filter = ["platform", "status", "tournament", "streamer"]
+    list_display = ["id", "title", "stream_url", "status", "platform"]
+    search_fields = ["title", "status", "platform"]
+    list_filter = ["status", "platform", "language", "tournament", "streamer"]

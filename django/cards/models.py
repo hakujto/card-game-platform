@@ -67,25 +67,32 @@ class Card(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def ban(self):
-        raise NotImplementedError("ban not implemented")
+        # TODO: implement ban
+        pass
 
     def unban(self):
-        raise NotImplementedError("unban not implemented")
+        # TODO: implement unban
+        pass
 
     def restrict(self):
-        raise NotImplementedError("restrict not implemented")
+        # TODO: implement restrict
+        pass
 
     def unrestrict(self):
-        raise NotImplementedError("unrestrict not implemented")
+        # TODO: implement unrestrict
+        pass
 
     def calculate_value(self):
-        raise NotImplementedError("calculate_value not implemented")
+        # TODO: implement calculate_value
+        return None
 
     def apply_rarity_bonus(self, multiplier):
-        raise NotImplementedError("apply_rarity_bonus not implemented")
+        # TODO: implement apply_rarity_bonus
+        return None
 
     def is_legal_in_format(self, format):
-        raise NotImplementedError("is_legal_in_format not implemented")
+        # TODO: implement is_legal_in_format
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -105,6 +112,8 @@ class Card(models.Model):
             raise ValidationError({"creature_requires_stats": "Creature card must have attack and defense"})
         if (self.card_type == CardCardTypeChoices.PLANESWALKER) and (self.loyalty is None):
             raise ValidationError({"planeswalker_requires_loyalty": "Planeswalker card must have loyalty"})
+        if (self.card_type == CardCardTypeChoices.LAND) and (not (self.mana_cost == 0)):
+            raise ValidationError({"land_has_no_mana_cost": "Land card must have zero mana cost"})
         if (self.card_type != CardCardTypeChoices.PLANESWALKER) and (self.loyalty is not None):
             raise ValidationError({"spell_or_artifact_no_loyalty": "Only Planeswalker cards can have loyalty"})
         if (self.is_banned is True) and (not (self.legal_formats == "message")):
@@ -141,16 +150,20 @@ class CardSet(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def is_legal_in_standard(self):
-        raise NotImplementedError("is_legal_in_standard not implemented")
+        # TODO: implement is_legal_in_standard
+        return None
 
     def is_legal_in_format(self, format):
-        raise NotImplementedError("is_legal_in_format not implemented")
+        # TODO: implement is_legal_in_format
+        return None
 
     def card_count_by_rarity(self, rarity):
-        raise NotImplementedError("card_count_by_rarity not implemented")
+        # TODO: implement card_count_by_rarity
+        return None
 
     def rotate_out(self):
-        raise NotImplementedError("rotate_out not implemented")
+        # TODO: implement rotate_out
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -185,10 +198,12 @@ class CardRuling(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def is_current(self):
-        raise NotImplementedError("is_current not implemented")
+        # TODO: implement is_current
+        return None
 
     def supersedes_previous(self):
-        raise NotImplementedError("supersedes_previous not implemented")
+        # TODO: implement supersedes_previous
+        return None
 
 
 class CardAbilityAbilityTypeChoices(models.TextChoices):
@@ -223,10 +238,12 @@ class CardAbility(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def is_usable_at(self, timing):
-        raise NotImplementedError("is_usable_at not implemented")
+        # TODO: implement is_usable_at
+        return None
 
     def describe(self):
-        raise NotImplementedError("describe not implemented")
+        # TODO: implement describe
+        return None
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
@@ -280,28 +297,36 @@ class Deck(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def validate_size(self):
-        raise NotImplementedError("validate_size not implemented")
+        # TODO: implement validate_size
+        return None
 
     def add_card(self, card_id, quantity):
-        raise NotImplementedError("add_card not implemented")
+        # TODO: implement add_card
+        pass
 
     def remove_card(self, card_id):
-        raise NotImplementedError("remove_card not implemented")
+        # TODO: implement remove_card
+        pass
 
     def win_rate(self):
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None
 
     def clone(self):
-        raise NotImplementedError("clone not implemented")
+        # TODO: implement clone
+        return None
 
     def publish(self):
-        raise NotImplementedError("publish not implemented")
+        # TODO: implement publish
+        pass
 
     def unpublish(self):
-        raise NotImplementedError("unpublish not implemented")
+        # TODO: implement unpublish
+        pass
 
     def certify_tournament_legal(self):
-        raise NotImplementedError("certify_tournament_legal not implemented")
+        # TODO: implement certify_tournament_legal
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -338,10 +363,12 @@ class DeckCard(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def increment(self, amount):
-        raise NotImplementedError("increment not implemented")
+        # TODO: implement increment
+        pass
 
     def decrement(self, amount):
-        raise NotImplementedError("decrement not implemented")
+        # TODO: implement decrement
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -350,6 +377,11 @@ class DeckCard(models.Model):
             errors["quantity_range"] = "A deck can contain between 1 and 4 copies of a card"
         if errors:
             raise ValidationError(errors)
+
+    def validate_implies(self):
+        from django.core.exceptions import ValidationError
+        if (self.is_commander is True) and (not (self.quantity == 1)):
+            raise ValidationError({"commander_is_singleton": "Commander card must appear exactly once in the deck"})
 
 
 class DeckSideboardCard(models.Model):
@@ -368,10 +400,12 @@ class DeckSideboardCard(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def increment(self, amount):
-        raise NotImplementedError("increment not implemented")
+        # TODO: implement increment
+        pass
 
     def decrement(self, amount):
-        raise NotImplementedError("decrement not implemented")
+        # TODO: implement decrement
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -397,10 +431,12 @@ class DeckTag(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def rename(self, new_name):
-        raise NotImplementedError("rename not implemented")
+        # TODO: implement rename
+        pass
 
     def merge_into(self, target_tag_id):
-        raise NotImplementedError("merge_into not implemented")
+        # TODO: implement merge_into
+        pass
 
 
 class DeckTagAssignment(models.Model):

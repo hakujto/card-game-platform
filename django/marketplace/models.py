@@ -34,22 +34,28 @@ class Product(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def activate(self):
-        raise NotImplementedError("activate not implemented")
+        # TODO: implement activate
+        pass
 
     def deactivate(self):
-        raise NotImplementedError("deactivate not implemented")
+        # TODO: implement deactivate
+        pass
 
     def apply_discount(self, percent):
-        raise NotImplementedError("apply_discount not implemented")
+        # TODO: implement apply_discount
+        return None
 
     def restock(self, quantity):
-        raise NotImplementedError("restock not implemented")
+        # TODO: implement restock
+        pass
 
     def effective_price(self):
-        raise NotImplementedError("effective_price not implemented")
+        # TODO: implement effective_price
+        return None
 
     def is_in_stock(self):
-        raise NotImplementedError("is_in_stock not implemented")
+        # TODO: implement is_in_stock
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -107,22 +113,32 @@ class Order(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def cancel(self):
-        raise NotImplementedError("cancel not implemented")
+        # TODO: implement cancel
+        pass
 
     def pay(self, payment_ref):
-        raise NotImplementedError("pay not implemented")
+        # TODO: implement pay
+        return None
+
+    def process_payment(self):
+        # TODO: implement process_payment
+        return None
 
     def calculate_total(self):
-        raise NotImplementedError("calculate_total not implemented")
+        # TODO: implement calculate_total
+        return None
 
     def apply_discount(self, percent):
-        raise NotImplementedError("apply_discount not implemented")
+        # TODO: implement apply_discount
+        return None
 
     def refund(self):
-        raise NotImplementedError("refund not implemented")
+        # TODO: implement refund
+        pass
 
     def notify_shipped(self):
-        raise NotImplementedError("notify_shipped not implemented")
+        # TODO: implement notify_shipped
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -143,6 +159,21 @@ class Order(models.Model):
         if (self.shipped_at is not None) and (not (self.status == OrderStatusChoices.SHIPPED)):
             raise ValidationError({"shipped_at_requires_shipped_status": "shipped_at_requires_shipped_status"})
 
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Pending": ["Paid", "Cancelled"],
+        "Paid": ["Processing", "Cancelled"],
+        "Processing": ["Shipped"],
+        "Shipped": ["Completed"],
+        "Completed": ["Refunded"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
+
 
 class OrderItem(models.Model):
     quantity = models.IntegerField()
@@ -162,7 +193,8 @@ class OrderItem(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def line_total(self):
-        raise NotImplementedError("line_total not implemented")
+        # TODO: implement line_total
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -202,16 +234,20 @@ class Coupon(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def is_valid(self):
-        raise NotImplementedError("is_valid not implemented")
+        # TODO: implement is_valid
+        return None
 
     def is_applicable_to_order(self, order_total):
-        raise NotImplementedError("is_applicable_to_order not implemented")
+        # TODO: implement is_applicable_to_order
+        return None
 
     def redeem(self):
-        raise NotImplementedError("redeem not implemented")
+        # TODO: implement redeem
+        pass
 
     def deactivate(self):
-        raise NotImplementedError("deactivate not implemented")
+        # TODO: implement deactivate
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -231,6 +267,14 @@ class Coupon(models.Model):
             raise ValidationError({"uses_not_exceed_max": "Coupon uses count cannot exceed max_uses"})
 
 
+class TradeListingStatusChoices(models.TextChoices):
+    ACTIVE = "Active", "Active"
+    SOLD = "Sold", "Sold"
+    EXPIRED = "Expired", "Expired"
+    CANCELLED = "Cancelled", "Cancelled"
+    PENDING = "Pending", "Pending"
+
+
 class TradeListingListingTypeChoices(models.TextChoices):
     FIXEDPRICE = "FixedPrice", "Fixedprice"
     AUCTION = "Auction", "Auction"
@@ -245,15 +289,8 @@ class TradeListingConditionChoices(models.TextChoices):
     PLAYED = "Played", "Played"
 
 
-class TradeListingStatusChoices(models.TextChoices):
-    ACTIVE = "Active", "Active"
-    SOLD = "Sold", "Sold"
-    EXPIRED = "Expired", "Expired"
-    CANCELLED = "Cancelled", "Cancelled"
-    PENDING = "Pending", "Pending"
-
-
 class TradeListing(models.Model):
+    status = models.CharField(max_length=20, choices=TradeListingStatusChoices.choices, default=TradeListingStatusChoices.ACTIVE)
     listing_type = models.CharField(max_length=20, choices=TradeListingListingTypeChoices.choices, default=TradeListingListingTypeChoices.FIXEDPRICE)
     asking_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     auction_start_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -262,7 +299,6 @@ class TradeListing(models.Model):
     foil = models.BooleanField(default=False)
     condition = models.CharField(max_length=20, choices=TradeListingConditionChoices.choices, default=TradeListingConditionChoices.MINT)
     quantity = models.IntegerField(default=1)
-    status = models.CharField(max_length=20, choices=TradeListingStatusChoices.choices, default=TradeListingStatusChoices.ACTIVE)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField(null=True, blank=True)
@@ -275,24 +311,29 @@ class TradeListing(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.listing_type)
+        return str(self.status)
 
     # ── Business operations ──────────────────────────────────────────
 
     def close(self):
-        raise NotImplementedError("close not implemented")
+        # TODO: implement close
+        pass
 
     def extend(self, days):
-        raise NotImplementedError("extend not implemented")
+        # TODO: implement extend
+        pass
 
     def cancel(self):
-        raise NotImplementedError("cancel not implemented")
+        # TODO: implement cancel
+        pass
 
     def is_expired(self):
-        raise NotImplementedError("is_expired not implemented")
+        # TODO: implement is_expired
+        return None
 
     def finalize_auction(self):
-        raise NotImplementedError("finalize_auction not implemented")
+        # TODO: implement finalize_auction
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -308,6 +349,18 @@ class TradeListing(models.Model):
             raise ValidationError({"fixed_price_requires_asking_price": "Fixed price listing must have an asking price"})
         if (self.listing_type == TradeListingListingTypeChoices.AUCTION) and (not ((self.auction_start_price is not None and self.auction_end_time is not None))):
             raise ValidationError({"auction_requires_start_price_and_end_time": "Auction listing must have a start price and end time"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Pending": ["Active"],
+        "Active": ["Sold", "Expired", "Cancelled"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
 
 class TradeBid(models.Model):
@@ -328,10 +381,12 @@ class TradeBid(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def outbid_by(self, new_amount):
-        raise NotImplementedError("outbid_by not implemented")
+        # TODO: implement outbid_by
+        return None
 
     def retract(self):
-        raise NotImplementedError("retract not implemented")
+        # TODO: implement retract
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -369,16 +424,20 @@ class TradeTransaction(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def refund(self):
-        raise NotImplementedError("refund not implemented")
+        # TODO: implement refund
+        pass
 
     def open_dispute(self, reason):
-        raise NotImplementedError("open_dispute not implemented")
+        # TODO: implement open_dispute
+        pass
 
     def seller_net(self):
-        raise NotImplementedError("seller_net not implemented")
+        # TODO: implement seller_net
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -418,10 +477,12 @@ class CardPriceHistory(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def price_change_percent(self, previous_avg):
-        raise NotImplementedError("price_change_percent not implemented")
+        # TODO: implement price_change_percent
+        return None
 
     def is_price_spike(self, threshold_percent):
-        raise NotImplementedError("is_price_spike not implemented")
+        # TODO: implement is_price_spike
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -436,13 +497,6 @@ class CardPriceHistory(models.Model):
             raise ValidationError(errors)
 
 
-class TradeDisputeReasonChoices(models.TextChoices):
-    ITEMNOTRECEIVED = "ItemNotReceived", "Itemnotreceived"
-    ITEMNOTASDESCRIBED = "ItemNotAsDescribed", "Itemnotasdescribed"
-    FRAUDSUSPECTED = "FraudSuspected", "Fraudsuspected"
-    OTHER = "Other", "Other"
-
-
 class TradeDisputeStatusChoices(models.TextChoices):
     OPEN = "Open", "Open"
     UNDERREVIEW = "UnderReview", "Underreview"
@@ -450,10 +504,17 @@ class TradeDisputeStatusChoices(models.TextChoices):
     ESCALATED = "Escalated", "Escalated"
 
 
+class TradeDisputeReasonChoices(models.TextChoices):
+    ITEMNOTRECEIVED = "ItemNotReceived", "Itemnotreceived"
+    ITEMNOTASDESCRIBED = "ItemNotAsDescribed", "Itemnotasdescribed"
+    FRAUDSUSPECTED = "FraudSuspected", "Fraudsuspected"
+    OTHER = "Other", "Other"
+
+
 class TradeDispute(models.Model):
+    status = models.CharField(max_length=20, choices=TradeDisputeStatusChoices.choices, default=TradeDisputeStatusChoices.OPEN)
     reason = models.CharField(max_length=20, choices=TradeDisputeReasonChoices.choices)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=TradeDisputeStatusChoices.choices, default=TradeDisputeStatusChoices.OPEN)
     resolution = models.TextField(null=True, blank=True)
     opened_at = models.DateTimeField()
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -467,20 +528,40 @@ class TradeDispute(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.reason)
+        return str(self.status)
 
     # ── Business operations ──────────────────────────────────────────
 
     def escalate(self):
-        raise NotImplementedError("escalate not implemented")
+        # TODO: implement escalate
+        pass
 
     def resolve(self, resolution_text):
-        raise NotImplementedError("resolve not implemented")
+        # TODO: implement resolve
+        pass
+
+    def close_resolved(self):
+        # TODO: implement close_resolved
+        pass
 
     def review(self):
-        raise NotImplementedError("review not implemented")
+        # TODO: implement review
+        pass
 
     def validate_implies(self):
         from django.core.exceptions import ValidationError
         if (self.resolved_at is not None) and (not (self.status == TradeDisputeStatusChoices.RESOLVED)):
             raise ValidationError({"resolved_at_requires_terminal_status": "resolved_at_requires_terminal_status"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Open": ["UnderReview"],
+        "UnderReview": ["Resolved", "Escalated"],
+        "Escalated": ["Resolved"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")

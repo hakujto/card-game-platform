@@ -326,6 +326,7 @@ class DeckCardViewSet(viewsets.ModelViewSet):
         from django.core.exceptions import ValidationError as DjangoValidationError
         try:
             instance.full_clean()
+            instance.validate_implies()
         except DjangoValidationError as e:
             raise ValidationError(e.message_dict)
 

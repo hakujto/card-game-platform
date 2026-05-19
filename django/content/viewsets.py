@@ -41,6 +41,94 @@ class DraftSessionViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response({"result": result})
 
+    @action(detail=True, methods=["patch"], url_path="transitions/waitingforplayers-to-drafting")
+    def transition_waitingforplayers_to_drafting(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Drafting" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Drafting not allowed"}, status=409)
+        try:
+            instance.status = "Drafting"
+            instance.start()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/drafting-to-completed")
+    def transition_drafting_to_completed(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Completed" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
+        try:
+            instance.status = "Completed"
+            instance.complete()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/drafting-to-abandoned")
+    def transition_drafting_to_abandoned(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Abandoned" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Abandoned not allowed"}, status=409)
+        try:
+            instance.status = "Abandoned"
+            instance.abandon()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/waitingforplayers-to-abandoned")
+    def transition_waitingforplayers_to_abandoned(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Abandoned" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Abandoned not allowed"}, status=409)
+        try:
+            instance.status = "Abandoned"
+            instance.abandon()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/completed-to-drafting")
+    def transition_completed_to_drafting(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Completed -> Drafting is not allowed"}, status=409)
+
+    @action(detail=True, methods=["patch"], url_path="transitions/abandoned-to-drafting")
+    def transition_abandoned_to_drafting(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Abandoned -> Drafting is not allowed"}, status=409)
+
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
         from django.core.exceptions import ValidationError as DjangoValidationError
@@ -147,7 +235,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     serializer_class = ArticleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "slug", "body"]
-    filterset_fields = ["status", "article_type", "author", "featured_deck"]
+    filterset_fields = ["status", "article_type", "language", "author", "featured_deck"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["post"], url_path="publish")
@@ -171,12 +259,91 @@ class ArticleViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         return Response(status=204)
 
+    @action(detail=True, methods=["post"], url_path="like")
+    def like(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.like()
+        from rest_framework.response import Response
+        return Response(status=204)
+
+    @action(detail=True, methods=["delete"], url_path="like")
+    def unlike(self, request, pk=None):
+        instance = self.get_object()
+        result = instance.unlike()
+        from rest_framework.response import Response
+        return Response(status=204)
+
     @action(detail=True, methods=["get"], url_path="reading-time")
     def reading_time_minutes(self, request, pk=None):
         instance = self.get_object()
         result = instance.reading_time_minutes()
         from rest_framework.response import Response
         return Response({"result": result})
+
+    @action(detail=True, methods=["patch"], url_path="transitions/draft-to-published")
+    def transition_draft_to_published(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Published" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Published not allowed"}, status=409)
+        try:
+            if instance.title is None:
+                raise DjangoValidationError({"title": "title is required for Draft -> Published"})
+            if instance.body is None:
+                raise DjangoValidationError({"body": "body is required for Draft -> Published"})
+            instance.status = "Published"
+            instance.publish()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/published-to-archived")
+    def transition_published_to_archived(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Archived" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Archived not allowed"}, status=409)
+        try:
+            instance.status = "Archived"
+            instance.archive()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/archived-to-draft")
+    def transition_archived_to_draft(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Draft" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Draft not allowed"}, status=409)
+        try:
+            instance.status = "Draft"
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/published-to-draft")
+    def transition_published_to_draft(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Published -> Draft is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError
@@ -265,8 +432,8 @@ class StreamViewSet(viewsets.ModelViewSet):
     queryset = Stream.objects.select_related().all()
     serializer_class = StreamSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["title", "platform", "status"]
-    filterset_fields = ["platform", "status", "tournament", "streamer"]
+    search_fields = ["title", "status", "platform"]
+    filterset_fields = ["status", "platform", "language", "tournament", "streamer"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["post"], url_path="live")
@@ -297,6 +464,52 @@ class StreamViewSet(viewsets.ModelViewSet):
         result = instance.duration_minutes()
         from rest_framework.response import Response
         return Response({"result": result})
+
+    @action(detail=True, methods=["patch"], url_path="transitions/scheduled-to-live")
+    def transition_scheduled_to_live(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Live" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Live not allowed"}, status=409)
+        try:
+            if instance.stream_url is None:
+                raise DjangoValidationError({"stream_url": "stream_url is required for Scheduled -> Live"})
+            instance.status = "Live"
+            instance.go_live()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/live-to-ended")
+    def transition_live_to_ended(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
+        if "Ended" not in allowed:
+            return Response({"error": f"Transition {instance.status} -> Ended not allowed"}, status=409)
+        try:
+            instance.status = "Ended"
+            instance.end()  # @after
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except DjangoValidationError as e:
+            raise ValidationError(e.message_dict if hasattr(e, "message_dict") else str(e))
+
+    @action(detail=True, methods=["patch"], url_path="transitions/ended-to-live")
+    def transition_ended_to_live(self, request, pk=None):
+        from rest_framework.response import Response
+        from rest_framework.exceptions import ValidationError, PermissionDenied
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        instance = self.get_object()
+        return Response({"error": "Transition Ended -> Live is not allowed"}, status=409)
 
     def _validate_instance(self, instance):
         from rest_framework.exceptions import ValidationError

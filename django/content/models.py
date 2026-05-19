@@ -19,6 +19,7 @@ class DraftSession(models.Model):
     status = models.CharField(max_length=20, choices=DraftSessionStatusChoices.choices, default=DraftSessionStatusChoices.WAITINGFORPLAYERS)
     draft_type = models.CharField(max_length=20, choices=DraftSessionDraftTypeChoices.choices, default=DraftSessionDraftTypeChoices.BOOSTER)
     seats = models.IntegerField(default=8)
+    time_per_pick_seconds = models.IntegerField(default=30)
     created_at = models.DateTimeField()
     completed_at = models.DateTimeField(null=True, blank=True)
     card_set = models.ForeignKey("cards.CardSet", on_delete=models.CASCADE, related_name="draft_sessions")
@@ -34,22 +35,28 @@ class DraftSession(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def start(self):
-        raise NotImplementedError("start not implemented")
+        # TODO: implement start
+        pass
 
     def abandon(self):
-        raise NotImplementedError("abandon not implemented")
+        # TODO: implement abandon
+        pass
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def is_full(self):
-        raise NotImplementedError("is_full not implemented")
+        # TODO: implement is_full
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
         if not ((self.seats is None or (self.seats >= 2 and self.seats <= 16))):
             errors["seats_range"] = "Draft session must have between 2 and 16 seats"
+        if not ((self.time_per_pick_seconds is None or self.time_per_pick_seconds > 0)):
+            errors["time_per_pick_positive"] = "Time per pick must be greater than zero"
         if errors:
             raise ValidationError(errors)
 
@@ -57,6 +64,18 @@ class DraftSession(models.Model):
         from django.core.exceptions import ValidationError
         if (self.completed_at is not None) and (not (self.status == DraftSessionStatusChoices.COMPLETED)):
             raise ValidationError({"completed_at_requires_completed_status": "completed_at can only be set when draft status is Completed"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "WaitingForPlayers": ["Drafting", "Abandoned"],
+        "Drafting": ["Completed", "Abandoned"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
 
 class DraftParticipant(models.Model):
@@ -76,10 +95,12 @@ class DraftParticipant(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def pick_card(self, card_id, pack_number):
-        raise NotImplementedError("pick_card not implemented")
+        # TODO: implement pick_card
+        pass
 
     def drafted_card_count(self):
-        raise NotImplementedError("drafted_card_count not implemented")
+        # TODO: implement drafted_card_count
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -108,7 +129,8 @@ class DraftPick(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def is_first_pick(self):
-        raise NotImplementedError("is_first_pick not implemented")
+        # TODO: implement is_first_pick
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -136,6 +158,16 @@ class ArticleArticleTypeChoices(models.TextChoices):
     DECKLIST = "Decklist", "Decklist"
 
 
+class ArticleLanguageChoices(models.TextChoices):
+    EN = "EN", "En"
+    DE = "DE", "De"
+    FR = "FR", "Fr"
+    IT = "IT", "It"
+    ES = "ES", "Es"
+    JP = "JP", "Jp"
+    PT = "PT", "Pt"
+
+
 class Article(models.Model):
     title = models.CharField(max_length=300)
     slug = models.CharField(max_length=300)
@@ -144,7 +176,10 @@ class Article(models.Model):
     cover_image_url = models.URLField(max_length=200, null=True, blank=True)
     status = models.CharField(max_length=20, choices=ArticleStatusChoices.choices, default=ArticleStatusChoices.DRAFT)
     article_type = models.CharField(max_length=20, choices=ArticleArticleTypeChoices.choices, default=ArticleArticleTypeChoices.GUIDE)
+    language = models.CharField(max_length=20, choices=ArticleLanguageChoices.choices, default=ArticleLanguageChoices.EN)
     view_count = models.IntegerField(default=0)
+    likes_count = models.IntegerField(default=0)
+    is_featured = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -163,22 +198,36 @@ class Article(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def publish(self):
-        raise NotImplementedError("publish not implemented")
+        # TODO: implement publish
+        pass
 
     def archive(self):
-        raise NotImplementedError("archive not implemented")
+        # TODO: implement archive
+        pass
 
     def increment_view(self):
-        raise NotImplementedError("increment_view not implemented")
+        # TODO: implement increment_view
+        pass
+
+    def like(self):
+        # TODO: implement like
+        pass
+
+    def unlike(self):
+        # TODO: implement unlike
+        pass
 
     def reading_time_minutes(self):
-        raise NotImplementedError("reading_time_minutes not implemented")
+        # TODO: implement reading_time_minutes
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
         errors = {}
         if not ((self.view_count is None or self.view_count >= 0)):
             errors["view_count_not_negative"] = "Article view count must not be negative"
+        if not ((self.likes_count is None or self.likes_count >= 0)):
+            errors["likes_count_not_negative"] = "Article likes count must not be negative"
         if errors:
             raise ValidationError(errors)
 
@@ -186,6 +235,19 @@ class Article(models.Model):
         from django.core.exceptions import ValidationError
         if (self.status == ArticleStatusChoices.PUBLISHED) and (self.published_at is None):
             raise ValidationError({"published_requires_published_at": "Published article must have a published_at timestamp"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Draft": ["Published"],
+        "Published": ["Archived"],
+        "Archived": ["Draft"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
 
 class ArticleTag(models.Model):
@@ -203,10 +265,12 @@ class ArticleTag(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def rename(self, new_name):
-        raise NotImplementedError("rename not implemented")
+        # TODO: implement rename
+        pass
 
     def article_count(self):
-        raise NotImplementedError("article_count not implemented")
+        # TODO: implement article_count
+        return None
 
 
 class ArticleTagAssignment(models.Model):
@@ -241,13 +305,22 @@ class ArticleComment(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def hide(self):
-        raise NotImplementedError("hide not implemented")
+        # TODO: implement hide
+        pass
 
     def unhide(self):
-        raise NotImplementedError("unhide not implemented")
+        # TODO: implement unhide
+        pass
 
     def is_reply(self):
-        raise NotImplementedError("is_reply not implemented")
+        # TODO: implement is_reply
+        return None
+
+
+class StreamStatusChoices(models.TextChoices):
+    SCHEDULED = "Scheduled", "Scheduled"
+    LIVE = "Live", "Live"
+    ENDED = "Ended", "Ended"
 
 
 class StreamPlatformChoices(models.TextChoices):
@@ -257,17 +330,23 @@ class StreamPlatformChoices(models.TextChoices):
     PLATFORM = "Platform", "Platform"
 
 
-class StreamStatusChoices(models.TextChoices):
-    SCHEDULED = "Scheduled", "Scheduled"
-    LIVE = "Live", "Live"
-    ENDED = "Ended", "Ended"
+class StreamLanguageChoices(models.TextChoices):
+    EN = "EN", "En"
+    DE = "DE", "De"
+    FR = "FR", "Fr"
+    IT = "IT", "It"
+    ES = "ES", "Es"
+    JP = "JP", "Jp"
+    PT = "PT", "Pt"
 
 
 class Stream(models.Model):
     title = models.CharField(max_length=300)
     stream_url = models.URLField(max_length=200)
-    platform = models.CharField(max_length=20, choices=StreamPlatformChoices.choices, default=StreamPlatformChoices.TWITCH)
     status = models.CharField(max_length=20, choices=StreamStatusChoices.choices, default=StreamStatusChoices.SCHEDULED)
+    platform = models.CharField(max_length=20, choices=StreamPlatformChoices.choices, default=StreamPlatformChoices.TWITCH)
+    language = models.CharField(max_length=20, choices=StreamLanguageChoices.choices, default=StreamLanguageChoices.EN)
+    is_official = models.BooleanField(default=False)
     viewer_count_peak = models.IntegerField(default=0)
     scheduled_start = models.DateTimeField()
     actual_start = models.DateTimeField(null=True, blank=True)
@@ -287,16 +366,20 @@ class Stream(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def go_live(self):
-        raise NotImplementedError("go_live not implemented")
+        # TODO: implement go_live
+        pass
 
     def end(self):
-        raise NotImplementedError("end not implemented")
+        # TODO: implement end
+        pass
 
     def update_viewer_peak(self, count):
-        raise NotImplementedError("update_viewer_peak not implemented")
+        # TODO: implement update_viewer_peak
+        pass
 
     def duration_minutes(self):
-        raise NotImplementedError("duration_minutes not implemented")
+        # TODO: implement duration_minutes
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -312,3 +395,15 @@ class Stream(models.Model):
             raise ValidationError({"actual_start_requires_live_or_ended": "actual_start_requires_live_or_ended"})
         if (self.ended_at is not None) and (not (self.status == StreamStatusChoices.ENDED)):
             raise ValidationError({"ended_at_requires_ended_status": "ended_at can only be set when stream status is Ended"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Scheduled": ["Live"],
+        "Live": ["Ended"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")

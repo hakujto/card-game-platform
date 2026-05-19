@@ -31,9 +31,9 @@ class CouponAdmin(admin.ModelAdmin):
 
 @admin.register(TradeListing)
 class TradeListingAdmin(admin.ModelAdmin):
-    list_display = ["id", "listing_type", "asking_price", "auction_start_price", "auction_current_bid"]
-    search_fields = ["listing_type", "condition", "status"]
-    list_filter = ["listing_type", "condition", "status", "seller", "card"]
+    list_display = ["id", "status", "listing_type", "asking_price", "auction_start_price"]
+    search_fields = ["status", "listing_type", "condition"]
+    list_filter = ["status", "listing_type", "condition", "seller", "card"]
 
 
 @admin.register(TradeBid)
@@ -57,6 +57,6 @@ class CardPriceHistoryAdmin(admin.ModelAdmin):
 
 @admin.register(TradeDispute)
 class TradeDisputeAdmin(admin.ModelAdmin):
-    list_display = ["id", "reason", "description", "status", "resolution"]
-    search_fields = ["reason", "description", "status"]
-    list_filter = ["reason", "status", "transaction", "opened_by", "resolved_by"]
+    list_display = ["id", "status", "reason", "description", "resolution"]
+    search_fields = ["status", "reason", "description"]
+    list_filter = ["status", "reason", "transaction", "opened_by", "resolved_by"]

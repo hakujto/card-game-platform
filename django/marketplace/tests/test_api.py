@@ -115,6 +115,97 @@ class OrderAPITest(APITestCase):
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_transition_pending_to_paid_succeeds(self):
+        self.obj.status = "Pending"
+        self.obj.payment_method = "Card"  # @on: payment_method != null
+        self.obj.save()
+        url = reverse("order-transition-pending-to-paid", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Paid")
+
+    def test_transition_pending_to_paid_fails_when_payment_method_missing(self):
+        self.obj.status = "Pending"
+        self.obj.payment_method = None
+        self.obj.save()
+        url = reverse("order-transition-pending-to-paid", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_paid_to_processing_succeeds(self):
+        self.obj.status = "Paid"
+        self.obj.save()
+        url = reverse("order-transition-paid-to-processing", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Processing")
+
+    def test_transition_processing_to_shipped_succeeds(self):
+        self.obj.status = "Processing"
+        self.obj.tracking_number = "test"  # @on: tracking_number != null
+        self.obj.save()
+        url = reverse("order-transition-processing-to-shipped", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Shipped")
+
+    def test_transition_processing_to_shipped_fails_when_tracking_number_missing(self):
+        self.obj.status = "Processing"
+        self.obj.tracking_number = None
+        self.obj.save()
+        url = reverse("order-transition-processing-to-shipped", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_shipped_to_completed_succeeds(self):
+        self.obj.status = "Shipped"
+        self.obj.save()
+        url = reverse("order-transition-shipped-to-completed", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Completed")
+
+    def test_transition_pending_to_cancelled_succeeds(self):
+        self.obj.status = "Pending"
+        self.obj.save()
+        url = reverse("order-transition-pending-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Cancelled")
+
+    def test_transition_paid_to_cancelled_succeeds(self):
+        self.obj.status = "Paid"
+        self.obj.save()
+        url = reverse("order-transition-paid-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Cancelled")
+
+    def test_transition_completed_to_refunded_succeeds(self):
+        self.obj.status = "Completed"
+        self.obj.save()
+        url = reverse("order-transition-completed-to-refunded", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Refunded")
+
+    def test_transition_refunded_to_completed_is_denied(self):
+        url = reverse("order-transition-refunded-to-completed", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_completed_to_cancelled_is_denied(self):
+        url = reverse("order-transition-completed-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
 
 class OrderItemAPITest(APITestCase):
     def setUp(self):
@@ -275,6 +366,53 @@ class TradeListingAPITest(APITestCase):
         data = {"created_at": "2024-01-01T00:00:00Z", "seller": self.player.pk, "card": self.card.pk, "listing_type": "Auction", "asking_price": "0.00", "auction_start_price": "0.00", "auction_end_time": "2024-01-01T00:00:00Z", "quantity": 10000}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_pending_to_active_succeeds(self):
+        self.obj.status = "Pending"
+        self.obj.quantity = 0  # @on: quantity != null
+        self.obj.save()
+        url = reverse("trade_listing-transition-pending-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Active")
+
+    def test_transition_active_to_sold_succeeds(self):
+        self.obj.status = "Active"
+        self.obj.save()
+        url = reverse("trade_listing-transition-active-to-sold", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Sold")
+
+    def test_transition_active_to_expired_succeeds(self):
+        self.obj.status = "Active"
+        self.obj.save()
+        url = reverse("trade_listing-transition-active-to-expired", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Expired")
+
+    def test_transition_active_to_cancelled_succeeds(self):
+        self.obj.status = "Active"
+        self.obj.save()
+        url = reverse("trade_listing-transition-active-to-cancelled", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Cancelled")
+
+    def test_transition_sold_to_active_is_denied(self):
+        url = reverse("trade_listing-transition-sold-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_expired_to_active_is_denied(self):
+        url = reverse("trade_listing-transition-expired-to-active", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
 
 
 class TradeBidAPITest(APITestCase):
@@ -510,3 +648,62 @@ class TradeDisputeAPITest(APITestCase):
         data = {"reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction": self.tradetransaction.pk, "opened_by": self.player.pk, "resolved_at": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_open_to_underreview_succeeds(self):
+        self.obj.status = "Open"
+        self.obj.save()
+        url = reverse("trade_dispute-transition-open-to-underreview", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "UnderReview")
+
+    def test_transition_underreview_to_resolved_succeeds(self):
+        self.obj.status = "UnderReview"
+        self.obj.resolution = "test"  # @on: resolution != null
+        self.obj.save()
+        url = reverse("trade_dispute-transition-underreview-to-resolved", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Resolved")
+
+    def test_transition_underreview_to_resolved_fails_when_resolution_missing(self):
+        self.obj.status = "UnderReview"
+        self.obj.resolution = None
+        self.obj.save()
+        url = reverse("trade_dispute-transition-underreview-to-resolved", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_underreview_to_escalated_succeeds(self):
+        self.obj.status = "UnderReview"
+        self.obj.save()
+        url = reverse("trade_dispute-transition-underreview-to-escalated", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Escalated")
+
+    def test_transition_escalated_to_resolved_succeeds(self):
+        self.obj.status = "Escalated"
+        self.obj.resolution = "test"  # @on: resolution != null
+        self.obj.save()
+        url = reverse("trade_dispute-transition-escalated-to-resolved", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Resolved")
+
+    def test_transition_escalated_to_resolved_fails_when_resolution_missing(self):
+        self.obj.status = "Escalated"
+        self.obj.resolution = None
+        self.obj.save()
+        url = reverse("trade_dispute-transition-escalated-to-resolved", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_resolved_to_open_is_denied(self):
+        url = reverse("trade_dispute-transition-resolved-to-open", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)

@@ -240,6 +240,14 @@ class MatchService:
         instance.save()
 
     @staticmethod
+    def finalize_result(id):
+        from .models import Match
+        instance = Match.objects.get(pk=id)
+        instance.finalize_result()
+        instance.determine_winner()  # @after
+        instance.save()
+
+    @staticmethod
     def determine_winner(id):
         from .models import Match
         instance = Match.objects.get(pk=id)

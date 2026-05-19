@@ -5,7 +5,7 @@ from ..models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, Dec
 class CardModelTest(TestCase):
     def setUp(self):
         _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
-        self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
+        self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_cost=0, mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))

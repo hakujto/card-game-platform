@@ -81,6 +81,7 @@ class TradeListingSerializer(serializers.ModelSerializer):
         model = TradeListing
         fields = [
             "id",
+            "status",
             "listing_type",
             "asking_price",
             "auction_start_price",
@@ -89,7 +90,6 @@ class TradeListingSerializer(serializers.ModelSerializer):
             "foil",
             "condition",
             "quantity",
-            "status",
             "description",
             "created_at",
             "expires_at",
@@ -150,9 +150,9 @@ class TradeDisputeSerializer(serializers.ModelSerializer):
         model = TradeDispute
         fields = [
             "id",
+            "status",
             "reason",
             "description",
-            "status",
             "resolution",
             "opened_at",
             "resolved_at",

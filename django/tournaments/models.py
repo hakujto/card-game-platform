@@ -30,16 +30,20 @@ class Season(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def activate(self):
-        raise NotImplementedError("activate not implemented")
+        # TODO: implement activate
+        pass
 
     def deactivate(self):
-        raise NotImplementedError("deactivate not implemented")
+        # TODO: implement deactivate
+        pass
 
     def finalize_rewards(self):
-        raise NotImplementedError("finalize_rewards not implemented")
+        # TODO: implement finalize_rewards
+        pass
 
     def is_ongoing(self):
-        raise NotImplementedError("is_ongoing not implemented")
+        # TODO: implement is_ongoing
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -48,6 +52,14 @@ class Season(models.Model):
             errors["end_date_after_start_date"] = "Season end date must be after start date"
         if errors:
             raise ValidationError(errors)
+
+
+class TournamentStatusChoices(models.TextChoices):
+    DRAFT = "Draft", "Draft"
+    REGISTRATION = "Registration", "Registration"
+    ONGOING = "Ongoing", "Ongoing"
+    COMPLETED = "Completed", "Completed"
+    CANCELLED = "Cancelled", "Cancelled"
 
 
 class TournamentFormatChoices(models.TextChoices):
@@ -66,20 +78,12 @@ class TournamentTournamentTypeChoices(models.TextChoices):
     ROUNDROBIN = "RoundRobin", "Roundrobin"
 
 
-class TournamentStatusChoices(models.TextChoices):
-    DRAFT = "Draft", "Draft"
-    REGISTRATION = "Registration", "Registration"
-    ONGOING = "Ongoing", "Ongoing"
-    COMPLETED = "Completed", "Completed"
-    CANCELLED = "Cancelled", "Cancelled"
-
-
 class Tournament(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=TournamentStatusChoices.choices, default=TournamentStatusChoices.DRAFT)
     format = models.CharField(max_length=20, choices=TournamentFormatChoices.choices, default=TournamentFormatChoices.STANDARD)
     tournament_type = models.CharField(max_length=20, choices=TournamentTournamentTypeChoices.choices, default=TournamentTournamentTypeChoices.SWISS)
-    status = models.CharField(max_length=20, choices=TournamentStatusChoices.choices, default=TournamentStatusChoices.DRAFT)
     max_players = models.IntegerField()
     entry_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     prize_pool = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -104,25 +108,32 @@ class Tournament(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def start(self):
-        raise NotImplementedError("start not implemented")
+        # TODO: implement start
+        pass
 
     def cancel(self):
-        raise NotImplementedError("cancel not implemented")
+        # TODO: implement cancel
+        pass
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def generate_round(self):
-        raise NotImplementedError("generate_round not implemented")
+        # TODO: implement generate_round
+        pass
 
     def calculate_prize_distribution(self):
-        raise NotImplementedError("calculate_prize_distribution not implemented")
+        # TODO: implement calculate_prize_distribution
+        return None
 
     def register_player(self, player_id, deck_id):
-        raise NotImplementedError("register_player not implemented")
+        # TODO: implement register_player
+        pass
 
     def is_full(self):
-        raise NotImplementedError("is_full not implemented")
+        # TODO: implement is_full
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -140,6 +151,19 @@ class Tournament(models.Model):
         from django.core.exceptions import ValidationError
         if (self.end_time is not None) and (not ((self.end_time is None or (self.start_time is not None and self.end_time > self.start_time)))):
             raise ValidationError({"end_time_after_start": "End time must be after start time"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Draft": ["Registration"],
+        "Registration": ["Ongoing", "Cancelled"],
+        "Ongoing": ["Completed", "Cancelled"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
 
 class TournamentJudgeRoleChoices(models.TextChoices):
@@ -164,10 +188,12 @@ class TournamentJudge(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def promote_to_head(self):
-        raise NotImplementedError("promote_to_head not implemented")
+        # TODO: implement promote_to_head
+        pass
 
     def remove(self):
-        raise NotImplementedError("remove not implemented")
+        # TODO: implement remove
+        pass
 
 
 class TournamentRegistrationStatusChoices(models.TextChoices):
@@ -198,13 +224,16 @@ class TournamentRegistration(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def withdraw(self):
-        raise NotImplementedError("withdraw not implemented")
+        # TODO: implement withdraw
+        pass
 
     def disqualify(self, reason):
-        raise NotImplementedError("disqualify not implemented")
+        # TODO: implement disqualify
+        pass
 
     def promote_from_waitlist(self):
-        raise NotImplementedError("promote_from_waitlist not implemented")
+        # TODO: implement promote_from_waitlist
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -247,16 +276,20 @@ class TournamentRound(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def start(self):
-        raise NotImplementedError("start not implemented")
+        # TODO: implement start
+        pass
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def generate_pairings(self):
-        raise NotImplementedError("generate_pairings not implemented")
+        # TODO: implement generate_pairings
+        pass
 
     def is_time_expired(self):
-        raise NotImplementedError("is_time_expired not implemented")
+        # TODO: implement is_time_expired
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -307,16 +340,24 @@ class Match(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def record_result(self, p1_wins, p2_wins):
-        raise NotImplementedError("record_result not implemented")
+        # TODO: implement record_result
+        pass
+
+    def finalize_result(self):
+        # TODO: implement finalize_result
+        pass
 
     def determine_winner(self):
-        raise NotImplementedError("determine_winner not implemented")
+        # TODO: implement determine_winner
+        return None
 
     def concede(self, player_id):
-        raise NotImplementedError("concede not implemented")
+        # TODO: implement concede
+        pass
 
     def draw(self):
-        raise NotImplementedError("draw not implemented")
+        # TODO: implement draw
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -336,6 +377,18 @@ class Match(models.Model):
             raise ValidationError({"ended_after_started": "Match end time must be after start time"})
         if (self.status == MatchStatusChoices.COMPLETED) and (self.started_at is None):
             raise ValidationError({"completed_requires_started_at": "Completed match must have a start time"})
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS = {
+        "Pending": ["Active", "BYE"],
+        "Active": ["Completed", "Draw"],
+    }
+
+    def assert_transition(self, to_state):
+        from django.core.exceptions import ValidationError
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to_state not in allowed:
+            raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
 
 class GameWinnerSideChoices(models.TextChoices):
@@ -372,10 +425,12 @@ class Game(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def record_winner(self, winner_side):
-        raise NotImplementedError("record_winner not implemented")
+        # TODO: implement record_winner
+        pass
 
     def duration_minutes(self):
-        raise NotImplementedError("duration_minutes not implemented")
+        # TODO: implement duration_minutes
+        return None
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -427,10 +482,12 @@ class TournamentPrize(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def applies_to_placement(self, placement):
-        raise NotImplementedError("applies_to_placement not implemented")
+        # TODO: implement applies_to_placement
+        return None
 
     def award_to_player(self, player_id):
-        raise NotImplementedError("award_to_player not implemented")
+        # TODO: implement award_to_player
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -464,7 +521,8 @@ class AwardedPrize(models.Model):
     # ── Business operations ──────────────────────────────────────────
 
     def claim(self):
-        raise NotImplementedError("claim not implemented")
+        # TODO: implement claim
+        pass
 
     def clean(self):
         from django.core.exceptions import ValidationError

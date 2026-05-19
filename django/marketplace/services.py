@@ -92,6 +92,14 @@ class OrderService:
         return result
 
     @staticmethod
+    def process_payment(id):
+        from .models import Order
+        instance = Order.objects.get(pk=id)
+        result = instance.process_payment()
+        instance.save()
+        return result
+
+    @staticmethod
     def calculate_total(id):
         from .models import Order
         instance = Order.objects.get(pk=id)
@@ -378,6 +386,13 @@ class TradeDisputeService:
         from .models import TradeDispute
         instance = TradeDispute.objects.get(pk=id)
         instance.resolve(resolution_text)
+        instance.save()
+
+    @staticmethod
+    def close_resolved(id):
+        from .models import TradeDispute
+        instance = TradeDispute.objects.get(pk=id)
+        instance.close_resolved()
         instance.save()
 
     @staticmethod

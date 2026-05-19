@@ -6,7 +6,7 @@ class DraftSessionModelTest(TestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
         _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
-        self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, created_at="2024-01-01T00:00:00Z")
+        self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, time_per_pick_seconds=1, created_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -50,7 +50,7 @@ class ArticleModelTest(TestCase):
     def setUp(self):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", view_count=0, published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
+        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", view_count=0, likes_count=0, published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))

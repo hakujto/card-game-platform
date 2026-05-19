@@ -9,7 +9,7 @@ class DraftSessionAPITest(APITestCase):
         from cards.models import CardSet as _CardSetCls
         _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
         self.cardset = _dep_card_set
-        self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, created_at="2024-01-01T00:00:00Z")
+        self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, time_per_pick_seconds=1, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("draft_session-list")
         self.detail_url = reverse("draft_session-detail", args=[self.obj.pk])
 
@@ -20,6 +20,7 @@ class DraftSessionAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "seats": 2,
+            "time_per_pick_seconds": 1,
             "created_at": "2024-01-01T00:00:00Z",
             "card_set": self.cardset.pk
         }
@@ -49,6 +50,58 @@ class DraftSessionAPITest(APITestCase):
         data = {"created_at": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completed_at": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_time_per_pick_positive_violated(self):
+        # Simple rule violated → 400
+        data = {"created_at": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completed_at": "2024-01-01T00:00:00Z", "status": "Completed", "time_per_pick_seconds": 0}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_waitingforplayers_to_drafting_succeeds(self):
+        self.obj.status = "WaitingForPlayers"
+        self.obj.save()
+        url = reverse("draft_session-transition-waitingforplayers-to-drafting", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Drafting")
+
+    def test_transition_drafting_to_completed_succeeds(self):
+        self.obj.status = "Drafting"
+        self.obj.save()
+        url = reverse("draft_session-transition-drafting-to-completed", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Completed")
+
+    def test_transition_drafting_to_abandoned_succeeds(self):
+        self.obj.status = "Drafting"
+        self.obj.save()
+        url = reverse("draft_session-transition-drafting-to-abandoned", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Abandoned")
+
+    def test_transition_waitingforplayers_to_abandoned_succeeds(self):
+        self.obj.status = "WaitingForPlayers"
+        self.obj.save()
+        url = reverse("draft_session-transition-waitingforplayers-to-abandoned", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Abandoned")
+
+    def test_transition_completed_to_drafting_is_denied(self):
+        url = reverse("draft_session-transition-completed-to-drafting", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
+
+    def test_transition_abandoned_to_drafting_is_denied(self):
+        url = reverse("draft_session-transition-abandoned-to-drafting", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
 
 
 class DraftParticipantAPITest(APITestCase):
@@ -154,7 +207,7 @@ class ArticleAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         self.player = _dep_player
-        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", view_count=0, published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
+        self.obj = Article.objects.create(author=_dep_player, title="test", slug="test", body="test", view_count=0, likes_count=0, published_at="2024-01-01T00:00:00Z", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("article-list")
         self.detail_url = reverse("article-detail", args=[self.obj.pk])
 
@@ -168,6 +221,7 @@ class ArticleAPITest(APITestCase):
             "slug": "test",
             "body": "test",
             "view_count": 0,
+            "likes_count": 0,
             "published_at": "2024-01-01T00:00:00Z",
             "created_at": "2024-01-01T00:00:00Z",
             "updated_at": "2024-01-01T00:00:00Z",
@@ -199,6 +253,46 @@ class ArticleAPITest(APITestCase):
         data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "published_at": "2024-01-01T00:00:00Z", "view_count": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_likes_count_not_negative_violated(self):
+        # Simple rule violated → 400
+        data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "published_at": "2024-01-01T00:00:00Z", "likes_count": -1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_draft_to_published_succeeds(self):
+        self.obj.status = "Draft"
+        self.obj.title = "test"  # @on: title != null
+        self.obj.body = "test"  # @on: body != null
+        self.obj.save()
+        url = reverse("article-transition-draft-to-published", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Published")
+
+    def test_transition_published_to_archived_succeeds(self):
+        self.obj.status = "Published"
+        self.obj.save()
+        url = reverse("article-transition-published-to-archived", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Archived")
+
+    def test_transition_archived_to_draft_succeeds(self):
+        self.obj.status = "Archived"
+        self.obj.save()
+        url = reverse("article-transition-archived-to-draft", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Draft")
+
+    def test_transition_published_to_draft_is_denied(self):
+        url = reverse("article-transition-published-to-draft", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)
 
 
 class ArticleTagAPITest(APITestCase):
@@ -358,3 +452,27 @@ class StreamAPITest(APITestCase):
         data = {"title": "test", "stream_url": "https://example.com", "scheduled_start": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "actual_start": "2024-01-01T00:00:00Z", "status": "Ended", "ended_at": "2024-01-01T00:00:00Z", "viewer_count_peak": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_transition_scheduled_to_live_succeeds(self):
+        self.obj.status = "Scheduled"
+        self.obj.stream_url = "https://example.com"  # @on: stream_url != null
+        self.obj.save()
+        url = reverse("stream-transition-scheduled-to-live", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Live")
+
+    def test_transition_live_to_ended_succeeds(self):
+        self.obj.status = "Live"
+        self.obj.save()
+        url = reverse("stream-transition-live-to-ended", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.obj.refresh_from_db()
+        self.assertEqual(self.obj.status, "Ended")
+
+    def test_transition_ended_to_live_is_denied(self):
+        url = reverse("stream-transition-ended-to-live", args=[self.obj.pk])
+        res = self.client.patch(url)
+        self.assertEqual(res.status_code, 409)

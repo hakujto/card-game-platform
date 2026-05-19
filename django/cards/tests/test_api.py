@@ -8,7 +8,7 @@ class CardAPITest(APITestCase):
     def setUp(self):
         _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
         self.cardset = _dep_card_set
-        self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
+        self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_cost=0, mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
         self.list_url = reverse("card-list")
         self.detail_url = reverse("card-detail", args=[self.obj.pk])
 
@@ -19,6 +19,7 @@ class CardAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
+            "mana_cost": 0,
             "mana_colors": "White",
             "attack": 0,
             "defense": 0,
@@ -57,6 +58,12 @@ class CardAPITest(APITestCase):
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_create_fails_when_land_has_no_mana_cost_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "Standard", "set": self.cardset.pk, "card_type": "Land", "mana_cost": 1}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_create_fails_when_spell_or_artifact_no_loyalty_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
         data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "Standard", "set": self.cardset.pk, "loyalty": 0}
@@ -65,19 +72,19 @@ class CardAPITest(APITestCase):
 
     def test_create_fails_when_mana_cost_range_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Planeswalker", "attack": 0, "defense": 0, "loyalty": None, "is_banned": True, "mana_cost": 21}
+        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Land", "attack": 0, "defense": 0, "loyalty": None, "is_banned": True, "mana_cost": 21}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_power_level_range_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Planeswalker", "attack": 0, "defense": 0, "loyalty": None, "is_banned": True, "power_level": 11}
+        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Land", "attack": 0, "defense": 0, "loyalty": None, "mana_cost": 0, "is_banned": True, "power_level": 11}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_not_banned_and_restricted_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Planeswalker", "attack": 0, "defense": 0, "loyalty": None, "is_banned": True, "is_restricted": True}
+        data = {"name": "test", "mana_colors": "White", "description": "test", "legal_formats": "message", "set": self.cardset.pk, "card_type": "Land", "attack": 0, "defense": 0, "loyalty": None, "mana_cost": 0, "is_banned": True, "is_restricted": True}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -325,7 +332,13 @@ class DeckCardAPITest(APITestCase):
 
     def test_create_fails_when_quantity_range_violated(self):
         # Simple rule violated → 400
-        data = {"deck": self.deck.pk, "card": self.card.pk, "quantity": 5}
+        data = {"deck": self.deck.pk, "card": self.card.pk, "is_commander": True, "quantity": 5}
+        res = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_fails_when_commander_is_singleton_violated(self):
+        # IMPLIES: antecedent=true, consequent violated → 400
+        data = {"deck": self.deck.pk, "card": self.card.pk, "is_commander": True, "quantity": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
