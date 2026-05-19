@@ -96,6 +96,28 @@ public class ArticleController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/like")]
+    public async System.Threading.Tasks.Task<IActionResult> Like(int id)
+    {
+        try
+        {
+            await _svc.LikeAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:int}/like")]
+    public async System.Threading.Tasks.Task<IActionResult> Unlike(int id)
+    {
+        try
+        {
+            await _svc.UnlikeAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpGet("{id:int}/reading-time")]
     public async System.Threading.Tasks.Task<IActionResult> ReadingTimeMinutes(int id)
     {

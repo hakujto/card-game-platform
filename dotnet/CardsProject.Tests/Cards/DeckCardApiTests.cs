@@ -63,6 +63,7 @@ public class DeckCardApiTests : IClassFixture<DeckCardApiTests.TestFactory>
     {
         var payload = new
         {
+            IsCommander = false,
             DeckId = 1,
             CardId = 1
         };
@@ -102,6 +103,15 @@ public class DeckCardApiTests : IClassFixture<DeckCardApiTests.TestFactory>
     {
         // A deck can contain between 1 and 4 copies of a card → 400 (IValidatableObject)
         var content = new StringContent(@"{ ""DeckId"": 1, ""CardId"": 1, ""IsCommander"": true, ""Quantity"": 5 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/deck_cards", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_CommanderIsSingleton_Violated()
+    {
+        // Commander card must appear exactly once in the deck: antecedent true, consequent missing → 400
+        var content = new StringContent(@"{ ""DeckId"": 1, ""CardId"": 1, ""IsCommander"": true, ""Quantity"": 0 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/deck_cards", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

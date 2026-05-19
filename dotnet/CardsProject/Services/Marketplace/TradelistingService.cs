@@ -27,6 +27,7 @@ public class TradeListingService
     public async Task<TradeListing> CreateAsync(TradeListingDto dto)
     {
         var entity = new TradeListing();
+        if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.ListingType is not null && Enum.TryParse<TradeListingListingTypeType>(dto.ListingType, out var listingTypeVal)) entity.ListingType = listingTypeVal;
         if (dto.AskingPrice is not null) entity.AskingPrice = dto.AskingPrice.Value;
         if (dto.AuctionStartPrice is not null) entity.AuctionStartPrice = dto.AuctionStartPrice.Value;
@@ -35,7 +36,6 @@ public class TradeListingService
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.Condition is not null && Enum.TryParse<TradeListingConditionType>(dto.Condition, out var conditionVal)) entity.Condition = conditionVal;
         if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
-        if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Description is not null) entity.Description = dto.Description;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.ExpiresAt is not null) entity.ExpiresAt = dto.ExpiresAt.Value;
@@ -52,6 +52,7 @@ public class TradeListingService
     {
         var entity = await _db.TradeListings.FindAsync(id);
         if (entity is null) return null;
+        if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.ListingType is not null && Enum.TryParse<TradeListingListingTypeType>(dto.ListingType, out var listingTypeVal)) entity.ListingType = listingTypeVal;
         if (dto.AskingPrice is not null) entity.AskingPrice = dto.AskingPrice.Value;
         if (dto.AuctionStartPrice is not null) entity.AuctionStartPrice = dto.AuctionStartPrice.Value;
@@ -60,7 +61,6 @@ public class TradeListingService
         if (dto.Foil is not null) entity.Foil = dto.Foil.Value;
         if (dto.Condition is not null && Enum.TryParse<TradeListingConditionType>(dto.Condition, out var conditionVal)) entity.Condition = conditionVal;
         if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
-        if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Description is not null) entity.Description = dto.Description;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.ExpiresAt is not null) entity.ExpiresAt = dto.ExpiresAt.Value;

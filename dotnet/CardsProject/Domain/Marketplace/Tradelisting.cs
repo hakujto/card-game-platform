@@ -5,6 +5,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Marketplace;
 
+public enum TradeListingStatusType
+{
+    Active,
+    Sold,
+    Expired,
+    Cancelled,
+    Pending
+}
+
 public enum TradeListingListingTypeType
 {
     FixedPrice,
@@ -21,19 +30,11 @@ public enum TradeListingConditionType
     Played
 }
 
-public enum TradeListingStatusType
-{
-    Active,
-    Sold,
-    Expired,
-    Cancelled,
-    Pending
-}
-
 public class TradeListing : IValidatableObject
 {
     public int Id { get; set; }
 
+    public TradeListingStatusType Status { get; set; }
     public TradeListingListingTypeType ListingType { get; set; }
     public decimal? AskingPrice { get; set; } = null;
     public decimal? AuctionStartPrice { get; set; } = null;
@@ -42,7 +43,6 @@ public class TradeListing : IValidatableObject
     public bool Foil { get; set; } = false;
     public TradeListingConditionType Condition { get; set; }
     public int Quantity { get; set; } = 1;
-    public TradeListingStatusType Status { get; set; }
     public string? Description { get; set; }
     public DateTime? CreatedAt { get; set; } = null;
     public DateTime? ExpiresAt { get; set; } = null;
@@ -58,27 +58,28 @@ public class TradeListing : IValidatableObject
 
     public void Close()
     {
-        throw new NotImplementedException("close not implemented");
+        // TODO: implement close
     }
 
     public void Extend(int days)
     {
-        throw new NotImplementedException("extend not implemented");
+        // TODO: implement extend
     }
 
     public void Cancel()
     {
-        throw new NotImplementedException("cancel not implemented");
+        // TODO: implement cancel
     }
 
     public bool IsExpired()
     {
-        throw new NotImplementedException("is_expired not implemented");
+        // TODO: implement is_expired
+        return default;
     }
 
     public void FinalizeAuction()
     {
-        throw new NotImplementedException("finalize_auction not implemented");
+        // TODO: implement finalize_auction
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

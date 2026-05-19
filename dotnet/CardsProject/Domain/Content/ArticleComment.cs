@@ -25,16 +25,17 @@ public class ArticleComment
 
     public void Hide()
     {
-        throw new NotImplementedException("hide not implemented");
+        // TODO: implement hide
     }
 
     public void Unhide()
     {
-        throw new NotImplementedException("unhide not implemented");
+        // TODO: implement unhide
     }
 
     public bool IsReply()
     {
-        throw new NotImplementedException("is_reply not implemented");
+        // TODO: implement is_reply
+        return default;
     }
 }

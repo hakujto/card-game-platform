@@ -27,9 +27,9 @@ public class TradeDisputeService
     public async Task<TradeDispute> CreateAsync(TradeDisputeDto dto)
     {
         var entity = new TradeDispute();
+        if (dto.Status is not null && Enum.TryParse<TradeDisputeStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Reason is not null && Enum.TryParse<TradeDisputeReasonType>(dto.Reason, out var reasonVal)) entity.Reason = reasonVal;
         if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.Status is not null && Enum.TryParse<TradeDisputeStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Resolution is not null) entity.Resolution = dto.Resolution;
         if (dto.OpenedAt is not null) entity.OpenedAt = dto.OpenedAt.Value;
         if (dto.ResolvedAt is not null) entity.ResolvedAt = dto.ResolvedAt.Value;
@@ -47,9 +47,9 @@ public class TradeDisputeService
     {
         var entity = await _db.TradeDisputes.FindAsync(id);
         if (entity is null) return null;
+        if (dto.Status is not null && Enum.TryParse<TradeDisputeStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Reason is not null && Enum.TryParse<TradeDisputeReasonType>(dto.Reason, out var reasonVal)) entity.Reason = reasonVal;
         if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.Status is not null && Enum.TryParse<TradeDisputeStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Resolution is not null) entity.Resolution = dto.Resolution;
         if (dto.OpenedAt is not null) entity.OpenedAt = dto.OpenedAt.Value;
         if (dto.ResolvedAt is not null) entity.ResolvedAt = dto.ResolvedAt.Value;
@@ -84,6 +84,14 @@ public class TradeDisputeService
         var entity = await _db.TradeDisputes.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("TradeDispute not found: " + id);
         entity.Resolve(resolutionText);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+    public async System.Threading.Tasks.Task<bool> CloseResolvedAsync(int id)
+    {
+        var entity = await _db.TradeDisputes.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("TradeDispute not found: " + id);
+        entity.CloseResolved();
         await _db.SaveChangesAsync();
         return true;
     }

@@ -43,17 +43,18 @@ public class PlayerCollection : IValidatableObject
 
     public void Add(int quantity)
     {
-        throw new NotImplementedException("add not implemented");
+        // TODO: implement add
     }
 
     public void Remove(int quantity)
     {
-        throw new NotImplementedException("remove not implemented");
+        // TODO: implement remove
     }
 
     public decimal EstimatedValue()
     {
-        throw new NotImplementedException("estimated_value not implemented");
+        // TODO: implement estimated_value
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

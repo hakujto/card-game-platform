@@ -11,11 +11,12 @@ public class ArticleTag
 
     public void Rename(string newName)
     {
-        throw new NotImplementedException("rename not implemented");
+        // TODO: implement rename
     }
 
     public int ArticleCount()
     {
-        throw new NotImplementedException("article_count not implemented");
+        // TODO: implement article_count
+        return default;
     }
 }

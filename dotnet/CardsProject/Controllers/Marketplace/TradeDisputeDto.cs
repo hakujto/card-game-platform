@@ -2,9 +2,9 @@ namespace CardsProject.Controllers.Marketplace;
 
 public class TradeDisputeDto
 {
+    public string? Status { get; set; }
     public string? Reason { get; set; }
     public string? Description { get; set; }
-    public string? Status { get; set; }
     public string? Resolution { get; set; }
     public DateTime? OpenedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }

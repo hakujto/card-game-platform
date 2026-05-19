@@ -22,6 +22,17 @@ public enum ArticleArticleTypeType
     Decklist
 }
 
+public enum ArticleLanguageType
+{
+    EN,
+    DE,
+    FR,
+    IT,
+    ES,
+    JP,
+    PT
+}
+
 public class Article : IValidatableObject
 {
     public int Id { get; set; }
@@ -33,7 +44,10 @@ public class Article : IValidatableObject
     public string? CoverImageUrl { get; set; }
     public ArticleStatusType Status { get; set; }
     public ArticleArticleTypeType ArticleType { get; set; }
+    public ArticleLanguageType Language { get; set; }
     public int ViewCount { get; set; } = 0;
+    public int LikesCount { get; set; } = 0;
+    public bool IsFeatured { get; set; } = false;
     public DateTime? PublishedAt { get; set; } = null;
     public DateTime? CreatedAt { get; set; } = null;
     public DateTime? UpdatedAt { get; set; } = null;
@@ -51,22 +65,33 @@ public class Article : IValidatableObject
 
     public void Publish()
     {
-        throw new NotImplementedException("publish not implemented");
+        // TODO: implement publish
     }
 
     public void Archive()
     {
-        throw new NotImplementedException("archive not implemented");
+        // TODO: implement archive
     }
 
     public void IncrementView()
     {
-        throw new NotImplementedException("increment_view not implemented");
+        // TODO: implement increment_view
+    }
+
+    public void Like()
+    {
+        // TODO: implement like
+    }
+
+    public void Unlike()
+    {
+        // TODO: implement unlike
     }
 
     public int ReadingTimeMinutes()
     {
-        throw new NotImplementedException("reading_time_minutes not implemented");
+        // TODO: implement reading_time_minutes
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────
@@ -74,5 +99,7 @@ public class Article : IValidatableObject
     {
         if (!( ViewCount >= 0 ))
             yield return new ValidationResult("Article view count must not be negative", new[] { nameof(Id) });
+        if (!( LikesCount >= 0 ))
+            yield return new ValidationResult("Article likes count must not be negative", new[] { nameof(Id) });
     }
 }

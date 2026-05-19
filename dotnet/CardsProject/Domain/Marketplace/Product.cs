@@ -38,32 +38,35 @@ public class Product : IValidatableObject
 
     public void Activate()
     {
-        throw new NotImplementedException("activate not implemented");
+        // TODO: implement activate
     }
 
     public void Deactivate()
     {
-        throw new NotImplementedException("deactivate not implemented");
+        // TODO: implement deactivate
     }
 
     public decimal ApplyDiscount(int percent)
     {
-        throw new NotImplementedException("apply_discount not implemented");
+        // TODO: implement apply_discount
+        return default;
     }
 
     public void Restock(int quantity)
     {
-        throw new NotImplementedException("restock not implemented");
+        // TODO: implement restock
     }
 
     public decimal EffectivePrice()
     {
-        throw new NotImplementedException("effective_price not implemented");
+        // TODO: implement effective_price
+        return default;
     }
 
     public bool IsInStock()
     {
-        throw new NotImplementedException("is_in_stock not implemented");
+        // TODO: implement is_in_stock
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

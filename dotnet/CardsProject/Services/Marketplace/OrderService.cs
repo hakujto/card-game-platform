@@ -95,6 +95,14 @@ public class OrderService
         await _db.SaveChangesAsync();
         return result;
     }
+    public async System.Threading.Tasks.Task<bool> ProcessPaymentAsync(int id)
+    {
+        var entity = await _db.Orders.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Order not found: " + id);
+        var result = entity.ProcessPayment();
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public async System.Threading.Tasks.Task<decimal> CalculateTotalAsync(int id)
     {
         var entity = await _db.Orders.FindAsync(id);

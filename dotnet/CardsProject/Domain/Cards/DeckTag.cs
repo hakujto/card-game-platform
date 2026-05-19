@@ -11,11 +11,11 @@ public class DeckTag
 
     public void Rename(string newName)
     {
-        throw new NotImplementedException("rename not implemented");
+        // TODO: implement rename
     }
 
     public void MergeInto(int targetTagId)
     {
-        throw new NotImplementedException("merge_into not implemented");
+        // TODO: implement merge_into
     }
 }

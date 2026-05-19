@@ -52,42 +52,46 @@ public class Deck : IValidatableObject
 
     public bool ValidateSize()
     {
-        throw new NotImplementedException("validate_size not implemented");
+        // TODO: implement validate_size
+        return default;
     }
 
     public void AddCard(int cardId, int quantity)
     {
-        throw new NotImplementedException("add_card not implemented");
+        // TODO: implement add_card
     }
 
     public void RemoveCard(int cardId)
     {
-        throw new NotImplementedException("remove_card not implemented");
+        // TODO: implement remove_card
     }
 
     public decimal WinRate()
     {
-        throw new NotImplementedException("win_rate not implemented");
+        // TODO: implement win_rate
+        return default;
     }
 
     public object Clone()
     {
-        throw new NotImplementedException("clone not implemented");
+        // TODO: implement clone
+        return default;
     }
 
     public void Publish()
     {
-        throw new NotImplementedException("publish not implemented");
+        // TODO: implement publish
     }
 
     public void Unpublish()
     {
-        throw new NotImplementedException("unpublish not implemented");
+        // TODO: implement unpublish
     }
 
     public bool CertifyTournamentLegal()
     {
-        throw new NotImplementedException("certify_tournament_legal not implemented");
+        // TODO: implement certify_tournament_legal
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

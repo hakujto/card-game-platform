@@ -27,16 +27,16 @@ public class Friendship
 
     public void Accept()
     {
-        throw new NotImplementedException("accept not implemented");
+        // TODO: implement accept
     }
 
     public void Decline()
     {
-        throw new NotImplementedException("decline not implemented");
+        // TODO: implement decline
     }
 
     public void Block()
     {
-        throw new NotImplementedException("block not implemented");
+        // TODO: implement block
     }
 }

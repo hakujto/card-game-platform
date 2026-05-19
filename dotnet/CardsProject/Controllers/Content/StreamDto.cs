@@ -4,8 +4,10 @@ public class StreamDto
 {
     public string? Title { get; set; }
     public string? StreamUrl { get; set; }
-    public string? Platform { get; set; }
     public string? Status { get; set; }
+    public string? Platform { get; set; }
+    public string? Language { get; set; }
+    public bool? IsOfficial { get; set; }
     public int? ViewerCountPeak { get; set; }
     public DateTime? ScheduledStart { get; set; }
     public DateTime? ActualStart { get; set; }

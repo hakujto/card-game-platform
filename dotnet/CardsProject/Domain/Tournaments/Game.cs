@@ -41,12 +41,13 @@ public class Game : IValidatableObject
 
     public void RecordWinner(string winnerSide)
     {
-        throw new NotImplementedException("record_winner not implemented");
+        // TODO: implement record_winner
     }
 
     public decimal DurationMinutes()
     {
-        throw new NotImplementedException("duration_minutes not implemented");
+        // TODO: implement duration_minutes
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

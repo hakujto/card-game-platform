@@ -9,7 +9,10 @@ public class ArticleDto
     public string? CoverImageUrl { get; set; }
     public string? Status { get; set; }
     public string? ArticleType { get; set; }
+    public string? Language { get; set; }
     public int? ViewCount { get; set; }
+    public int? LikesCount { get; set; }
+    public bool? IsFeatured { get; set; }
     public DateTime? PublishedAt { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

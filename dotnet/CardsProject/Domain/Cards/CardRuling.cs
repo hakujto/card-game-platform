@@ -18,11 +18,13 @@ public class CardRuling
 
     public bool IsCurrent()
     {
-        throw new NotImplementedException("is_current not implemented");
+        // TODO: implement is_current
+        return default;
     }
 
     public bool SupersedesPrevious()
     {
-        throw new NotImplementedException("supersedes_previous not implemented");
+        // TODO: implement supersedes_previous
+        return default;
     }
 }

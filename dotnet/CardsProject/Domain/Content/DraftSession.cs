@@ -26,6 +26,7 @@ public class DraftSession : IValidatableObject
     public DraftSessionStatusType Status { get; set; }
     public DraftSessionDraftTypeType DraftType { get; set; }
     public int Seats { get; set; } = 8;
+    public int TimePerPickSeconds { get; set; } = 30;
     public DateTime? CreatedAt { get; set; } = null;
     public DateTime? CompletedAt { get; set; } = null;
 
@@ -37,22 +38,23 @@ public class DraftSession : IValidatableObject
 
     public void Start()
     {
-        throw new NotImplementedException("start not implemented");
+        // TODO: implement start
     }
 
     public void Abandon()
     {
-        throw new NotImplementedException("abandon not implemented");
+        // TODO: implement abandon
     }
 
     public void Complete()
     {
-        throw new NotImplementedException("complete not implemented");
+        // TODO: implement complete
     }
 
     public bool IsFull()
     {
-        throw new NotImplementedException("is_full not implemented");
+        // TODO: implement is_full
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────
@@ -60,5 +62,7 @@ public class DraftSession : IValidatableObject
     {
         if (!( Seats >= 2 && Seats <= 16 ))
             yield return new ValidationResult("Draft session must have between 2 and 16 seats", new[] { nameof(Id) });
+        if (!( TimePerPickSeconds > 0 ))
+            yield return new ValidationResult("Time per pick must be greater than zero", new[] { nameof(Id) });
     }
 }

@@ -23,12 +23,14 @@ public class CardPriceHistory : IValidatableObject
 
     public decimal PriceChangePercent(decimal previousAvg)
     {
-        throw new NotImplementedException("price_change_percent not implemented");
+        // TODO: implement price_change_percent
+        return default;
     }
 
     public bool IsPriceSpike(int thresholdPercent)
     {
-        throw new NotImplementedException("is_price_spike not implemented");
+        // TODO: implement is_price_spike
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

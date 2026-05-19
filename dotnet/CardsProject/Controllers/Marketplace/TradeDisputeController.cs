@@ -86,6 +86,17 @@ public class TradeDisputeController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/close")]
+    public async System.Threading.Tasks.Task<IActionResult> CloseResolved(int id)
+    {
+        try
+        {
+            await _svc.CloseResolvedAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPost("{id:int}/review")]
     public async System.Threading.Tasks.Task<IActionResult> Review(int id)
     {

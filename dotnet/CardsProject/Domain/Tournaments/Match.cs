@@ -39,22 +39,28 @@ public class Match : IValidatableObject
 
     public void RecordResult(int p1Wins, int p2Wins)
     {
-        throw new NotImplementedException("record_result not implemented");
+        // TODO: implement record_result
+    }
+
+    public void FinalizeResult()
+    {
+        // TODO: implement finalize_result
     }
 
     public bool DetermineWinner()
     {
-        throw new NotImplementedException("determine_winner not implemented");
+        // TODO: implement determine_winner
+        return default;
     }
 
     public void Concede(int playerId)
     {
-        throw new NotImplementedException("concede not implemented");
+        // TODO: implement concede
     }
 
     public void Draw()
     {
-        throw new NotImplementedException("draw not implemented");
+        // TODO: implement draw
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

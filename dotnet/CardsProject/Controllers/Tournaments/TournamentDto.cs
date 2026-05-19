@@ -4,9 +4,9 @@ public class TournamentDto
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
+    public string? Status { get; set; }
     public string? Format { get; set; }
     public string? TournamentType { get; set; }
-    public string? Status { get; set; }
     public int? MaxPlayers { get; set; }
     public decimal? EntryFee { get; set; }
     public decimal? PrizePool { get; set; }

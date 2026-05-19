@@ -22,12 +22,13 @@ public class DraftParticipant : IValidatableObject
 
     public void PickCard(int cardId, int packNumber)
     {
-        throw new NotImplementedException("pick_card not implemented");
+        // TODO: implement pick_card
     }
 
     public int DraftedCardCount()
     {
-        throw new NotImplementedException("drafted_card_count not implemented");
+        // TODO: implement drafted_card_count
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

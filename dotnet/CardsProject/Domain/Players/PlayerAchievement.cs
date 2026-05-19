@@ -22,12 +22,12 @@ public class PlayerAchievement : IValidatableObject
 
     public void IncrementProgress(int amount)
     {
-        throw new NotImplementedException("increment_progress not implemented");
+        // TODO: implement increment_progress
     }
 
     public void Complete()
     {
-        throw new NotImplementedException("complete not implemented");
+        // TODO: implement complete
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

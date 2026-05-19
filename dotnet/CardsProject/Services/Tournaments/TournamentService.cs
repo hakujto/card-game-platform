@@ -29,9 +29,9 @@ public class TournamentService
         var entity = new Tournament();
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Description is not null) entity.Description = dto.Description;
+        if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Format is not null && Enum.TryParse<TournamentFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.TournamentType is not null && Enum.TryParse<TournamentTournamentTypeType>(dto.TournamentType, out var tournamentTypeVal)) entity.TournamentType = tournamentTypeVal;
-        if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.MaxPlayers is not null) entity.MaxPlayers = dto.MaxPlayers.Value;
         if (dto.EntryFee is not null) entity.EntryFee = dto.EntryFee.Value;
         if (dto.PrizePool is not null) entity.PrizePool = dto.PrizePool.Value;
@@ -56,9 +56,9 @@ public class TournamentService
         if (entity is null) return null;
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Description is not null) entity.Description = dto.Description;
+        if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Format is not null && Enum.TryParse<TournamentFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.TournamentType is not null && Enum.TryParse<TournamentTournamentTypeType>(dto.TournamentType, out var tournamentTypeVal)) entity.TournamentType = tournamentTypeVal;
-        if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.MaxPlayers is not null) entity.MaxPlayers = dto.MaxPlayers.Value;
         if (dto.EntryFee is not null) entity.EntryFee = dto.EntryFee.Value;
         if (dto.PrizePool is not null) entity.PrizePool = dto.PrizePool.Value;

@@ -30,6 +30,7 @@ public class DraftSessionService
         if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
         if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
+        if (dto.TimePerPickSeconds is not null) entity.TimePerPickSeconds = dto.TimePerPickSeconds.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;
@@ -47,6 +48,7 @@ public class DraftSessionService
         if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
         if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
+        if (dto.TimePerPickSeconds is not null) entity.TimePerPickSeconds = dto.TimePerPickSeconds.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.CompletedAt is not null) entity.CompletedAt = dto.CompletedAt.Value;
         if (dto.CardSetId is not null) entity.CardSetId = dto.CardSetId;

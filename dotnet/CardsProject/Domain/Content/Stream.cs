@@ -5,6 +5,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Content;
 
+public enum StreamStatusType
+{
+    Scheduled,
+    Live,
+    Ended
+}
+
 public enum StreamPlatformType
 {
     Twitch,
@@ -13,11 +20,15 @@ public enum StreamPlatformType
     Platform
 }
 
-public enum StreamStatusType
+public enum StreamLanguageType
 {
-    Scheduled,
-    Live,
-    Ended
+    EN,
+    DE,
+    FR,
+    IT,
+    ES,
+    JP,
+    PT
 }
 
 public class Stream : IValidatableObject
@@ -26,8 +37,10 @@ public class Stream : IValidatableObject
 
     public string Title { get; set; } = "";
     public string StreamUrl { get; set; } = "";
-    public StreamPlatformType Platform { get; set; }
     public StreamStatusType Status { get; set; }
+    public StreamPlatformType Platform { get; set; }
+    public StreamLanguageType Language { get; set; }
+    public bool IsOfficial { get; set; } = false;
     public int ViewerCountPeak { get; set; } = 0;
     public DateTime? ScheduledStart { get; set; } = null;
     public DateTime? ActualStart { get; set; } = null;
@@ -45,22 +58,23 @@ public class Stream : IValidatableObject
 
     public void GoLive()
     {
-        throw new NotImplementedException("go_live not implemented");
+        // TODO: implement go_live
     }
 
     public void End()
     {
-        throw new NotImplementedException("end not implemented");
+        // TODO: implement end
     }
 
     public void UpdateViewerPeak(int count)
     {
-        throw new NotImplementedException("update_viewer_peak not implemented");
+        // TODO: implement update_viewer_peak
     }
 
     public int DurationMinutes()
     {
-        throw new NotImplementedException("duration_minutes not implemented");
+        // TODO: implement duration_minutes
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

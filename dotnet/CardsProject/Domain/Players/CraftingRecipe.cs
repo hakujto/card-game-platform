@@ -21,22 +21,23 @@ public class CraftingRecipe : IValidatableObject
 
     public bool CanCraft(int playerId)
     {
-        throw new NotImplementedException("can_craft not implemented");
+        // TODO: implement can_craft
+        return default;
     }
 
     public void ExecuteCraft(int playerId)
     {
-        throw new NotImplementedException("execute_craft not implemented");
+        // TODO: implement execute_craft
     }
 
     public void Disable()
     {
-        throw new NotImplementedException("disable not implemented");
+        // TODO: implement disable
     }
 
     public void Enable()
     {
-        throw new NotImplementedException("enable not implemented");
+        // TODO: implement enable
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

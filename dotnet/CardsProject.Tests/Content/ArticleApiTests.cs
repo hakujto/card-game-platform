@@ -106,7 +106,7 @@ public class ArticleApiTests : IClassFixture<ArticleApiTests.TestFactory>
     public async Task Create_Fails_When_PublishedRequiresPublishedAt_Violated()
     {
         // Published article must have a published_at timestamp: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""AuthorId"": 1, ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""ViewCount"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Published"", ""PublishedAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""AuthorId"": 1, ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""Language"": ""test"", ""ViewCount"": 1, ""LikesCount"": 1, ""IsFeatured"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Published"", ""PublishedAt"": null }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/articles", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -115,7 +115,16 @@ public class ArticleApiTests : IClassFixture<ArticleApiTests.TestFactory>
     public async Task Create_Fails_When_ViewCountNotNegative_Violated()
     {
         // Article view count must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""AuthorId"": 1, ""Status"": ""Published"", ""PublishedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""ViewCount"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""AuthorId"": 1, ""Status"": ""Published"", ""PublishedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""Language"": ""test"", ""LikesCount"": 1, ""IsFeatured"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""ViewCount"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync("/api/articles", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_Fails_When_LikesCountNotNegative_Violated()
+    {
+        // Article likes count must not be negative → 400 (IValidatableObject)
+        var content = new StringContent(@"{ ""AuthorId"": 1, ""Status"": ""Published"", ""PublishedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""Slug"": ""test"", ""Body"": ""test"", ""ArticleType"": ""test"", ""Language"": ""test"", ""ViewCount"": 1, ""IsFeatured"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""UpdatedAt"": ""2024-01-01T00:00:00"", ""LikesCount"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/articles", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

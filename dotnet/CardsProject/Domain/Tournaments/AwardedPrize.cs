@@ -24,7 +24,7 @@ public class AwardedPrize : IValidatableObject
 
     public void Claim()
     {
-        throw new NotImplementedException("claim not implemented");
+        // TODO: implement claim
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

@@ -23,12 +23,13 @@ public class TradeBid : IValidatableObject
 
     public bool OutbidBy(decimal newAmount)
     {
-        throw new NotImplementedException("outbid_by not implemented");
+        // TODO: implement outbid_by
+        return default;
     }
 
     public void Retract()
     {
-        throw new NotImplementedException("retract not implemented");
+        // TODO: implement retract
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

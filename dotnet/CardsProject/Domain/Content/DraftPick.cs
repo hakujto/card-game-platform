@@ -23,7 +23,8 @@ public class DraftPick : IValidatableObject
 
     public bool IsFirstPick()
     {
-        throw new NotImplementedException("is_first_pick not implemented");
+        // TODO: implement is_first_pick
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

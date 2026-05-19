@@ -29,22 +29,25 @@ public class CardSet : IValidatableObject
 
     public bool IsLegalInStandard()
     {
-        throw new NotImplementedException("is_legal_in_standard not implemented");
+        // TODO: implement is_legal_in_standard
+        return default;
     }
 
     public bool IsLegalInFormat(string format)
     {
-        throw new NotImplementedException("is_legal_in_format not implemented");
+        // TODO: implement is_legal_in_format
+        return default;
     }
 
     public int CardCountByRarity(string rarity)
     {
-        throw new NotImplementedException("card_count_by_rarity not implemented");
+        // TODO: implement card_count_by_rarity
+        return default;
     }
 
     public void RotateOut()
     {
-        throw new NotImplementedException("rotate_out not implemented");
+        // TODO: implement rotate_out
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

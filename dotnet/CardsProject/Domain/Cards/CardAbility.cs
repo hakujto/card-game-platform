@@ -35,11 +35,13 @@ public class CardAbility
 
     public bool IsUsableAt(string timing)
     {
-        throw new NotImplementedException("is_usable_at not implemented");
+        // TODO: implement is_usable_at
+        return default;
     }
 
     public string Describe()
     {
-        throw new NotImplementedException("describe not implemented");
+        // TODO: implement describe
+        return default;
     }
 }

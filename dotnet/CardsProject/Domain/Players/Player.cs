@@ -52,37 +52,40 @@ public class Player : IValidatableObject
 
     public bool Promote()
     {
-        throw new NotImplementedException("promote not implemented");
+        // TODO: implement promote
+        return default;
     }
 
     public bool Demote()
     {
-        throw new NotImplementedException("demote not implemented");
+        // TODO: implement demote
+        return default;
     }
 
     public void RecordWin()
     {
-        throw new NotImplementedException("record_win not implemented");
+        // TODO: implement record_win
     }
 
     public void RecordLoss()
     {
-        throw new NotImplementedException("record_loss not implemented");
+        // TODO: implement record_loss
     }
 
     public decimal WinRate()
     {
-        throw new NotImplementedException("win_rate not implemented");
+        // TODO: implement win_rate
+        return default;
     }
 
     public void Verify()
     {
-        throw new NotImplementedException("verify not implemented");
+        // TODO: implement verify
     }
 
     public void UpdateRating(int delta)
     {
-        throw new NotImplementedException("update_rating not implemented");
+        // TODO: implement update_rating
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

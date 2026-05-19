@@ -27,11 +27,11 @@ public class TournamentJudge
 
     public void PromoteToHead()
     {
-        throw new NotImplementedException("promote_to_head not implemented");
+        // TODO: implement promote_to_head
     }
 
     public void Remove()
     {
-        throw new NotImplementedException("remove not implemented");
+        // TODO: implement remove
     }
 }

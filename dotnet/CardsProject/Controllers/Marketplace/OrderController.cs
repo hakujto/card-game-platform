@@ -86,6 +86,17 @@ public class OrderController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/process-payment")]
+    public async System.Threading.Tasks.Task<IActionResult> ProcessPayment(int id)
+    {
+        try
+        {
+            var result = await _svc.ProcessPaymentAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpGet("{id:int}/total")]
     public async System.Threading.Tasks.Task<IActionResult> CalculateTotal(int id)
     {

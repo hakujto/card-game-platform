@@ -37,17 +37,18 @@ public class PlayerSeasonStats : IValidatableObject
 
     public decimal WinRate()
     {
-        throw new NotImplementedException("win_rate not implemented");
+        // TODO: implement win_rate
+        return default;
     }
 
     public void AddPoints(int points)
     {
-        throw new NotImplementedException("add_points not implemented");
+        // TODO: implement add_points
     }
 
     public void RecordTournamentWin()
     {
-        throw new NotImplementedException("record_tournament_win not implemented");
+        // TODO: implement record_tournament_win
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

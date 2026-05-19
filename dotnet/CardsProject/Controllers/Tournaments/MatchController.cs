@@ -76,6 +76,17 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [HttpPost("{id:int}/finalize")]
+    public async System.Threading.Tasks.Task<IActionResult> FinalizeResult(int id)
+    {
+        try
+        {
+            await _svc.FinalizeResultAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpGet("{id:int}/winner")]
     public async System.Threading.Tasks.Task<IActionResult> DetermineWinner(int id)
     {

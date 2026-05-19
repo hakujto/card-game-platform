@@ -26,22 +26,24 @@ public class Coupon : IValidatableObject
 
     public bool IsValid()
     {
-        throw new NotImplementedException("is_valid not implemented");
+        // TODO: implement is_valid
+        return default;
     }
 
     public bool IsApplicableToOrder(decimal orderTotal)
     {
-        throw new NotImplementedException("is_applicable_to_order not implemented");
+        // TODO: implement is_applicable_to_order
+        return default;
     }
 
     public void Redeem()
     {
-        throw new NotImplementedException("redeem not implemented");
+        // TODO: implement redeem
     }
 
     public void Deactivate()
     {
-        throw new NotImplementedException("deactivate not implemented");
+        // TODO: implement deactivate
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

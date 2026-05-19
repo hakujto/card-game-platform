@@ -26,12 +26,13 @@ public class Achievement : IValidatableObject
 
     public int PointValue(int multiplier)
     {
-        throw new NotImplementedException("point_value not implemented");
+        // TODO: implement point_value
+        return default;
     }
 
     public void Reveal()
     {
-        throw new NotImplementedException("reveal not implemented");
+        // TODO: implement reveal
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

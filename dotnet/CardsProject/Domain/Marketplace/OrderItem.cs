@@ -22,7 +22,8 @@ public class OrderItem : IValidatableObject
 
     public decimal LineTotal()
     {
-        throw new NotImplementedException("line_total not implemented");
+        // TODO: implement line_total
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

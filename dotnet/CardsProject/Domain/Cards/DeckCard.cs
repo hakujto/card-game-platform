@@ -21,12 +21,12 @@ public class DeckCard : IValidatableObject
 
     public void Increment(int amount)
     {
-        throw new NotImplementedException("increment not implemented");
+        // TODO: implement increment
     }
 
     public void Decrement(int amount)
     {
-        throw new NotImplementedException("decrement not implemented");
+        // TODO: implement decrement
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

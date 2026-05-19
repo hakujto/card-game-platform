@@ -35,22 +35,23 @@ public class TradeTransaction : IValidatableObject
 
     public void Complete()
     {
-        throw new NotImplementedException("complete not implemented");
+        // TODO: implement complete
     }
 
     public void Refund()
     {
-        throw new NotImplementedException("refund not implemented");
+        // TODO: implement refund
     }
 
     public void OpenDispute(string reason)
     {
-        throw new NotImplementedException("open_dispute not implemented");
+        // TODO: implement open_dispute
     }
 
     public decimal SellerNet()
     {
-        throw new NotImplementedException("seller_net not implemented");
+        // TODO: implement seller_net
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

@@ -33,12 +33,13 @@ public class TournamentPrize : IValidatableObject
 
     public bool AppliesToPlacement(int placement)
     {
-        throw new NotImplementedException("applies_to_placement not implemented");
+        // TODO: implement applies_to_placement
+        return default;
     }
 
     public void AwardToPlayer(int playerId)
     {
-        throw new NotImplementedException("award_to_player not implemented");
+        // TODO: implement award_to_player
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

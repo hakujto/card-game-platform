@@ -147,6 +147,7 @@ public class CardService
     {
         if (entity.CardType == CardCardTypeType.Creature && !(entity.Attack != null && entity.Defense != null)) throw new InvalidOperationException("Creature card must have attack and defense");
         if (entity.CardType == CardCardTypeType.Planeswalker && entity.Loyalty == null) throw new InvalidOperationException("Planeswalker card must have loyalty");
+        if (entity.CardType == CardCardTypeType.Land && !(entity.ManaCost == 0)) throw new InvalidOperationException("Land card must have zero mana cost");
         if (entity.CardType != CardCardTypeType.Planeswalker && entity.Loyalty != null) throw new InvalidOperationException("Only Planeswalker cards can have loyalty");
         if (entity.IsBanned == true && true) throw new InvalidOperationException("banned_card_not_in_legal_formats");
     }

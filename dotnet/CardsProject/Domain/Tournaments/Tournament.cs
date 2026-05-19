@@ -4,6 +4,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
 
+public enum TournamentStatusType
+{
+    Draft,
+    Registration,
+    Ongoing,
+    Completed,
+    Cancelled
+}
+
 public enum TournamentFormatType
 {
     Standard,
@@ -22,24 +31,15 @@ public enum TournamentTournamentTypeType
     RoundRobin
 }
 
-public enum TournamentStatusType
-{
-    Draft,
-    Registration,
-    Ongoing,
-    Completed,
-    Cancelled
-}
-
 public class Tournament : IValidatableObject
 {
     public int Id { get; set; }
 
     public string Name { get; set; } = "";
     public string? Description { get; set; }
+    public TournamentStatusType Status { get; set; }
     public TournamentFormatType Format { get; set; }
     public TournamentTournamentTypeType TournamentType { get; set; }
-    public TournamentStatusType Status { get; set; }
     public int MaxPlayers { get; set; } = 0;
     public decimal EntryFee { get; set; } = 0.00m;
     public decimal PrizePool { get; set; } = 0.00m;
@@ -63,37 +63,39 @@ public class Tournament : IValidatableObject
 
     public void Start()
     {
-        throw new NotImplementedException("start not implemented");
+        // TODO: implement start
     }
 
     public void Cancel()
     {
-        throw new NotImplementedException("cancel not implemented");
+        // TODO: implement cancel
     }
 
     public void Complete()
     {
-        throw new NotImplementedException("complete not implemented");
+        // TODO: implement complete
     }
 
     public void GenerateRound()
     {
-        throw new NotImplementedException("generate_round not implemented");
+        // TODO: implement generate_round
     }
 
     public decimal CalculatePrizeDistribution()
     {
-        throw new NotImplementedException("calculate_prize_distribution not implemented");
+        // TODO: implement calculate_prize_distribution
+        return default;
     }
 
     public void RegisterPlayer(int playerId, int deckId)
     {
-        throw new NotImplementedException("register_player not implemented");
+        // TODO: implement register_player
     }
 
     public bool IsFull()
     {
-        throw new NotImplementedException("is_full not implemented");
+        // TODO: implement is_full
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

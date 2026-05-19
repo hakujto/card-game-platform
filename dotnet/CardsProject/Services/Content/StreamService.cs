@@ -30,8 +30,10 @@ public class StreamService
         var entity = new Stream();
         if (dto.Title is not null) entity.Title = dto.Title;
         if (dto.StreamUrl is not null) entity.StreamUrl = dto.StreamUrl;
-        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
         if (dto.Status is not null && Enum.TryParse<StreamStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
+        if (dto.Language is not null && Enum.TryParse<StreamLanguageType>(dto.Language, out var languageVal)) entity.Language = languageVal;
+        if (dto.IsOfficial is not null) entity.IsOfficial = dto.IsOfficial.Value;
         if (dto.ViewerCountPeak is not null) entity.ViewerCountPeak = dto.ViewerCountPeak.Value;
         if (dto.ScheduledStart is not null) entity.ScheduledStart = dto.ScheduledStart.Value;
         if (dto.ActualStart is not null) entity.ActualStart = dto.ActualStart.Value;
@@ -52,8 +54,10 @@ public class StreamService
         if (entity is null) return null;
         if (dto.Title is not null) entity.Title = dto.Title;
         if (dto.StreamUrl is not null) entity.StreamUrl = dto.StreamUrl;
-        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
         if (dto.Status is not null && Enum.TryParse<StreamStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.Platform is not null && Enum.TryParse<StreamPlatformType>(dto.Platform, out var platformVal)) entity.Platform = platformVal;
+        if (dto.Language is not null && Enum.TryParse<StreamLanguageType>(dto.Language, out var languageVal)) entity.Language = languageVal;
+        if (dto.IsOfficial is not null) entity.IsOfficial = dto.IsOfficial.Value;
         if (dto.ViewerCountPeak is not null) entity.ViewerCountPeak = dto.ViewerCountPeak.Value;
         if (dto.ScheduledStart is not null) entity.ScheduledStart = dto.ScheduledStart.Value;
         if (dto.ActualStart is not null) entity.ActualStart = dto.ActualStart.Value;

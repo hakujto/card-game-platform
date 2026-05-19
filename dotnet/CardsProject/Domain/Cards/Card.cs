@@ -71,37 +71,40 @@ public class Card : IValidatableObject
 
     public void Ban()
     {
-        throw new NotImplementedException("ban not implemented");
+        // TODO: implement ban
     }
 
     public void Unban()
     {
-        throw new NotImplementedException("unban not implemented");
+        // TODO: implement unban
     }
 
     public void Restrict()
     {
-        throw new NotImplementedException("restrict not implemented");
+        // TODO: implement restrict
     }
 
     public void Unrestrict()
     {
-        throw new NotImplementedException("unrestrict not implemented");
+        // TODO: implement unrestrict
     }
 
     public decimal CalculateValue()
     {
-        throw new NotImplementedException("calculate_value not implemented");
+        // TODO: implement calculate_value
+        return default;
     }
 
     public decimal ApplyRarityBonus(int multiplier)
     {
-        throw new NotImplementedException("apply_rarity_bonus not implemented");
+        // TODO: implement apply_rarity_bonus
+        return default;
     }
 
     public bool IsLegalInFormat(string format)
     {
-        throw new NotImplementedException("is_legal_in_format not implemented");
+        // TODO: implement is_legal_in_format
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

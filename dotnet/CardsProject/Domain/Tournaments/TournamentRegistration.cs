@@ -37,17 +37,17 @@ public class TournamentRegistration : IValidatableObject
 
     public void Withdraw()
     {
-        throw new NotImplementedException("withdraw not implemented");
+        // TODO: implement withdraw
     }
 
     public void Disqualify(string reason)
     {
-        throw new NotImplementedException("disqualify not implemented");
+        // TODO: implement disqualify
     }
 
     public void PromoteFromWaitlist()
     {
-        throw new NotImplementedException("promote_from_waitlist not implemented");
+        // TODO: implement promote_from_waitlist
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

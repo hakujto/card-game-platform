@@ -50,32 +50,41 @@ public class Order : IValidatableObject
 
     public void Cancel()
     {
-        throw new NotImplementedException("cancel not implemented");
+        // TODO: implement cancel
     }
 
     public bool Pay(string paymentRef)
     {
-        throw new NotImplementedException("pay not implemented");
+        // TODO: implement pay
+        return default;
+    }
+
+    public bool ProcessPayment()
+    {
+        // TODO: implement process_payment
+        return default;
     }
 
     public decimal CalculateTotal()
     {
-        throw new NotImplementedException("calculate_total not implemented");
+        // TODO: implement calculate_total
+        return default;
     }
 
     public decimal ApplyDiscount(int percent)
     {
-        throw new NotImplementedException("apply_discount not implemented");
+        // TODO: implement apply_discount
+        return default;
     }
 
     public void Refund()
     {
-        throw new NotImplementedException("refund not implemented");
+        // TODO: implement refund
     }
 
     public void NotifyShipped()
     {
-        throw new NotImplementedException("notify_shipped not implemented");
+        // TODO: implement notify_shipped
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

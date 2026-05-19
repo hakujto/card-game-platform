@@ -3,14 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CardsProject.Domain.Marketplace;
 
-public enum TradeDisputeReasonType
-{
-    ItemNotReceived,
-    ItemNotAsDescribed,
-    FraudSuspected,
-    Other
-}
-
 public enum TradeDisputeStatusType
 {
     Open,
@@ -19,13 +11,21 @@ public enum TradeDisputeStatusType
     Escalated
 }
 
+public enum TradeDisputeReasonType
+{
+    ItemNotReceived,
+    ItemNotAsDescribed,
+    FraudSuspected,
+    Other
+}
+
 public class TradeDispute
 {
     public int Id { get; set; }
 
+    public TradeDisputeStatusType Status { get; set; }
     public TradeDisputeReasonType Reason { get; set; }
     public string Description { get; set; } = "";
-    public TradeDisputeStatusType Status { get; set; }
     public string? Resolution { get; set; }
     public DateTime? OpenedAt { get; set; } = null;
     public DateTime? ResolvedAt { get; set; } = null;
@@ -44,16 +44,21 @@ public class TradeDispute
 
     public void Escalate()
     {
-        throw new NotImplementedException("escalate not implemented");
+        // TODO: implement escalate
     }
 
     public void Resolve(string resolutionText)
     {
-        throw new NotImplementedException("resolve not implemented");
+        // TODO: implement resolve
+    }
+
+    public void CloseResolved()
+    {
+        // TODO: implement close_resolved
     }
 
     public void Review()
     {
-        throw new NotImplementedException("review not implemented");
+        // TODO: implement review
     }
 }

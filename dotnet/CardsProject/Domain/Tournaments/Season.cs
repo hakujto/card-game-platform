@@ -27,22 +27,23 @@ public class Season : IValidatableObject
 
     public void Activate()
     {
-        throw new NotImplementedException("activate not implemented");
+        // TODO: implement activate
     }
 
     public void Deactivate()
     {
-        throw new NotImplementedException("deactivate not implemented");
+        // TODO: implement deactivate
     }
 
     public void FinalizeRewards()
     {
-        throw new NotImplementedException("finalize_rewards not implemented");
+        // TODO: implement finalize_rewards
     }
 
     public bool IsOngoing()
     {
-        throw new NotImplementedException("is_ongoing not implemented");
+        // TODO: implement is_ongoing
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────

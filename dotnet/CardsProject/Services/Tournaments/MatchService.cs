@@ -82,6 +82,15 @@ public class MatchService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<bool> FinalizeResultAsync(int id)
+    {
+        var entity = await _db.Matches.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Match not found: " + id);
+        entity.FinalizeResult();
+        entity.DetermineWinner(); // @after
+        await _db.SaveChangesAsync();
+        return true;
+    }
     public async System.Threading.Tasks.Task<bool> DetermineWinnerAsync(int id)
     {
         var entity = await _db.Matches.FindAsync(id);

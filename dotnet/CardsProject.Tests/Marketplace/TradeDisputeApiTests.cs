@@ -104,7 +104,7 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
     public async Task Create_Fails_When_ResolvedAtRequiresTerminalStatus_Violated()
     {
         // resolved_at_requires_terminal_status: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""TransactionId"": 1, ""OpenedById"": 1, ""Reason"": ""test"", ""Description"": ""test"", ""Status"": ""test"", ""OpenedAt"": ""2024-01-01T00:00:00"", ""ResolvedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""TransactionId"": 1, ""OpenedById"": 1, ""Status"": ""test"", ""Reason"": ""test"", ""Description"": ""test"", ""OpenedAt"": ""2024-01-01T00:00:00"", ""ResolvedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/trade_disputes", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

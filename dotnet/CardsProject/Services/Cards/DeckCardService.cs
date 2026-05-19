@@ -31,6 +31,7 @@ public class DeckCardService
         if (dto.IsCommander is not null) entity.IsCommander = dto.IsCommander.Value;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        Validate(entity);
         ValidateEntity(entity);
         _db.DeckCards.Add(entity);
         await _db.SaveChangesAsync();
@@ -45,6 +46,7 @@ public class DeckCardService
         if (dto.IsCommander is not null) entity.IsCommander = dto.IsCommander.Value;
         if (dto.DeckId is not null) entity.DeckId = dto.DeckId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
+        Validate(entity);
         ValidateEntity(entity);
         await _db.SaveChangesAsync();
         return entity;
@@ -74,5 +76,9 @@ public class DeckCardService
         entity.Decrement(amount);
         await _db.SaveChangesAsync();
         return true;
+    }
+    public void Validate(DeckCard entity)
+    {
+        if (entity.IsCommander == true && !(entity.Quantity == 1)) throw new InvalidOperationException("Commander card must appear exactly once in the deck");
     }
 }

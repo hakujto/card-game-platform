@@ -28,22 +28,23 @@ public class TournamentRound : IValidatableObject
 
     public void Start()
     {
-        throw new NotImplementedException("start not implemented");
+        // TODO: implement start
     }
 
     public void Complete()
     {
-        throw new NotImplementedException("complete not implemented");
+        // TODO: implement complete
     }
 
     public void GeneratePairings()
     {
-        throw new NotImplementedException("generate_pairings not implemented");
+        // TODO: implement generate_pairings
     }
 
     public bool IsTimeExpired()
     {
-        throw new NotImplementedException("is_time_expired not implemented");
+        // TODO: implement is_time_expired
+        return default;
     }
 
     // ── Domain invariants (simple rules) ──────────────────────────────
