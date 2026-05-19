@@ -11,16 +11,61 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- go-live-behavior! [id]
-  (throw (ex-info "go_live not implemented" {:id id})))
+  ; TODO: implement go_live
+  nil)
 
 (defn- end-behavior! [id]
-  (throw (ex-info "end not implemented" {:id id})))
+  ; TODO: implement end
+  nil)
 
 (defn- update-viewer-peak-behavior! [id count]
-  (throw (ex-info "update_viewer_peak not implemented" {:id id})))
+  ; TODO: implement update_viewer_peak
+  nil)
 
 (defn- duration-minutes-behavior! [id]
-  (throw (ex-info "duration_minutes not implemented" {:id id})))
+  ; TODO: implement duration_minutes
+  nil)
+
+; ── Lifecycle state machine ─────────────────────────────────────────
+(def ^:private allowed-transitions
+  {   "Scheduled" ["Live"]
+   "Live" ["Ended"]})
+
+(defn- assert-transition! [current to]
+  (let [allowed (get allowed-transitions current [])]
+    (when-not (some #(= % to) allowed)
+      (throw (ex-info (str "Transition " current " -> " to " not allowed")
+                      {:status 409})))))
+
+(defn transition-scheduled-to-live!
+  [id]
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
+    (do
+      (assert-transition! (get record :status) "Live")
+      (when (nil? (get record :stream_url))
+        (throw (ex-info "stream_url is required for Scheduled -> Live" {:status 422})))
+      (jdbc/execute-one! db-spec
+        ["UPDATE streams SET status = ? WHERE id = ?" "Live" id])
+      (go-live-behavior! id) ; @after
+      (queries/get-stream-by-id db-spec {:id id}))
+    (throw (ex-info "Stream not found" {:id id :status 404}))))
+
+(defn transition-live-to-ended!
+  [id]
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
+    (do
+      (assert-transition! (get record :status) "Ended")
+      (jdbc/execute-one! db-spec
+        ["UPDATE streams SET status = ? WHERE id = ?" "Ended" id])
+      (end-behavior! id) ; @after
+      (queries/get-stream-by-id db-spec {:id id}))
+    (throw (ex-info "Stream not found" {:id id :status 404}))))
+
+(defn transition-ended-to-live!
+  [id]
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
+    (throw (ex-info "Transition Ended -> Live is not allowed" {:status 409}))
+    (throw (ex-info "Stream not found" {:id id :status 404}))))
 
 (defn go-live!
   [id]

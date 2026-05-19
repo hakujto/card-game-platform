@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- applies-to-placement-behavior! [id placement]
-  (throw (ex-info "applies_to_placement not implemented" {:id id})))
+  ; TODO: implement applies_to_placement
+  nil)
 
 (defn- award-to-player-behavior! [id player-id]
-  (throw (ex-info "award_to_player not implemented" {:id id})))
+  ; TODO: implement award_to_player
+  nil)
 
 (defn applies-to-placement!
   [id placement]

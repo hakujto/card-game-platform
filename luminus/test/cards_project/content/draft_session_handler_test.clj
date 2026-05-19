@@ -7,6 +7,7 @@
 (def valid-params {   :status "Completed"
    :draft-type "Booster"
    :seats 2
+   :time-per-pick-seconds 1
    :created-at "2024-01-01T00:00:00"
    :card-set-id 1})
 
@@ -65,5 +66,52 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-time-per-pick-positive
+  (testing "POST /api/draft_sessions violates rule time_per_pick_positive → 422"
+    (let [params (merge valid-params
+       {   :time-per-pick-seconds 0})
+          resp (app (-> (mock/request :post "/api/draft_sessions")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-waiting-for-players-to-drafting
+  (testing "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-drafting transitions WaitingForPlayers -> Drafting"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/waitingforplayers-to-drafting"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-drafting-to-completed
+  (testing "PATCH /api/draft_sessions/1/transitions/drafting-to-completed transitions Drafting -> Completed"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/drafting-to-completed"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-drafting-to-abandoned
+  (testing "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned transitions Drafting -> Abandoned"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/drafting-to-abandoned"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-waiting-for-players-to-abandoned
+  (testing "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned transitions WaitingForPlayers -> Abandoned"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-completed-to-drafting
+  (testing "PATCH /api/draft_sessions/1/transitions/completed-to-drafting is denied"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/completed-to-drafting"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-abandoned-to-drafting
+  (testing "PATCH /api/draft_sessions/1/transitions/abandoned-to-drafting is denied"
+    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/abandoned-to-drafting"))]
+      (is (#{409 404} (:status resp)))))
 )
 

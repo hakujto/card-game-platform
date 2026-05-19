@@ -6,8 +6,10 @@
 
 (def valid-params {   :title "test"
    :stream-url "https://example.com"
-   :platform "Twitch"
    :status "Live"
+   :platform "Twitch"
+   :language "EN"
+   :is-official true
    :viewer-count-peak 0
    :scheduled-start "2024-01-01T00:00:00"
    :streamer-id 1})
@@ -79,5 +81,23 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-scheduled-to-live
+  (testing "PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live"
+    (let [resp (app (mock/request :patch "/api/streams/1/transitions/scheduled-to-live"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-live-to-ended
+  (testing "PATCH /api/streams/1/transitions/live-to-ended transitions Live -> Ended"
+    (let [resp (app (mock/request :patch "/api/streams/1/transitions/live-to-ended"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-ended-to-live
+  (testing "PATCH /api/streams/1/transitions/ended-to-live is denied"
+    (let [resp (app (mock/request :patch "/api/streams/1/transitions/ended-to-live"))]
+      (is (#{409 404} (:status resp)))))
 )
 

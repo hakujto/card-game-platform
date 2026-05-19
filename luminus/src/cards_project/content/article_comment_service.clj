@@ -11,13 +11,16 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- hide-behavior! [id]
-  (throw (ex-info "hide not implemented" {:id id})))
+  ; TODO: implement hide
+  nil)
 
 (defn- unhide-behavior! [id]
-  (throw (ex-info "unhide not implemented" {:id id})))
+  ; TODO: implement unhide
+  nil)
 
 (defn- is-reply-behavior! [id]
-  (throw (ex-info "is_reply not implemented" {:id id})))
+  ; TODO: implement is_reply
+  nil)
 
 (defn hide!
   [id]

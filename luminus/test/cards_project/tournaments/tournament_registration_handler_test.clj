@@ -62,7 +62,7 @@
 (deftest test-rule-final-standing-positive
   (testing "POST /api/tournament_registrations violates rule final_standing_positive → 422"
     (let [params (merge valid-params
-       {   :final-standing "0"})
+       {   :final-standing 0})
           resp (app (-> (mock/request :post "/api/tournament_registrations")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
@@ -73,7 +73,7 @@
 (deftest test-rule-seed-positive
   (testing "POST /api/tournament_registrations violates rule seed_positive → 422"
     (let [params (merge valid-params
-       {   :seed "0"})
+       {   :seed 0})
           resp (app (-> (mock/request :post "/api/tournament_registrations")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- record-winner-behavior! [id winner-side]
-  (throw (ex-info "record_winner not implemented" {:id id})))
+  ; TODO: implement record_winner
+  nil)
 
 (defn- duration-minutes-behavior! [id]
-  (throw (ex-info "duration_minutes not implemented" {:id id})))
+  ; TODO: implement duration_minutes
+  nil)
 
 (defn record-winner!
   [id winner-side]

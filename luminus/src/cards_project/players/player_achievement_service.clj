@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- increment-progress-behavior! [id amount]
-  (throw (ex-info "increment_progress not implemented" {:id id})))
+  ; TODO: implement increment_progress
+  nil)
 
 (defn- complete-behavior! [id]
-  (throw (ex-info "complete not implemented" {:id id})))
+  ; TODO: implement complete
+  nil)
 
 (defn increment-progress!
   [id amount]

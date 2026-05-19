@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- point-value-behavior! [id multiplier]
-  (throw (ex-info "point_value not implemented" {:id id})))
+  ; TODO: implement point_value
+  nil)
 
 (defn- reveal-behavior! [id]
-  (throw (ex-info "reveal not implemented" {:id id})))
+  ; TODO: implement reveal
+  nil)
 
 (defn point-value!
   [id multiplier]

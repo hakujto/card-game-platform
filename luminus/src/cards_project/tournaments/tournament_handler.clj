@@ -32,7 +32,7 @@
 
 (defn- insert-tournament! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :description :format :tournament_type :status :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
+        allowed  #{:name :description :status :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -49,7 +49,7 @@
 
 (defn- update-tournament! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :description :format :tournament_type :status :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
+        allowed  #{:name :description :status :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -145,4 +145,74 @@
   (GET "/api/tournaments/:id/full" [id]
     (let [result (svc/is-full! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (PATCH "/api/tournaments/:id/transitions/draft-to-registration" [id]
+    (try
+      (let [record (svc/transition-draft-to-registration! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/registration-to-ongoing" [id]
+    (try
+      (let [record (svc/transition-registration-to-ongoing! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/registration-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-registration-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/ongoing-to-completed" [id]
+    (try
+      (let [record (svc/transition-ongoing-to-completed! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/ongoing-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-ongoing-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/completed-to-draft" [id]
+    (try
+      (let [record (svc/transition-completed-to-draft! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/tournaments/:id/transitions/cancelled-to-draft" [id]
+    (try
+      (let [record (svc/transition-cancelled-to-draft! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

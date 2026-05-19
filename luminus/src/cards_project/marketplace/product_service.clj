@@ -11,22 +11,28 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- activate-behavior! [id]
-  (throw (ex-info "activate not implemented" {:id id})))
+  ; TODO: implement activate
+  nil)
 
 (defn- deactivate-behavior! [id]
-  (throw (ex-info "deactivate not implemented" {:id id})))
+  ; TODO: implement deactivate
+  nil)
 
 (defn- apply-discount-behavior! [id percent]
-  (throw (ex-info "apply_discount not implemented" {:id id})))
+  ; TODO: implement apply_discount
+  nil)
 
 (defn- restock-behavior! [id quantity]
-  (throw (ex-info "restock not implemented" {:id id})))
+  ; TODO: implement restock
+  nil)
 
 (defn- effective-price-behavior! [id]
-  (throw (ex-info "effective_price not implemented" {:id id})))
+  ; TODO: implement effective_price
+  nil)
 
 (defn- is-in-stock-behavior! [id]
-  (throw (ex-info "is_in_stock not implemented" {:id id})))
+  ; TODO: implement is_in_stock
+  nil)
 
 (defn activate!
   [id]

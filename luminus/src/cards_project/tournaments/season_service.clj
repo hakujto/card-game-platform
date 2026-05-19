@@ -11,16 +11,20 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- activate-behavior! [id]
-  (throw (ex-info "activate not implemented" {:id id})))
+  ; TODO: implement activate
+  nil)
 
 (defn- deactivate-behavior! [id]
-  (throw (ex-info "deactivate not implemented" {:id id})))
+  ; TODO: implement deactivate
+  nil)
 
 (defn- finalize-rewards-behavior! [id]
-  (throw (ex-info "finalize_rewards not implemented" {:id id})))
+  ; TODO: implement finalize_rewards
+  nil)
 
 (defn- is-ongoing-behavior! [id]
-  (throw (ex-info "is_ongoing not implemented" {:id id})))
+  ; TODO: implement is_ongoing
+  nil)
 
 (defn activate!
   [id]

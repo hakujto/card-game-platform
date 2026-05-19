@@ -50,7 +50,7 @@
 (deftest test-rule-total-cards-positive
   (testing "POST /api/card_sets violates rule total_cards_positive → 422"
     (let [params (merge valid-params
-       {   :total-cards "0"})
+       {   :total-cards 0})
           resp (app (-> (mock/request :post "/api/card_sets")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

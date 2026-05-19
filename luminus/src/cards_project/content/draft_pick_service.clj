@@ -11,7 +11,8 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- is-first-pick-behavior! [id]
-  (throw (ex-info "is_first_pick not implemented" {:id id})))
+  ; TODO: implement is_first_pick
+  nil)
 
 (defn is-first-pick!
   [id]

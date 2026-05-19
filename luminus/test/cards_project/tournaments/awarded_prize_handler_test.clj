@@ -61,7 +61,7 @@
 (deftest test-rule-final-placement-positive
   (testing "POST /api/awarded_prizes violates rule final_placement_positive → 422"
     (let [params (merge valid-params
-       {   :final-placement "0"})
+       {   :final-placement 0})
           resp (app (-> (mock/request :post "/api/awarded_prizes")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

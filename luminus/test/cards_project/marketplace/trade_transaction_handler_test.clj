@@ -73,7 +73,7 @@
 (deftest test-rule-final-price-positive
   (testing "POST /api/trade_transactions violates rule final_price_positive → 422"
     (let [params (merge valid-params
-       {   :final-price "0"})
+       {   :final-price 0})
           resp (app (-> (mock/request :post "/api/trade_transactions")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

@@ -49,7 +49,7 @@
   (testing "POST /api/player_achievements violates rule completed_requires_progress → 422"
     (let [params (merge valid-params
        {   :is-completed true
-   :progress "0"})
+   :progress 0})
           resp (app (-> (mock/request :post "/api/player_achievements")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

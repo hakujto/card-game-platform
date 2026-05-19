@@ -48,7 +48,7 @@
 (deftest test-rule-pick-number-positive
   (testing "POST /api/draft_picks violates rule pick_number_positive → 422"
     (let [params (merge valid-params
-       {   :pick-number "0"})
+       {   :pick-number 0})
           resp (app (-> (mock/request :post "/api/draft_picks")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

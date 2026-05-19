@@ -50,7 +50,7 @@
 (deftest test-rule-price-positive
   (testing "POST /api/products violates rule price_positive → 422"
     (let [params (merge valid-params
-       {   :price "0"})
+       {   :price 0})
           resp (app (-> (mock/request :post "/api/products")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

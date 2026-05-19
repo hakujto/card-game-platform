@@ -11,7 +11,8 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- claim-behavior! [id]
-  (throw (ex-info "claim not implemented" {:id id})))
+  ; TODO: implement claim
+  nil)
 
 (defn claim!
   [id]

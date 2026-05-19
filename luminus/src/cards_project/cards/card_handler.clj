@@ -29,6 +29,8 @@
       (swap! errors conj "Creature card must have attack and defense"))
     (when (and (= (get m :card_type) "Planeswalker") (not (some? (get m :loyalty))))
       (swap! errors conj "Planeswalker card must have loyalty"))
+    (when (and (= (get m :card_type) "Land") (not (= (get m :mana_cost) 0)))
+      (swap! errors conj "Land card must have zero mana cost"))
     (when (and (not= (get m :card_type) "Planeswalker") (not (nil? (get m :loyalty))))
       (swap! errors conj "Only Planeswalker cards can have loyalty"))
     (when (and (true? (get m :is_banned)) (not (= (get m :legal_formats) "message")))

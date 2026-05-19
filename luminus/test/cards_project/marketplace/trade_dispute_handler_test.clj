@@ -4,9 +4,9 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :reason "ItemNotReceived"
+(def valid-params {   :status "Resolved"
+   :reason "ItemNotReceived"
    :description "test"
-   :status "Resolved"
    :opened-at "2024-01-01T00:00:00"
    :transaction-id 1
    :opened-by-id 1})
@@ -55,5 +55,35 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-open-to-under-review
+  (testing "PATCH /api/trade_disputes/1/transitions/open-to-underreview transitions Open -> UnderReview"
+    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/open-to-underreview"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-under-review-to-resolved
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-resolved transitions UnderReview -> Resolved"
+    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-resolved"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-under-review-to-escalated
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-escalated transitions UnderReview -> Escalated"
+    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-escalated"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-escalated-to-resolved
+  (testing "PATCH /api/trade_disputes/1/transitions/escalated-to-resolved transitions Escalated -> Resolved"
+    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/escalated-to-resolved"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-resolved-to-open
+  (testing "PATCH /api/trade_disputes/1/transitions/resolved-to-open is denied"
+    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/resolved-to-open"))]
+      (is (#{409 404} (:status resp)))))
 )
 

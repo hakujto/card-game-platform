@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
   status VARCHAR NOT NULL DEFAULT 'WaitingForPlayers',
   draft_type VARCHAR NOT NULL DEFAULT 'Booster',
   seats INTEGER NOT NULL DEFAULT 8,
+  time_per_pick_seconds INTEGER NOT NULL DEFAULT 30,
   completed_at DATETIME,
   card_set_id INTEGER NOT NULL REFERENCES card_sets(id) ON DELETE SET NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

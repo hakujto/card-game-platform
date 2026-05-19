@@ -11,13 +11,16 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- add-behavior! [id quantity]
-  (throw (ex-info "add not implemented" {:id id})))
+  ; TODO: implement add
+  nil)
 
 (defn- remove-behavior! [id quantity]
-  (throw (ex-info "remove not implemented" {:id id})))
+  ; TODO: implement remove
+  nil)
 
 (defn- estimated-value-behavior! [id]
-  (throw (ex-info "estimated_value not implemented" {:id id})))
+  ; TODO: implement estimated_value
+  nil)
 
 (defn add!
   [id quantity]

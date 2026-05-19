@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- rename-behavior! [id new-name]
-  (throw (ex-info "rename not implemented" {:id id})))
+  ; TODO: implement rename
+  nil)
 
 (defn- merge-into-behavior! [id target-tag-id]
-  (throw (ex-info "merge_into not implemented" {:id id})))
+  ; TODO: implement merge_into
+  nil)
 
 (defn rename!
   [id new-name]

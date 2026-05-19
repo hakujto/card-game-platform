@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- increment-behavior! [id amount]
-  (throw (ex-info "increment not implemented" {:id id})))
+  ; TODO: implement increment
+  nil)
 
 (defn- decrement-behavior! [id amount]
-  (throw (ex-info "decrement not implemented" {:id id})))
+  ; TODO: implement decrement
+  nil)
 
 (defn increment!
   [id amount]

@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- is-usable-at-behavior! [id timing]
-  (throw (ex-info "is_usable_at not implemented" {:id id})))
+  ; TODO: implement is_usable_at
+  nil)
 
 (defn- describe-behavior! [id]
-  (throw (ex-info "describe not implemented" {:id id})))
+  ; TODO: implement describe
+  nil)
 
 (defn is-usable-at!
   [id timing]

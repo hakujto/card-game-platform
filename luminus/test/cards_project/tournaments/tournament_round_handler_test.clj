@@ -73,7 +73,7 @@
 (deftest test-rule-round-number-positive
   (testing "POST /api/tournament_rounds violates rule round_number_positive → 422"
     (let [params (merge valid-params
-       {   :round-number "0"})
+       {   :round-number 0})
           resp (app (-> (mock/request :post "/api/tournament_rounds")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
@@ -84,7 +84,7 @@
 (deftest test-rule-time-limit-positive
   (testing "POST /api/tournament_rounds violates rule time_limit_positive → 422"
     (let [params (merge valid-params
-       {   :time-limit-minutes "0"})
+       {   :time-limit-minutes 0})
           resp (app (-> (mock/request :post "/api/tournament_rounds")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

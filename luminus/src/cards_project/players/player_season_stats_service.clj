@@ -11,13 +11,16 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- win-rate-behavior! [id]
-  (throw (ex-info "win_rate not implemented" {:id id})))
+  ; TODO: implement win_rate
+  nil)
 
 (defn- add-points-behavior! [id points]
-  (throw (ex-info "add_points not implemented" {:id id})))
+  ; TODO: implement add_points
+  nil)
 
 (defn- record-tournament-win-behavior! [id]
-  (throw (ex-info "record_tournament_win not implemented" {:id id})))
+  ; TODO: implement record_tournament_win
+  nil)
 
 (defn win-rate!
   [id]

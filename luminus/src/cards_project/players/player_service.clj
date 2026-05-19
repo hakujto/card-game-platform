@@ -11,25 +11,32 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- promote-behavior! [id]
-  (throw (ex-info "promote not implemented" {:id id})))
+  ; TODO: implement promote
+  nil)
 
 (defn- demote-behavior! [id]
-  (throw (ex-info "demote not implemented" {:id id})))
+  ; TODO: implement demote
+  nil)
 
 (defn- record-win-behavior! [id]
-  (throw (ex-info "record_win not implemented" {:id id})))
+  ; TODO: implement record_win
+  nil)
 
 (defn- record-loss-behavior! [id]
-  (throw (ex-info "record_loss not implemented" {:id id})))
+  ; TODO: implement record_loss
+  nil)
 
 (defn- win-rate-behavior! [id]
-  (throw (ex-info "win_rate not implemented" {:id id})))
+  ; TODO: implement win_rate
+  nil)
 
 (defn- verify-behavior! [id]
-  (throw (ex-info "verify not implemented" {:id id})))
+  ; TODO: implement verify
+  nil)
 
 (defn- update-rating-behavior! [id delta]
-  (throw (ex-info "update_rating not implemented" {:id id})))
+  ; TODO: implement update_rating
+  nil)
 
 (defn promote!
   [id]

@@ -30,7 +30,7 @@
 
 (defn- insert-stream! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :stream_url :platform :status :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
+        allowed  #{:title :stream_url :status :platform :language :is_official :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -47,7 +47,7 @@
 
 (defn- update-stream! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :stream_url :platform :status :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
+        allowed  #{:title :stream_url :status :platform :language :is_official :viewer_count_peak :scheduled_start :actual_start :ended_at :vod_url :tournament_id :streamer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -130,4 +130,34 @@
   (GET "/api/streams/:id/duration" [id]
     (let [result (svc/duration-minutes! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (PATCH "/api/streams/:id/transitions/scheduled-to-live" [id]
+    (try
+      (let [record (svc/transition-scheduled-to-live! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/streams/:id/transitions/live-to-ended" [id]
+    (try
+      (let [record (svc/transition-live-to-ended! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/streams/:id/transitions/ended-to-live" [id]
+    (try
+      (let [record (svc/transition-ended-to-live! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

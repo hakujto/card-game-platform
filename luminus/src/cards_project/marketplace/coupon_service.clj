@@ -11,16 +11,20 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- is-valid-behavior! [id]
-  (throw (ex-info "is_valid not implemented" {:id id})))
+  ; TODO: implement is_valid
+  nil)
 
 (defn- is-applicable-to-order-behavior! [id order-total]
-  (throw (ex-info "is_applicable_to_order not implemented" {:id id})))
+  ; TODO: implement is_applicable_to_order
+  nil)
 
 (defn- redeem-behavior! [id]
-  (throw (ex-info "redeem not implemented" {:id id})))
+  ; TODO: implement redeem
+  nil)
 
 (defn- deactivate-behavior! [id]
-  (throw (ex-info "deactivate not implemented" {:id id})))
+  ; TODO: implement deactivate
+  nil)
 
 (defn is-valid!
   [id]

@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS trade_disputes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status VARCHAR NOT NULL DEFAULT 'Open',
   reason VARCHAR NOT NULL,
   description TEXT NOT NULL,
-  status VARCHAR NOT NULL DEFAULT 'Open',
   resolution TEXT,
   opened_at DATETIME NOT NULL,
   resolved_at DATETIME,

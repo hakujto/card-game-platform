@@ -16,6 +16,8 @@
   (let [errors (atom [])]
     (when-not (let [v (get m :view_count)] (or (nil? v) (>= (->num v) 0)))
       (swap! errors conj "Article view count must not be negative"))
+    (when-not (let [v (get m :likes_count)] (or (nil? v) (>= (->num v) 0)))
+      (swap! errors conj "Article likes count must not be negative"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -28,7 +30,7 @@
 
 (defn- insert-article! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id}
+        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :language :view_count :likes_count :is_featured :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -45,7 +47,7 @@
 
 (defn- update-article! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :view_count :published_at :author_id :featured_deck_id}
+        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :language :view_count :likes_count :is_featured :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -123,7 +125,55 @@
     (svc/increment-view! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 
+  (POST "/api/articles/:id/like" [id]
+    (svc/like! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
+  (DELETE "/api/articles/:id/like" [id]
+    (svc/unlike! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
   (GET "/api/articles/:id/reading-time" [id]
     (let [result (svc/reading-time-minutes! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (PATCH "/api/articles/:id/transitions/draft-to-published" [id]
+    (try
+      (let [record (svc/transition-draft-to-published! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/articles/:id/transitions/published-to-archived" [id]
+    (try
+      (let [record (svc/transition-published-to-archived! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/articles/:id/transitions/archived-to-draft" [id]
+    (try
+      (let [record (svc/transition-archived-to-draft! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/articles/:id/transitions/published-to-draft" [id]
+    (try
+      (let [record (svc/transition-published-to-draft! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

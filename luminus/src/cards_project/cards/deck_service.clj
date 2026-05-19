@@ -11,28 +11,36 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- validate-size-behavior! [id]
-  (throw (ex-info "validate_size not implemented" {:id id})))
+  ; TODO: implement validate_size
+  nil)
 
 (defn- add-card-behavior! [id card-id quantity]
-  (throw (ex-info "add_card not implemented" {:id id})))
+  ; TODO: implement add_card
+  nil)
 
 (defn- remove-card-behavior! [id card-id]
-  (throw (ex-info "remove_card not implemented" {:id id})))
+  ; TODO: implement remove_card
+  nil)
 
 (defn- win-rate-behavior! [id]
-  (throw (ex-info "win_rate not implemented" {:id id})))
+  ; TODO: implement win_rate
+  nil)
 
 (defn- clone-behavior! [id]
-  (throw (ex-info "clone not implemented" {:id id})))
+  ; TODO: implement clone
+  nil)
 
 (defn- publish-behavior! [id]
-  (throw (ex-info "publish not implemented" {:id id})))
+  ; TODO: implement publish
+  nil)
 
 (defn- unpublish-behavior! [id]
-  (throw (ex-info "unpublish not implemented" {:id id})))
+  ; TODO: implement unpublish
+  nil)
 
 (defn- certify-tournament-legal-behavior! [id]
-  (throw (ex-info "certify_tournament_legal not implemented" {:id id})))
+  ; TODO: implement certify_tournament_legal
+  nil)
 
 (defn validate-size!
   [id]

@@ -46,7 +46,7 @@
 (deftest test-rule-dust-cost-positive
   (testing "POST /api/crafting_recipes violates rule dust_cost_positive → 422"
     (let [params (merge valid-params
-       {   :dust-cost "0"})
+       {   :dust-cost 0})
           resp (app (-> (mock/request :post "/api/crafting_recipes")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

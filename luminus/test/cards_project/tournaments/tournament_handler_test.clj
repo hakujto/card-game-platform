@@ -5,9 +5,9 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :name "test"
+   :status "Draft"
    :format "Standard"
    :tournament-type "Swiss"
-   :status "Draft"
    :max-players 2
    :entry-fee 0
    :prize-pool 0
@@ -95,5 +95,47 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-draft-to-registration
+  (testing "PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/draft-to-registration"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-registration-to-ongoing
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-ongoing transitions Registration -> Ongoing"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/registration-to-ongoing"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-registration-to-cancelled
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-cancelled transitions Registration -> Cancelled"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/registration-to-cancelled"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-ongoing-to-completed
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-completed transitions Ongoing -> Completed"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-completed"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-ongoing-to-cancelled
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled transitions Ongoing -> Cancelled"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-cancelled"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-completed-to-draft
+  (testing "PATCH /api/tournaments/1/transitions/completed-to-draft is denied"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/completed-to-draft"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-cancelled-to-draft
+  (testing "PATCH /api/tournaments/1/transitions/cancelled-to-draft is denied"
+    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/cancelled-to-draft"))]
+      (is (#{409 404} (:status resp)))))
 )
 

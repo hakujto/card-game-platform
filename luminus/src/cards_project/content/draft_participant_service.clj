@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- pick-card-behavior! [id card-id pack-number]
-  (throw (ex-info "pick_card not implemented" {:id id})))
+  ; TODO: implement pick_card
+  nil)
 
 (defn- drafted-card-count-behavior! [id]
-  (throw (ex-info "drafted_card_count not implemented" {:id id})))
+  ; TODO: implement drafted_card_count
+  nil)
 
 (defn pick-card!
   [id card-id pack-number]

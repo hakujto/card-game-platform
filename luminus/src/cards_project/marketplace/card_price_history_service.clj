@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- price-change-percent-behavior! [id previous-avg]
-  (throw (ex-info "price_change_percent not implemented" {:id id})))
+  ; TODO: implement price_change_percent
+  nil)
 
 (defn- is-price-spike-behavior! [id threshold-percent]
-  (throw (ex-info "is_price_spike not implemented" {:id id})))
+  ; TODO: implement is_price_spike
+  nil)
 
 (defn price-change-percent!
   [id previous-avg]

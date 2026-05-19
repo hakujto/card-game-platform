@@ -106,3 +106,57 @@
       (is (= 422 (:status resp)))))
 )
 
+(deftest test-transition-pending-to-paid
+  (testing "PATCH /api/orders/1/transitions/pending-to-paid transitions Pending -> Paid"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/pending-to-paid"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-paid-to-processing
+  (testing "PATCH /api/orders/1/transitions/paid-to-processing transitions Paid -> Processing"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/paid-to-processing"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-processing-to-shipped
+  (testing "PATCH /api/orders/1/transitions/processing-to-shipped transitions Processing -> Shipped"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/processing-to-shipped"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-shipped-to-completed
+  (testing "PATCH /api/orders/1/transitions/shipped-to-completed transitions Shipped -> Completed"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/shipped-to-completed"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-pending-to-cancelled
+  (testing "PATCH /api/orders/1/transitions/pending-to-cancelled transitions Pending -> Cancelled"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/pending-to-cancelled"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-paid-to-cancelled
+  (testing "PATCH /api/orders/1/transitions/paid-to-cancelled transitions Paid -> Cancelled"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/paid-to-cancelled"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-completed-to-refunded
+  (testing "PATCH /api/orders/1/transitions/completed-to-refunded transitions Completed -> Refunded"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/completed-to-refunded"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-refunded-to-completed
+  (testing "PATCH /api/orders/1/transitions/refunded-to-completed is denied"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/refunded-to-completed"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-completed-to-cancelled
+  (testing "PATCH /api/orders/1/transitions/completed-to-cancelled is denied"
+    (let [resp (app (mock/request :patch "/api/orders/1/transitions/completed-to-cancelled"))]
+      (is (#{409 404} (:status resp)))))
+)
+

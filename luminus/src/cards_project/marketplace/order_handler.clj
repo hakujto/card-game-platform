@@ -127,6 +127,10 @@
           result  (svc/pay! int-id payment-ref)]
       (resp/response {:result result})))
 
+  (POST "/api/orders/:id/process-payment" [id]
+    (let [result (svc/process-payment! (Integer/parseInt id))]
+      (resp/response {:result result})))
+
   (GET "/api/orders/:id/total" [id]
     (let [result (svc/calculate-total! (Integer/parseInt id))]
       (resp/response {:result result})))
@@ -140,4 +144,94 @@
   (POST "/api/orders/:id/refund" [id]
     (svc/refund! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/orders/:id/transitions/pending-to-paid" [id]
+    (try
+      (let [record (svc/transition-pending-to-paid! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/paid-to-processing" [id]
+    (try
+      (let [record (svc/transition-paid-to-processing! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/processing-to-shipped" [id]
+    (try
+      (let [record (svc/transition-processing-to-shipped! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/shipped-to-completed" [id]
+    (try
+      (let [record (svc/transition-shipped-to-completed! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/pending-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-pending-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/paid-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-paid-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/completed-to-refunded" [id]
+    (try
+      (let [record (svc/transition-completed-to-refunded! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/refunded-to-completed" [id]
+    (try
+      (let [record (svc/transition-refunded-to-completed! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/orders/:id/transitions/completed-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-completed-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

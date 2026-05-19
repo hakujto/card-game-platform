@@ -58,7 +58,7 @@
 (deftest test-rule-turns-played-positive
   (testing "POST /api/games violates rule turns_played_positive → 422"
     (let [params (merge valid-params
-       {   :turns-played "0"})
+       {   :turns-played 0})
           resp (app (-> (mock/request :post "/api/games")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
@@ -69,7 +69,7 @@
 (deftest test-rule-duration-positive
   (testing "POST /api/games violates rule duration_positive → 422"
     (let [params (merge valid-params
-       {   :duration-seconds "0"})
+       {   :duration-seconds 0})
           resp (app (-> (mock/request :post "/api/games")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

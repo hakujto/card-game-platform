@@ -54,3 +54,15 @@
       (is (= 422 (:status resp)))))
 )
 
+; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-commander-is-singleton
+  (testing "POST /api/deck_cards violates rule commander_is_singleton → 422"
+    (let [params (merge valid-params
+       {   :is-commander true
+   :quantity 0})
+          resp (app (-> (mock/request :post "/api/deck_cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+

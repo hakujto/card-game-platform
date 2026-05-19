@@ -11,16 +11,20 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- can-craft-behavior! [id player-id]
-  (throw (ex-info "can_craft not implemented" {:id id})))
+  ; TODO: implement can_craft
+  nil)
 
 (defn- execute-craft-behavior! [id player-id]
-  (throw (ex-info "execute_craft not implemented" {:id id})))
+  ; TODO: implement execute_craft
+  nil)
 
 (defn- disable-behavior! [id]
-  (throw (ex-info "disable not implemented" {:id id})))
+  ; TODO: implement disable
+  nil)
 
 (defn- enable-behavior! [id]
-  (throw (ex-info "enable not implemented" {:id id})))
+  ; TODO: implement enable
+  nil)
 
 (defn can-craft!
   [id player-id]

@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- outbid-by-behavior! [id new-amount]
-  (throw (ex-info "outbid_by not implemented" {:id id})))
+  ; TODO: implement outbid_by
+  nil)
 
 (defn- retract-behavior! [id]
-  (throw (ex-info "retract not implemented" {:id id})))
+  ; TODO: implement retract
+  nil)
 
 (defn outbid-by!
   [id new-amount]

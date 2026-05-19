@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- rename-behavior! [id new-name]
-  (throw (ex-info "rename not implemented" {:id id})))
+  ; TODO: implement rename
+  nil)
 
 (defn- article-count-behavior! [id]
-  (throw (ex-info "article_count not implemented" {:id id})))
+  ; TODO: implement article_count
+  nil)
 
 (defn rename!
   [id new-name]

@@ -63,7 +63,7 @@
 (deftest test-rule-discount-value-positive
   (testing "POST /api/coupons violates rule discount_value_positive → 422"
     (let [params (merge valid-params
-       {   :discount-value "0"})
+       {   :discount-value 0})
           resp (app (-> (mock/request :post "/api/coupons")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

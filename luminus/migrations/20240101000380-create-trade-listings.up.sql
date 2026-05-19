@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS trade_listings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status VARCHAR NOT NULL DEFAULT 'Active',
   listing_type VARCHAR NOT NULL DEFAULT 'FixedPrice',
   asking_price DECIMAL,
   auction_start_price DECIMAL,
@@ -8,7 +9,6 @@ CREATE TABLE IF NOT EXISTS trade_listings (
   foil BOOLEAN NOT NULL DEFAULT 0,
   condition VARCHAR NOT NULL DEFAULT 'Mint',
   quantity INTEGER NOT NULL DEFAULT 1,
-  status VARCHAR NOT NULL DEFAULT 'Active',
   description TEXT,
   expires_at DATETIME,
   seller_id INTEGER NOT NULL REFERENCES players(id) ON DELETE SET NULL,

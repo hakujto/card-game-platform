@@ -47,7 +47,7 @@
 (deftest test-rule-quantity-positive
   (testing "POST /api/order_items violates rule quantity_positive → 422"
     (let [params (merge valid-params
-       {   :quantity "0"})
+       {   :quantity 0})
           resp (app (-> (mock/request :post "/api/order_items")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

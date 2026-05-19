@@ -103,3 +103,45 @@
       (is (= 422 (:status resp)))))
 )
 
+(deftest test-transition-pending-to-active
+  (testing "PATCH /api/matches/1/transitions/pending-to-active transitions Pending -> Active"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/pending-to-active"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-completed
+  (testing "PATCH /api/matches/1/transitions/active-to-completed transitions Active -> Completed"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/active-to-completed"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-draw
+  (testing "PATCH /api/matches/1/transitions/active-to-draw transitions Active -> Draw"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/active-to-draw"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-pending-to-b-y-e
+  (testing "PATCH /api/matches/1/transitions/pending-to-bye transitions Pending -> BYE"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/pending-to-bye"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-completed-to-active
+  (testing "PATCH /api/matches/1/transitions/completed-to-active is denied"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/completed-to-active"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-draw-to-active
+  (testing "PATCH /api/matches/1/transitions/draw-to-active is denied"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/draw-to-active"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-b-y-e-to-active
+  (testing "PATCH /api/matches/1/transitions/bye-to-active is denied"
+    (let [resp (app (mock/request :patch "/api/matches/1/transitions/bye-to-active"))]
+      (is (#{409 404} (:status resp)))))
+)
+

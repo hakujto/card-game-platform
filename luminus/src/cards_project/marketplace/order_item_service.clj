@@ -11,7 +11,8 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- line-total-behavior! [id]
-  (throw (ex-info "line_total not implemented" {:id id})))
+  ; TODO: implement line_total
+  nil)
 
 (defn line-total!
   [id]

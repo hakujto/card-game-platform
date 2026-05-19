@@ -61,7 +61,7 @@
 (deftest test-rule-placement-from-positive
   (testing "POST /api/tournament_prizes violates rule placement_from_positive → 422"
     (let [params (merge valid-params
-       {   :placement-from "0"})
+       {   :placement-from 0})
           resp (app (-> (mock/request :post "/api/tournament_prizes")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

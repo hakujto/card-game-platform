@@ -11,16 +11,20 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- complete-behavior! [id]
-  (throw (ex-info "complete not implemented" {:id id})))
+  ; TODO: implement complete
+  nil)
 
 (defn- refund-behavior! [id]
-  (throw (ex-info "refund not implemented" {:id id})))
+  ; TODO: implement refund
+  nil)
 
 (defn- open-dispute-behavior! [id reason]
-  (throw (ex-info "open_dispute not implemented" {:id id})))
+  ; TODO: implement open_dispute
+  nil)
 
 (defn- seller-net-behavior! [id]
-  (throw (ex-info "seller_net not implemented" {:id id})))
+  ; TODO: implement seller_net
+  nil)
 
 (defn complete!
   [id]

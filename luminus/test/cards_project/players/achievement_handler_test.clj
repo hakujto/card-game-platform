@@ -48,7 +48,7 @@
 (deftest test-rule-points-positive
   (testing "POST /api/achievements violates rule points_positive → 422"
     (let [params (merge valid-params
-       {   :points "0"})
+       {   :points 0})
           resp (app (-> (mock/request :post "/api/achievements")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

@@ -16,6 +16,8 @@
   (let [errors (atom [])]
     (when-not (let [v (get m :seats)] (or (nil? v) (and (>= (->num v) 2) (<= (->num v) 16))))
       (swap! errors conj "Draft session must have between 2 and 16 seats"))
+    (when-not (let [v (get m :time_per_pick_seconds)] (or (nil? v) (> (->num v) 0)))
+      (swap! errors conj "Time per pick must be greater than zero"))
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
@@ -28,7 +30,7 @@
 
 (defn- insert-draft-session! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :draft_type :seats :completed_at :card_set_id}
+        allowed  #{:status :draft_type :seats :time_per_pick_seconds :completed_at :card_set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -45,7 +47,7 @@
 
 (defn- update-draft-session! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :draft_type :seats :completed_at :card_set_id}
+        allowed  #{:status :draft_type :seats :time_per_pick_seconds :completed_at :card_set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -126,4 +128,64 @@
   (GET "/api/draft_sessions/:id/full" [id]
     (let [result (svc/is-full! (Integer/parseInt id))]
       (resp/response {:result result})))
+
+  (PATCH "/api/draft_sessions/:id/transitions/waitingforplayers-to-drafting" [id]
+    (try
+      (let [record (svc/transition-waiting-for-players-to-drafting! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/draft_sessions/:id/transitions/drafting-to-completed" [id]
+    (try
+      (let [record (svc/transition-drafting-to-completed! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/draft_sessions/:id/transitions/drafting-to-abandoned" [id]
+    (try
+      (let [record (svc/transition-drafting-to-abandoned! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" [id]
+    (try
+      (let [record (svc/transition-waiting-for-players-to-abandoned! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/draft_sessions/:id/transitions/completed-to-drafting" [id]
+    (try
+      (let [record (svc/transition-completed-to-drafting! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/draft_sessions/:id/transitions/abandoned-to-drafting" [id]
+    (try
+      (let [record (svc/transition-abandoned-to-drafting! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

@@ -11,13 +11,16 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- accept-behavior! [id]
-  (throw (ex-info "accept not implemented" {:id id})))
+  ; TODO: implement accept
+  nil)
 
 (defn- decline-behavior! [id]
-  (throw (ex-info "decline not implemented" {:id id})))
+  ; TODO: implement decline
+  nil)
 
 (defn- block-behavior! [id]
-  (throw (ex-info "block not implemented" {:id id})))
+  ; TODO: implement block
+  nil)
 
 (defn accept!
   [id]

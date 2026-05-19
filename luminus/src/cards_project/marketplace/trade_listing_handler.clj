@@ -30,7 +30,7 @@
 
 (defn- insert-trade-listing! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :status :description :expires_at :seller_id :card_id}
+        allowed  #{:status :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -47,7 +47,7 @@
 
 (defn- update-trade-listing! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :status :description :expires_at :seller_id :card_id}
+        allowed  #{:status :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -134,4 +134,64 @@
   (POST "/api/trade_listings/:id/finalize" [id]
     (svc/finalize-auction! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/trade_listings/:id/transitions/pending-to-active" [id]
+    (try
+      (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_listings/:id/transitions/active-to-sold" [id]
+    (try
+      (let [record (svc/transition-active-to-sold! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_listings/:id/transitions/active-to-expired" [id]
+    (try
+      (let [record (svc/transition-active-to-expired! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_listings/:id/transitions/active-to-cancelled" [id]
+    (try
+      (let [record (svc/transition-active-to-cancelled! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_listings/:id/transitions/sold-to-active" [id]
+    (try
+      (let [record (svc/transition-sold-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_listings/:id/transitions/expired-to-active" [id]
+    (try
+      (let [record (svc/transition-expired-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

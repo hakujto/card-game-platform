@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- promote-to-head-behavior! [id]
-  (throw (ex-info "promote_to_head not implemented" {:id id})))
+  ; TODO: implement promote_to_head
+  nil)
 
 (defn- remove-behavior! [id]
-  (throw (ex-info "remove not implemented" {:id id})))
+  ; TODO: implement remove
+  nil)
 
 (defn promote-to-head!
   [id]

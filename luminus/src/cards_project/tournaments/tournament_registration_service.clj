@@ -11,13 +11,16 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- withdraw-behavior! [id]
-  (throw (ex-info "withdraw not implemented" {:id id})))
+  ; TODO: implement withdraw
+  nil)
 
 (defn- disqualify-behavior! [id reason]
-  (throw (ex-info "disqualify not implemented" {:id id})))
+  ; TODO: implement disqualify
+  nil)
 
 (defn- promote-from-waitlist-behavior! [id]
-  (throw (ex-info "promote_from_waitlist not implemented" {:id id})))
+  ; TODO: implement promote_from_waitlist
+  nil)
 
 (defn withdraw!
   [id]

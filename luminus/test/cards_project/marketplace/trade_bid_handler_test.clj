@@ -48,7 +48,7 @@
 (deftest test-rule-amount-positive
   (testing "POST /api/trade_bids violates rule amount_positive → 422"
     (let [params (merge valid-params
-       {   :amount "0"})
+       {   :amount 0})
           resp (app (-> (mock/request :post "/api/trade_bids")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

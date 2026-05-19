@@ -124,6 +124,10 @@
       (svc/record-result! int-id p1-wins p2-wins)
       (-> (resp/response nil) (resp/status 204))))
 
+  (POST "/api/matches/:id/finalize" [id]
+    (svc/finalize-result! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
   (GET "/api/matches/:id/winner" [id]
     (let [result (svc/determine-winner! (Integer/parseInt id))]
       (resp/response {:result result})))
@@ -137,4 +141,74 @@
   (POST "/api/matches/:id/draw" [id]
     (svc/draw! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/matches/:id/transitions/pending-to-active" [id]
+    (try
+      (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/active-to-completed" [id]
+    (try
+      (let [record (svc/transition-active-to-completed! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/active-to-draw" [id]
+    (try
+      (let [record (svc/transition-active-to-draw! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/pending-to-bye" [id]
+    (try
+      (let [record (svc/transition-pending-to-b-y-e! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/completed-to-active" [id]
+    (try
+      (let [record (svc/transition-completed-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/draw-to-active" [id]
+    (try
+      (let [record (svc/transition-draw-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/matches/:id/transitions/bye-to-active" [id]
+    (try
+      (let [record (svc/transition-b-y-e-to-active! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

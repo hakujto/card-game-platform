@@ -11,16 +11,20 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- start-behavior! [id]
-  (throw (ex-info "start not implemented" {:id id})))
+  ; TODO: implement start
+  nil)
 
 (defn- complete-behavior! [id]
-  (throw (ex-info "complete not implemented" {:id id})))
+  ; TODO: implement complete
+  nil)
 
 (defn- generate-pairings-behavior! [id]
-  (throw (ex-info "generate_pairings not implemented" {:id id})))
+  ; TODO: implement generate_pairings
+  nil)
 
 (defn- is-time-expired-behavior! [id]
-  (throw (ex-info "is_time_expired not implemented" {:id id})))
+  ; TODO: implement is_time_expired
+  nil)
 
 (defn start!
   [id]

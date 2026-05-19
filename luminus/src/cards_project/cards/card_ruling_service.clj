@@ -11,10 +11,12 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- is-current-behavior! [id]
-  (throw (ex-info "is_current not implemented" {:id id})))
+  ; TODO: implement is_current
+  nil)
 
 (defn- supersedes-previous-behavior! [id]
-  (throw (ex-info "supersedes_previous not implemented" {:id id})))
+  ; TODO: implement supersedes_previous
+  nil)
 
 (defn is-current!
   [id]

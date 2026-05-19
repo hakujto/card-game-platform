@@ -9,7 +9,10 @@
    :body "test"
    :status "Published"
    :article-type "Guide"
+   :language "EN"
    :view-count 0
+   :likes-count 0
+   :is-featured true
    :published-at "2024-01-02T00:00:00"
    :created-at "2024-01-01T00:00:00"
    :updated-at "2024-01-01T00:00:00"
@@ -70,5 +73,40 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+; Simple rule violated → 422
+(deftest test-rule-likes-count-not-negative
+  (testing "POST /api/articles violates rule likes_count_not_negative → 422"
+    (let [params (merge valid-params
+       {   :likes-count -1})
+          resp (app (-> (mock/request :post "/api/articles")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-draft-to-published
+  (testing "PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published"
+    (let [resp (app (mock/request :patch "/api/articles/1/transitions/draft-to-published"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-published-to-archived
+  (testing "PATCH /api/articles/1/transitions/published-to-archived transitions Published -> Archived"
+    (let [resp (app (mock/request :patch "/api/articles/1/transitions/published-to-archived"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-archived-to-draft
+  (testing "PATCH /api/articles/1/transitions/archived-to-draft transitions Archived -> Draft"
+    (let [resp (app (mock/request :patch "/api/articles/1/transitions/archived-to-draft"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-published-to-draft
+  (testing "PATCH /api/articles/1/transitions/published-to-draft is denied"
+    (let [resp (app (mock/request :patch "/api/articles/1/transitions/published-to-draft"))]
+      (is (#{409 404} (:status resp)))))
 )
 

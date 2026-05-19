@@ -78,6 +78,18 @@
 )
 
 ; IMPLIES: antecedent=true, consequent violated → 422
+(deftest test-rule-land-has-no-mana-cost
+  (testing "POST /api/cards violates rule land_has_no_mana_cost → 422"
+    (let [params (merge valid-params
+       {   :card-type "Land"
+   :mana-cost 1})
+          resp (app (-> (mock/request :post "/api/cards")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string params))))]
+      (is (= 422 (:status resp)))))
+)
+
+; IMPLIES: antecedent=true, consequent violated → 422
 (deftest test-rule-spell-or-artifact-no-loyalty
   (testing "POST /api/cards violates rule spell_or_artifact_no_loyalty → 422"
     (let [params (merge valid-params

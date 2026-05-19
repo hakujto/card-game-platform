@@ -19,7 +19,7 @@
 
 (defn- insert-trade-dispute! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:reason :description :status :resolution :opened_at :resolved_at :transaction_id :opened_by_id :resolved_by_id}
+        allowed  #{:status :reason :description :resolution :opened_at :resolved_at :transaction_id :opened_by_id :resolved_by_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -36,7 +36,7 @@
 
 (defn- update-trade-dispute! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:reason :description :status :resolution :opened_at :resolved_at :transaction_id :opened_by_id :resolved_by_id}
+        allowed  #{:status :reason :description :resolution :opened_at :resolved_at :transaction_id :opened_by_id :resolved_by_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -109,7 +109,61 @@
       (svc/resolve! int-id resolution-text)
       (-> (resp/response nil) (resp/status 204))))
 
+  (POST "/api/trade_disputes/:id/close" [id]
+    (svc/close-resolved! (Integer/parseInt id))
+    (-> (resp/response nil) (resp/status 204)))
+
   (POST "/api/trade_disputes/:id/review" [id]
     (svc/review! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
+
+  (PATCH "/api/trade_disputes/:id/transitions/open-to-underreview" [id]
+    (try
+      (let [record (svc/transition-open-to-under-review! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-resolved" [id]
+    (try
+      (let [record (svc/transition-under-review-to-resolved! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-escalated" [id]
+    (try
+      (let [record (svc/transition-under-review-to-escalated! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_disputes/:id/transitions/escalated-to-resolved" [id]
+    (try
+      (let [record (svc/transition-escalated-to-resolved! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+
+  (PATCH "/api/trade_disputes/:id/transitions/resolved-to-open" [id]
+    (try
+      (let [record (svc/transition-resolved-to-open! (Integer/parseInt id))]
+        (resp/response record))
+      (catch clojure.lang.ExceptionInfo e
+        (let [status (get (ex-data e) :status 500)]
+          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+      (catch Exception e
+        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 )

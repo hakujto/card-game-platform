@@ -46,7 +46,7 @@
 (deftest test-rule-seat-number-positive
   (testing "POST /api/draft_participants violates rule seat_number_positive → 422"
     (let [params (merge valid-params
-       {   :seat-number "0"})
+       {   :seat-number 0})
           resp (app (-> (mock/request :post "/api/draft_participants")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]

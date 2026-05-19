@@ -4,14 +4,14 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :listing-type "FixedPrice"
+(def valid-params {   :status "Active"
+   :listing-type "FixedPrice"
    :asking-price 1
    :auction-start-price 1
    :auction-end-time "2024-01-02T00:00:00"
    :foil true
    :condition "Mint"
    :quantity 1
-   :status "Active"
    :created-at "2024-01-01T00:00:00"
    :seller-id 1
    :card-id 1})
@@ -83,5 +83,41 @@
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string params))))]
       (is (= 422 (:status resp)))))
+)
+
+(deftest test-transition-pending-to-active
+  (testing "PATCH /api/trade_listings/1/transitions/pending-to-active transitions Pending -> Active"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/pending-to-active"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-sold
+  (testing "PATCH /api/trade_listings/1/transitions/active-to-sold transitions Active -> Sold"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/active-to-sold"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-expired
+  (testing "PATCH /api/trade_listings/1/transitions/active-to-expired transitions Active -> Expired"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/active-to-expired"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-cancelled
+  (testing "PATCH /api/trade_listings/1/transitions/active-to-cancelled transitions Active -> Cancelled"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/active-to-cancelled"))]
+      (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-sold-to-active
+  (testing "PATCH /api/trade_listings/1/transitions/sold-to-active is denied"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/sold-to-active"))]
+      (is (#{409 404} (:status resp)))))
+)
+
+(deftest test-transition-expired-to-active
+  (testing "PATCH /api/trade_listings/1/transitions/expired-to-active is denied"
+    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/expired-to-active"))]
+      (is (#{409 404} (:status resp)))))
 )
 

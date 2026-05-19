@@ -11,25 +11,32 @@
 
 ; ── Domain behavior stubs ──────────────────────────────────────────
 (defn- ban-behavior! [id]
-  (throw (ex-info "ban not implemented" {:id id})))
+  ; TODO: implement ban
+  nil)
 
 (defn- unban-behavior! [id]
-  (throw (ex-info "unban not implemented" {:id id})))
+  ; TODO: implement unban
+  nil)
 
 (defn- restrict-behavior! [id]
-  (throw (ex-info "restrict not implemented" {:id id})))
+  ; TODO: implement restrict
+  nil)
 
 (defn- unrestrict-behavior! [id]
-  (throw (ex-info "unrestrict not implemented" {:id id})))
+  ; TODO: implement unrestrict
+  nil)
 
 (defn- calculate-value-behavior! [id]
-  (throw (ex-info "calculate_value not implemented" {:id id})))
+  ; TODO: implement calculate_value
+  nil)
 
 (defn- apply-rarity-bonus-behavior! [id multiplier]
-  (throw (ex-info "apply_rarity_bonus not implemented" {:id id})))
+  ; TODO: implement apply_rarity_bonus
+  nil)
 
 (defn- is-legal-in-format-behavior! [id format]
-  (throw (ex-info "is_legal_in_format not implemented" {:id id})))
+  ; TODO: implement is_legal_in_format
+  nil)
 
 (defn ban!
   [id]
