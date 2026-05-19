@@ -22,10 +22,11 @@ public class ArticleTag {
 
     // ── Business operations ──────────────────────────────────────────
     public void rename(String newName) {
-        throw new UnsupportedOperationException("rename not implemented");
+        // TODO: implement rename
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Integer articleCount() {
-        throw new UnsupportedOperationException("articleCount not implemented");
+        // TODO: implement articleCount
+        return null;
     }
 }

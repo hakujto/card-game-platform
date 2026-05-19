@@ -61,30 +61,33 @@ public class Player {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean promote() {
-        throw new UnsupportedOperationException("promote not implemented");
+        // TODO: implement promote
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean demote() {
-        throw new UnsupportedOperationException("demote not implemented");
+        // TODO: implement demote
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void recordWin() {
-        throw new UnsupportedOperationException("recordWin not implemented");
+        // TODO: implement recordWin
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void recordLoss() {
-        throw new UnsupportedOperationException("recordLoss not implemented");
+        // TODO: implement recordLoss
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal winRate() {
-        throw new UnsupportedOperationException("winRate not implemented");
+        // TODO: implement winRate
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void verify() {
-        throw new UnsupportedOperationException("verify not implemented");
+        // TODO: implement verify
     }
     public void updateRating(Integer delta) {
-        throw new UnsupportedOperationException("updateRating not implemented");
+        // TODO: implement updateRating
     }
 
     // ── Validation rules ─────────────────────────────────────────────

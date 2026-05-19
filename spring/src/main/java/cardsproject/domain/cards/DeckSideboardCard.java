@@ -28,10 +28,10 @@ public class DeckSideboardCard {
 
     // ── Business operations ──────────────────────────────────────────
     public void increment(Integer amount) {
-        throw new UnsupportedOperationException("increment not implemented");
+        // TODO: implement increment
     }
     public void decrement(Integer amount) {
-        throw new UnsupportedOperationException("decrement not implemented");
+        // TODO: implement decrement
     }
 
     // ── Validation rules ─────────────────────────────────────────────

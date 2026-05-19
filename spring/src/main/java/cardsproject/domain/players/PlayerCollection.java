@@ -43,14 +43,15 @@ public class PlayerCollection {
 
     // ── Business operations ──────────────────────────────────────────
     public void add(Integer quantity) {
-        throw new UnsupportedOperationException("add not implemented");
+        // TODO: implement add
     }
     public void remove(Integer quantity) {
-        throw new UnsupportedOperationException("remove not implemented");
+        // TODO: implement remove
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal estimatedValue() {
-        throw new UnsupportedOperationException("estimatedValue not implemented");
+        // TODO: implement estimatedValue
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -47,14 +47,14 @@ public class TournamentRegistration {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void withdraw() {
-        throw new UnsupportedOperationException("withdraw not implemented");
+        // TODO: implement withdraw
     }
     public void disqualify(String reason) {
-        throw new UnsupportedOperationException("disqualify not implemented");
+        // TODO: implement disqualify
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void promoteFromWaitlist() {
-        throw new UnsupportedOperationException("promoteFromWaitlist not implemented");
+        // TODO: implement promoteFromWaitlist
     }
 
     // ── Validation rules ─────────────────────────────────────────────

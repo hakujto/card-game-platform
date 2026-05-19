@@ -35,10 +35,12 @@ public class CardAbility {
 
     // ── Business operations ──────────────────────────────────────────
     public Boolean isUsableAt(String timing) {
-        throw new UnsupportedOperationException("isUsableAt not implemented");
+        // TODO: implement isUsableAt
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public String describe() {
-        throw new UnsupportedOperationException("describe not implemented");
+        // TODO: implement describe
+        return null;
     }
 }

@@ -5,6 +5,7 @@ import cardsproject.repository.cards.CardRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import cardsproject.domain.cards.CardCardTypeType;
 
 @Service
@@ -35,6 +36,7 @@ public class CardService {
     private void validate(Card entity) {
         if (CardCardTypeType.CREATURE.equals(entity.getCardType()) && !(entity.getAttack() != null && entity.getDefense() != null)) throw new IllegalStateException("Creature card must have attack and defense");
         if (CardCardTypeType.PLANESWALKER.equals(entity.getCardType()) && entity.getLoyalty() == null) throw new IllegalStateException("Planeswalker card must have loyalty");
+        if (CardCardTypeType.LAND.equals(entity.getCardType()) && !(Objects.equals(entity.getManaCost(), 0))) throw new IllegalStateException("Land card must have zero mana cost");
         if (!CardCardTypeType.PLANESWALKER.equals(entity.getCardType()) && entity.getLoyalty() != null) throw new IllegalStateException("Only Planeswalker cards can have loyalty");
         if (Boolean.TRUE.equals(entity.getIsBanned()) && true) throw new IllegalStateException("banned_card_not_in_legal_formats");
     }

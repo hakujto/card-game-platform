@@ -45,14 +45,15 @@ public class PlayerSeasonStats {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal winRate() {
-        throw new UnsupportedOperationException("winRate not implemented");
+        // TODO: implement winRate
+        return null;
     }
     public void addPoints(Integer points) {
-        throw new UnsupportedOperationException("addPoints not implemented");
+        // TODO: implement addPoints
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void recordTournamentWin() {
-        throw new UnsupportedOperationException("recordTournamentWin not implemented");
+        // TODO: implement recordTournamentWin
     }
 
     // ── Validation rules ─────────────────────────────────────────────

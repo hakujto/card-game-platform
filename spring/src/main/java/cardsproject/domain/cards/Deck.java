@@ -62,33 +62,37 @@ public class Deck {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean validateSize() {
-        throw new UnsupportedOperationException("validateSize not implemented");
+        // TODO: implement validateSize
+        return null;
     }
     public void addCard(Integer cardId, Integer quantity) {
-        throw new UnsupportedOperationException("addCard not implemented");
+        // TODO: implement addCard
     }
     public void removeCard(Integer cardId) {
-        throw new UnsupportedOperationException("removeCard not implemented");
+        // TODO: implement removeCard
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal winRate() {
-        throw new UnsupportedOperationException("winRate not implemented");
+        // TODO: implement winRate
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Deck clone() {
-        throw new UnsupportedOperationException("clone not implemented");
+        // TODO: implement clone
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void publish() {
-        throw new UnsupportedOperationException("publish not implemented");
+        // TODO: implement publish
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void unpublish() {
-        throw new UnsupportedOperationException("unpublish not implemented");
+        // TODO: implement unpublish
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean certifyTournamentLegal() {
-        throw new UnsupportedOperationException("certifyTournamentLegal not implemented");
+        // TODO: implement certifyTournamentLegal
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

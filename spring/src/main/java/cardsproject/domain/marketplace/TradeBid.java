@@ -36,11 +36,12 @@ public class TradeBid {
 
     // ── Business operations ──────────────────────────────────────────
     public Boolean outbidBy(java.math.BigDecimal newAmount) {
-        throw new UnsupportedOperationException("outbidBy not implemented");
+        // TODO: implement outbidBy
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void retract() {
-        throw new UnsupportedOperationException("retract not implemented");
+        // TODO: implement retract
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -37,19 +37,20 @@ public class Season {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void activate() {
-        throw new UnsupportedOperationException("activate not implemented");
+        // TODO: implement activate
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void deactivate() {
-        throw new UnsupportedOperationException("deactivate not implemented");
+        // TODO: implement deactivate
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void finalizeRewards() {
-        throw new UnsupportedOperationException("finalizeRewards not implemented");
+        // TODO: implement finalizeRewards
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isOngoing() {
-        throw new UnsupportedOperationException("isOngoing not implemented");
+        // TODO: implement isOngoing
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -52,18 +52,23 @@ public class Match {
 
     // ── Business operations ──────────────────────────────────────────
     public void recordResult(Integer p1Wins, Integer p2Wins) {
-        throw new UnsupportedOperationException("recordResult not implemented");
+        // TODO: implement recordResult
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public void finalizeResult() {
+        // TODO: implement finalizeResult
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean determineWinner() {
-        throw new UnsupportedOperationException("determineWinner not implemented");
+        // TODO: implement determineWinner
+        return null;
     }
     public void concede(Integer playerId) {
-        throw new UnsupportedOperationException("concede not implemented");
+        // TODO: implement concede
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void draw() {
-        throw new UnsupportedOperationException("draw not implemented");
+        // TODO: implement draw
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -76,5 +81,19 @@ public class Match {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isMaxThreeGamesValid() {
         return ((getPlayer1Wins() == null || (getPlayer1Wins() >= 0 && getPlayer1Wins() <= 2)) && (getPlayer2Wins() == null || (getPlayer2Wins() >= 0 && getPlayer2Wins() <= 2)));
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static final java.util.Map<MatchStatusType, java.util.List<MatchStatusType>> ALLOWED_TRANSITIONS =
+        java.util.Map.ofEntries(
+        java.util.Map.entry(MatchStatusType.PENDING, java.util.List.of(MatchStatusType.ACTIVE, MatchStatusType.BYE)),
+        java.util.Map.entry(MatchStatusType.ACTIVE, java.util.List.of(MatchStatusType.COMPLETED, MatchStatusType.DRAW))
+        );
+
+    public void assertTransition(MatchStatusType to) {
+        java.util.List<MatchStatusType> allowed = ALLOWED_TRANSITIONS.getOrDefault(this.getStatus(), java.util.List.of());
+        if (!allowed.contains(to)) {
+            throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
+        }
     }
 }

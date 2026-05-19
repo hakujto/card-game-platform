@@ -47,18 +47,20 @@ public class Coupon {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isValid() {
-        throw new UnsupportedOperationException("isValid not implemented");
+        // TODO: implement isValid
+        return null;
     }
     public Boolean isApplicableToOrder(java.math.BigDecimal orderTotal) {
-        throw new UnsupportedOperationException("isApplicableToOrder not implemented");
+        // TODO: implement isApplicableToOrder
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void redeem() {
-        throw new UnsupportedOperationException("redeem not implemented");
+        // TODO: implement redeem
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void deactivate() {
-        throw new UnsupportedOperationException("deactivate not implemented");
+        // TODO: implement deactivate
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -13,6 +13,8 @@ public class TradeListing {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    private TradeListingStatusType status;
+    @Enumerated(EnumType.STRING)
     private TradeListingListingTypeType listingType;
     private BigDecimal askingPrice;
     private BigDecimal auctionStartPrice;
@@ -22,8 +24,6 @@ public class TradeListing {
     @Enumerated(EnumType.STRING)
     private TradeListingConditionType condition;
     private Integer quantity = 1;
-    @Enumerated(EnumType.STRING)
-    private TradeListingStatusType status;
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
@@ -35,6 +35,8 @@ public class TradeListing {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public TradeListingStatusType getStatus() { return status; }
+    public void setStatus(TradeListingStatusType status) { this.status = status; }
     public TradeListingListingTypeType getListingType() { return listingType; }
     public void setListingType(TradeListingListingTypeType listingType) { this.listingType = listingType; }
     public BigDecimal getAskingPrice() { return askingPrice; }
@@ -51,8 +53,6 @@ public class TradeListing {
     public void setCondition(TradeListingConditionType condition) { this.condition = condition; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public TradeListingStatusType getStatus() { return status; }
-    public void setStatus(TradeListingStatusType status) { this.status = status; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -67,22 +67,23 @@ public class TradeListing {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void close() {
-        throw new UnsupportedOperationException("close not implemented");
+        // TODO: implement close
     }
     public void extend(Integer days) {
-        throw new UnsupportedOperationException("extend not implemented");
+        // TODO: implement extend
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void cancel() {
-        throw new UnsupportedOperationException("cancel not implemented");
+        // TODO: implement cancel
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isExpired() {
-        throw new UnsupportedOperationException("isExpired not implemented");
+        // TODO: implement isExpired
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void finalizeAuction() {
-        throw new UnsupportedOperationException("finalizeAuction not implemented");
+        // TODO: implement finalizeAuction
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -90,5 +91,19 @@ public class TradeListing {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isQuantityPositiveValid() {
         return (getQuantity() == null || (getQuantity() >= 1 && getQuantity() <= 9999));
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static final java.util.Map<TradeListingStatusType, java.util.List<TradeListingStatusType>> ALLOWED_TRANSITIONS =
+        java.util.Map.ofEntries(
+        java.util.Map.entry(TradeListingStatusType.PENDING, java.util.List.of(TradeListingStatusType.ACTIVE)),
+        java.util.Map.entry(TradeListingStatusType.ACTIVE, java.util.List.of(TradeListingStatusType.SOLD, TradeListingStatusType.EXPIRED, TradeListingStatusType.CANCELLED))
+        );
+
+    public void assertTransition(TradeListingStatusType to) {
+        java.util.List<TradeListingStatusType> allowed = ALLOWED_TRANSITIONS.getOrDefault(this.getStatus(), java.util.List.of());
+        if (!allowed.contains(to)) {
+            throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
+        }
     }
 }

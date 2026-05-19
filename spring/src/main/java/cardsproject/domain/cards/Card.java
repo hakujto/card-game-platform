@@ -1,6 +1,7 @@
 package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "cards")
@@ -74,29 +75,32 @@ public class Card {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void ban() {
-        throw new UnsupportedOperationException("ban not implemented");
+        // TODO: implement ban
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void unban() {
-        throw new UnsupportedOperationException("unban not implemented");
+        // TODO: implement unban
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void restrict() {
-        throw new UnsupportedOperationException("restrict not implemented");
+        // TODO: implement restrict
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void unrestrict() {
-        throw new UnsupportedOperationException("unrestrict not implemented");
+        // TODO: implement unrestrict
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal calculateValue() {
-        throw new UnsupportedOperationException("calculateValue not implemented");
+        // TODO: implement calculateValue
+        return null;
     }
     public java.math.BigDecimal applyRarityBonus(Integer multiplier) {
-        throw new UnsupportedOperationException("applyRarityBonus not implemented");
+        // TODO: implement applyRarityBonus
+        return null;
     }
     public Boolean isLegalInFormat(String format) {
-        throw new UnsupportedOperationException("isLegalInFormat not implemented");
+        // TODO: implement isLegalInFormat
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -64,4 +64,48 @@ public class DraftSessionService {
         repository.save(entity);
         return result;
     }
+
+    public DraftSession transitionWaitingForPlayersToDrafting(Long id) {
+        DraftSession entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
+        entity.assertTransition(DraftSessionStatusType.DRAFTING);
+        entity.setStatus(DraftSessionStatusType.DRAFTING);
+        entity.start(); // @after
+        return repository.save(entity);
+    }
+
+    public DraftSession transitionDraftingToCompleted(Long id) {
+        DraftSession entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
+        entity.assertTransition(DraftSessionStatusType.COMPLETED);
+        entity.setStatus(DraftSessionStatusType.COMPLETED);
+        entity.complete(); // @after
+        return repository.save(entity);
+    }
+
+    public DraftSession transitionDraftingToAbandoned(Long id) {
+        DraftSession entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
+        entity.assertTransition(DraftSessionStatusType.ABANDONED);
+        entity.setStatus(DraftSessionStatusType.ABANDONED);
+        entity.abandon(); // @after
+        return repository.save(entity);
+    }
+
+    public DraftSession transitionWaitingForPlayersToAbandoned(Long id) {
+        DraftSession entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("DraftSession not found: " + id));
+        entity.assertTransition(DraftSessionStatusType.ABANDONED);
+        entity.setStatus(DraftSessionStatusType.ABANDONED);
+        entity.abandon(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionCompletedToDrafting(Long id) {
+        throw new IllegalStateException("Transition Completed -> Drafting is not allowed");
+    }
+
+    public void transitionAbandonedToDrafting(Long id) {
+        throw new IllegalStateException("Transition Abandoned -> Drafting is not allowed");
+    }
 }

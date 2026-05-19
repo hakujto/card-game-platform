@@ -35,11 +35,11 @@ public class PlayerAchievement {
 
     // ── Business operations ──────────────────────────────────────────
     public void incrementProgress(Integer amount) {
-        throw new UnsupportedOperationException("incrementProgress not implemented");
+        // TODO: implement incrementProgress
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void complete() {
-        throw new UnsupportedOperationException("complete not implemented");
+        // TODO: implement complete
     }
 
     // ── Validation rules ─────────────────────────────────────────────

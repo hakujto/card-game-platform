@@ -77,4 +77,74 @@ public class DraftSessionController {
     public ResponseEntity<Boolean> isFull(@PathVariable Long id) {
         return ResponseEntity.ok(service.isFull(id));
     }
+
+    @PatchMapping("/{id}/transitions/waitingforplayers-to-drafting")
+    public ResponseEntity<?> transitionWaitingForPlayersToDrafting(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionWaitingForPlayersToDrafting(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/drafting-to-completed")
+    public ResponseEntity<?> transitionDraftingToCompleted(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionDraftingToCompleted(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/drafting-to-abandoned")
+    public ResponseEntity<?> transitionDraftingToAbandoned(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionDraftingToAbandoned(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/waitingforplayers-to-abandoned")
+    public ResponseEntity<?> transitionWaitingForPlayersToAbandoned(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionWaitingForPlayersToAbandoned(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/completed-to-drafting")
+    public ResponseEntity<?> transitionCompletedToDrafting(@PathVariable Long id) {
+        try {
+            service.transitionCompletedToDrafting(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/abandoned-to-drafting")
+    public ResponseEntity<?> transitionAbandonedToDrafting(@PathVariable Long id) {
+        try {
+            service.transitionAbandonedToDrafting(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

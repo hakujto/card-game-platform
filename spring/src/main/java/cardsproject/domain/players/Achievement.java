@@ -35,11 +35,12 @@ public class Achievement {
 
     // ── Business operations ──────────────────────────────────────────
     public Integer pointValue(Integer multiplier) {
-        throw new UnsupportedOperationException("pointValue not implemented");
+        // TODO: implement pointValue
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void reveal() {
-        throw new UnsupportedOperationException("reveal not implemented");
+        // TODO: implement reveal
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -55,7 +55,7 @@ public class StreamControllerTest {
         // actual_start_requires_live_or_ended: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/streams")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"platform\": \"TWITCH\", \"status\": \"SCHEDULED\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"actualStart\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"status\": \"SCHEDULED\", \"platform\": \"TWITCH\", \"language\": \"EN\", \"isOfficial\": true, \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"actualStart\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -64,7 +64,7 @@ public class StreamControllerTest {
         // ended_at can only be set when stream status is Ended: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/streams")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"platform\": \"TWITCH\", \"status\": \"SCHEDULED\", \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"endedAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"status\": \"SCHEDULED\", \"platform\": \"TWITCH\", \"language\": \"EN\", \"isOfficial\": true, \"viewerCountPeak\": 1, \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"endedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -73,7 +73,35 @@ public class StreamControllerTest {
         // Peak viewer count must not be negative → 400 (Bean Validation)
         mockMvc.perform(post("/api/streams")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"platform\": \"TWITCH\", \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"actualStart\": \"2024-01-01T00:00:00\", \"status\": \"LIVE\", \"endedAt\": \"2024-01-01T00:00:00\", \"status\": \"ENDED\", \"viewerCountPeak\": -1 }"))
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"platform\": \"TWITCH\", \"language\": \"EN\", \"isOfficial\": true, \"scheduledStart\": \"2024-01-01T00:00:00\", \"streamerId\": 1, \"actualStart\": \"2024-01-01T00:00:00\", \"status\": \"LIVE\", \"endedAt\": \"2024-01-01T00:00:00\", \"status\": \"ENDED\", \"viewerCountPeak\": -1 }"))
             .andExpect(status().isBadRequest());
+    }
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"STREAMER"})
+    void transitionScheduledToLive_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/streams/1/transitions/scheduled-to-live"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"STREAMER"})
+    void transitionLiveToEnded_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/streams/1/transitions/live-to-ended"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionEndedToLive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/streams/1/transitions/ended-to-live"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
     }
 }

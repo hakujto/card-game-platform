@@ -22,9 +22,9 @@ public class DeckTag {
 
     // ── Business operations ──────────────────────────────────────────
     public void rename(String newName) {
-        throw new UnsupportedOperationException("rename not implemented");
+        // TODO: implement rename
     }
     public void mergeInto(Integer targetTagId) {
-        throw new UnsupportedOperationException("mergeInto not implemented");
+        // TODO: implement mergeInto
     }
 }

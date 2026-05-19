@@ -1,6 +1,7 @@
 package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "deck_cards")
@@ -31,10 +32,10 @@ public class DeckCard {
 
     // ── Business operations ──────────────────────────────────────────
     public void increment(Integer amount) {
-        throw new UnsupportedOperationException("increment not implemented");
+        // TODO: implement increment
     }
     public void decrement(Integer amount) {
-        throw new UnsupportedOperationException("decrement not implemented");
+        // TODO: implement decrement
     }
 
     // ── Validation rules ─────────────────────────────────────────────

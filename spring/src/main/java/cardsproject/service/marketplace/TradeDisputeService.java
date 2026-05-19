@@ -50,10 +50,63 @@ public class TradeDisputeService {
         repository.save(entity);
     }
 
+    public void closeResolved(Long id) {
+        TradeDispute entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
+        entity.closeResolved();
+        repository.save(entity);
+    }
+
     public void review(Long id) {
         TradeDispute entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
         entity.review();
         repository.save(entity);
+    }
+
+    public TradeDispute transitionOpenToUnderReview(Long id) {
+        TradeDispute entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
+        entity.assertTransition(TradeDisputeStatusType.UNDERREVIEW);
+        entity.setStatus(TradeDisputeStatusType.UNDERREVIEW);
+        entity.review(); // @after
+        return repository.save(entity);
+    }
+
+    public TradeDispute transitionUnderReviewToResolved(Long id) {
+        TradeDispute entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
+        entity.assertTransition(TradeDisputeStatusType.RESOLVED);
+        if (entity.getResolution() == null) {
+            throw new IllegalArgumentException("resolution is required for UnderReview -> Resolved");
+        }
+        entity.setStatus(TradeDisputeStatusType.RESOLVED);
+        entity.closeResolved(); // @after
+        return repository.save(entity);
+    }
+
+    public TradeDispute transitionUnderReviewToEscalated(Long id) {
+        TradeDispute entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
+        entity.assertTransition(TradeDisputeStatusType.ESCALATED);
+        entity.setStatus(TradeDisputeStatusType.ESCALATED);
+        entity.escalate(); // @after
+        return repository.save(entity);
+    }
+
+    public TradeDispute transitionEscalatedToResolved(Long id) {
+        TradeDispute entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeDispute not found: " + id));
+        entity.assertTransition(TradeDisputeStatusType.RESOLVED);
+        if (entity.getResolution() == null) {
+            throw new IllegalArgumentException("resolution is required for Escalated -> Resolved");
+        }
+        entity.setStatus(TradeDisputeStatusType.RESOLVED);
+        entity.closeResolved(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionResolvedToOpen(Long id) {
+        throw new IllegalStateException("Transition Resolved -> Open is not allowed");
     }
 }

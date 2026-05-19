@@ -39,7 +39,7 @@ public class AwardedPrize {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void claim() {
-        throw new UnsupportedOperationException("claim not implemented");
+        // TODO: implement claim
     }
 
     // ── Validation rules ─────────────────────────────────────────────

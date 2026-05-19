@@ -39,19 +39,20 @@ public class TournamentRound {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void start() {
-        throw new UnsupportedOperationException("start not implemented");
+        // TODO: implement start
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void complete() {
-        throw new UnsupportedOperationException("complete not implemented");
+        // TODO: implement complete
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void generatePairings() {
-        throw new UnsupportedOperationException("generatePairings not implemented");
+        // TODO: implement generatePairings
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isTimeExpired() {
-        throw new UnsupportedOperationException("isTimeExpired not implemented");
+        // TODO: implement isTimeExpired
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

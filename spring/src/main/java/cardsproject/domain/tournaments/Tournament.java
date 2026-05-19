@@ -15,11 +15,11 @@ public class Tournament {
     private String name = "";
     private String description;
     @Enumerated(EnumType.STRING)
+    private TournamentStatusType status;
+    @Enumerated(EnumType.STRING)
     private TournamentFormatType format;
     @Enumerated(EnumType.STRING)
     private TournamentTournamentTypeType tournamentType;
-    @Enumerated(EnumType.STRING)
-    private TournamentStatusType status;
     private Integer maxPlayers = 0;
     private BigDecimal entryFee = new BigDecimal("0");
     private BigDecimal prizePool = new BigDecimal("0");
@@ -43,12 +43,12 @@ public class Tournament {
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public TournamentStatusType getStatus() { return status; }
+    public void setStatus(TournamentStatusType status) { this.status = status; }
     public TournamentFormatType getFormat() { return format; }
     public void setFormat(TournamentFormatType format) { this.format = format; }
     public TournamentTournamentTypeType getTournamentType() { return tournamentType; }
     public void setTournamentType(TournamentTournamentTypeType tournamentType) { this.tournamentType = tournamentType; }
-    public TournamentStatusType getStatus() { return status; }
-    public void setStatus(TournamentStatusType status) { this.status = status; }
     public Integer getMaxPlayers() { return maxPlayers; }
     public void setMaxPlayers(Integer maxPlayers) { this.maxPlayers = maxPlayers; }
     public BigDecimal getEntryFee() { return entryFee; }
@@ -75,30 +75,32 @@ public class Tournament {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void start() {
-        throw new UnsupportedOperationException("start not implemented");
+        // TODO: implement start
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void cancel() {
-        throw new UnsupportedOperationException("cancel not implemented");
+        // TODO: implement cancel
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void complete() {
-        throw new UnsupportedOperationException("complete not implemented");
+        // TODO: implement complete
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void generateRound() {
-        throw new UnsupportedOperationException("generateRound not implemented");
+        // TODO: implement generateRound
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal calculatePrizeDistribution() {
-        throw new UnsupportedOperationException("calculatePrizeDistribution not implemented");
+        // TODO: implement calculatePrizeDistribution
+        return null;
     }
     public void registerPlayer(Integer playerId, Integer deckId) {
-        throw new UnsupportedOperationException("registerPlayer not implemented");
+        // TODO: implement registerPlayer
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isFull() {
-        throw new UnsupportedOperationException("isFull not implemented");
+        // TODO: implement isFull
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -116,5 +118,20 @@ public class Tournament {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isPrizePoolNotNegativeValid() {
         return (getPrizePool() == null || getPrizePool().compareTo(new java.math.BigDecimal("0")) >= 0);
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static final java.util.Map<TournamentStatusType, java.util.List<TournamentStatusType>> ALLOWED_TRANSITIONS =
+        java.util.Map.ofEntries(
+        java.util.Map.entry(TournamentStatusType.DRAFT, java.util.List.of(TournamentStatusType.REGISTRATION)),
+        java.util.Map.entry(TournamentStatusType.REGISTRATION, java.util.List.of(TournamentStatusType.ONGOING, TournamentStatusType.CANCELLED)),
+        java.util.Map.entry(TournamentStatusType.ONGOING, java.util.List.of(TournamentStatusType.COMPLETED, TournamentStatusType.CANCELLED))
+        );
+
+    public void assertTransition(TournamentStatusType to) {
+        java.util.List<TournamentStatusType> allowed = ALLOWED_TRANSITIONS.getOrDefault(this.getStatus(), java.util.List.of());
+        if (!allowed.contains(to)) {
+            throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
+        }
     }
 }

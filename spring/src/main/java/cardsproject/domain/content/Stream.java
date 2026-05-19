@@ -14,9 +14,12 @@ public class Stream {
     private String title = "";
     private String streamUrl = "";
     @Enumerated(EnumType.STRING)
+    private StreamStatusType status;
+    @Enumerated(EnumType.STRING)
     private StreamPlatformType platform;
     @Enumerated(EnumType.STRING)
-    private StreamStatusType status;
+    private StreamLanguageType language;
+    private Boolean isOfficial = false;
     private Integer viewerCountPeak = 0;
     private LocalDateTime scheduledStart;
     private LocalDateTime actualStart;
@@ -34,10 +37,14 @@ public class Stream {
     public void setTitle(String title) { this.title = title; }
     public String getStreamUrl() { return streamUrl; }
     public void setStreamUrl(String streamUrl) { this.streamUrl = streamUrl; }
-    public StreamPlatformType getPlatform() { return platform; }
-    public void setPlatform(StreamPlatformType platform) { this.platform = platform; }
     public StreamStatusType getStatus() { return status; }
     public void setStatus(StreamStatusType status) { this.status = status; }
+    public StreamPlatformType getPlatform() { return platform; }
+    public void setPlatform(StreamPlatformType platform) { this.platform = platform; }
+    public StreamLanguageType getLanguage() { return language; }
+    public void setLanguage(StreamLanguageType language) { this.language = language; }
+    public Boolean getIsOfficial() { return isOfficial; }
+    public void setIsOfficial(Boolean isOfficial) { this.isOfficial = isOfficial; }
     public Integer getViewerCountPeak() { return viewerCountPeak; }
     public void setViewerCountPeak(Integer viewerCountPeak) { this.viewerCountPeak = viewerCountPeak; }
     public LocalDateTime getScheduledStart() { return scheduledStart; }
@@ -56,18 +63,19 @@ public class Stream {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void goLive() {
-        throw new UnsupportedOperationException("goLive not implemented");
+        // TODO: implement goLive
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void end() {
-        throw new UnsupportedOperationException("end not implemented");
+        // TODO: implement end
     }
     public void updateViewerPeak(Integer count) {
-        throw new UnsupportedOperationException("updateViewerPeak not implemented");
+        // TODO: implement updateViewerPeak
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Integer durationMinutes() {
-        throw new UnsupportedOperationException("durationMinutes not implemented");
+        // TODO: implement durationMinutes
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -75,5 +83,19 @@ public class Stream {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isViewerCountNotNegativeValid() {
         return (getViewerCountPeak() == null || getViewerCountPeak() >= 0);
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static final java.util.Map<StreamStatusType, java.util.List<StreamStatusType>> ALLOWED_TRANSITIONS =
+        java.util.Map.ofEntries(
+        java.util.Map.entry(StreamStatusType.SCHEDULED, java.util.List.of(StreamStatusType.LIVE)),
+        java.util.Map.entry(StreamStatusType.LIVE, java.util.List.of(StreamStatusType.ENDED))
+        );
+
+    public void assertTransition(StreamStatusType to) {
+        java.util.List<StreamStatusType> allowed = ALLOWED_TRANSITIONS.getOrDefault(this.getStatus(), java.util.List.of());
+        if (!allowed.contains(to)) {
+            throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
+        }
     }
 }

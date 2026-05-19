@@ -67,9 +67,75 @@ public class TradeDisputeController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/close")
+    public ResponseEntity<Void> closeResolved(@PathVariable Long id) {
+        service.closeResolved(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/review")
     public ResponseEntity<Void> review(@PathVariable Long id) {
         service.review(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/open-to-underreview")
+    public ResponseEntity<?> transitionOpenToUnderReview(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionOpenToUnderReview(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/underreview-to-resolved")
+    public ResponseEntity<?> transitionUnderReviewToResolved(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionUnderReviewToResolved(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/underreview-to-escalated")
+    public ResponseEntity<?> transitionUnderReviewToEscalated(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionUnderReviewToEscalated(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/escalated-to-resolved")
+    public ResponseEntity<?> transitionEscalatedToResolved(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionEscalatedToResolved(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/resolved-to-open")
+    public ResponseEntity<?> transitionResolvedToOpen(@PathVariable Long id) {
+        try {
+            service.transitionResolvedToOpen(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 }

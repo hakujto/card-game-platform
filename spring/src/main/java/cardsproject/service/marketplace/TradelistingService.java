@@ -84,4 +84,50 @@ public class TradeListingService {
         }
         repository.save(entity);
     }
+
+    public TradeListing transitionPendingToActive(Long id) {
+        TradeListing entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeListing not found: " + id));
+        entity.assertTransition(TradeListingStatusType.ACTIVE);
+        if (entity.getQuantity() == null) {
+            throw new IllegalArgumentException("quantity is required for Pending -> Active");
+        }
+        entity.setStatus(TradeListingStatusType.ACTIVE);
+        return repository.save(entity);
+    }
+
+    public TradeListing transitionActiveToSold(Long id) {
+        TradeListing entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeListing not found: " + id));
+        entity.assertTransition(TradeListingStatusType.SOLD);
+        entity.setStatus(TradeListingStatusType.SOLD);
+        entity.finalizeAuction(); // @after
+        return repository.save(entity);
+    }
+
+    public TradeListing transitionActiveToExpired(Long id) {
+        TradeListing entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeListing not found: " + id));
+        entity.assertTransition(TradeListingStatusType.EXPIRED);
+        entity.setStatus(TradeListingStatusType.EXPIRED);
+        entity.close(); // @after
+        return repository.save(entity);
+    }
+
+    public TradeListing transitionActiveToCancelled(Long id) {
+        TradeListing entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("TradeListing not found: " + id));
+        entity.assertTransition(TradeListingStatusType.CANCELLED);
+        entity.setStatus(TradeListingStatusType.CANCELLED);
+        entity.cancel(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionSoldToActive(Long id) {
+        throw new IllegalStateException("Transition Sold -> Active is not allowed");
+    }
+
+    public void transitionExpiredToActive(Long id) {
+        throw new IllegalStateException("Transition Expired -> Active is not allowed");
+    }
 }

@@ -46,17 +46,20 @@ public class CardSet {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isLegalInStandard() {
-        throw new UnsupportedOperationException("isLegalInStandard not implemented");
+        // TODO: implement isLegalInStandard
+        return null;
     }
     public Boolean isLegalInFormat(String format) {
-        throw new UnsupportedOperationException("isLegalInFormat not implemented");
+        // TODO: implement isLegalInFormat
+        return null;
     }
     public Integer cardCountByRarity(String rarity) {
-        throw new UnsupportedOperationException("cardCountByRarity not implemented");
+        // TODO: implement cardCountByRarity
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void rotateOut() {
-        throw new UnsupportedOperationException("rotateOut not implemented");
+        // TODO: implement rotateOut
     }
 
     // ── Validation rules ─────────────────────────────────────────────

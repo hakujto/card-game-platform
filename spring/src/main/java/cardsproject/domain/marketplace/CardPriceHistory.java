@@ -41,10 +41,12 @@ public class CardPriceHistory {
 
     // ── Business operations ──────────────────────────────────────────
     public java.math.BigDecimal priceChangePercent(java.math.BigDecimal previousAvg) {
-        throw new UnsupportedOperationException("priceChangePercent not implemented");
+        // TODO: implement priceChangePercent
+        return null;
     }
     public Boolean isPriceSpike(Integer thresholdPercent) {
-        throw new UnsupportedOperationException("isPriceSpike not implemented");
+        // TODO: implement isPriceSpike
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

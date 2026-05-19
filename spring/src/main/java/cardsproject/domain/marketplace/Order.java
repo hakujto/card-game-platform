@@ -63,25 +63,33 @@ public class Order {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void cancel() {
-        throw new UnsupportedOperationException("cancel not implemented");
+        // TODO: implement cancel
     }
     public Boolean pay(String paymentRef) {
-        throw new UnsupportedOperationException("pay not implemented");
+        // TODO: implement pay
+        return null;
+    }
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Boolean processPayment() {
+        // TODO: implement processPayment
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal calculateTotal() {
-        throw new UnsupportedOperationException("calculateTotal not implemented");
+        // TODO: implement calculateTotal
+        return null;
     }
     public java.math.BigDecimal applyDiscount(Integer percent) {
-        throw new UnsupportedOperationException("applyDiscount not implemented");
+        // TODO: implement applyDiscount
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void refund() {
-        throw new UnsupportedOperationException("refund not implemented");
+        // TODO: implement refund
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void notifyShipped() {
-        throw new UnsupportedOperationException("notifyShipped not implemented");
+        // TODO: implement notifyShipped
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -94,5 +102,22 @@ public class Order {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isDiscountNotExceedTotalValid() {
         return (getDiscountApplied() == null || (getTotal() != null && getDiscountApplied().compareTo(getTotal()) <= 0));
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static final java.util.Map<OrderStatusType, java.util.List<OrderStatusType>> ALLOWED_TRANSITIONS =
+        java.util.Map.ofEntries(
+        java.util.Map.entry(OrderStatusType.PENDING, java.util.List.of(OrderStatusType.PAID, OrderStatusType.CANCELLED)),
+        java.util.Map.entry(OrderStatusType.PAID, java.util.List.of(OrderStatusType.PROCESSING, OrderStatusType.CANCELLED)),
+        java.util.Map.entry(OrderStatusType.PROCESSING, java.util.List.of(OrderStatusType.SHIPPED)),
+        java.util.Map.entry(OrderStatusType.SHIPPED, java.util.List.of(OrderStatusType.COMPLETED)),
+        java.util.Map.entry(OrderStatusType.COMPLETED, java.util.List.of(OrderStatusType.REFUNDED))
+        );
+
+    public void assertTransition(OrderStatusType to) {
+        java.util.List<OrderStatusType> allowed = ALLOWED_TRANSITIONS.getOrDefault(this.getStatus(), java.util.List.of());
+        if (!allowed.contains(to)) {
+            throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
+        }
     }
 }

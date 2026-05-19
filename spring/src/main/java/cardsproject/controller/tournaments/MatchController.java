@@ -61,6 +61,12 @@ public class MatchController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/finalize")
+    public ResponseEntity<Void> finalizeResult(@PathVariable Long id) {
+        service.finalizeResult(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/winner")
     public ResponseEntity<Boolean> determineWinner(@PathVariable Long id) {
         return ResponseEntity.ok(service.determineWinner(id));
@@ -76,5 +82,89 @@ public class MatchController {
     public ResponseEntity<Void> draw(@PathVariable Long id) {
         service.draw(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @PatchMapping("/{id}/transitions/pending-to-active")
+    public ResponseEntity<?> transitionPendingToActive(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPendingToActive(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @PatchMapping("/{id}/transitions/active-to-completed")
+    public ResponseEntity<?> transitionActiveToCompleted(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionActiveToCompleted(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @PatchMapping("/{id}/transitions/active-to-draw")
+    public ResponseEntity<?> transitionActiveToDraw(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionActiveToDraw(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @PatchMapping("/{id}/transitions/pending-to-bye")
+    public ResponseEntity<?> transitionPendingToBYE(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPendingToBYE(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/completed-to-active")
+    public ResponseEntity<?> transitionCompletedToActive(@PathVariable Long id) {
+        try {
+            service.transitionCompletedToActive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/draw-to-active")
+    public ResponseEntity<?> transitionDrawToActive(@PathVariable Long id) {
+        try {
+            service.transitionDrawToActive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/bye-to-active")
+    public ResponseEntity<?> transitionBYEToActive(@PathVariable Long id) {
+        try {
+            service.transitionBYEToActive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 }

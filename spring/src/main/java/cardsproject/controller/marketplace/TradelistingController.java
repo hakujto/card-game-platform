@@ -83,4 +83,74 @@ public class TradeListingController {
         service.finalizeAuction(id);
         return ResponseEntity.noContent().build();
     }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_SELLER')")
+    @PatchMapping("/{id}/transitions/pending-to-active")
+    public ResponseEntity<?> transitionPendingToActive(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPendingToActive(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/active-to-sold")
+    public ResponseEntity<?> transitionActiveToSold(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionActiveToSold(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/active-to-expired")
+    public ResponseEntity<?> transitionActiveToExpired(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionActiveToExpired(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_SELLER')")
+    @PatchMapping("/{id}/transitions/active-to-cancelled")
+    public ResponseEntity<?> transitionActiveToCancelled(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionActiveToCancelled(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/sold-to-active")
+    public ResponseEntity<?> transitionSoldToActive(@PathVariable Long id) {
+        try {
+            service.transitionSoldToActive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/expired-to-active")
+    public ResponseEntity<?> transitionExpiredToActive(@PathVariable Long id) {
+        try {
+            service.transitionExpiredToActive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

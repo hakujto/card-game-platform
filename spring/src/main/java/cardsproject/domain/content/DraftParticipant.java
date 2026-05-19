@@ -32,11 +32,12 @@ public class DraftParticipant {
 
     // ── Business operations ──────────────────────────────────────────
     public void pickCard(Integer cardId, Integer packNumber) {
-        throw new UnsupportedOperationException("pickCard not implemented");
+        // TODO: implement pickCard
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Integer draftedCardCount() {
-        throw new UnsupportedOperationException("draftedCardCount not implemented");
+        // TODO: implement draftedCardCount
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -65,4 +65,29 @@ public class StreamService {
         repository.save(entity);
         return result;
     }
+
+    public Stream transitionScheduledToLive(Long id) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        entity.assertTransition(StreamStatusType.LIVE);
+        if (entity.getStreamUrl() == null) {
+            throw new IllegalArgumentException("stream_url is required for Scheduled -> Live");
+        }
+        entity.setStatus(StreamStatusType.LIVE);
+        entity.goLive(); // @after
+        return repository.save(entity);
+    }
+
+    public Stream transitionLiveToEnded(Long id) {
+        Stream entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Stream not found: " + id));
+        entity.assertTransition(StreamStatusType.ENDED);
+        entity.setStatus(StreamStatusType.ENDED);
+        entity.end(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionEndedToLive(Long id) {
+        throw new IllegalStateException("Transition Ended -> Live is not allowed");
+    }
 }

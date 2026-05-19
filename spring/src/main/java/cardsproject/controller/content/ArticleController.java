@@ -73,8 +73,68 @@ public class ArticleController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Void> like(@PathVariable Long id) {
+        service.like(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<Void> unlike(@PathVariable Long id) {
+        service.unlike(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/reading-time")
     public ResponseEntity<Integer> readingTimeMinutes(@PathVariable Long id) {
         return ResponseEntity.ok(service.readingTimeMinutes(id));
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR')")
+    @PatchMapping("/{id}/transitions/draft-to-published")
+    public ResponseEntity<?> transitionDraftToPublished(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionDraftToPublished(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR')")
+    @PatchMapping("/{id}/transitions/published-to-archived")
+    public ResponseEntity<?> transitionPublishedToArchived(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPublishedToArchived(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/archived-to-draft")
+    public ResponseEntity<?> transitionArchivedToDraft(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionArchivedToDraft(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/published-to-draft")
+    public ResponseEntity<?> transitionPublishedToDraft(@PathVariable Long id) {
+        try {
+            service.transitionPublishedToDraft(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 }

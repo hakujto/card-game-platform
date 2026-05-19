@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.TournamentRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.TournamentStatusType;
 
 @Service
 public class TournamentService {
@@ -84,5 +85,64 @@ public class TournamentService {
         Boolean result = entity.isFull();
         repository.save(entity);
         return result;
+    }
+
+    public Tournament transitionDraftToRegistration(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.assertTransition(TournamentStatusType.REGISTRATION);
+        if (entity.getName() == null) {
+            throw new IllegalArgumentException("name is required for Draft -> Registration");
+        }
+        if (entity.getStartTime() == null) {
+            throw new IllegalArgumentException("start_time is required for Draft -> Registration");
+        }
+        entity.setStatus(TournamentStatusType.REGISTRATION);
+        return repository.save(entity);
+    }
+
+    public Tournament transitionRegistrationToOngoing(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.assertTransition(TournamentStatusType.ONGOING);
+        entity.setStatus(TournamentStatusType.ONGOING);
+        entity.start(); // @after
+        return repository.save(entity);
+    }
+
+    public Tournament transitionRegistrationToCancelled(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.assertTransition(TournamentStatusType.CANCELLED);
+        entity.setStatus(TournamentStatusType.CANCELLED);
+        entity.cancel(); // @after
+        return repository.save(entity);
+    }
+
+    public Tournament transitionOngoingToCompleted(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.assertTransition(TournamentStatusType.COMPLETED);
+        entity.setStatus(TournamentStatusType.COMPLETED);
+        entity.complete(); // @after
+        entity.calculatePrizeDistribution(); // @after
+        return repository.save(entity);
+    }
+
+    public Tournament transitionOngoingToCancelled(Long id) {
+        Tournament entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+        entity.assertTransition(TournamentStatusType.CANCELLED);
+        entity.setStatus(TournamentStatusType.CANCELLED);
+        entity.cancel(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionCompletedToDraft(Long id) {
+        throw new IllegalStateException("Transition Completed -> Draft is not allowed");
+    }
+
+    public void transitionCancelledToDraft(Long id) {
+        throw new IllegalStateException("Transition Cancelled -> Draft is not allowed");
     }
 }

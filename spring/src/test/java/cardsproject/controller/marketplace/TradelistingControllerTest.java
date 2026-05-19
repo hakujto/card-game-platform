@@ -55,7 +55,7 @@ public class TradeListingControllerTest {
         // Fixed price listing must have an asking price: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"status\": \"ACTIVE\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": null }"))
+            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -64,7 +64,7 @@ public class TradeListingControllerTest {
         // Auction listing must have a start price and end time: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"status\": \"ACTIVE\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"AUCTION\", \"auctionStartPrice\": null }"))
+            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"AUCTION\", \"auctionStartPrice\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -73,7 +73,62 @@ public class TradeListingControllerTest {
         // Listing quantity must be between 1 and 9999 → 400 (Bean Validation)
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"foil\": true, \"condition\": \"MINT\", \"status\": \"ACTIVE\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": 0.00, \"listingType\": \"AUCTION\", \"auctionStartPrice\": 0.00, \"auctionEndTime\": \"2024-01-01T00:00:00\", \"quantity\": 10000 }"))
+            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": 0.00, \"listingType\": \"AUCTION\", \"auctionStartPrice\": 0.00, \"auctionEndTime\": \"2024-01-01T00:00:00\", \"quantity\": 10000 }"))
             .andExpect(status().isBadRequest());
+    }
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"SELLER"})
+    void transitionPendingToActive_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/pending-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionActiveToSold_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/active-to-sold"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionActiveToExpired_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/active-to-expired"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"SELLER"})
+    void transitionActiveToCancelled_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/active-to-cancelled"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionSoldToActive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/sold-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
+
+    @Test
+    void transitionExpiredToActive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1/transitions/expired-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
     }
 }

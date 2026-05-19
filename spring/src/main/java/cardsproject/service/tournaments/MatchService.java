@@ -46,6 +46,14 @@ public class MatchService {
         repository.save(entity);
     }
 
+    public void finalizeResult(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.finalizeResult();
+        entity.determineWinner(); // @after
+        repository.save(entity);
+    }
+
     public Boolean determineWinner(Long id) {
         Match entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Match not found: " + id));
@@ -66,5 +74,51 @@ public class MatchService {
             .orElseThrow(() -> new RuntimeException("Match not found: " + id));
         entity.draw();
         repository.save(entity);
+    }
+
+    public Match transitionPendingToActive(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.assertTransition(MatchStatusType.ACTIVE);
+        entity.setStatus(MatchStatusType.ACTIVE);
+        return repository.save(entity);
+    }
+
+    public Match transitionActiveToCompleted(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.assertTransition(MatchStatusType.COMPLETED);
+        entity.setStatus(MatchStatusType.COMPLETED);
+        entity.finalizeResult(); // @after
+        return repository.save(entity);
+    }
+
+    public Match transitionActiveToDraw(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.assertTransition(MatchStatusType.DRAW);
+        entity.setStatus(MatchStatusType.DRAW);
+        entity.draw(); // @after
+        return repository.save(entity);
+    }
+
+    public Match transitionPendingToBYE(Long id) {
+        Match entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        entity.assertTransition(MatchStatusType.BYE);
+        entity.setStatus(MatchStatusType.BYE);
+        return repository.save(entity);
+    }
+
+    public void transitionCompletedToActive(Long id) {
+        throw new IllegalStateException("Transition Completed -> Active is not allowed");
+    }
+
+    public void transitionDrawToActive(Long id) {
+        throw new IllegalStateException("Transition Draw -> Active is not allowed");
+    }
+
+    public void transitionBYEToActive(Long id) {
+        throw new IllegalStateException("Transition BYE -> Active is not allowed");
     }
 }

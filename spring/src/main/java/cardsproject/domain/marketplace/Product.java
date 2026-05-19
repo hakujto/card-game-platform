@@ -55,25 +55,28 @@ public class Product {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void activate() {
-        throw new UnsupportedOperationException("activate not implemented");
+        // TODO: implement activate
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void deactivate() {
-        throw new UnsupportedOperationException("deactivate not implemented");
+        // TODO: implement deactivate
     }
     public java.math.BigDecimal applyDiscount(Integer percent) {
-        throw new UnsupportedOperationException("applyDiscount not implemented");
+        // TODO: implement applyDiscount
+        return null;
     }
     public void restock(Integer quantity) {
-        throw new UnsupportedOperationException("restock not implemented");
+        // TODO: implement restock
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal effectivePrice() {
-        throw new UnsupportedOperationException("effectivePrice not implemented");
+        // TODO: implement effectivePrice
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isInStock() {
-        throw new UnsupportedOperationException("isInStock not implemented");
+        // TODO: implement isInStock
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

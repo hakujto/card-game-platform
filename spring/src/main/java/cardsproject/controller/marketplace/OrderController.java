@@ -66,6 +66,11 @@ public class OrderController {
         return ResponseEntity.ok(service.pay(id, (String) body.get("payment_ref")));
     }
 
+    @PostMapping("/{id}/process-payment")
+    public ResponseEntity<Boolean> processPayment(@PathVariable Long id) {
+        return ResponseEntity.ok(service.processPayment(id));
+    }
+
     @GetMapping("/{id}/total")
     public ResponseEntity<java.math.BigDecimal> calculateTotal(@PathVariable Long id) {
         return ResponseEntity.ok(service.calculateTotal(id));
@@ -80,5 +85,111 @@ public class OrderController {
     public ResponseEntity<Void> refund(@PathVariable Long id) {
         service.refund(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/transitions/pending-to-paid")
+    public ResponseEntity<?> transitionPendingToPaid(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPendingToPaid(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/paid-to-processing")
+    public ResponseEntity<?> transitionPaidToProcessing(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPaidToProcessing(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/processing-to-shipped")
+    public ResponseEntity<?> transitionProcessingToShipped(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionProcessingToShipped(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/shipped-to-completed")
+    public ResponseEntity<?> transitionShippedToCompleted(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionShippedToCompleted(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/pending-to-cancelled")
+    public ResponseEntity<?> transitionPendingToCancelled(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPendingToCancelled(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/paid-to-cancelled")
+    public ResponseEntity<?> transitionPaidToCancelled(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionPaidToCancelled(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/completed-to-refunded")
+    public ResponseEntity<?> transitionCompletedToRefunded(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionCompletedToRefunded(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/refunded-to-completed")
+    public ResponseEntity<?> transitionRefundedToCompleted(@PathVariable Long id) {
+        try {
+            service.transitionRefundedToCompleted(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/completed-to-cancelled")
+    public ResponseEntity<?> transitionCompletedToCancelled(@PathVariable Long id) {
+        try {
+            service.transitionCompletedToCancelled(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
     }
 }

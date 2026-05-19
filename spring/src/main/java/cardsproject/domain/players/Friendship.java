@@ -34,14 +34,14 @@ public class Friendship {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void accept() {
-        throw new UnsupportedOperationException("accept not implemented");
+        // TODO: implement accept
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void decline() {
-        throw new UnsupportedOperationException("decline not implemented");
+        // TODO: implement decline
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void block() {
-        throw new UnsupportedOperationException("block not implemented");
+        // TODO: implement block
     }
 }

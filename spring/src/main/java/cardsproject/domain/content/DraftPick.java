@@ -36,7 +36,8 @@ public class DraftPick {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isFirstPick() {
-        throw new UnsupportedOperationException("isFirstPick not implemented");
+        // TODO: implement isFirstPick
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

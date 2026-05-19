@@ -5,6 +5,7 @@ import cardsproject.repository.cards.DeckCardRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class DeckCardService {
@@ -24,11 +25,15 @@ public class DeckCardService {
     }
 
     public DeckCard save(DeckCard entity) {
+        validate(entity);
         return repository.save(entity);
     }
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+    private void validate(DeckCard entity) {
+        if (Boolean.TRUE.equals(entity.getIsCommander()) && !(Objects.equals(entity.getQuantity(), 1))) throw new IllegalStateException("Commander card must appear exactly once in the deck");
     }
 
     public void increment(Long id, Integer amount) {

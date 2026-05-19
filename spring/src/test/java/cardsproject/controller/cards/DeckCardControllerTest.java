@@ -29,7 +29,7 @@ public class DeckCardControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/deck_cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{ \"isCommander\": null }"))
             .andExpect(status().isCreated());
     }
 
@@ -55,7 +55,16 @@ public class DeckCardControllerTest {
         // A deck can contain between 1 and 4 copies of a card → 400 (Bean Validation)
         mockMvc.perform(post("/api/deck_cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"isCommander\": true, \"deckId\": 1, \"cardId\": 1, \"quantity\": 5 }"))
+            .content("{ \"deckId\": 1, \"cardId\": 1, \"isCommander\": true, \"quantity\": 5 }"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_fails_when_commander_is_singleton_violated() throws Exception {
+        // Commander card must appear exactly once in the deck: antecedent true, consequent missing → 400
+        mockMvc.perform(post("/api/deck_cards")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"deckId\": 1, \"cardId\": 1, \"isCommander\": true, \"quantity\": 0 }"))
             .andExpect(status().isBadRequest());
     }
 }

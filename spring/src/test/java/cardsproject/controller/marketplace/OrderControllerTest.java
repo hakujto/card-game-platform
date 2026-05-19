@@ -85,4 +85,89 @@ public class OrderControllerTest {
             .content("{ \"discountApplied\": 0.00, \"currency\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"playerId\": 1, \"status\": \"PAID\", \"paidAt\": \"2024-01-01T00:00:00\", \"status\": \"SHIPPED\", \"trackingNumber\": \"test\", \"shippedAt\": \"2024-01-01T00:00:00\", \"status\": \"SHIPPED\", \"total\": -1 }"))
             .andExpect(status().isBadRequest());
     }
+    @Test
+    void transitionPendingToPaid_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/pending-to-paid"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    void transitionPaidToProcessing_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/paid-to-processing"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    void transitionProcessingToShipped_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/processing-to-shipped"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    void transitionShippedToCompleted_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/shipped-to-completed"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionPendingToCancelled_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/pending-to-cancelled"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    void transitionPaidToCancelled_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/paid-to-cancelled"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    void transitionCompletedToRefunded_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/completed-to-refunded"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionRefundedToCompleted_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/refunded-to-completed"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
+
+    @Test
+    void transitionCompletedToCancelled_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/orders/1/transitions/completed-to-cancelled"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
 }

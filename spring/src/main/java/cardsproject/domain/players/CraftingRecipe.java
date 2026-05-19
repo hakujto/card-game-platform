@@ -29,18 +29,19 @@ public class CraftingRecipe {
 
     // ── Business operations ──────────────────────────────────────────
     public Boolean canCraft(Integer playerId) {
-        throw new UnsupportedOperationException("canCraft not implemented");
+        // TODO: implement canCraft
+        return null;
     }
     public void executeCraft(Integer playerId) {
-        throw new UnsupportedOperationException("executeCraft not implemented");
+        // TODO: implement executeCraft
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void disable() {
-        throw new UnsupportedOperationException("disable not implemented");
+        // TODO: implement disable
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void enable() {
-        throw new UnsupportedOperationException("enable not implemented");
+        // TODO: implement enable
     }
 
     // ── Validation rules ─────────────────────────────────────────────

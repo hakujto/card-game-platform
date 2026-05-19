@@ -40,14 +40,15 @@ public class ArticleComment {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void hide() {
-        throw new UnsupportedOperationException("hide not implemented");
+        // TODO: implement hide
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void unhide() {
-        throw new UnsupportedOperationException("unhide not implemented");
+        // TODO: implement unhide
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isReply() {
-        throw new UnsupportedOperationException("isReply not implemented");
+        // TODO: implement isReply
+        return null;
     }
 }

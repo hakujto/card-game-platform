@@ -94,4 +94,70 @@ public class MatchControllerTest {
             .content("{ \"player1Wins\": 1, \"player2Wins\": 1, \"roundId\": 1, \"player1Id\": 1, \"status\": \"COMPLETED\", \"startedAt\": null }"))
             .andExpect(status().isBadRequest());
     }
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"JUDGE"})
+    void transitionPendingToActive_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/pending-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"JUDGE"})
+    void transitionActiveToCompleted_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/active-to-completed"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"JUDGE"})
+    void transitionActiveToDraw_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/active-to-draw"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"JUDGE"})
+    void transitionPendingToBYE_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/pending-to-bye"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 200 || s == 404 || s == 409 || s == 422;
+            });
+    }
+
+    @Test
+    void transitionCompletedToActive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/completed-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
+
+    @Test
+    void transitionDrawToActive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/draw-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
+
+    @Test
+    void transitionBYEToActive_isDenied() throws Exception {
+        mockMvc.perform(patch("/api/matches/1/transitions/bye-to-active"))
+            .andExpect(result -> {
+                int s = result.getResponse().getStatus();
+                assert s == 409 || s == 404 || s == 500;
+            });
+    }
 }

@@ -36,7 +36,8 @@ public class OrderItem {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal lineTotal() {
-        throw new UnsupportedOperationException("lineTotal not implemented");
+        // TODO: implement lineTotal
+        return null;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

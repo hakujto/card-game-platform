@@ -94,4 +94,88 @@ public class TournamentController {
     public ResponseEntity<Boolean> isFull(@PathVariable Long id) {
         return ResponseEntity.ok(service.isFull(id));
     }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/draft-to-registration")
+    public ResponseEntity<?> transitionDraftToRegistration(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionDraftToRegistration(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/registration-to-ongoing")
+    public ResponseEntity<?> transitionRegistrationToOngoing(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionRegistrationToOngoing(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/registration-to-cancelled")
+    public ResponseEntity<?> transitionRegistrationToCancelled(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionRegistrationToCancelled(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/ongoing-to-completed")
+    public ResponseEntity<?> transitionOngoingToCompleted(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionOngoingToCompleted(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/transitions/ongoing-to-cancelled")
+    public ResponseEntity<?> transitionOngoingToCancelled(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionOngoingToCancelled(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/completed-to-draft")
+    public ResponseEntity<?> transitionCompletedToDraft(@PathVariable Long id) {
+        try {
+            service.transitionCompletedToDraft(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/cancelled-to-draft")
+    public ResponseEntity<?> transitionCancelledToDraft(@PathVariable Long id) {
+        try {
+            service.transitionCancelledToDraft(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

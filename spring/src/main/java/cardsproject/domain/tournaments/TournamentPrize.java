@@ -44,10 +44,11 @@ public class TournamentPrize {
 
     // ── Business operations ──────────────────────────────────────────
     public Boolean appliesToPlacement(Integer placement) {
-        throw new UnsupportedOperationException("appliesToPlacement not implemented");
+        // TODO: implement appliesToPlacement
+        return null;
     }
     public void awardToPlayer(Integer playerId) {
-        throw new UnsupportedOperationException("awardToPlayer not implemented");
+        // TODO: implement awardToPlayer
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -53,6 +53,14 @@ public class OrderService {
         return result;
     }
 
+    public Boolean processPayment(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        Boolean result = entity.processPayment();
+        repository.save(entity);
+        return result;
+    }
+
     public java.math.BigDecimal calculateTotal(Long id) {
         Order entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Order not found: " + id));
@@ -85,5 +93,80 @@ public class OrderService {
             entity.notifyShipped();
         }
         repository.save(entity);
+    }
+
+    public Order transitionPendingToPaid(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.PAID);
+        if (entity.getPaymentMethod() == null) {
+            throw new IllegalArgumentException("payment_method is required for Pending -> Paid");
+        }
+        entity.setStatus(OrderStatusType.PAID);
+        entity.processPayment(); // @after
+        return repository.save(entity);
+    }
+
+    public Order transitionPaidToProcessing(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.PROCESSING);
+        entity.setStatus(OrderStatusType.PROCESSING);
+        return repository.save(entity);
+    }
+
+    public Order transitionProcessingToShipped(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.SHIPPED);
+        if (entity.getTrackingNumber() == null) {
+            throw new IllegalArgumentException("tracking_number is required for Processing -> Shipped");
+        }
+        entity.setStatus(OrderStatusType.SHIPPED);
+        entity.notifyShipped(); // @after
+        return repository.save(entity);
+    }
+
+    public Order transitionShippedToCompleted(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.COMPLETED);
+        entity.setStatus(OrderStatusType.COMPLETED);
+        return repository.save(entity);
+    }
+
+    public Order transitionPendingToCancelled(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.CANCELLED);
+        entity.setStatus(OrderStatusType.CANCELLED);
+        entity.cancel(); // @after
+        return repository.save(entity);
+    }
+
+    public Order transitionPaidToCancelled(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.CANCELLED);
+        entity.setStatus(OrderStatusType.CANCELLED);
+        entity.cancel(); // @after
+        return repository.save(entity);
+    }
+
+    public Order transitionCompletedToRefunded(Long id) {
+        Order entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        entity.assertTransition(OrderStatusType.REFUNDED);
+        entity.setStatus(OrderStatusType.REFUNDED);
+        entity.refund(); // @after
+        return repository.save(entity);
+    }
+
+    public void transitionRefundedToCompleted(Long id) {
+        throw new IllegalStateException("Transition Refunded -> Completed is not allowed");
+    }
+
+    public void transitionCompletedToCancelled(Long id) {
+        throw new IllegalStateException("Transition Completed -> Cancelled is not allowed");
     }
 }

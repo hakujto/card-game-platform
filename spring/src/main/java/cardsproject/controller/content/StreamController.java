@@ -77,4 +77,40 @@ public class StreamController {
     public ResponseEntity<Integer> durationMinutes(@PathVariable Long id) {
         return ResponseEntity.ok(service.durationMinutes(id));
     }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER')")
+    @PatchMapping("/{id}/transitions/scheduled-to-live")
+    public ResponseEntity<?> transitionScheduledToLive(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionScheduledToLive(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER')")
+    @PatchMapping("/{id}/transitions/live-to-ended")
+    public ResponseEntity<?> transitionLiveToEnded(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.transitionLiveToEnded(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/transitions/ended-to-live")
+    public ResponseEntity<?> transitionEndedToLive(@PathVariable Long id) {
+        try {
+            service.transitionEndedToLive(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

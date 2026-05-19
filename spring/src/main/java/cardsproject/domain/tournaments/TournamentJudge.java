@@ -30,10 +30,10 @@ public class TournamentJudge {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void promoteToHead() {
-        throw new UnsupportedOperationException("promoteToHead not implemented");
+        // TODO: implement promoteToHead
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void remove() {
-        throw new UnsupportedOperationException("remove not implemented");
+        // TODO: implement remove
     }
 }

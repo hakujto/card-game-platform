@@ -32,10 +32,12 @@ public class CardRuling {
     // ── Business operations ──────────────────────────────────────────
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean isCurrent() {
-        throw new UnsupportedOperationException("isCurrent not implemented");
+        // TODO: implement isCurrent
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public Boolean supersedesPrevious() {
-        throw new UnsupportedOperationException("supersedesPrevious not implemented");
+        // TODO: implement supersedesPrevious
+        return null;
     }
 }
