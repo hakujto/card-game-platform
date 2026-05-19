@@ -4,6 +4,9 @@ namespace App\Service\Marketplace;
 
 use App\Entity\Marketplace\Order;
 use App\Repository\Marketplace\OrderRepository;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class OrderService
 {
@@ -34,6 +37,15 @@ class OrderService
         $entity = $this->repository->find($id);
         if (!$entity) throw new \RuntimeException('Order not found: ' . $id);
         $result = $entity->pay($paymentRef);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
+    public function processPayment(int $id): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Order not found: ' . $id);
+        $result = $entity->processPayment();
         $this->repository->save($entity, flush: true);
         return $result;
     }
@@ -73,5 +85,121 @@ class OrderService
             $entity->notifyShipped(); // @on(status = Shipped)
         }
         $this->repository->save($entity, flush: true);
+    }
+    public function transitionPendingToPaid(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Paid');
+        if ($entity->getPaymentMethod() === null) {
+            throw new \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException('payment_method is required for Pending -> Paid');
+        }
+
+        $entity->setStatus('Paid');
+        $entity->processPayment(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
+    public function transitionPaidToProcessing(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Processing');
+
+        $entity->setStatus('Processing');
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
+    public function transitionProcessingToShipped(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Shipped');
+        if ($entity->getTrackingNumber() === null) {
+            throw new \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException('tracking_number is required for Processing -> Shipped');
+        }
+
+        $entity->setStatus('Shipped');
+        $entity->notifyShipped(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
+    public function transitionShippedToCompleted(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Completed');
+
+        $entity->setStatus('Completed');
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    public function transitionPendingToCancelled(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Cancelled');
+
+        $entity->setStatus('Cancelled');
+        $entity->cancel(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
+    public function transitionPaidToCancelled(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Cancelled');
+
+        $entity->setStatus('Cancelled');
+        $entity->cancel(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
+    public function transitionCompletedToRefunded(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Refunded');
+
+        $entity->setStatus('Refunded');
+        $entity->refund(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    public function transitionRefundedToCompleted(int $id): never
+    {
+        throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('Transition Refunded -> Completed is not allowed');
+    }
+
+    public function transitionCompletedToCancelled(int $id): never
+    {
+        throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('Transition Completed -> Cancelled is not allowed');
     }
 }

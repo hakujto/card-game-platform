@@ -127,12 +127,12 @@ class PlayerAchievement
 
     public function incrementProgress($amount): void
     {
-        throw new \RuntimeException('increment_progress not implemented');
+        // TODO: implement increment_progress
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
 }

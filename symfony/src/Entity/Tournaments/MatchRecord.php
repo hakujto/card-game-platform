@@ -221,22 +221,42 @@ class MatchRecord
 
     public function recordResult($p1Wins, $p2Wins): void
     {
-        throw new \RuntimeException('record_result not implemented');
+        // TODO: implement record_result
     }
 
-    public function determineWinner(): void
+    public function finalizeResult(): void
     {
-        throw new \RuntimeException('determine_winner not implemented');
+        // TODO: implement finalize_result
+    }
+
+    public function determineWinner(): mixed
+    {
+        // TODO: implement determine_winner
+        return null;
     }
 
     public function concede($playerId): void
     {
-        throw new \RuntimeException('concede not implemented');
+        // TODO: implement concede
     }
 
     public function draw(): void
     {
-        throw new \RuntimeException('draw not implemented');
+        // TODO: implement draw
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Pending' => ['Active', 'BYE'],
+        'Active' => ['Completed', 'Draw'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

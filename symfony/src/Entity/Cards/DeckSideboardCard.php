@@ -89,12 +89,12 @@ class DeckSideboardCard
 
     public function increment($amount): void
     {
-        throw new \RuntimeException('increment not implemented');
+        // TODO: implement increment
     }
 
     public function decrement($amount): void
     {
-        throw new \RuntimeException('decrement not implemented');
+        // TODO: implement decrement
     }
 
 }

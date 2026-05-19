@@ -113,4 +113,76 @@ class MatchRecordApiTest extends WebTestCase
         );
         $this->assertResponseStatusCodeSame(422);
     }
+    public function testTransitionPendingToActiveSucceeds(): void
+    {
+        // Arrange: set entity to 'Pending' state
+        $entity = $this->em->find(MatchRecord::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/pending-to-active');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Active', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToCompletedSucceeds(): void
+    {
+        // Arrange: set entity to 'Active' state
+        $entity = $this->em->find(MatchRecord::class, $this->entityId);
+        $entity->setStatus('Active');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/active-to-completed');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Completed', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToDrawSucceeds(): void
+    {
+        // Arrange: set entity to 'Active' state
+        $entity = $this->em->find(MatchRecord::class, $this->entityId);
+        $entity->setStatus('Active');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/active-to-draw');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Draw', $data['status'] ?? null);
+    }
+
+    public function testTransitionPendingToBYESucceeds(): void
+    {
+        // Arrange: set entity to 'Pending' state
+        $entity = $this->em->find(MatchRecord::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/pending-to-bye');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('BYE', $data['status'] ?? null);
+    }
+
+    public function testTransitionCompletedToActiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/completed-to-active');
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    public function testTransitionDrawToActiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/draw-to-active');
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    public function testTransitionBYEToActiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/bye-to-active');
+        $this->assertResponseStatusCodeSame(409);
+    }
 }

@@ -83,7 +83,7 @@ class ArticleApiTest extends WebTestCase
     {
         // Published article must have a published_at timestamp
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'viewCount' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => null])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'likesCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -92,8 +92,64 @@ class ArticleApiTest extends WebTestCase
     {
         // Article view count must not be negative
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'viewCount' => -1])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'likesCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'viewCount' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenLikesCountNotNegativeViolated(): void
+    {
+        // Article likes count must not be negative
+        $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'likesCount' => -1])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+    public function testTransitionDraftToPublishedSucceeds(): void
+    {
+        // Arrange: set entity to 'Draft' state
+        $entity = $this->em->find(Article::class, $this->entityId);
+        $entity->setStatus('Draft');
+        $entity->setTitle('test'); // @on: title != null
+        $entity->setBody('test'); // @on: body != null
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/draft-to-published');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Published', $data['status'] ?? null);
+    }
+
+    public function testTransitionPublishedToArchivedSucceeds(): void
+    {
+        // Arrange: set entity to 'Published' state
+        $entity = $this->em->find(Article::class, $this->entityId);
+        $entity->setStatus('Published');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/published-to-archived');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Archived', $data['status'] ?? null);
+    }
+
+    public function testTransitionArchivedToDraftSucceeds(): void
+    {
+        // Arrange: set entity to 'Archived' state
+        $entity = $this->em->find(Article::class, $this->entityId);
+        $entity->setStatus('Archived');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/archived-to-draft');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Draft', $data['status'] ?? null);
+    }
+
+    public function testTransitionPublishedToDraftIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/published-to-draft');
+        $this->assertResponseStatusCodeSame(409);
     }
 }

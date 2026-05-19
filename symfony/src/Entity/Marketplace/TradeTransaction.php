@@ -176,22 +176,23 @@ class TradeTransaction
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
     public function refund(): void
     {
-        throw new \RuntimeException('refund not implemented');
+        // TODO: implement refund
     }
 
     public function openDispute($reason): void
     {
-        throw new \RuntimeException('open_dispute not implemented');
+        // TODO: implement open_dispute
     }
 
-    public function sellerNet(): void
+    public function sellerNet(): mixed
     {
-        throw new \RuntimeException('seller_net not implemented');
+        // TODO: implement seller_net
+        return null;
     }
 
 }

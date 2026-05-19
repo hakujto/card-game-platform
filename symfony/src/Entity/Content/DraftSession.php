@@ -29,6 +29,10 @@ class DraftSession
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private int $seats = 8;
 
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['draftSession:read', 'draftSession:write'])]
+    private int $timePerPickSeconds = 30;
+
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private ?\DateTimeInterface $createdAt = null;
@@ -79,6 +83,17 @@ class DraftSession
         return $this;
     }
 
+    public function getTimePerPickSeconds(): int
+    {
+        return $this->timePerPickSeconds;
+    }
+
+    public function setTimePerPickSeconds(int $timePerPickSeconds): static
+    {
+        $this->timePerPickSeconds = $timePerPickSeconds;
+        return $this;
+    }
+
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -125,6 +140,12 @@ class DraftSession
         return ($this->getSeats() === null || ($this->getSeats() >= 2 && $this->getSeats() <= 16));
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Time per pick must be greater than zero")]
+    public function isTimePerPickPositiveValid(): bool
+    {
+        return ($this->getTimePerPickSeconds() === null || $this->getTimePerPickSeconds() > 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
@@ -137,22 +158,37 @@ class DraftSession
 
     public function start(): void
     {
-        throw new \RuntimeException('start not implemented');
+        // TODO: implement start
     }
 
     public function abandon(): void
     {
-        throw new \RuntimeException('abandon not implemented');
+        // TODO: implement abandon
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
-    public function isFull(): void
+    public function isFull(): mixed
     {
-        throw new \RuntimeException('is_full not implemented');
+        // TODO: implement is_full
+        return null;
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'WaitingForPlayers' => ['Drafting', 'Abandoned'],
+        'Drafting' => ['Completed', 'Abandoned'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

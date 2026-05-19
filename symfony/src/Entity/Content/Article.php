@@ -48,9 +48,21 @@ class Article
     #[Groups(['article:read', 'article:write'])]
     private string $articleType = 'Guide';
 
+    #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['article:read', 'article:write'])]
+    private string $language = 'EN';
+
     #[ORM\Column(type: 'integer')]
     #[Groups(['article:read', 'article:write'])]
     private int $viewCount = 0;
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['article:read', 'article:write'])]
+    private int $likesCount = 0;
+
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['article:read', 'article:write'])]
+    private bool $isFeatured = false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['article:read', 'article:write'])]
@@ -163,6 +175,17 @@ class Article
         return $this;
     }
 
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
+    public function setLanguage(string $language): static
+    {
+        $this->language = $language;
+        return $this;
+    }
+
     public function getViewCount(): int
     {
         return $this->viewCount;
@@ -171,6 +194,28 @@ class Article
     public function setViewCount(int $viewCount): static
     {
         $this->viewCount = $viewCount;
+        return $this;
+    }
+
+    public function getLikesCount(): int
+    {
+        return $this->likesCount;
+    }
+
+    public function setLikesCount(int $likesCount): static
+    {
+        $this->likesCount = $likesCount;
+        return $this;
+    }
+
+    public function getIsFeatured(): bool
+    {
+        return $this->isFeatured;
+    }
+
+    public function setIsFeatured(bool $isFeatured): static
+    {
+        $this->isFeatured = $isFeatured;
         return $this;
     }
 
@@ -267,6 +312,12 @@ class Article
         return ($this->getViewCount() === null || $this->getViewCount() >= 0);
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Article likes count must not be negative")]
+    public function isLikesCountNotNegativeValid(): bool
+    {
+        return ($this->getLikesCount() === null || $this->getLikesCount() >= 0);
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
@@ -279,22 +330,48 @@ class Article
 
     public function publish(): void
     {
-        throw new \RuntimeException('publish not implemented');
+        // TODO: implement publish
     }
 
     public function archive(): void
     {
-        throw new \RuntimeException('archive not implemented');
+        // TODO: implement archive
     }
 
     public function incrementView(): void
     {
-        throw new \RuntimeException('increment_view not implemented');
+        // TODO: implement increment_view
     }
 
-    public function readingTimeMinutes(): void
+    public function like(): void
     {
-        throw new \RuntimeException('reading_time_minutes not implemented');
+        // TODO: implement like
+    }
+
+    public function unlike(): void
+    {
+        // TODO: implement unlike
+    }
+
+    public function readingTimeMinutes(): mixed
+    {
+        // TODO: implement reading_time_minutes
+        return null;
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Draft' => ['Published'],
+        'Published' => ['Archived'],
+        'Archived' => ['Draft'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

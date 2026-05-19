@@ -183,17 +183,17 @@ class TournamentRegistration
 
     public function withdraw(): void
     {
-        throw new \RuntimeException('withdraw not implemented');
+        // TODO: implement withdraw
     }
 
     public function disqualify($reason): void
     {
-        throw new \RuntimeException('disqualify not implemented');
+        // TODO: implement disqualify
     }
 
     public function promoteFromWaitlist(): void
     {
-        throw new \RuntimeException('promote_from_waitlist not implemented');
+        // TODO: implement promote_from_waitlist
     }
 
 }

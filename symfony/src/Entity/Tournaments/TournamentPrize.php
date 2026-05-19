@@ -168,14 +168,15 @@ class TournamentPrize
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function appliesToPlacement($placement): void
+    public function appliesToPlacement($placement): mixed
     {
-        throw new \RuntimeException('applies_to_placement not implemented');
+        // TODO: implement applies_to_placement
+        return null;
     }
 
     public function awardToPlayer($playerId): void
     {
-        throw new \RuntimeException('award_to_player not implemented');
+        // TODO: implement award_to_player
     }
 
 }

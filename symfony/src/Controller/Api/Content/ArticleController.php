@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Content\ArticleService;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 use App\Entity\Cards\Deck;
@@ -21,6 +22,7 @@ class ArticleController extends AbstractController
     public function __construct(
         private ArticleRepository $repository,
         private ValidatorInterface $validator,
+        private ArticleService $service,
         private PlayerRepository $playerRepository,
         private DeckRepository $deckRepository,
     ) {}
@@ -44,7 +46,10 @@ class ArticleController extends AbstractController
         if (isset($data['coverImageUrl'])) $article->setCoverImageUrl($data['coverImageUrl']);
         if (isset($data['status'])) $article->setStatus($data['status']);
         if (isset($data['articleType'])) $article->setArticleType($data['articleType']);
+        if (isset($data['language'])) $article->setLanguage($data['language']);
         if (isset($data['viewCount'])) $article->setViewCount($data['viewCount']);
+        if (isset($data['likesCount'])) $article->setLikesCount($data['likesCount']);
+        if (isset($data['isFeatured'])) $article->setIsFeatured($data['isFeatured']);
         if (isset($data['publishedAt'])) $article->setPublishedAt(new \DateTime($data['publishedAt']));
         if (isset($data['createdAt'])) $article->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $article->setUpdatedAt(new \DateTime($data['updatedAt']));
@@ -88,7 +93,10 @@ class ArticleController extends AbstractController
         if (isset($data['coverImageUrl'])) $article->setCoverImageUrl($data['coverImageUrl']);
         if (isset($data['status'])) $article->setStatus($data['status']);
         if (isset($data['articleType'])) $article->setArticleType($data['articleType']);
+        if (isset($data['language'])) $article->setLanguage($data['language']);
         if (isset($data['viewCount'])) $article->setViewCount($data['viewCount']);
+        if (isset($data['likesCount'])) $article->setLikesCount($data['likesCount']);
+        if (isset($data['isFeatured'])) $article->setIsFeatured($data['isFeatured']);
         if (isset($data['publishedAt'])) $article->setPublishedAt(new \DateTime($data['publishedAt']));
         if (isset($data['createdAt'])) $article->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $article->setUpdatedAt(new \DateTime($data['updatedAt']));
@@ -147,11 +155,71 @@ class ArticleController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/like', name: 'like', methods: ['POST'])]
+    public function like(Article $article): JsonResponse
+    {
+        $article->like();
+        $this->repository->save($article, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/like', name: 'unlike', methods: ['DELETE'])]
+    public function unlike(Article $article): JsonResponse
+    {
+        $article->unlike();
+        $this->repository->save($article, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/reading-time', name: 'readingTimeMinutes', methods: ['GET'])]
     public function readingTimeMinutes(Article $article): JsonResponse
     {
         $result = $article->readingTimeMinutes();
         $this->repository->save($article, flush: true);
         return $this->json($result);
+    }
+    #[Route('/{id}/transitions/draft-to-published', name: 'article_transitionDraftToPublished', methods: ['PATCH'])]
+    public function transitionDraftToPublished(Article $article): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionDraftToPublished($article->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/published-to-archived', name: 'article_transitionPublishedToArchived', methods: ['PATCH'])]
+    public function transitionPublishedToArchived(Article $article): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPublishedToArchived($article->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/archived-to-draft', name: 'article_transitionArchivedToDraft', methods: ['PATCH'])]
+    public function transitionArchivedToDraft(Article $article): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionArchivedToDraft($article->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/published-to-draft', name: 'article_transitionPublishedToDraft', methods: ['PATCH'])]
+    public function transitionPublishedToDraft(Article $article): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Published -> Draft is not allowed'], Response::HTTP_CONFLICT);
     }
 }

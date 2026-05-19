@@ -89,14 +89,16 @@ class CardRuling
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isCurrent(): void
+    public function isCurrent(): mixed
     {
-        throw new \RuntimeException('is_current not implemented');
+        // TODO: implement is_current
+        return null;
     }
 
-    public function supersedesPrevious(): void
+    public function supersedesPrevious(): mixed
     {
-        throw new \RuntimeException('supersedes_previous not implemented');
+        // TODO: implement supersedes_previous
+        return null;
     }
 
 }

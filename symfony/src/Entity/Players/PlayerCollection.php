@@ -150,17 +150,18 @@ class PlayerCollection
 
     public function add($quantity): void
     {
-        throw new \RuntimeException('add not implemented');
+        // TODO: implement add
     }
 
     public function remove($quantity): void
     {
-        throw new \RuntimeException('remove not implemented');
+        // TODO: implement remove
     }
 
-    public function estimatedValue(): void
+    public function estimatedValue(): mixed
     {
-        throw new \RuntimeException('estimated_value not implemented');
+        // TODO: implement estimated_value
+        return null;
     }
 
 }

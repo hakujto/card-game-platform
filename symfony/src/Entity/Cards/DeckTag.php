@@ -55,12 +55,12 @@ class DeckTag
 
     public function rename($newName): void
     {
-        throw new \RuntimeException('rename not implemented');
+        // TODO: implement rename
     }
 
     public function mergeInto($targetTagId): void
     {
-        throw new \RuntimeException('merge_into not implemented');
+        // TODO: implement merge_into
     }
 
 }

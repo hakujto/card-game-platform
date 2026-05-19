@@ -89,7 +89,16 @@ class DeckCardApiTest extends WebTestCase
     {
         // A deck can contain between 1 and 4 copies of a card
         $this->client->request('POST', '/api/deck_cards', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['isCommander' => true, 'deckId' => 1, 'cardId' => 1, 'quantity' => 5])
+            json_encode(['deckId' => 1, 'cardId' => 1, 'isCommander' => true, 'quantity' => 5])
+        );
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateFailsWhenCommanderIsSingletonViolated(): void
+    {
+        // Commander card must appear exactly once in the deck
+        $this->client->request('POST', '/api/deck_cards', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['deckId' => 1, 'cardId' => 1, 'isCommander' => true, 'quantity' => 0])
         );
         $this->assertResponseStatusCodeSame(422);
     }

@@ -124,9 +124,10 @@ class DraftPick
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isFirstPick(): void
+    public function isFirstPick(): mixed
     {
-        throw new \RuntimeException('is_first_pick not implemented');
+        // TODO: implement is_first_pick
+        return null;
     }
 
 }

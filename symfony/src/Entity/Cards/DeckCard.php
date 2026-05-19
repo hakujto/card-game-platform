@@ -100,16 +100,24 @@ class DeckCard
         return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 4));
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->getIsCommander() === true && !($this->getQuantity() === 1)) {
+            throw new \DomainException('Commander card must appear exactly once in the deck');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function increment($amount): void
     {
-        throw new \RuntimeException('increment not implemented');
+        // TODO: implement increment
     }
 
     public function decrement($amount): void
     {
-        throw new \RuntimeException('decrement not implemented');
+        // TODO: implement decrement
     }
 
 }

@@ -118,14 +118,15 @@ class TradeBid
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function outbidBy($newAmount): void
+    public function outbidBy($newAmount): mixed
     {
-        throw new \RuntimeException('outbid_by not implemented');
+        // TODO: implement outbid_by
+        return null;
     }
 
     public function retract(): void
     {
-        throw new \RuntimeException('retract not implemented');
+        // TODO: implement retract
     }
 
 }

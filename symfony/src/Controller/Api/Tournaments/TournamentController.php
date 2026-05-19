@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Tournaments\TournamentService;
 use App\Entity\Tournaments\Season;
 use App\Repository\Tournaments\SeasonRepository;
 use App\Entity\Players\Player;
@@ -21,6 +22,7 @@ class TournamentController extends AbstractController
     public function __construct(
         private TournamentRepository $repository,
         private ValidatorInterface $validator,
+        private TournamentService $service,
         private SeasonRepository $seasonRepository,
         private PlayerRepository $playerRepository,
     ) {}
@@ -39,9 +41,9 @@ class TournamentController extends AbstractController
         $tournament = new Tournament();
         if (isset($data['name'])) $tournament->setName($data['name']);
         if (isset($data['description'])) $tournament->setDescription($data['description']);
+        if (isset($data['status'])) $tournament->setStatus($data['status']);
         if (isset($data['format'])) $tournament->setFormat($data['format']);
         if (isset($data['tournamentType'])) $tournament->setTournamentType($data['tournamentType']);
-        if (isset($data['status'])) $tournament->setStatus($data['status']);
         if (isset($data['maxPlayers'])) $tournament->setMaxPlayers($data['maxPlayers']);
         if (isset($data['entryFee'])) $tournament->setEntryFee($data['entryFee']);
         if (isset($data['prizePool'])) $tournament->setPrizePool($data['prizePool']);
@@ -87,9 +89,9 @@ class TournamentController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         if (isset($data['name'])) $tournament->setName($data['name']);
         if (isset($data['description'])) $tournament->setDescription($data['description']);
+        if (isset($data['status'])) $tournament->setStatus($data['status']);
         if (isset($data['format'])) $tournament->setFormat($data['format']);
         if (isset($data['tournamentType'])) $tournament->setTournamentType($data['tournamentType']);
-        if (isset($data['status'])) $tournament->setStatus($data['status']);
         if (isset($data['maxPlayers'])) $tournament->setMaxPlayers($data['maxPlayers']);
         if (isset($data['entryFee'])) $tournament->setEntryFee($data['entryFee']);
         if (isset($data['prizePool'])) $tournament->setPrizePool($data['prizePool']);
@@ -187,5 +189,81 @@ class TournamentController extends AbstractController
         $result = $tournament->isFull();
         $this->repository->save($tournament, flush: true);
         return $this->json($result);
+    }
+    #[Route('/{id}/transitions/draft-to-registration', name: 'tournament_transitionDraftToRegistration', methods: ['PATCH'])]
+    public function transitionDraftToRegistration(Tournament $tournament): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionDraftToRegistration($tournament->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/registration-to-ongoing', name: 'tournament_transitionRegistrationToOngoing', methods: ['PATCH'])]
+    public function transitionRegistrationToOngoing(Tournament $tournament): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionRegistrationToOngoing($tournament->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/registration-to-cancelled', name: 'tournament_transitionRegistrationToCancelled', methods: ['PATCH'])]
+    public function transitionRegistrationToCancelled(Tournament $tournament): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionRegistrationToCancelled($tournament->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/ongoing-to-completed', name: 'tournament_transitionOngoingToCompleted', methods: ['PATCH'])]
+    public function transitionOngoingToCompleted(Tournament $tournament): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionOngoingToCompleted($tournament->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/ongoing-to-cancelled', name: 'tournament_transitionOngoingToCancelled', methods: ['PATCH'])]
+    public function transitionOngoingToCancelled(Tournament $tournament): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionOngoingToCancelled($tournament->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/completed-to-draft', name: 'tournament_transitionCompletedToDraft', methods: ['PATCH'])]
+    public function transitionCompletedToDraft(Tournament $tournament): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Completed -> Draft is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/cancelled-to-draft', name: 'tournament_transitionCancelledToDraft', methods: ['PATCH'])]
+    public function transitionCancelledToDraft(Tournament $tournament): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Cancelled -> Draft is not allowed'], Response::HTTP_CONFLICT);
     }
 }

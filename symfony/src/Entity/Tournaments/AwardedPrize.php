@@ -143,7 +143,7 @@ class AwardedPrize
 
     public function claim(): void
     {
-        throw new \RuntimeException('claim not implemented');
+        // TODO: implement claim
     }
 
 }

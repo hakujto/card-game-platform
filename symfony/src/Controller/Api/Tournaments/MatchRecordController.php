@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Tournaments\MatchRecordService;
 use App\Entity\Tournaments\TournamentRound;
 use App\Repository\Tournaments\TournamentRoundRepository;
 use App\Entity\Players\Player;
@@ -21,6 +22,7 @@ class MatchRecordController extends AbstractController
     public function __construct(
         private MatchRecordRepository $repository,
         private ValidatorInterface $validator,
+        private MatchRecordService $service,
         private TournamentRoundRepository $tournamentRoundRepository,
         private PlayerRepository $playerRepository,
     ) {}
@@ -130,6 +132,14 @@ class MatchRecordController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/finalize', name: 'finalizeResult', methods: ['POST'])]
+    public function finalizeResult(MatchRecord $matchRecord): JsonResponse
+    {
+        $matchRecord->finalizeResult();
+        $this->repository->save($matchRecord, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/winner', name: 'determineWinner', methods: ['GET'])]
     public function determineWinner(MatchRecord $matchRecord): JsonResponse
     {
@@ -153,5 +163,74 @@ class MatchRecordController extends AbstractController
         $matchRecord->draw();
         $this->repository->save($matchRecord, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+    #[Route('/{id}/transitions/pending-to-active', name: 'matchRecord_transitionPendingToActive', methods: ['PATCH'])]
+    public function transitionPendingToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPendingToActive($matchRecord->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/active-to-completed', name: 'matchRecord_transitionActiveToCompleted', methods: ['PATCH'])]
+    public function transitionActiveToCompleted(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionActiveToCompleted($matchRecord->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/active-to-draw', name: 'matchRecord_transitionActiveToDraw', methods: ['PATCH'])]
+    public function transitionActiveToDraw(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionActiveToDraw($matchRecord->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/pending-to-bye', name: 'matchRecord_transitionPendingToBYE', methods: ['PATCH'])]
+    public function transitionPendingToBYE(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPendingToBYE($matchRecord->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/completed-to-active', name: 'matchRecord_transitionCompletedToActive', methods: ['PATCH'])]
+    public function transitionCompletedToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Completed -> Active is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/draw-to-active', name: 'matchRecord_transitionDrawToActive', methods: ['PATCH'])]
+    public function transitionDrawToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Draw -> Active is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/bye-to-active', name: 'matchRecord_transitionBYEToActive', methods: ['PATCH'])]
+    public function transitionBYEToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return $this->json(['error' => 'Transition BYE -> Active is not allowed'], Response::HTTP_CONFLICT);
     }
 }

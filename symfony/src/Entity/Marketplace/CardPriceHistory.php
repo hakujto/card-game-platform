@@ -154,14 +154,16 @@ class CardPriceHistory
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function priceChangePercent($previousAvg): void
+    public function priceChangePercent($previousAvg): mixed
     {
-        throw new \RuntimeException('price_change_percent not implemented');
+        // TODO: implement price_change_percent
+        return null;
     }
 
-    public function isPriceSpike($thresholdPercent): void
+    public function isPriceSpike($thresholdPercent): mixed
     {
-        throw new \RuntimeException('is_price_spike not implemented');
+        // TODO: implement is_price_spike
+        return null;
     }
 
 }

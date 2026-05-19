@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Content\DraftSessionService;
 use App\Entity\Cards\CardSet;
 use App\Repository\Cards\CardSetRepository;
 
@@ -19,6 +20,7 @@ class DraftSessionController extends AbstractController
     public function __construct(
         private DraftSessionRepository $repository,
         private ValidatorInterface $validator,
+        private DraftSessionService $service,
         private CardSetRepository $cardSetRepository,
     ) {}
 
@@ -37,6 +39,7 @@ class DraftSessionController extends AbstractController
         if (isset($data['status'])) $draftSession->setStatus($data['status']);
         if (isset($data['draftType'])) $draftSession->setDraftType($data['draftType']);
         if (isset($data['seats'])) $draftSession->setSeats($data['seats']);
+        if (isset($data['timePerPickSeconds'])) $draftSession->setTimePerPickSeconds($data['timePerPickSeconds']);
         if (isset($data['createdAt'])) $draftSession->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['completedAt'])) $draftSession->setCompletedAt(new \DateTime($data['completedAt']));
         if (!isset($data['cardSet'])) return $this->json(['error' => 'cardSet is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -72,6 +75,7 @@ class DraftSessionController extends AbstractController
         if (isset($data['status'])) $draftSession->setStatus($data['status']);
         if (isset($data['draftType'])) $draftSession->setDraftType($data['draftType']);
         if (isset($data['seats'])) $draftSession->setSeats($data['seats']);
+        if (isset($data['timePerPickSeconds'])) $draftSession->setTimePerPickSeconds($data['timePerPickSeconds']);
         if (isset($data['createdAt'])) $draftSession->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['completedAt'])) $draftSession->setCompletedAt(new \DateTime($data['completedAt']));
         if (isset($data['cardSet'])) {
@@ -132,5 +136,68 @@ class DraftSessionController extends AbstractController
         $result = $draftSession->isFull();
         $this->repository->save($draftSession, flush: true);
         return $this->json($result);
+    }
+    #[Route('/{id}/transitions/waitingforplayers-to-drafting', name: 'draftSession_transitionWaitingForPlayersToDrafting', methods: ['PATCH'])]
+    public function transitionWaitingForPlayersToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionWaitingForPlayersToDrafting($draftSession->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/drafting-to-completed', name: 'draftSession_transitionDraftingToCompleted', methods: ['PATCH'])]
+    public function transitionDraftingToCompleted(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionDraftingToCompleted($draftSession->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/drafting-to-abandoned', name: 'draftSession_transitionDraftingToAbandoned', methods: ['PATCH'])]
+    public function transitionDraftingToAbandoned(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionDraftingToAbandoned($draftSession->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/waitingforplayers-to-abandoned', name: 'draftSession_transitionWaitingForPlayersToAbandoned', methods: ['PATCH'])]
+    public function transitionWaitingForPlayersToAbandoned(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionWaitingForPlayersToAbandoned($draftSession->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/completed-to-drafting', name: 'draftSession_transitionCompletedToDrafting', methods: ['PATCH'])]
+    public function transitionCompletedToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Completed -> Drafting is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/abandoned-to-drafting', name: 'draftSession_transitionAbandonedToDrafting', methods: ['PATCH'])]
+    public function transitionAbandonedToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Abandoned -> Drafting is not allowed'], Response::HTTP_CONFLICT);
     }
 }

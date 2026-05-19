@@ -29,15 +29,15 @@ class Tournament
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tournament:read', 'tournament:write'])]
+    private string $status = 'Draft';
+
+    #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['tournament:read', 'tournament:write'])]
     private string $format = 'Standard';
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tournament:read', 'tournament:write'])]
     private string $tournamentType = 'Swiss';
-
-    #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tournament:read', 'tournament:write'])]
-    private string $status = 'Draft';
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['tournament:read', 'tournament:write'])]
@@ -119,6 +119,17 @@ class Tournament
         return $this;
     }
 
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function getFormat(): string
     {
         return $this->format;
@@ -138,17 +149,6 @@ class Tournament
     public function setTournamentType(string $tournamentType): static
     {
         $this->tournamentType = $tournamentType;
-        return $this;
-    }
-
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
         return $this;
     }
 
@@ -335,37 +335,54 @@ class Tournament
 
     public function start(): void
     {
-        throw new \RuntimeException('start not implemented');
+        // TODO: implement start
     }
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
     public function generateRound(): void
     {
-        throw new \RuntimeException('generate_round not implemented');
+        // TODO: implement generate_round
     }
 
-    public function calculatePrizeDistribution(): void
+    public function calculatePrizeDistribution(): mixed
     {
-        throw new \RuntimeException('calculate_prize_distribution not implemented');
+        // TODO: implement calculate_prize_distribution
+        return null;
     }
 
     public function registerPlayer($playerId, $deckId): void
     {
-        throw new \RuntimeException('register_player not implemented');
+        // TODO: implement register_player
     }
 
-    public function isFull(): void
+    public function isFull(): mixed
     {
-        throw new \RuntimeException('is_full not implemented');
+        // TODO: implement is_full
+        return null;
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Draft' => ['Registration'],
+        'Registration' => ['Ongoing', 'Cancelled'],
+        'Ongoing' => ['Completed', 'Cancelled'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

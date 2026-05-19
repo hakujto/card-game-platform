@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Marketplace\TradeListingService;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 use App\Entity\Cards\Card;
@@ -21,6 +22,7 @@ class TradeListingController extends AbstractController
     public function __construct(
         private TradeListingRepository $repository,
         private ValidatorInterface $validator,
+        private TradeListingService $service,
         private PlayerRepository $playerRepository,
         private CardRepository $cardRepository,
     ) {}
@@ -37,6 +39,7 @@ class TradeListingController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $tradeListing = new TradeListing();
+        if (isset($data['status'])) $tradeListing->setStatus($data['status']);
         if (isset($data['listingType'])) $tradeListing->setListingType($data['listingType']);
         if (isset($data['askingPrice'])) $tradeListing->setAskingPrice($data['askingPrice']);
         if (isset($data['auctionStartPrice'])) $tradeListing->setAuctionStartPrice($data['auctionStartPrice']);
@@ -45,7 +48,6 @@ class TradeListingController extends AbstractController
         if (isset($data['foil'])) $tradeListing->setFoil($data['foil']);
         if (isset($data['condition'])) $tradeListing->setCondition($data['condition']);
         if (isset($data['quantity'])) $tradeListing->setQuantity($data['quantity']);
-        if (isset($data['status'])) $tradeListing->setStatus($data['status']);
         if (isset($data['description'])) $tradeListing->setDescription($data['description']);
         if (isset($data['createdAt'])) $tradeListing->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['expiresAt'])) $tradeListing->setExpiresAt(new \DateTime($data['expiresAt']));
@@ -83,6 +85,7 @@ class TradeListingController extends AbstractController
     public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (isset($data['status'])) $tradeListing->setStatus($data['status']);
         if (isset($data['listingType'])) $tradeListing->setListingType($data['listingType']);
         if (isset($data['askingPrice'])) $tradeListing->setAskingPrice($data['askingPrice']);
         if (isset($data['auctionStartPrice'])) $tradeListing->setAuctionStartPrice($data['auctionStartPrice']);
@@ -91,7 +94,6 @@ class TradeListingController extends AbstractController
         if (isset($data['foil'])) $tradeListing->setFoil($data['foil']);
         if (isset($data['condition'])) $tradeListing->setCondition($data['condition']);
         if (isset($data['quantity'])) $tradeListing->setQuantity($data['quantity']);
-        if (isset($data['status'])) $tradeListing->setStatus($data['status']);
         if (isset($data['description'])) $tradeListing->setDescription($data['description']);
         if (isset($data['createdAt'])) $tradeListing->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['expiresAt'])) $tradeListing->setExpiresAt(new \DateTime($data['expiresAt']));
@@ -167,5 +169,68 @@ class TradeListingController extends AbstractController
         $tradeListing->finalizeAuction();
         $this->repository->save($tradeListing, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+    #[Route('/{id}/transitions/pending-to-active', name: 'tradeListing_transitionPendingToActive', methods: ['PATCH'])]
+    public function transitionPendingToActive(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPendingToActive($tradeListing->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/active-to-sold', name: 'tradeListing_transitionActiveToSold', methods: ['PATCH'])]
+    public function transitionActiveToSold(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionActiveToSold($tradeListing->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/active-to-expired', name: 'tradeListing_transitionActiveToExpired', methods: ['PATCH'])]
+    public function transitionActiveToExpired(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionActiveToExpired($tradeListing->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/active-to-cancelled', name: 'tradeListing_transitionActiveToCancelled', methods: ['PATCH'])]
+    public function transitionActiveToCancelled(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionActiveToCancelled($tradeListing->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/sold-to-active', name: 'tradeListing_transitionSoldToActive', methods: ['PATCH'])]
+    public function transitionSoldToActive(TradeListing $tradeListing): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Sold -> Active is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/expired-to-active', name: 'tradeListing_transitionExpiredToActive', methods: ['PATCH'])]
+    public function transitionExpiredToActive(TradeListing $tradeListing): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Expired -> Active is not allowed'], Response::HTTP_CONFLICT);
     }
 }

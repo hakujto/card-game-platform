@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Marketplace\OrderService;
 use App\Entity\Players\Player;
 use App\Repository\Players\PlayerRepository;
 use App\Entity\Marketplace\Coupon;
@@ -21,6 +22,7 @@ class OrderController extends AbstractController
     public function __construct(
         private OrderRepository $repository,
         private ValidatorInterface $validator,
+        private OrderService $service,
         private PlayerRepository $playerRepository,
         private CouponRepository $couponRepository,
     ) {}
@@ -140,6 +142,14 @@ class OrderController extends AbstractController
         return $this->json($result);
     }
 
+    #[Route('/{id}/process-payment', name: 'processPayment', methods: ['POST'])]
+    public function processPayment(Order $order): JsonResponse
+    {
+        $result = $order->processPayment();
+        $this->repository->save($order, flush: true);
+        return $this->json($result);
+    }
+
     #[Route('/{id}/total', name: 'calculateTotal', methods: ['GET'])]
     public function calculateTotal(Order $order): JsonResponse
     {
@@ -163,5 +173,107 @@ class OrderController extends AbstractController
         $order->refund();
         $this->repository->save($order, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+    #[Route('/{id}/transitions/pending-to-paid', name: 'order_transitionPendingToPaid', methods: ['PATCH'])]
+    public function transitionPendingToPaid(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPendingToPaid($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/paid-to-processing', name: 'order_transitionPaidToProcessing', methods: ['PATCH'])]
+    public function transitionPaidToProcessing(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPaidToProcessing($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/processing-to-shipped', name: 'order_transitionProcessingToShipped', methods: ['PATCH'])]
+    public function transitionProcessingToShipped(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionProcessingToShipped($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/shipped-to-completed', name: 'order_transitionShippedToCompleted', methods: ['PATCH'])]
+    public function transitionShippedToCompleted(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionShippedToCompleted($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/pending-to-cancelled', name: 'order_transitionPendingToCancelled', methods: ['PATCH'])]
+    public function transitionPendingToCancelled(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPendingToCancelled($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/paid-to-cancelled', name: 'order_transitionPaidToCancelled', methods: ['PATCH'])]
+    public function transitionPaidToCancelled(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionPaidToCancelled($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/completed-to-refunded', name: 'order_transitionCompletedToRefunded', methods: ['PATCH'])]
+    public function transitionCompletedToRefunded(Order $order): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionCompletedToRefunded($order->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/refunded-to-completed', name: 'order_transitionRefundedToCompleted', methods: ['PATCH'])]
+    public function transitionRefundedToCompleted(Order $order): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Refunded -> Completed is not allowed'], Response::HTTP_CONFLICT);
+    }
+
+    #[Route('/{id}/transitions/completed-to-cancelled', name: 'order_transitionCompletedToCancelled', methods: ['PATCH'])]
+    public function transitionCompletedToCancelled(Order $order): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Completed -> Cancelled is not allowed'], Response::HTTP_CONFLICT);
     }
 }

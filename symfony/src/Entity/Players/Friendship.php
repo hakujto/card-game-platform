@@ -97,17 +97,17 @@ class Friendship
 
     public function accept(): void
     {
-        throw new \RuntimeException('accept not implemented');
+        // TODO: implement accept
     }
 
     public function decline(): void
     {
-        throw new \RuntimeException('decline not implemented');
+        // TODO: implement decline
     }
 
     public function block(): void
     {
-        throw new \RuntimeException('block not implemented');
+        // TODO: implement block
     }
 
 }

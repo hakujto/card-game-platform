@@ -70,7 +70,7 @@ class TradeListingApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['listingType' => 'test'])
+            json_encode(['status' => 'test'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -86,7 +86,7 @@ class TradeListingApiTest extends WebTestCase
     {
         // Fixed price listing must have an asking price
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => null])
+            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -95,7 +95,7 @@ class TradeListingApiTest extends WebTestCase
     {
         // Auction listing must have a start price and end time
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'AUCTION', 'auctionStartPrice' => null])
+            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'AUCTION', 'auctionStartPrice' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -104,8 +104,74 @@ class TradeListingApiTest extends WebTestCase
     {
         // Listing quantity must be between 1 and 9999
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['foil' => true, 'condition' => 'MINT', 'status' => 'ACTIVE', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => '0.00', 'listingType' => 'AUCTION', 'auctionStartPrice' => '0.00', 'auctionEndTime' => '2024-01-01T00:00:00+00:00', 'quantity' => 10000])
+            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => '0.00', 'listingType' => 'AUCTION', 'auctionStartPrice' => '0.00', 'auctionEndTime' => '2024-01-01T00:00:00+00:00', 'quantity' => 10000])
         );
         $this->assertResponseStatusCodeSame(422);
+    }
+    public function testTransitionPendingToActiveSucceeds(): void
+    {
+        // Arrange: set entity to 'Pending' state
+        $entity = $this->em->find(TradeListing::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $entity->setQuantity(1); // @on: quantity != null
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/pending-to-active');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Active', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToSoldSucceeds(): void
+    {
+        // Arrange: set entity to 'Active' state
+        $entity = $this->em->find(TradeListing::class, $this->entityId);
+        $entity->setStatus('Active');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/active-to-sold');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Sold', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToExpiredSucceeds(): void
+    {
+        // Arrange: set entity to 'Active' state
+        $entity = $this->em->find(TradeListing::class, $this->entityId);
+        $entity->setStatus('Active');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/active-to-expired');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Expired', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToCancelledSucceeds(): void
+    {
+        // Arrange: set entity to 'Active' state
+        $entity = $this->em->find(TradeListing::class, $this->entityId);
+        $entity->setStatus('Active');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/active-to-cancelled');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Cancelled', $data['status'] ?? null);
+    }
+
+    public function testTransitionSoldToActiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/sold-to-active');
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    public function testTransitionExpiredToActiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/expired-to-active');
+        $this->assertResponseStatusCodeSame(409);
     }
 }

@@ -19,15 +19,15 @@ class TradeDispute
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
+    private string $status = 'Open';
+
+    #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
     private string $reason = '';
 
     #[ORM\Column(type: 'text')]
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
     private string $description = '';
-
-    #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
-    private string $status = 'Open';
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
@@ -58,6 +58,17 @@ class TradeDispute
         return $this->id;
     }
 
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function getReason(): string
     {
         return $this->reason;
@@ -77,17 +88,6 @@ class TradeDispute
     public function setDescription(string $description): static
     {
         $this->description = $description;
-        return $this;
-    }
-
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
         return $this;
     }
 
@@ -187,17 +187,37 @@ class TradeDispute
 
     public function escalate(): void
     {
-        throw new \RuntimeException('escalate not implemented');
+        // TODO: implement escalate
     }
 
     public function resolve($resolutionText): void
     {
-        throw new \RuntimeException('resolve not implemented');
+        // TODO: implement resolve
+    }
+
+    public function closeResolved(): void
+    {
+        // TODO: implement close_resolved
     }
 
     public function review(): void
     {
-        throw new \RuntimeException('review not implemented');
+        // TODO: implement review
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Open' => ['UnderReview'],
+        'UnderReview' => ['Resolved', 'Escalated'],
+        'Escalated' => ['Resolved'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

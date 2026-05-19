@@ -112,14 +112,16 @@ class CardAbility
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isUsableAt($timing): void
+    public function isUsableAt($timing): mixed
     {
-        throw new \RuntimeException('is_usable_at not implemented');
+        // TODO: implement is_usable_at
+        return null;
     }
 
-    public function describe(): void
+    public function describe(): mixed
     {
-        throw new \RuntimeException('describe not implemented');
+        // TODO: implement describe
+        return null;
     }
 
 }

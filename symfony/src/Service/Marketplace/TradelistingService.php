@@ -4,6 +4,9 @@ namespace App\Service\Marketplace;
 
 use App\Entity\Marketplace\TradeListing;
 use App\Repository\Marketplace\TradeListingRepository;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class TradeListingService
 {
@@ -71,5 +74,74 @@ class TradeListingService
             $entity->finalizeAuction(); // @on(status = Sold)
         }
         $this->repository->save($entity, flush: true);
+    }
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_SELLER')]
+    public function transitionPendingToActive(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Active');
+        if ($entity->getQuantity() === null) {
+            throw new \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException('quantity is required for Pending -> Active');
+        }
+
+        $entity->setStatus('Active');
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    public function transitionActiveToSold(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Sold');
+
+        $entity->setStatus('Sold');
+        $entity->finalizeAuction(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    public function transitionActiveToExpired(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Expired');
+
+        $entity->setStatus('Expired');
+        $entity->close(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_SELLER'])]
+    public function transitionActiveToCancelled(int $id): object
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+
+        $entity->assertTransition($entity->getStatus(), 'Cancelled');
+
+        $entity->setStatus('Cancelled');
+        $entity->cancel(); // @after
+
+        $this->repository->save($entity, flush: true);
+        return $entity;
+    }
+
+    public function transitionSoldToActive(int $id): never
+    {
+        throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('Transition Sold -> Active is not allowed');
+    }
+
+    public function transitionExpiredToActive(int $id): never
+    {
+        throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('Transition Expired -> Active is not allowed');
     }
 }

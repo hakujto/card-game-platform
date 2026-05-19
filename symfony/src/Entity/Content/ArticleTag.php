@@ -55,12 +55,13 @@ class ArticleTag
 
     public function rename($newName): void
     {
-        throw new \RuntimeException('rename not implemented');
+        // TODO: implement rename
     }
 
-    public function articleCount(): void
+    public function articleCount(): mixed
     {
-        throw new \RuntimeException('article_count not implemented');
+        // TODO: implement article_count
+        return null;
     }
 
 }

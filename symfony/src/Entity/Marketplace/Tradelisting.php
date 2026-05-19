@@ -20,6 +20,10 @@ class TradeListing
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
+    private string $status = 'Active';
+
+    #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private string $listingType = 'FixedPrice';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
@@ -50,10 +54,6 @@ class TradeListing
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private int $quantity = 1;
 
-    #[ORM\Column(type: 'string', length: 20)]
-    #[Groups(['tradeListing:read', 'tradeListing:write'])]
-    private string $status = 'Active';
-
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?string $description = null;
@@ -77,6 +77,17 @@ class TradeListing
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
     }
 
     public function getListingType(): string
@@ -164,17 +175,6 @@ class TradeListing
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
-        return $this;
-    }
-
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
         return $this;
     }
 
@@ -267,27 +267,42 @@ class TradeListing
 
     public function close(): void
     {
-        throw new \RuntimeException('close not implemented');
+        // TODO: implement close
     }
 
     public function extend($days): void
     {
-        throw new \RuntimeException('extend not implemented');
+        // TODO: implement extend
     }
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
-    public function isExpired(): void
+    public function isExpired(): mixed
     {
-        throw new \RuntimeException('is_expired not implemented');
+        // TODO: implement is_expired
+        return null;
     }
 
     public function finalizeAuction(): void
     {
-        throw new \RuntimeException('finalize_auction not implemented');
+        // TODO: implement finalize_auction
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Pending' => ['Active'],
+        'Active' => ['Sold', 'Expired', 'Cancelled'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

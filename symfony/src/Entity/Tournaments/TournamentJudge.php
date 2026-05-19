@@ -83,12 +83,12 @@ class TournamentJudge
 
     public function promoteToHead(): void
     {
-        throw new \RuntimeException('promote_to_head not implemented');
+        // TODO: implement promote_to_head
     }
 
     public function remove(): void
     {
-        throw new \RuntimeException('remove not implemented');
+        // TODO: implement remove
     }
 
 }

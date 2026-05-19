@@ -28,11 +28,19 @@ class Stream
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['stream:read', 'stream:write'])]
+    private string $status = 'Scheduled';
+
+    #[ORM\Column(type: 'string', length: 20)]
+    #[Groups(['stream:read', 'stream:write'])]
     private string $platform = 'Twitch';
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['stream:read', 'stream:write'])]
-    private string $status = 'Scheduled';
+    private string $language = 'EN';
+
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['stream:read', 'stream:write'])]
+    private bool $isOfficial = false;
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['stream:read', 'stream:write'])]
@@ -89,6 +97,17 @@ class Stream
         return $this;
     }
 
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function getPlatform(): string
     {
         return $this->platform;
@@ -100,14 +119,25 @@ class Stream
         return $this;
     }
 
-    public function getStatus(): string
+    public function getLanguage(): string
     {
-        return $this->status;
+        return $this->language;
     }
 
-    public function setStatus(string $status): static
+    public function setLanguage(string $language): static
     {
-        $this->status = $status;
+        $this->language = $language;
+        return $this;
+    }
+
+    public function getIsOfficial(): bool
+    {
+        return $this->isOfficial;
+    }
+
+    public function setIsOfficial(bool $isOfficial): static
+    {
+        $this->isOfficial = $isOfficial;
         return $this;
     }
 
@@ -222,22 +252,37 @@ class Stream
 
     public function goLive(): void
     {
-        throw new \RuntimeException('go_live not implemented');
+        // TODO: implement go_live
     }
 
     public function end(): void
     {
-        throw new \RuntimeException('end not implemented');
+        // TODO: implement end
     }
 
     public function updateViewerPeak($count): void
     {
-        throw new \RuntimeException('update_viewer_peak not implemented');
+        // TODO: implement update_viewer_peak
     }
 
-    public function durationMinutes(): void
+    public function durationMinutes(): mixed
     {
-        throw new \RuntimeException('duration_minutes not implemented');
+        // TODO: implement duration_minutes
+        return null;
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Scheduled' => ['Live'],
+        'Live' => ['Ended'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

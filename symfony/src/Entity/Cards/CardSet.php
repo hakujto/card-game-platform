@@ -176,24 +176,27 @@ class CardSet
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isLegalInStandard(): void
+    public function isLegalInStandard(): mixed
     {
-        throw new \RuntimeException('is_legal_in_standard not implemented');
+        // TODO: implement is_legal_in_standard
+        return null;
     }
 
-    public function isLegalInFormat($format): void
+    public function isLegalInFormat($format): mixed
     {
-        throw new \RuntimeException('is_legal_in_format not implemented');
+        // TODO: implement is_legal_in_format
+        return null;
     }
 
-    public function cardCountByRarity($rarity): void
+    public function cardCountByRarity($rarity): mixed
     {
-        throw new \RuntimeException('card_count_by_rarity not implemented');
+        // TODO: implement card_count_by_rarity
+        return null;
     }
 
     public function rotateOut(): void
     {
-        throw new \RuntimeException('rotate_out not implemented');
+        // TODO: implement rotate_out
     }
 
 }

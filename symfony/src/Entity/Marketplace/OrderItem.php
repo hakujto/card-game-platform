@@ -123,9 +123,10 @@ class OrderItem
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function lineTotal(): void
+    public function lineTotal(): mixed
     {
-        throw new \RuntimeException('line_total not implemented');
+        // TODO: implement line_total
+        return null;
     }
 
 }

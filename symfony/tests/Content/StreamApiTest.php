@@ -79,7 +79,7 @@ class StreamApiTest extends WebTestCase
     {
         // actual_start_requires_live_or_ended
         $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'status' => 'SCHEDULED', 'platform' => 'TWITCH', 'language' => 'EN', 'isOfficial' => true, 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -88,7 +88,7 @@ class StreamApiTest extends WebTestCase
     {
         // ended_at can only be set when stream status is Ended
         $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'status' => 'SCHEDULED', 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00'])
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'status' => 'SCHEDULED', 'platform' => 'TWITCH', 'language' => 'EN', 'isOfficial' => true, 'viewerCountPeak' => 1, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'endedAt' => '2024-01-01T00:00:00+00:00'])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -97,8 +97,41 @@ class StreamApiTest extends WebTestCase
     {
         // Peak viewer count must not be negative
         $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00', 'status' => 'LIVE', 'endedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'ENDED', 'viewerCountPeak' => -1])
+            json_encode(['title' => 'test', 'streamUrl' => 'https://example.com', 'platform' => 'TWITCH', 'language' => 'EN', 'isOfficial' => true, 'scheduledStart' => '2024-01-01T00:00:00+00:00', 'streamerId' => 1, 'actualStart' => '2024-01-01T00:00:00+00:00', 'status' => 'LIVE', 'endedAt' => '2024-01-01T00:00:00+00:00', 'status' => 'ENDED', 'viewerCountPeak' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
+    }
+    public function testTransitionScheduledToLiveSucceeds(): void
+    {
+        // Arrange: set entity to 'Scheduled' state
+        $entity = $this->em->find(Stream::class, $this->entityId);
+        $entity->setStatus('Scheduled');
+        $entity->setStreamUrl('https://example.com'); // @on: stream_url != null
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/scheduled-to-live');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Live', $data['status'] ?? null);
+    }
+
+    public function testTransitionLiveToEndedSucceeds(): void
+    {
+        // Arrange: set entity to 'Live' state
+        $entity = $this->em->find(Stream::class, $this->entityId);
+        $entity->setStatus('Live');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/live-to-ended');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Ended', $data['status'] ?? null);
+    }
+
+    public function testTransitionEndedToLiveIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/ended-to-live');
+        $this->assertResponseStatusCodeSame(409);
     }
 }

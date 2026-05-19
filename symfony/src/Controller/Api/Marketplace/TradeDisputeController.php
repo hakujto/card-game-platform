@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Marketplace\TradeDisputeService;
 use App\Entity\Marketplace\TradeTransaction;
 use App\Repository\Marketplace\TradeTransactionRepository;
 use App\Entity\Players\Player;
@@ -21,6 +22,7 @@ class TradeDisputeController extends AbstractController
     public function __construct(
         private TradeDisputeRepository $repository,
         private ValidatorInterface $validator,
+        private TradeDisputeService $service,
         private TradeTransactionRepository $tradeTransactionRepository,
         private PlayerRepository $playerRepository,
     ) {}
@@ -37,9 +39,9 @@ class TradeDisputeController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $tradeDispute = new TradeDispute();
+        if (isset($data['status'])) $tradeDispute->setStatus($data['status']);
         if (isset($data['reason'])) $tradeDispute->setReason($data['reason']);
         if (isset($data['description'])) $tradeDispute->setDescription($data['description']);
-        if (isset($data['status'])) $tradeDispute->setStatus($data['status']);
         if (isset($data['resolution'])) $tradeDispute->setResolution($data['resolution']);
         if (isset($data['openedAt'])) $tradeDispute->setOpenedAt(new \DateTime($data['openedAt']));
         if (isset($data['resolvedAt'])) $tradeDispute->setResolvedAt(new \DateTime($data['resolvedAt']));
@@ -80,9 +82,9 @@ class TradeDisputeController extends AbstractController
     public function update(Request $request, TradeDispute $tradeDispute): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (isset($data['status'])) $tradeDispute->setStatus($data['status']);
         if (isset($data['reason'])) $tradeDispute->setReason($data['reason']);
         if (isset($data['description'])) $tradeDispute->setDescription($data['description']);
-        if (isset($data['status'])) $tradeDispute->setStatus($data['status']);
         if (isset($data['resolution'])) $tradeDispute->setResolution($data['resolution']);
         if (isset($data['openedAt'])) $tradeDispute->setOpenedAt(new \DateTime($data['openedAt']));
         if (isset($data['resolvedAt'])) $tradeDispute->setResolvedAt(new \DateTime($data['resolvedAt']));
@@ -139,11 +141,76 @@ class TradeDisputeController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    #[Route('/{id}/close', name: 'closeResolved', methods: ['POST'])]
+    public function closeResolved(TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->closeResolved();
+        $this->repository->save($tradeDispute, flush: true);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
     #[Route('/{id}/review', name: 'review', methods: ['POST'])]
     public function review(TradeDispute $tradeDispute): JsonResponse
     {
         $tradeDispute->review();
         $this->repository->save($tradeDispute, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+    #[Route('/{id}/transitions/open-to-underreview', name: 'tradeDispute_transitionOpenToUnderReview', methods: ['PATCH'])]
+    public function transitionOpenToUnderReview(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionOpenToUnderReview($tradeDispute->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/underreview-to-resolved', name: 'tradeDispute_transitionUnderReviewToResolved', methods: ['PATCH'])]
+    public function transitionUnderReviewToResolved(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionUnderReviewToResolved($tradeDispute->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/underreview-to-escalated', name: 'tradeDispute_transitionUnderReviewToEscalated', methods: ['PATCH'])]
+    public function transitionUnderReviewToEscalated(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionUnderReviewToEscalated($tradeDispute->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/escalated-to-resolved', name: 'tradeDispute_transitionEscalatedToResolved', methods: ['PATCH'])]
+    public function transitionEscalatedToResolved(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionEscalatedToResolved($tradeDispute->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/resolved-to-open', name: 'tradeDispute_transitionResolvedToOpen', methods: ['PATCH'])]
+    public function transitionResolvedToOpen(TradeDispute $tradeDispute): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Resolved -> Open is not allowed'], Response::HTTP_CONFLICT);
     }
 }

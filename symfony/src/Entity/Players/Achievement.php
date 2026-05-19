@@ -120,14 +120,15 @@ class Achievement
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function pointValue($multiplier): void
+    public function pointValue($multiplier): mixed
     {
-        throw new \RuntimeException('point_value not implemented');
+        // TODO: implement point_value
+        return null;
     }
 
     public function reveal(): void
     {
-        throw new \RuntimeException('reveal not implemented');
+        // TODO: implement reveal
     }
 
 }

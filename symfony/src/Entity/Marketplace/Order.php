@@ -260,32 +260,58 @@ class Order
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
-    public function pay($paymentRef): void
+    public function pay($paymentRef): mixed
     {
-        throw new \RuntimeException('pay not implemented');
+        // TODO: implement pay
+        return null;
     }
 
-    public function calculateTotal(): void
+    public function processPayment(): mixed
     {
-        throw new \RuntimeException('calculate_total not implemented');
+        // TODO: implement process_payment
+        return null;
     }
 
-    public function applyDiscount($percent): void
+    public function calculateTotal(): mixed
     {
-        throw new \RuntimeException('apply_discount not implemented');
+        // TODO: implement calculate_total
+        return null;
+    }
+
+    public function applyDiscount($percent): mixed
+    {
+        // TODO: implement apply_discount
+        return null;
     }
 
     public function refund(): void
     {
-        throw new \RuntimeException('refund not implemented');
+        // TODO: implement refund
     }
 
     public function notifyShipped(): void
     {
-        throw new \RuntimeException('notify_shipped not implemented');
+        // TODO: implement notify_shipped
+    }
+
+    // ── Lifecycle state machine ──────────────────────────────────────
+    private static array $ALLOWED_TRANSITIONS = [
+        'Pending' => ['Paid', 'Cancelled'],
+        'Paid' => ['Processing', 'Cancelled'],
+        'Processing' => ['Shipped'],
+        'Shipped' => ['Completed'],
+        'Completed' => ['Refunded'],
+    ];
+
+    public function assertTransition(string $from, string $to): void
+    {
+        $allowed = self::$ALLOWED_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
+        }
     }
 
 }

@@ -53,6 +53,12 @@ class DeckCardController extends AbstractController
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        try {
+            $deckCard->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $this->repository->save($deckCard, flush: true);
         return $this->json($deckCard, Response::HTTP_CREATED, context: ['groups' => ['deckCard:read']]);
     }
@@ -83,6 +89,12 @@ class DeckCardController extends AbstractController
         $errors = $this->validator->validate($deckCard);
         if (count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $deckCard->validateImplies();
+        } catch (\DomainException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $this->repository->save($deckCard, flush: true);

@@ -182,12 +182,13 @@ class Game
 
     public function recordWinner($winnerSide): void
     {
-        throw new \RuntimeException('record_winner not implemented');
+        // TODO: implement record_winner
     }
 
-    public function durationMinutes(): void
+    public function durationMinutes(): mixed
     {
-        throw new \RuntimeException('duration_minutes not implemented');
+        // TODO: implement duration_minutes
+        return null;
     }
 
 }

@@ -105,12 +105,13 @@ class DraftParticipant
 
     public function pickCard($cardId, $packNumber): void
     {
-        throw new \RuntimeException('pick_card not implemented');
+        // TODO: implement pick_card
     }
 
-    public function draftedCardCount(): void
+    public function draftedCardCount(): mixed
     {
-        throw new \RuntimeException('drafted_card_count not implemented');
+        // TODO: implement drafted_card_count
+        return null;
     }
 
 }

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\Content\StreamService;
 use App\Entity\Tournaments\Tournament;
 use App\Repository\Tournaments\TournamentRepository;
 use App\Entity\Players\Player;
@@ -21,6 +22,7 @@ class StreamController extends AbstractController
     public function __construct(
         private StreamRepository $repository,
         private ValidatorInterface $validator,
+        private StreamService $service,
         private TournamentRepository $tournamentRepository,
         private PlayerRepository $playerRepository,
     ) {}
@@ -39,8 +41,10 @@ class StreamController extends AbstractController
         $stream = new Stream();
         if (isset($data['title'])) $stream->setTitle($data['title']);
         if (isset($data['streamUrl'])) $stream->setStreamUrl($data['streamUrl']);
-        if (isset($data['platform'])) $stream->setPlatform($data['platform']);
         if (isset($data['status'])) $stream->setStatus($data['status']);
+        if (isset($data['platform'])) $stream->setPlatform($data['platform']);
+        if (isset($data['language'])) $stream->setLanguage($data['language']);
+        if (isset($data['isOfficial'])) $stream->setIsOfficial($data['isOfficial']);
         if (isset($data['viewerCountPeak'])) $stream->setViewerCountPeak($data['viewerCountPeak']);
         if (isset($data['scheduledStart'])) $stream->setScheduledStart(new \DateTime($data['scheduledStart']));
         if (isset($data['actualStart'])) $stream->setActualStart(new \DateTime($data['actualStart']));
@@ -81,8 +85,10 @@ class StreamController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         if (isset($data['title'])) $stream->setTitle($data['title']);
         if (isset($data['streamUrl'])) $stream->setStreamUrl($data['streamUrl']);
-        if (isset($data['platform'])) $stream->setPlatform($data['platform']);
         if (isset($data['status'])) $stream->setStatus($data['status']);
+        if (isset($data['platform'])) $stream->setPlatform($data['platform']);
+        if (isset($data['language'])) $stream->setLanguage($data['language']);
+        if (isset($data['isOfficial'])) $stream->setIsOfficial($data['isOfficial']);
         if (isset($data['viewerCountPeak'])) $stream->setViewerCountPeak($data['viewerCountPeak']);
         if (isset($data['scheduledStart'])) $stream->setScheduledStart(new \DateTime($data['scheduledStart']));
         if (isset($data['actualStart'])) $stream->setActualStart(new \DateTime($data['actualStart']));
@@ -150,5 +156,36 @@ class StreamController extends AbstractController
         $result = $stream->durationMinutes();
         $this->repository->save($stream, flush: true);
         return $this->json($result);
+    }
+    #[Route('/{id}/transitions/scheduled-to-live', name: 'stream_transitionScheduledToLive', methods: ['PATCH'])]
+    public function transitionScheduledToLive(Stream $stream): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionScheduledToLive($stream->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/live-to-ended', name: 'stream_transitionLiveToEnded', methods: ['PATCH'])]
+    public function transitionLiveToEnded(Stream $stream): JsonResponse
+    {
+        try {
+            $result = $this->service->transitionLiveToEnded($stream->getId());
+            return $this->json($result);
+        } catch (\Symfony\Component\HttpKernel\Exception\ConflictHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    #[Route('/{id}/transitions/ended-to-live', name: 'stream_transitionEndedToLive', methods: ['PATCH'])]
+    public function transitionEndedToLive(Stream $stream): JsonResponse
+    {
+        return $this->json(['error' => 'Transition Ended -> Live is not allowed'], Response::HTTP_CONFLICT);
     }
 }

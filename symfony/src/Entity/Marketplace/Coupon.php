@@ -182,24 +182,26 @@ class Coupon
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isValid(): void
+    public function isValid(): mixed
     {
-        throw new \RuntimeException('is_valid not implemented');
+        // TODO: implement is_valid
+        return null;
     }
 
-    public function isApplicableToOrder($orderTotal): void
+    public function isApplicableToOrder($orderTotal): mixed
     {
-        throw new \RuntimeException('is_applicable_to_order not implemented');
+        // TODO: implement is_applicable_to_order
+        return null;
     }
 
     public function redeem(): void
     {
-        throw new \RuntimeException('redeem not implemented');
+        // TODO: implement redeem
     }
 
     public function deactivate(): void
     {
-        throw new \RuntimeException('deactivate not implemented');
+        // TODO: implement deactivate
     }
 
 }

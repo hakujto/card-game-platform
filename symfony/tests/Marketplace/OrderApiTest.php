@@ -106,4 +106,132 @@ class OrderApiTest extends WebTestCase
         );
         $this->assertResponseStatusCodeSame(422);
     }
+    public function testTransitionPendingToPaidSucceeds(): void
+    {
+        // Arrange: set entity to 'Pending' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $entity->setPaymentMethod('test'); // @on: payment_method != null
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/pending-to-paid');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Paid', $data['status'] ?? null);
+    }
+
+    public function testTransitionPendingToPaidFailsWhenPaymentMethodMissing(): void
+    {
+        // Arrange: entity in 'Pending' state without payment_method
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/pending-to-paid');
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testTransitionPaidToProcessingSucceeds(): void
+    {
+        // Arrange: set entity to 'Paid' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Paid');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/paid-to-processing');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Processing', $data['status'] ?? null);
+    }
+
+    public function testTransitionProcessingToShippedSucceeds(): void
+    {
+        // Arrange: set entity to 'Processing' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Processing');
+        $entity->setTrackingNumber('test'); // @on: tracking_number != null
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/processing-to-shipped');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Shipped', $data['status'] ?? null);
+    }
+
+    public function testTransitionProcessingToShippedFailsWhenTrackingNumberMissing(): void
+    {
+        // Arrange: entity in 'Processing' state without tracking_number
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Processing');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/processing-to-shipped');
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testTransitionShippedToCompletedSucceeds(): void
+    {
+        // Arrange: set entity to 'Shipped' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Shipped');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/shipped-to-completed');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Completed', $data['status'] ?? null);
+    }
+
+    public function testTransitionPendingToCancelledSucceeds(): void
+    {
+        // Arrange: set entity to 'Pending' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Pending');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/pending-to-cancelled');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Cancelled', $data['status'] ?? null);
+    }
+
+    public function testTransitionPaidToCancelledSucceeds(): void
+    {
+        // Arrange: set entity to 'Paid' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Paid');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/paid-to-cancelled');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Cancelled', $data['status'] ?? null);
+    }
+
+    public function testTransitionCompletedToRefundedSucceeds(): void
+    {
+        // Arrange: set entity to 'Completed' state
+        $entity = $this->em->find(Order::class, $this->entityId);
+        $entity->setStatus('Completed');
+        $this->em->flush();
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/completed-to-refunded');
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Refunded', $data['status'] ?? null);
+    }
+
+    public function testTransitionRefundedToCompletedIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/refunded-to-completed');
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    public function testTransitionCompletedToCancelledIsDenied(): void
+    {
+        // Arrange: entity exists (any state)
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/completed-to-cancelled');
+        $this->assertResponseStatusCodeSame(409);
+    }
 }
