@@ -56,6 +56,12 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
     send_resp(conn, :no_content, "")
   end
 
+  # POST /api/matches/{id}/finalize
+  def finalize_result(conn, %{"id" => id}) do
+    Tournaments.match_finalize_result_behavior(id)
+    send_resp(conn, :no_content, "")
+  end
+
   # GET /api/matches/{id}/winner
   def determine_winner(conn, %{"id" => id}) do
     result = Tournaments.match_determine_winner_behavior(id)
@@ -73,6 +79,99 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
   def draw(conn, %{"id" => id}) do
     Tournaments.match_draw_behavior(id)
     send_resp(conn, :no_content, "")
+  end
+
+  # PATCH /api/matches/:id/transitions/pending-to-active
+  def transition_pending_to_active(conn, %{"id" => id}) do
+    match = Tournaments.get_match!(id)
+    case Tournaments.transition_pending_to_active_match(match) do
+      {:ok, updated} ->
+        json(conn, serialize_match(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/matches/:id/transitions/active-to-completed
+  def transition_active_to_completed(conn, %{"id" => id}) do
+    match = Tournaments.get_match!(id)
+    case Tournaments.transition_active_to_completed_match(match) do
+      {:ok, updated} ->
+        json(conn, serialize_match(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/matches/:id/transitions/active-to-draw
+  def transition_active_to_draw(conn, %{"id" => id}) do
+    match = Tournaments.get_match!(id)
+    case Tournaments.transition_active_to_draw_match(match) do
+      {:ok, updated} ->
+        json(conn, serialize_match(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/matches/:id/transitions/pending-to-bye
+  def transition_pending_to_b_y_e(conn, %{"id" => id}) do
+    match = Tournaments.get_match!(id)
+    case Tournaments.transition_pending_to_b_y_e_match(match) do
+      {:ok, updated} ->
+        json(conn, serialize_match(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/matches/:id/transitions/completed-to-active
+  def transition_completed_to_active(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Completed -> Active is not allowed"})
+  end
+
+  # PATCH /api/matches/:id/transitions/draw-to-active
+  def transition_draw_to_active(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Draw -> Active is not allowed"})
+  end
+
+  # PATCH /api/matches/:id/transitions/bye-to-active
+  def transition_b_y_e_to_active(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition BYE -> Active is not allowed"})
   end
 
   defp serialize_match(%Match{} = record) do

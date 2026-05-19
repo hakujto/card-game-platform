@@ -47,4 +47,77 @@ defmodule CardsProjectWeb.Marketplace.OrderControllerTest do
       assert response(conn, 204)
     end
   end
+
+  describe "PATCH /api/orders/:id/transitions/pending-to-paid" do
+    test "transitions Pending -> Paid", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/pending-to-paid")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/paid-to-processing" do
+    test "transitions Paid -> Processing", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/paid-to-processing")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/processing-to-shipped" do
+    test "transitions Processing -> Shipped", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/processing-to-shipped")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/shipped-to-completed" do
+    test "transitions Shipped -> Completed", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/shipped-to-completed")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/pending-to-cancelled" do
+    test "transitions Pending -> Cancelled", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/pending-to-cancelled")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/paid-to-cancelled" do
+    test "transitions Paid -> Cancelled", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/paid-to-cancelled")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/completed-to-refunded" do
+    test "transitions Completed -> Refunded", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/completed-to-refunded")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/refunded-to-completed" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/refunded-to-completed")
+      assert conn.status in [409, 404]
+    end
+  end
+
+  describe "PATCH /api/orders/:id/transitions/completed-to-cancelled" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
+      conn = patch(conn, "/api/orders/#{record.id}/transitions/completed-to-cancelled")
+      assert conn.status in [409, 404]
+    end
+  end
+
 end

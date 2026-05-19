@@ -64,6 +64,50 @@ defmodule CardsProject.Content do
     result
   end
 
+  def transition_waiting_for_players_to_drafting_draft_session(%DraftSession{} = draft_session) do
+    case DraftSession.assert_transition(draft_session, "Drafting") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          draft_session
+          |> Ecto.Changeset.change(%{status: "Drafting"})
+          # @after: DraftSession.start(draft_session)
+          |> Repo.update()
+    end
+  end
+
+  def transition_drafting_to_completed_draft_session(%DraftSession{} = draft_session) do
+    case DraftSession.assert_transition(draft_session, "Completed") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          draft_session
+          |> Ecto.Changeset.change(%{status: "Completed"})
+          # @after: DraftSession.complete(draft_session)
+          |> Repo.update()
+    end
+  end
+
+  def transition_drafting_to_abandoned_draft_session(%DraftSession{} = draft_session) do
+    case DraftSession.assert_transition(draft_session, "Abandoned") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          draft_session
+          |> Ecto.Changeset.change(%{status: "Abandoned"})
+          # @after: DraftSession.abandon(draft_session)
+          |> Repo.update()
+    end
+  end
+
+  def transition_waiting_for_players_to_abandoned_draft_session(%DraftSession{} = draft_session) do
+    case DraftSession.assert_transition(draft_session, "Abandoned") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          draft_session
+          |> Ecto.Changeset.change(%{status: "Abandoned"})
+          # @after: DraftSession.abandon(draft_session)
+          |> Repo.update()
+    end
+  end
+
   # ── DraftParticipant ─────────────────────────────────────────────────────
 
   def list_draft_participants, do: Repo.all(DraftParticipant)
@@ -174,11 +218,63 @@ defmodule CardsProject.Content do
     Repo.update!(Article.changeset(article, %{}))
   end
 
+  def article_like_behavior(id) do
+    article = Repo.get!(Article, id)
+    Article.like(article)
+    Repo.update!(Article.changeset(article, %{}))
+  end
+
+  def article_unlike_behavior(id) do
+    article = Repo.get!(Article, id)
+    Article.unlike(article)
+    Repo.update!(Article.changeset(article, %{}))
+  end
+
   def article_reading_time_minutes_behavior(id) do
     article = Repo.get!(Article, id)
     result = Article.reading_time_minutes(article)
     Repo.update!(Article.changeset(article, %{}))
     result
+  end
+
+  def transition_draft_to_published_article(%Article{} = article) do
+    case Article.assert_transition(article, "Published") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(article.title) do
+          {:error, :unprocessable, "title is required for Draft -> Published"}
+        else
+        if is_nil(article.body) do
+          {:error, :unprocessable, "body is required for Draft -> Published"}
+        else
+          article
+          |> Ecto.Changeset.change(%{status: "Published"})
+          # @after: Article.publish(article)
+          |> Repo.update()
+        end
+        end
+    end
+  end
+
+  def transition_published_to_archived_article(%Article{} = article) do
+    case Article.assert_transition(article, "Archived") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          article
+          |> Ecto.Changeset.change(%{status: "Archived"})
+          # @after: Article.archive(article)
+          |> Repo.update()
+    end
+  end
+
+  def transition_archived_to_draft_article(%Article{} = article) do
+    case Article.assert_transition(article, "Draft") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          article
+          |> Ecto.Changeset.change(%{status: "Draft"})
+          |> Repo.update()
+    end
   end
 
   # ── ArticleTag ─────────────────────────────────────────────────────
@@ -332,6 +428,32 @@ defmodule CardsProject.Content do
     result = Stream.duration_minutes(stream)
     Repo.update!(Stream.changeset(stream, %{}))
     result
+  end
+
+  def transition_scheduled_to_live_stream(%Stream{} = stream) do
+    case Stream.assert_transition(stream, "Live") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(stream.stream_url) do
+          {:error, :unprocessable, "stream_url is required for Scheduled -> Live"}
+        else
+          stream
+          |> Ecto.Changeset.change(%{status: "Live"})
+          # @after: Stream.go_live(stream)
+          |> Repo.update()
+        end
+    end
+  end
+
+  def transition_live_to_ended_stream(%Stream{} = stream) do
+    case Stream.assert_transition(stream, "Ended") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          stream
+          |> Ecto.Changeset.change(%{status: "Ended"})
+          # TODO: @after end — requires params or unknown
+          |> Repo.update()
+    end
   end
 
 end

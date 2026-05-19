@@ -5,9 +5,9 @@ defmodule CardsProject.Repo.Migrations.CreateTournaments do
     create table(:tournaments) do
       add :name, :string
       add :description, :string, null: true
+      add :status, :string, default: "Draft"
       add :format, :string, default: "Standard"
       add :tournament_type, :string, default: "Swiss"
-      add :status, :string, default: "Draft"
       add :max_players, :integer
       add :entry_fee, :decimal, default: 0
       add :prize_pool, :decimal, default: 0

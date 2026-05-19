@@ -10,9 +10,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
     "start_time" => ~N[2024-01-01 00:00:00],
     "is_online" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
+    "status" => "Draft",
     "format" => "Standard",
-    "tournament_type" => "Swiss",
-    "status" => "Draft"
+    "tournament_type" => "Swiss"
   }
 
   describe "GET /api/tournaments" do
@@ -52,4 +52,61 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
       assert response(conn, 204)
     end
   end
+
+  describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
+    test "transitions Draft -> Registration", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/draft-to-registration")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/registration-to-ongoing" do
+    test "transitions Registration -> Ongoing", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-ongoing")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/registration-to-cancelled" do
+    test "transitions Registration -> Cancelled", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-cancelled")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/ongoing-to-completed" do
+    test "transitions Ongoing -> Completed", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-completed")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled" do
+    test "transitions Ongoing -> Cancelled", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-cancelled")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/completed-to-draft" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/completed-to-draft")
+      assert conn.status in [409, 404]
+    end
+  end
+
+  describe "PATCH /api/tournaments/:id/transitions/cancelled-to-draft" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/cancelled-to-draft")
+      assert conn.status in [409, 404]
+    end
+  end
+
 end

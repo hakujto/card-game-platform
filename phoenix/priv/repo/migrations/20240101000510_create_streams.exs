@@ -5,8 +5,10 @@ defmodule CardsProject.Repo.Migrations.CreateStreams do
     create table(:streams) do
       add :title, :string
       add :stream_url, :string
-      add :platform, :string, default: "Twitch"
       add :status, :string, default: "Scheduled"
+      add :platform, :string, default: "Twitch"
+      add :language, :string, default: "EN"
+      add :is_official, :boolean, default: false
       add :viewer_count_peak, :integer, default: 0
       add :scheduled_start, :naive_datetime
       add :actual_start, :naive_datetime, null: true

@@ -116,6 +116,13 @@ defmodule CardsProject.Marketplace do
     result
   end
 
+  def order_process_payment_behavior(id) do
+    order = Repo.get!(Order, id)
+    result = Order.process_payment(order)
+    Repo.update!(Order.changeset(order, %{}))
+    result
+  end
+
   def order_calculate_total_behavior(id) do
     order = Repo.get!(Order, id)
     result = Order.calculate_total(order)
@@ -146,6 +153,89 @@ defmodule CardsProject.Marketplace do
       Repo.update!(Order.changeset(order, %{}))
     end
     :ok
+  end
+
+  def transition_pending_to_paid_order(%Order{} = order) do
+    case Order.assert_transition(order, "Paid") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(order.payment_method) do
+          {:error, :unprocessable, "payment_method is required for Pending -> Paid"}
+        else
+          order
+          |> Ecto.Changeset.change(%{status: "Paid"})
+          # @after: Order.process_payment(order)
+          |> Repo.update()
+        end
+    end
+  end
+
+  def transition_paid_to_processing_order(%Order{} = order) do
+    case Order.assert_transition(order, "Processing") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          order
+          |> Ecto.Changeset.change(%{status: "Processing"})
+          |> Repo.update()
+    end
+  end
+
+  def transition_processing_to_shipped_order(%Order{} = order) do
+    case Order.assert_transition(order, "Shipped") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(order.tracking_number) do
+          {:error, :unprocessable, "tracking_number is required for Processing -> Shipped"}
+        else
+          order
+          |> Ecto.Changeset.change(%{status: "Shipped"})
+          # @after: Order.notify_shipped(order)
+          |> Repo.update()
+        end
+    end
+  end
+
+  def transition_shipped_to_completed_order(%Order{} = order) do
+    case Order.assert_transition(order, "Completed") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          order
+          |> Ecto.Changeset.change(%{status: "Completed"})
+          |> Repo.update()
+    end
+  end
+
+  def transition_pending_to_cancelled_order(%Order{} = order) do
+    case Order.assert_transition(order, "Cancelled") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          order
+          |> Ecto.Changeset.change(%{status: "Cancelled"})
+          # @after: Order.cancel(order)
+          |> Repo.update()
+    end
+  end
+
+  def transition_paid_to_cancelled_order(%Order{} = order) do
+    case Order.assert_transition(order, "Cancelled") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          order
+          |> Ecto.Changeset.change(%{status: "Cancelled"})
+          # @after: Order.cancel(order)
+          |> Repo.update()
+    end
+  end
+
+  def transition_completed_to_refunded_order(%Order{} = order) do
+    case Order.assert_transition(order, "Refunded") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          order
+          |> Ecto.Changeset.change(%{status: "Refunded"})
+          # @after: Order.refund(order)
+          |> Repo.update()
+    end
   end
 
   # ── OrderItem ─────────────────────────────────────────────────────
@@ -282,6 +372,53 @@ defmodule CardsProject.Marketplace do
     trade_listing = Repo.get!(TradeListing, id)
     TradeListing.finalize_auction(trade_listing)
     Repo.update!(TradeListing.changeset(trade_listing, %{}))
+  end
+
+  def transition_pending_to_active_trade_listing(%TradeListing{} = trade_listing) do
+    case TradeListing.assert_transition(trade_listing, "Active") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(trade_listing.quantity) do
+          {:error, :unprocessable, "quantity is required for Pending -> Active"}
+        else
+          trade_listing
+          |> Ecto.Changeset.change(%{status: "Active"})
+          |> Repo.update()
+        end
+    end
+  end
+
+  def transition_active_to_sold_trade_listing(%TradeListing{} = trade_listing) do
+    case TradeListing.assert_transition(trade_listing, "Sold") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          trade_listing
+          |> Ecto.Changeset.change(%{status: "Sold"})
+          # @after: TradeListing.finalize_auction(trade_listing)
+          |> Repo.update()
+    end
+  end
+
+  def transition_active_to_expired_trade_listing(%TradeListing{} = trade_listing) do
+    case TradeListing.assert_transition(trade_listing, "Expired") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          trade_listing
+          |> Ecto.Changeset.change(%{status: "Expired"})
+          # @after: TradeListing.close(trade_listing)
+          |> Repo.update()
+    end
+  end
+
+  def transition_active_to_cancelled_trade_listing(%TradeListing{} = trade_listing) do
+    case TradeListing.assert_transition(trade_listing, "Cancelled") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          trade_listing
+          |> Ecto.Changeset.change(%{status: "Cancelled"})
+          # @after: TradeListing.cancel(trade_listing)
+          |> Repo.update()
+    end
   end
 
   # ── TradeBid ─────────────────────────────────────────────────────
@@ -444,10 +581,68 @@ defmodule CardsProject.Marketplace do
     Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
   end
 
+  def trade_dispute_close_resolved_behavior(id) do
+    trade_dispute = Repo.get!(TradeDispute, id)
+    TradeDispute.close_resolved(trade_dispute)
+    Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
+  end
+
   def trade_dispute_review_behavior(id) do
     trade_dispute = Repo.get!(TradeDispute, id)
     TradeDispute.review(trade_dispute)
     Repo.update!(TradeDispute.changeset(trade_dispute, %{}))
+  end
+
+  def transition_open_to_under_review_trade_dispute(%TradeDispute{} = trade_dispute) do
+    case TradeDispute.assert_transition(trade_dispute, "UnderReview") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          trade_dispute
+          |> Ecto.Changeset.change(%{status: "UnderReview"})
+          # @after: TradeDispute.review(trade_dispute)
+          |> Repo.update()
+    end
+  end
+
+  def transition_under_review_to_resolved_trade_dispute(%TradeDispute{} = trade_dispute) do
+    case TradeDispute.assert_transition(trade_dispute, "Resolved") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(trade_dispute.resolution) do
+          {:error, :unprocessable, "resolution is required for UnderReview -> Resolved"}
+        else
+          trade_dispute
+          |> Ecto.Changeset.change(%{status: "Resolved"})
+          # @after: TradeDispute.close_resolved(trade_dispute)
+          |> Repo.update()
+        end
+    end
+  end
+
+  def transition_under_review_to_escalated_trade_dispute(%TradeDispute{} = trade_dispute) do
+    case TradeDispute.assert_transition(trade_dispute, "Escalated") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          trade_dispute
+          |> Ecto.Changeset.change(%{status: "Escalated"})
+          # @after: TradeDispute.escalate(trade_dispute)
+          |> Repo.update()
+    end
+  end
+
+  def transition_escalated_to_resolved_trade_dispute(%TradeDispute{} = trade_dispute) do
+    case TradeDispute.assert_transition(trade_dispute, "Resolved") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(trade_dispute.resolution) do
+          {:error, :unprocessable, "resolution is required for Escalated -> Resolved"}
+        else
+          trade_dispute
+          |> Ecto.Changeset.change(%{status: "Resolved"})
+          # @after: TradeDispute.close_resolved(trade_dispute)
+          |> Repo.update()
+        end
+    end
   end
 
 end

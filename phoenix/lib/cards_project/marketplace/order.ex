@@ -42,6 +42,11 @@ defmodule CardsProject.Marketplace.Order do
     {:error, :not_implemented}
   end
 
+  def process_payment(_record) do
+    # TODO: implement Order.process_payment
+    {:error, :not_implemented}
+  end
+
   def calculate_total(_record) do
     # TODO: implement Order.calculate_total
     {:error, :not_implemented}
@@ -60,5 +65,23 @@ defmodule CardsProject.Marketplace.Order do
   def notify_shipped(_record) do
     # TODO: implement Order.notify_shipped
     :ok
+  end
+
+  # ── Lifecycle state machine ─────────────────────────────────────────
+  @allowed_transitions %{
+    "Pending" => ["Paid", "Cancelled"],
+    "Paid" => ["Processing", "Cancelled"],
+    "Processing" => ["Shipped"],
+    "Shipped" => ["Completed"],
+    "Completed" => ["Refunded"]
+  }
+
+  def assert_transition(%__MODULE__{status: current}, to) do
+    allowed = Map.get(@allowed_transitions, current, [])
+    if to in allowed do
+      :ok
+    else
+      {:error, "Transition #{current} -> #{to} not allowed"}
+    end
   end
 end

@@ -3,6 +3,7 @@ defmodule CardsProject.Repo.Migrations.CreateTradeListings do
 
   def change do
     create table(:trade_listings) do
+      add :status, :string, default: "Active"
       add :listing_type, :string, default: "FixedPrice"
       add :asking_price, :decimal, null: true
       add :auction_start_price, :decimal, null: true
@@ -11,7 +12,6 @@ defmodule CardsProject.Repo.Migrations.CreateTradeListings do
       add :foil, :boolean, default: false
       add :condition, :string, default: "Mint"
       add :quantity, :integer, default: 1
-      add :status, :string, default: "Active"
       add :description, :string, null: true
       add :created_at, :naive_datetime
       add :expires_at, :naive_datetime, null: true

@@ -3,9 +3,9 @@ defmodule CardsProject.Repo.Migrations.CreateTradeDisputes do
 
   def change do
     create table(:trade_disputes) do
+      add :status, :string, default: "Open"
       add :reason, :string
       add :description, :string
-      add :status, :string, default: "Open"
       add :resolution, :string, null: true
       add :opened_at, :naive_datetime
       add :resolved_at, :naive_datetime, null: true

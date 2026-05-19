@@ -92,8 +92,112 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
     json(conn, %{result: result})
   end
 
+  # PATCH /api/tournaments/:id/transitions/draft-to-registration
+  def transition_draft_to_registration(conn, %{"id" => id}) do
+    tournament = Tournaments.get_tournament!(id)
+    case Tournaments.transition_draft_to_registration_tournament(tournament) do
+      {:ok, updated} ->
+        json(conn, serialize_tournament(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/tournaments/:id/transitions/registration-to-ongoing
+  def transition_registration_to_ongoing(conn, %{"id" => id}) do
+    tournament = Tournaments.get_tournament!(id)
+    case Tournaments.transition_registration_to_ongoing_tournament(tournament) do
+      {:ok, updated} ->
+        json(conn, serialize_tournament(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/tournaments/:id/transitions/registration-to-cancelled
+  def transition_registration_to_cancelled(conn, %{"id" => id}) do
+    tournament = Tournaments.get_tournament!(id)
+    case Tournaments.transition_registration_to_cancelled_tournament(tournament) do
+      {:ok, updated} ->
+        json(conn, serialize_tournament(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/tournaments/:id/transitions/ongoing-to-completed
+  def transition_ongoing_to_completed(conn, %{"id" => id}) do
+    tournament = Tournaments.get_tournament!(id)
+    case Tournaments.transition_ongoing_to_completed_tournament(tournament) do
+      {:ok, updated} ->
+        json(conn, serialize_tournament(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled
+  def transition_ongoing_to_cancelled(conn, %{"id" => id}) do
+    tournament = Tournaments.get_tournament!(id)
+    case Tournaments.transition_ongoing_to_cancelled_tournament(tournament) do
+      {:ok, updated} ->
+        json(conn, serialize_tournament(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/tournaments/:id/transitions/completed-to-draft
+  def transition_completed_to_draft(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Completed -> Draft is not allowed"})
+  end
+
+  # PATCH /api/tournaments/:id/transitions/cancelled-to-draft
+  def transition_cancelled_to_draft(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Cancelled -> Draft is not allowed"})
+  end
+
   defp serialize_tournament(%Tournament{} = record) do
-    Map.take(record, [:id, :name, :description, :format, :tournament_type, :status, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
+    Map.take(record, [:id, :name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
   end
 
   defp format_errors(changeset) do

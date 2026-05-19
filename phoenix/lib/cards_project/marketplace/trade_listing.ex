@@ -3,6 +3,7 @@ defmodule CardsProject.Marketplace.TradeListing do
   import Ecto.Changeset
 
   schema "trade_listings" do
+    field :status, :string
     field :listing_type, :string
     field :asking_price, :decimal
     field :auction_start_price, :decimal
@@ -11,7 +12,6 @@ defmodule CardsProject.Marketplace.TradeListing do
     field :foil, :boolean, default: false
     field :condition, :string
     field :quantity, :integer, default: 1
-    field :status, :string
     field :description, :string
     field :created_at, :naive_datetime
     field :expires_at, :naive_datetime
@@ -25,11 +25,11 @@ defmodule CardsProject.Marketplace.TradeListing do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:foil, :quantity, :created_at, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :status, :description, :expires_at, :seller_id, :card_id])
+    |> cast(attrs, [:foil, :quantity, :created_at, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :description, :expires_at, :seller_id, :card_id])
     |> validate_required([:foil, :quantity, :created_at])
+    |> validate_inclusion(:status, ["Active", "Sold", "Expired", "Cancelled", "Pending"])
     |> validate_inclusion(:listing_type, ["FixedPrice", "Auction", "TradeOffer"])
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
-    |> validate_inclusion(:status, ["Active", "Sold", "Expired", "Cancelled", "Pending"])
   end
 
   # ── Business operations ────────────────────────────────────────────
@@ -57,5 +57,20 @@ defmodule CardsProject.Marketplace.TradeListing do
   def finalize_auction(_record) do
     # TODO: implement TradeListing.finalize_auction
     :ok
+  end
+
+  # ── Lifecycle state machine ─────────────────────────────────────────
+  @allowed_transitions %{
+    "Pending" => ["Active"],
+    "Active" => ["Sold", "Expired", "Cancelled"]
+  }
+
+  def assert_transition(%__MODULE__{status: current}, to) do
+    allowed = Map.get(@allowed_transitions, current, [])
+    if to in allowed do
+      :ok
+    else
+      {:error, "Transition #{current} -> #{to} not allowed"}
+    end
   end
 end

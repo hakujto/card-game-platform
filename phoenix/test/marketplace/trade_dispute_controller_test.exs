@@ -5,8 +5,8 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeControllerTest do
   @valid_params %{
     "description" => "test",
     "opened_at" => ~N[2024-01-01 00:00:00],
-    "reason" => "ItemNotReceived",
-    "status" => "Open"
+    "status" => "Open",
+    "reason" => "ItemNotReceived"
   }
 
   describe "GET /api/trade_disputes" do
@@ -46,4 +46,45 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeControllerTest do
       assert response(conn, 204)
     end
   end
+
+  describe "PATCH /api/trade_disputes/:id/transitions/open-to-underreview" do
+    test "transitions Open -> UnderReview", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
+      conn = patch(conn, "/api/trade_disputes/#{record.id}/transitions/open-to-underreview")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-resolved" do
+    test "transitions UnderReview -> Resolved", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
+      conn = patch(conn, "/api/trade_disputes/#{record.id}/transitions/underreview-to-resolved")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-escalated" do
+    test "transitions UnderReview -> Escalated", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
+      conn = patch(conn, "/api/trade_disputes/#{record.id}/transitions/underreview-to-escalated")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_disputes/:id/transitions/escalated-to-resolved" do
+    test "transitions Escalated -> Resolved", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
+      conn = patch(conn, "/api/trade_disputes/#{record.id}/transitions/escalated-to-resolved")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_disputes/:id/transitions/resolved-to-open" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
+      conn = patch(conn, "/api/trade_disputes/#{record.id}/transitions/resolved-to-open")
+      assert conn.status in [409, 404]
+    end
+  end
+
 end

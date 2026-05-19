@@ -124,6 +124,13 @@ defmodule CardsProjectWeb.Router do
       get "/prizes", TournamentController, :calculate_prize_distribution
       post "/register", TournamentController, :register_player
       get "/full", TournamentController, :is_full
+      patch "/transitions/draft-to-registration", TournamentController, :transition_draft_to_registration
+      patch "/transitions/registration-to-ongoing", TournamentController, :transition_registration_to_ongoing
+      patch "/transitions/registration-to-cancelled", TournamentController, :transition_registration_to_cancelled
+      patch "/transitions/ongoing-to-completed", TournamentController, :transition_ongoing_to_completed
+      patch "/transitions/ongoing-to-cancelled", TournamentController, :transition_ongoing_to_cancelled
+      patch "/transitions/completed-to-draft", TournamentController, :transition_completed_to_draft
+      patch "/transitions/cancelled-to-draft", TournamentController, :transition_cancelled_to_draft
     end
     resources "/tournament_judges", CardsProjectWeb.Tournaments.TournamentJudgeController, except: [:new, :edit]
     scope "/tournament_judges/:id", CardsProjectWeb.Tournaments, alias: false do
@@ -146,9 +153,17 @@ defmodule CardsProjectWeb.Router do
     resources "/matches", CardsProjectWeb.Tournaments.MatchController, except: [:new, :edit]
     scope "/matches/:id", CardsProjectWeb.Tournaments, alias: false do
       post "/record", MatchController, :record_result
+      post "/finalize", MatchController, :finalize_result
       get "/winner", MatchController, :determine_winner
       post "/concede", MatchController, :concede
       post "/draw", MatchController, :draw
+      patch "/transitions/pending-to-active", MatchController, :transition_pending_to_active
+      patch "/transitions/active-to-completed", MatchController, :transition_active_to_completed
+      patch "/transitions/active-to-draw", MatchController, :transition_active_to_draw
+      patch "/transitions/pending-to-bye", MatchController, :transition_pending_to_b_y_e
+      patch "/transitions/completed-to-active", MatchController, :transition_completed_to_active
+      patch "/transitions/draw-to-active", MatchController, :transition_draw_to_active
+      patch "/transitions/bye-to-active", MatchController, :transition_b_y_e_to_active
     end
     resources "/games", CardsProjectWeb.Tournaments.GameController, except: [:new, :edit]
     scope "/games/:id", CardsProjectWeb.Tournaments, alias: false do
@@ -177,9 +192,19 @@ defmodule CardsProjectWeb.Router do
     scope "/orders/:id", CardsProjectWeb.Marketplace, alias: false do
       delete "/cancel", OrderController, :cancel
       post "/pay", OrderController, :pay
+      post "/process-payment", OrderController, :process_payment
       get "/total", OrderController, :calculate_total
       patch "/discount", OrderController, :apply_discount
       post "/refund", OrderController, :refund
+      patch "/transitions/pending-to-paid", OrderController, :transition_pending_to_paid
+      patch "/transitions/paid-to-processing", OrderController, :transition_paid_to_processing
+      patch "/transitions/processing-to-shipped", OrderController, :transition_processing_to_shipped
+      patch "/transitions/shipped-to-completed", OrderController, :transition_shipped_to_completed
+      patch "/transitions/pending-to-cancelled", OrderController, :transition_pending_to_cancelled
+      patch "/transitions/paid-to-cancelled", OrderController, :transition_paid_to_cancelled
+      patch "/transitions/completed-to-refunded", OrderController, :transition_completed_to_refunded
+      patch "/transitions/refunded-to-completed", OrderController, :transition_refunded_to_completed
+      patch "/transitions/completed-to-cancelled", OrderController, :transition_completed_to_cancelled
     end
     resources "/order_items", CardsProjectWeb.Marketplace.OrderItemController, except: [:new, :edit]
     scope "/order_items/:id", CardsProjectWeb.Marketplace, alias: false do
@@ -199,6 +224,12 @@ defmodule CardsProjectWeb.Router do
       delete "/cancel", TradeListingController, :cancel
       get "/expired", TradeListingController, :is_expired
       post "/finalize", TradeListingController, :finalize_auction
+      patch "/transitions/pending-to-active", TradeListingController, :transition_pending_to_active
+      patch "/transitions/active-to-sold", TradeListingController, :transition_active_to_sold
+      patch "/transitions/active-to-expired", TradeListingController, :transition_active_to_expired
+      patch "/transitions/active-to-cancelled", TradeListingController, :transition_active_to_cancelled
+      patch "/transitions/sold-to-active", TradeListingController, :transition_sold_to_active
+      patch "/transitions/expired-to-active", TradeListingController, :transition_expired_to_active
     end
     resources "/trade_bids", CardsProjectWeb.Marketplace.TradeBidController, except: [:new, :edit]
     scope "/trade_bids/:id", CardsProjectWeb.Marketplace, alias: false do
@@ -221,7 +252,13 @@ defmodule CardsProjectWeb.Router do
     scope "/trade_disputes/:id", CardsProjectWeb.Marketplace, alias: false do
       post "/escalate", TradeDisputeController, :escalate
       post "/resolve", TradeDisputeController, :resolve
+      post "/close", TradeDisputeController, :close_resolved
       post "/review", TradeDisputeController, :review
+      patch "/transitions/open-to-underreview", TradeDisputeController, :transition_open_to_under_review
+      patch "/transitions/underreview-to-resolved", TradeDisputeController, :transition_under_review_to_resolved
+      patch "/transitions/underreview-to-escalated", TradeDisputeController, :transition_under_review_to_escalated
+      patch "/transitions/escalated-to-resolved", TradeDisputeController, :transition_escalated_to_resolved
+      patch "/transitions/resolved-to-open", TradeDisputeController, :transition_resolved_to_open
     end
     resources "/draft_sessions", CardsProjectWeb.Content.DraftSessionController, except: [:new, :edit]
     scope "/draft_sessions/:id", CardsProjectWeb.Content, alias: false do
@@ -229,6 +266,12 @@ defmodule CardsProjectWeb.Router do
       post "/abandon", DraftSessionController, :abandon
       post "/complete", DraftSessionController, :complete
       get "/full", DraftSessionController, :is_full
+      patch "/transitions/waitingforplayers-to-drafting", DraftSessionController, :transition_waiting_for_players_to_drafting
+      patch "/transitions/drafting-to-completed", DraftSessionController, :transition_drafting_to_completed
+      patch "/transitions/drafting-to-abandoned", DraftSessionController, :transition_drafting_to_abandoned
+      patch "/transitions/waitingforplayers-to-abandoned", DraftSessionController, :transition_waiting_for_players_to_abandoned
+      patch "/transitions/completed-to-drafting", DraftSessionController, :transition_completed_to_drafting
+      patch "/transitions/abandoned-to-drafting", DraftSessionController, :transition_abandoned_to_drafting
     end
     resources "/draft_participants", CardsProjectWeb.Content.DraftParticipantController, except: [:new, :edit]
     scope "/draft_participants/:id", CardsProjectWeb.Content, alias: false do
@@ -244,7 +287,13 @@ defmodule CardsProjectWeb.Router do
       post "/publish", ArticleController, :publish
       post "/archive", ArticleController, :archive
       post "/view", ArticleController, :increment_view
+      post "/like", ArticleController, :like
+      delete "/like", ArticleController, :unlike
       get "/reading-time", ArticleController, :reading_time_minutes
+      patch "/transitions/draft-to-published", ArticleController, :transition_draft_to_published
+      patch "/transitions/published-to-archived", ArticleController, :transition_published_to_archived
+      patch "/transitions/archived-to-draft", ArticleController, :transition_archived_to_draft
+      patch "/transitions/published-to-draft", ArticleController, :transition_published_to_draft
     end
     resources "/article_tags", CardsProjectWeb.Content.ArticleTagController, except: [:new, :edit]
     scope "/article_tags/:id", CardsProjectWeb.Content, alias: false do
@@ -264,6 +313,9 @@ defmodule CardsProjectWeb.Router do
       post "/end", StreamController, :end_action
       patch "/viewers", StreamController, :update_viewer_peak
       get "/duration", StreamController, :duration_minutes
+      patch "/transitions/scheduled-to-live", StreamController, :transition_scheduled_to_live
+      patch "/transitions/live-to-ended", StreamController, :transition_live_to_ended
+      patch "/transitions/ended-to-live", StreamController, :transition_ended_to_live
     end
   end
 end

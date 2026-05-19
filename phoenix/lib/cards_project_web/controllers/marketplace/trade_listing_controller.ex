@@ -79,8 +79,94 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
     send_resp(conn, :no_content, "")
   end
 
+  # PATCH /api/trade_listings/:id/transitions/pending-to-active
+  def transition_pending_to_active(conn, %{"id" => id}) do
+    trade_listing = Marketplace.get_trade_listing!(id)
+    case Marketplace.transition_pending_to_active_trade_listing(trade_listing) do
+      {:ok, updated} ->
+        json(conn, serialize_trade_listing(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/trade_listings/:id/transitions/active-to-sold
+  def transition_active_to_sold(conn, %{"id" => id}) do
+    trade_listing = Marketplace.get_trade_listing!(id)
+    case Marketplace.transition_active_to_sold_trade_listing(trade_listing) do
+      {:ok, updated} ->
+        json(conn, serialize_trade_listing(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/trade_listings/:id/transitions/active-to-expired
+  def transition_active_to_expired(conn, %{"id" => id}) do
+    trade_listing = Marketplace.get_trade_listing!(id)
+    case Marketplace.transition_active_to_expired_trade_listing(trade_listing) do
+      {:ok, updated} ->
+        json(conn, serialize_trade_listing(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/trade_listings/:id/transitions/active-to-cancelled
+  def transition_active_to_cancelled(conn, %{"id" => id}) do
+    trade_listing = Marketplace.get_trade_listing!(id)
+    case Marketplace.transition_active_to_cancelled_trade_listing(trade_listing) do
+      {:ok, updated} ->
+        json(conn, serialize_trade_listing(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/trade_listings/:id/transitions/sold-to-active
+  def transition_sold_to_active(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Sold -> Active is not allowed"})
+  end
+
+  # PATCH /api/trade_listings/:id/transitions/expired-to-active
+  def transition_expired_to_active(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Expired -> Active is not allowed"})
+  end
+
   defp serialize_trade_listing(%TradeListing{} = record) do
-    Map.take(record, [:id, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :status, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
+    Map.take(record, [:id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
   end
 
   defp format_errors(changeset) do

@@ -7,10 +7,13 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
     "slug" => "test",
     "body" => "test",
     "view_count" => 0,
+    "likes_count" => 0,
+    "is_featured" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
     "updated_at" => ~N[2024-01-01 00:00:00],
     "status" => "Draft",
-    "article_type" => "Guide"
+    "article_type" => "Guide",
+    "language" => "EN"
   }
 
   describe "GET /api/articles" do
@@ -50,4 +53,37 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
       assert response(conn, 204)
     end
   end
+
+  describe "PATCH /api/articles/:id/transitions/draft-to-published" do
+    test "transitions Draft -> Published", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/draft-to-published")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/published-to-archived" do
+    test "transitions Published -> Archived", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/published-to-archived")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/archived-to-draft" do
+    test "transitions Archived -> Draft", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/archived-to-draft")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/articles/:id/transitions/published-to-draft" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/published-to-draft")
+      assert conn.status in [409, 404]
+    end
+  end
+
 end

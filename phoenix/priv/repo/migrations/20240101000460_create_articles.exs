@@ -10,7 +10,10 @@ defmodule CardsProject.Repo.Migrations.CreateArticles do
       add :cover_image_url, :string, null: true
       add :status, :string, default: "Draft"
       add :article_type, :string, default: "Guide"
+      add :language, :string, default: "EN"
       add :view_count, :integer, default: 0
+      add :likes_count, :integer, default: 0
+      add :is_featured, :boolean, default: false
       add :published_at, :naive_datetime, null: true
       add :created_at, :naive_datetime
       add :author_id, references(:players, on_delete: :nilify_all)

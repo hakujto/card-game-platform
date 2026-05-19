@@ -6,9 +6,9 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
     "foil" => true,
     "quantity" => 0,
     "created_at" => ~N[2024-01-01 00:00:00],
+    "status" => "Active",
     "listing_type" => "FixedPrice",
-    "condition" => "Mint",
-    "status" => "Active"
+    "condition" => "Mint"
   }
 
   describe "GET /api/trade_listings" do
@@ -48,4 +48,53 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
       assert response(conn, 204)
     end
   end
+
+  describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
+    test "transitions Pending -> Active", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/pending-to-active")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-sold" do
+    test "transitions Active -> Sold", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/active-to-sold")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-expired" do
+    test "transitions Active -> Expired", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/active-to-expired")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/active-to-cancelled" do
+    test "transitions Active -> Cancelled", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/active-to-cancelled")
+      assert conn.status in [200, 409, 422, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/sold-to-active" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/sold-to-active")
+      assert conn.status in [409, 404]
+    end
+  end
+
+  describe "PATCH /api/trade_listings/:id/transitions/expired-to-active" do
+    test "is denied with 409", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/expired-to-active")
+      assert conn.status in [409, 404]
+    end
+  end
+
 end

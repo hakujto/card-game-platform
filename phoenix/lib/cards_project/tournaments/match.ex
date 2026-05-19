@@ -33,6 +33,11 @@ defmodule CardsProject.Tournaments.Match do
     :ok
   end
 
+  def finalize_result(_record) do
+    # TODO: implement Match.finalize_result
+    :ok
+  end
+
   def determine_winner(_record) do
     # TODO: implement Match.determine_winner
     {:error, :not_implemented}
@@ -46,5 +51,20 @@ defmodule CardsProject.Tournaments.Match do
   def draw(_record) do
     # TODO: implement Match.draw
     :ok
+  end
+
+  # ── Lifecycle state machine ─────────────────────────────────────────
+  @allowed_transitions %{
+    "Pending" => ["Active", "BYE"],
+    "Active" => ["Completed", "Draw"]
+  }
+
+  def assert_transition(%__MODULE__{status: current}, to) do
+    allowed = Map.get(@allowed_transitions, current, [])
+    if to in allowed do
+      :ok
+    else
+      {:error, "Transition #{current} -> #{to} not allowed"}
+    end
   end
 end

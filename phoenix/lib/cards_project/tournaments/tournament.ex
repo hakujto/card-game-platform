@@ -5,9 +5,9 @@ defmodule CardsProject.Tournaments.Tournament do
   schema "tournaments" do
     field :name, :string
     field :description, :string
+    field :status, :string
     field :format, :string
     field :tournament_type, :string
-    field :status, :string
     field :max_players, :integer
     field :entry_fee, :decimal
     field :prize_pool, :decimal
@@ -30,11 +30,11 @@ defmodule CardsProject.Tournaments.Tournament do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :format, :tournament_type, :status, :end_time, :location, :rules_text, :season_id, :organizer_id])
+    |> cast(attrs, [:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :status, :format, :tournament_type, :end_time, :location, :rules_text, :season_id, :organizer_id])
     |> validate_required([:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at])
+    |> validate_inclusion(:status, ["Draft", "Registration", "Ongoing", "Completed", "Cancelled"])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:tournament_type, ["Swiss", "SingleElimination", "DoubleElimination", "RoundRobin"])
-    |> validate_inclusion(:status, ["Draft", "Registration", "Ongoing", "Completed", "Cancelled"])
   end
 
   # ── Business operations ────────────────────────────────────────────
@@ -72,5 +72,21 @@ defmodule CardsProject.Tournaments.Tournament do
   def is_full(_record) do
     # TODO: implement Tournament.is_full
     {:error, :not_implemented}
+  end
+
+  # ── Lifecycle state machine ─────────────────────────────────────────
+  @allowed_transitions %{
+    "Draft" => ["Registration"],
+    "Registration" => ["Ongoing", "Cancelled"],
+    "Ongoing" => ["Completed", "Cancelled"]
+  }
+
+  def assert_transition(%__MODULE__{status: current}, to) do
+    allowed = Map.get(@allowed_transitions, current, [])
+    if to in allowed do
+      :ok
+    else
+      {:error, "Transition #{current} -> #{to} not allowed"}
+    end
   end
 end

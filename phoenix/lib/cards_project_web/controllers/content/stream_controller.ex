@@ -73,8 +73,51 @@ defmodule CardsProjectWeb.Content.StreamController do
     json(conn, %{result: result})
   end
 
+  # PATCH /api/streams/:id/transitions/scheduled-to-live
+  def transition_scheduled_to_live(conn, %{"id" => id}) do
+    stream = Content.get_stream!(id)
+    case Content.transition_scheduled_to_live_stream(stream) do
+      {:ok, updated} ->
+        json(conn, serialize_stream(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/streams/:id/transitions/live-to-ended
+  def transition_live_to_ended(conn, %{"id" => id}) do
+    stream = Content.get_stream!(id)
+    case Content.transition_live_to_ended_stream(stream) do
+      {:ok, updated} ->
+        json(conn, serialize_stream(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/streams/:id/transitions/ended-to-live
+  def transition_ended_to_live(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Ended -> Live is not allowed"})
+  end
+
   defp serialize_stream(%Stream{} = record) do
-    Map.take(record, [:id, :title, :stream_url, :platform, :status, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
+    Map.take(record, [:id, :title, :stream_url, :status, :platform, :language, :is_official, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
   end
 
   defp format_errors(changeset) do

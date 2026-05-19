@@ -72,8 +72,94 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
     json(conn, %{result: result})
   end
 
+  # PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-drafting
+  def transition_waiting_for_players_to_drafting(conn, %{"id" => id}) do
+    draft_session = Content.get_draft_session!(id)
+    case Content.transition_waiting_for_players_to_drafting_draft_session(draft_session) do
+      {:ok, updated} ->
+        json(conn, serialize_draft_session(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/draft_sessions/:id/transitions/drafting-to-completed
+  def transition_drafting_to_completed(conn, %{"id" => id}) do
+    draft_session = Content.get_draft_session!(id)
+    case Content.transition_drafting_to_completed_draft_session(draft_session) do
+      {:ok, updated} ->
+        json(conn, serialize_draft_session(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/draft_sessions/:id/transitions/drafting-to-abandoned
+  def transition_drafting_to_abandoned(conn, %{"id" => id}) do
+    draft_session = Content.get_draft_session!(id)
+    case Content.transition_drafting_to_abandoned_draft_session(draft_session) do
+      {:ok, updated} ->
+        json(conn, serialize_draft_session(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned
+  def transition_waiting_for_players_to_abandoned(conn, %{"id" => id}) do
+    draft_session = Content.get_draft_session!(id)
+    case Content.transition_waiting_for_players_to_abandoned_draft_session(draft_session) do
+      {:ok, updated} ->
+        json(conn, serialize_draft_session(updated))
+
+      {:error, :conflict, msg} ->
+        conn |> put_status(:conflict) |> json(%{error: msg})
+
+      {:error, :unprocessable, msg} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: msg})
+
+      {:error, changeset} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
+  end
+
+  # PATCH /api/draft_sessions/:id/transitions/completed-to-drafting
+  def transition_completed_to_drafting(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Completed -> Drafting is not allowed"})
+  end
+
+  # PATCH /api/draft_sessions/:id/transitions/abandoned-to-drafting
+  def transition_abandoned_to_drafting(conn, %{"id" => _id}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{error: "Transition Abandoned -> Drafting is not allowed"})
+  end
+
   defp serialize_draft_session(%DraftSession{} = record) do
-    Map.take(record, [:id, :status, :draft_type, :seats, :created_at, :completed_at, :card_set_id, :participants_id])
+    Map.take(record, [:id, :status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id, :participants_id])
   end
 
   defp format_errors(changeset) do

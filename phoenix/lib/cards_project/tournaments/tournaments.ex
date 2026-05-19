@@ -133,6 +133,69 @@ defmodule CardsProject.Tournaments do
     result
   end
 
+  def transition_draft_to_registration_tournament(%Tournament{} = tournament) do
+    case Tournament.assert_transition(tournament, "Registration") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+        if is_nil(tournament.name) do
+          {:error, :unprocessable, "name is required for Draft -> Registration"}
+        else
+        if is_nil(tournament.start_time) do
+          {:error, :unprocessable, "start_time is required for Draft -> Registration"}
+        else
+          tournament
+          |> Ecto.Changeset.change(%{status: "Registration"})
+          |> Repo.update()
+        end
+        end
+    end
+  end
+
+  def transition_registration_to_ongoing_tournament(%Tournament{} = tournament) do
+    case Tournament.assert_transition(tournament, "Ongoing") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          tournament
+          |> Ecto.Changeset.change(%{status: "Ongoing"})
+          # @after: Tournament.start(tournament)
+          |> Repo.update()
+    end
+  end
+
+  def transition_registration_to_cancelled_tournament(%Tournament{} = tournament) do
+    case Tournament.assert_transition(tournament, "Cancelled") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          tournament
+          |> Ecto.Changeset.change(%{status: "Cancelled"})
+          # @after: Tournament.cancel(tournament)
+          |> Repo.update()
+    end
+  end
+
+  def transition_ongoing_to_completed_tournament(%Tournament{} = tournament) do
+    case Tournament.assert_transition(tournament, "Completed") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          tournament
+          |> Ecto.Changeset.change(%{status: "Completed"})
+          # @after: Tournament.complete(tournament)
+          # @after: Tournament.calculate_prize_distribution(tournament)
+          |> Repo.update()
+    end
+  end
+
+  def transition_ongoing_to_cancelled_tournament(%Tournament{} = tournament) do
+    case Tournament.assert_transition(tournament, "Cancelled") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          tournament
+          |> Ecto.Changeset.change(%{status: "Cancelled"})
+          # @after: Tournament.cancel(tournament)
+          |> Repo.update()
+    end
+  end
+
   # ── TournamentJudge ─────────────────────────────────────────────────────
 
   def list_tournament_judges, do: Repo.all(TournamentJudge)
@@ -291,6 +354,13 @@ defmodule CardsProject.Tournaments do
     Repo.update!(Match.changeset(match, %{}))
   end
 
+  def match_finalize_result_behavior(id) do
+    match = Repo.get!(Match, id)
+    Match.finalize_result(match)
+    Match.determine_winner(match)  # @after
+    Repo.update!(Match.changeset(match, %{}))
+  end
+
   def match_determine_winner_behavior(id) do
     match = Repo.get!(Match, id)
     result = Match.determine_winner(match)
@@ -308,6 +378,48 @@ defmodule CardsProject.Tournaments do
     match = Repo.get!(Match, id)
     Match.draw(match)
     Repo.update!(Match.changeset(match, %{}))
+  end
+
+  def transition_pending_to_active_match(%Match{} = match) do
+    case Match.assert_transition(match, "Active") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          match
+          |> Ecto.Changeset.change(%{status: "Active"})
+          |> Repo.update()
+    end
+  end
+
+  def transition_active_to_completed_match(%Match{} = match) do
+    case Match.assert_transition(match, "Completed") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          match
+          |> Ecto.Changeset.change(%{status: "Completed"})
+          # @after: Match.finalize_result(match)
+          |> Repo.update()
+    end
+  end
+
+  def transition_active_to_draw_match(%Match{} = match) do
+    case Match.assert_transition(match, "Draw") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          match
+          |> Ecto.Changeset.change(%{status: "Draw"})
+          # @after: Match.draw(match)
+          |> Repo.update()
+    end
+  end
+
+  def transition_pending_to_b_y_e_match(%Match{} = match) do
+    case Match.assert_transition(match, "BYE") do
+      {:error, msg} -> {:error, :conflict, msg}
+      :ok ->
+          match
+          |> Ecto.Changeset.change(%{status: "BYE"})
+          |> Repo.update()
+    end
   end
 
   # ── Game ─────────────────────────────────────────────────────
