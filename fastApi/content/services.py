@@ -141,6 +141,24 @@ class ArticleService:
         db.commit()
 
     @staticmethod
+    def like(db: Session, pk: int):
+        obj = db.query(Article).filter(Article.id == pk).first()
+        if obj is None:
+            raise ValueError("Article not found: " + str(pk))
+        obj.like()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def unlike(db: Session, pk: int):
+        obj = db.query(Article).filter(Article.id == pk).first()
+        if obj is None:
+            raise ValueError("Article not found: " + str(pk))
+        obj.unlike()
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def reading_time_minutes(db: Session, pk: int) -> int:
         obj = db.query(Article).filter(Article.id == pk).first()
         if obj is None:

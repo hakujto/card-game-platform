@@ -31,22 +31,28 @@ class Product(Base):
     card_set = relationship("CardSet", foreign_keys=[card_set_id])
 
     def activate(self):
-        raise NotImplementedError("activate not implemented")
+        # TODO: implement activate
+        pass
 
     def deactivate(self):
-        raise NotImplementedError("deactivate not implemented")
+        # TODO: implement deactivate
+        pass
 
     def apply_discount(self, percent: int) -> float:
-        raise NotImplementedError("apply_discount not implemented")
+        # TODO: implement apply_discount
+        return None  # type: ignore
 
     def restock(self, quantity: int):
-        raise NotImplementedError("restock not implemented")
+        # TODO: implement restock
+        pass
 
     def effective_price(self) -> float:
-        raise NotImplementedError("effective_price not implemented")
+        # TODO: implement effective_price
+        return None  # type: ignore
 
     def is_in_stock(self) -> bool:
-        raise NotImplementedError("is_in_stock not implemented")
+        # TODO: implement is_in_stock
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -88,22 +94,47 @@ class Order(Base):
     coupon = relationship("Coupon", foreign_keys=[coupon_id])
 
     def cancel(self):
-        raise NotImplementedError("cancel not implemented")
+        # TODO: implement cancel
+        pass
 
     def pay(self, payment_ref: str) -> bool:
-        raise NotImplementedError("pay not implemented")
+        # TODO: implement pay
+        return None  # type: ignore
+
+    def process_payment(self) -> bool:
+        # TODO: implement process_payment
+        return None  # type: ignore
 
     def calculate_total(self) -> float:
-        raise NotImplementedError("calculate_total not implemented")
+        # TODO: implement calculate_total
+        return None  # type: ignore
 
     def apply_discount(self, percent: int) -> float:
-        raise NotImplementedError("apply_discount not implemented")
+        # TODO: implement apply_discount
+        return None  # type: ignore
 
     def refund(self):
-        raise NotImplementedError("refund not implemented")
+        # TODO: implement refund
+        pass
 
     def notify_shipped(self):
-        raise NotImplementedError("notify_shipped not implemented")
+        # TODO: implement notify_shipped
+        pass
+
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS: dict = {
+        "Pending": ["Paid", "Cancelled"],
+        "Paid": ["Processing", "Cancelled"],
+        "Processing": ["Shipped"],
+        "Shipped": ["Completed"],
+        "Completed": ["Refunded"]
+    }
+
+    def assert_transition(self, to: str) -> None:
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to not in allowed:
+            raise ValueError(f"Transition {self.status} -> {to} not allowed")
 
 
     def validate_rules(self) -> list[str]:
@@ -140,7 +171,8 @@ class OrderItem(Base):
     product = relationship("Product", foreign_keys=[product_id])
 
     def line_total(self) -> float:
-        raise NotImplementedError("line_total not implemented")
+        # TODO: implement line_total
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -173,16 +205,20 @@ class Coupon(Base):
     is_active = Column(Boolean, default="true")
 
     def is_valid(self) -> bool:
-        raise NotImplementedError("is_valid not implemented")
+        # TODO: implement is_valid
+        return None  # type: ignore
 
     def is_applicable_to_order(self, order_total: float) -> bool:
-        raise NotImplementedError("is_applicable_to_order not implemented")
+        # TODO: implement is_applicable_to_order
+        return None  # type: ignore
 
     def redeem(self):
-        raise NotImplementedError("redeem not implemented")
+        # TODO: implement redeem
+        pass
 
     def deactivate(self):
-        raise NotImplementedError("deactivate not implemented")
+        # TODO: implement deactivate
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -206,14 +242,15 @@ class Coupon(Base):
 
 from typing import Literal
 
+TradeListingStatusType = Literal["Active", "Sold", "Expired", "Cancelled", "Pending"]
 TradeListingListingTypeType = Literal["FixedPrice", "Auction", "TradeOffer"]
 TradeListingConditionType = Literal["Mint", "NearMint", "Excellent", "Good", "Played"]
-TradeListingStatusType = Literal["Active", "Sold", "Expired", "Cancelled", "Pending"]
 
 class TradeListing(Base):
     __tablename__ = "trade_listing"
 
     id = Column(Integer, primary_key=True, index=True)
+    status = Column(String(20), default="Active")
     listing_type = Column(String(20), default="FixedPrice")
     asking_price = Column(Numeric, nullable=True)
     auction_start_price = Column(Numeric, nullable=True)
@@ -222,7 +259,6 @@ class TradeListing(Base):
     foil = Column(Boolean, default="false")
     condition = Column(String(20), default="Mint")
     quantity = Column(Integer, default="1")
-    status = Column(String(20), default="Active")
     description = Column(Text, nullable=True)
     created_at = Column(DateTime)
     expires_at = Column(DateTime, nullable=True)
@@ -232,19 +268,36 @@ class TradeListing(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def close(self):
-        raise NotImplementedError("close not implemented")
+        # TODO: implement close
+        pass
 
     def extend(self, days: int):
-        raise NotImplementedError("extend not implemented")
+        # TODO: implement extend
+        pass
 
     def cancel(self):
-        raise NotImplementedError("cancel not implemented")
+        # TODO: implement cancel
+        pass
 
     def is_expired(self) -> bool:
-        raise NotImplementedError("is_expired not implemented")
+        # TODO: implement is_expired
+        return None  # type: ignore
 
     def finalize_auction(self):
-        raise NotImplementedError("finalize_auction not implemented")
+        # TODO: implement finalize_auction
+        pass
+
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS: dict = {
+        "Pending": ["Active"],
+        "Active": ["Sold", "Expired", "Cancelled"]
+    }
+
+    def assert_transition(self, to: str) -> None:
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to not in allowed:
+            raise ValueError(f"Transition {self.status} -> {to} not allowed")
 
 
     def validate_rules(self) -> list[str]:
@@ -277,10 +330,12 @@ class TradeBid(Base):
     bidder = relationship("Player", foreign_keys=[bidder_id])
 
     def outbid_by(self, new_amount: float) -> bool:
-        raise NotImplementedError("outbid_by not implemented")
+        # TODO: implement outbid_by
+        return None  # type: ignore
 
     def retract(self):
-        raise NotImplementedError("retract not implemented")
+        # TODO: implement retract
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -312,16 +367,20 @@ class TradeTransaction(Base):
     seller = relationship("Player", foreign_keys=[seller_id])
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
     def refund(self):
-        raise NotImplementedError("refund not implemented")
+        # TODO: implement refund
+        pass
 
     def open_dispute(self, reason: str):
-        raise NotImplementedError("open_dispute not implemented")
+        # TODO: implement open_dispute
+        pass
 
     def seller_net(self) -> float:
-        raise NotImplementedError("seller_net not implemented")
+        # TODO: implement seller_net
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -357,10 +416,12 @@ class CardPriceHistory(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def price_change_percent(self, previous_avg: float) -> float:
-        raise NotImplementedError("price_change_percent not implemented")
+        # TODO: implement price_change_percent
+        return None  # type: ignore
 
     def is_price_spike(self, threshold_percent: int) -> bool:
-        raise NotImplementedError("is_price_spike not implemented")
+        # TODO: implement is_price_spike
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -378,16 +439,16 @@ class CardPriceHistory(Base):
 
 from typing import Literal
 
-TradeDisputeReasonType = Literal["ItemNotReceived", "ItemNotAsDescribed", "FraudSuspected", "Other"]
 TradeDisputeStatusType = Literal["Open", "UnderReview", "Resolved", "Escalated"]
+TradeDisputeReasonType = Literal["ItemNotReceived", "ItemNotAsDescribed", "FraudSuspected", "Other"]
 
 class TradeDispute(Base):
     __tablename__ = "trade_dispute"
 
     id = Column(Integer, primary_key=True, index=True)
+    status = Column(String(20), default="Open")
     reason = Column(String(20))
     description = Column(Text)
-    status = Column(String(20), default="Open")
     resolution = Column(Text, nullable=True)
     opened_at = Column(DateTime)
     resolved_at = Column(DateTime, nullable=True)
@@ -399,13 +460,33 @@ class TradeDispute(Base):
     resolved_by = relationship("Player", foreign_keys=[resolved_by_id])
 
     def escalate(self):
-        raise NotImplementedError("escalate not implemented")
+        # TODO: implement escalate
+        pass
 
     def resolve(self, resolution_text: str):
-        raise NotImplementedError("resolve not implemented")
+        # TODO: implement resolve
+        pass
+
+    def close_resolved(self):
+        # TODO: implement close_resolved
+        pass
 
     def review(self):
-        raise NotImplementedError("review not implemented")
+        # TODO: implement review
+        pass
+
+
+    # ── Lifecycle state machine ──────────────────────────────────────
+    ALLOWED_TRANSITIONS: dict = {
+        "Open": ["UnderReview"],
+        "UnderReview": ["Resolved", "Escalated"],
+        "Escalated": ["Resolved"]
+    }
+
+    def assert_transition(self, to: str) -> None:
+        allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
+        if to not in allowed:
+            raise ValueError(f"Transition {self.status} -> {to} not allowed")
 
 
     def validate_implies(self) -> list[str]:

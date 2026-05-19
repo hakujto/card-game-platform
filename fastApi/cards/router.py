@@ -477,6 +477,7 @@ def certify_tournament_legal_deck(item_id: int, db: Session = Depends(get_db)):
 def _validate_deck_card(obj: DeckCard) -> None:
     errors: list[str] = []
     errors.extend(obj.validate_rules())
+    errors.extend(obj.validate_implies())
     if errors:
         raise HTTPException(status_code=422, detail=errors)
 

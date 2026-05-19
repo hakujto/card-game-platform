@@ -9,6 +9,7 @@ class DraftSessionBase(BaseModel):
     status: str
     draft_type: str
     seats: int
+    time_per_pick_seconds: int
     created_at: datetime
     completed_at: datetime | None = None
     card_set_id: int
@@ -22,6 +23,7 @@ class DraftSessionUpdate(BaseModel):
     status: str | None = None
     draft_type: str | None = None
     seats: int | None = None
+    time_per_pick_seconds: int | None = None
     created_at: datetime | None = None
     completed_at: datetime | None = None
     card_set_id: int | None = None
@@ -88,7 +90,10 @@ class ArticleBase(BaseModel):
     cover_image_url: str | None = None
     status: str
     article_type: str
+    language: str
     view_count: int
+    likes_count: int
+    is_featured: bool
     published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
@@ -109,7 +114,10 @@ class ArticleUpdate(BaseModel):
     cover_image_url: str | None = None
     status: str | None = None
     article_type: str | None = None
+    language: str | None = None
     view_count: int | None = None
+    likes_count: int | None = None
+    is_featured: bool | None = None
     published_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -191,8 +199,10 @@ class ArticleCommentRead(ArticleCommentBase):
 class StreamBase(BaseModel):
     title: str
     stream_url: str
-    platform: str
     status: str
+    platform: str
+    language: str
+    is_official: bool
     viewer_count_peak: int
     scheduled_start: datetime
     actual_start: datetime | None = None
@@ -209,8 +219,10 @@ class StreamCreate(StreamBase):
 class StreamUpdate(BaseModel):
     title: str | None = None
     stream_url: str | None = None
-    platform: str | None = None
     status: str | None = None
+    platform: str | None = None
+    language: str | None = None
+    is_official: bool | None = None
     viewer_count_peak: int | None = None
     scheduled_start: datetime | None = None
     actual_start: datetime | None = None

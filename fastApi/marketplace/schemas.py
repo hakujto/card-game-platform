@@ -142,6 +142,7 @@ class CouponRead(CouponBase):
 
 
 class TradeListingBase(BaseModel):
+    status: str
     listing_type: str
     asking_price: float | None = None
     auction_start_price: float | None = None
@@ -150,7 +151,6 @@ class TradeListingBase(BaseModel):
     foil: bool
     condition: str
     quantity: int
-    status: str
     description: str | None = None
     created_at: datetime
     expires_at: datetime | None = None
@@ -163,6 +163,7 @@ class TradeListingCreate(TradeListingBase):
 
 
 class TradeListingUpdate(BaseModel):
+    status: str | None = None
     listing_type: str | None = None
     asking_price: float | None = None
     auction_start_price: float | None = None
@@ -171,7 +172,6 @@ class TradeListingUpdate(BaseModel):
     foil: bool | None = None
     condition: str | None = None
     quantity: int | None = None
-    status: str | None = None
     description: str | None = None
     created_at: datetime | None = None
     expires_at: datetime | None = None
@@ -268,9 +268,9 @@ class CardPriceHistoryRead(CardPriceHistoryBase):
 
 
 class TradeDisputeBase(BaseModel):
+    status: str
     reason: str
     description: str
-    status: str
     resolution: str | None = None
     opened_at: datetime
     resolved_at: datetime | None = None
@@ -284,9 +284,9 @@ class TradeDisputeCreate(TradeDisputeBase):
 
 
 class TradeDisputeUpdate(BaseModel):
+    status: str | None = None
     reason: str | None = None
     description: str | None = None
-    status: str | None = None
     resolution: str | None = None
     opened_at: datetime | None = None
     resolved_at: datetime | None = None

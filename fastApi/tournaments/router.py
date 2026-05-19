@@ -151,6 +151,106 @@ def delete_tournament(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_tournament.patch("/{item_id}/transitions/draft-to-registration", response_model=TournamentRead)
+def transition_draft_to_registration_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        obj.assert_transition("Registration")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.name is None:
+        raise HTTPException(status_code=422, detail="name is required for Draft -> Registration")
+    if obj.start_time is None:
+        raise HTTPException(status_code=422, detail="start_time is required for Draft -> Registration")
+    obj.status = "Registration"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_tournament.patch("/{item_id}/transitions/registration-to-ongoing", response_model=TournamentRead)
+def transition_registration_to_ongoing_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        obj.assert_transition("Ongoing")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Ongoing"
+    obj.start()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_tournament.patch("/{item_id}/transitions/registration-to-cancelled", response_model=TournamentRead)
+def transition_registration_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        obj.assert_transition("Cancelled")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Cancelled"
+    obj.cancel()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_tournament.patch("/{item_id}/transitions/ongoing-to-completed", response_model=TournamentRead)
+def transition_ongoing_to_completed_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        obj.assert_transition("Completed")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Completed"
+    obj.complete()  # @after
+    obj.calculate_prize_distribution()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_tournament.patch("/{item_id}/transitions/ongoing-to-cancelled", response_model=TournamentRead)
+def transition_ongoing_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    try:
+        obj.assert_transition("Cancelled")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Cancelled"
+    obj.cancel()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_tournament.patch("/{item_id}/transitions/completed-to-draft", response_model=TournamentRead)
+def transition_completed_to_draft_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    raise HTTPException(status_code=409, detail="Transition Completed -> Draft is not allowed")
+
+@router_tournament.patch("/{item_id}/transitions/cancelled-to-draft", response_model=TournamentRead)
+def transition_cancelled_to_draft_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+    from fastapi import HTTPException
+    obj = db.query(Tournament).filter(Tournament.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    raise HTTPException(status_code=409, detail="Transition Cancelled -> Draft is not allowed")
+
 @router_tournament.post("/{item_id}/start", status_code=status.HTTP_204_NO_CONTENT)
 def start_tournament(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
@@ -496,12 +596,106 @@ def delete_match(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_match.patch("/{item_id}/transitions/pending-to-active", response_model=MatchRead)
+def transition_pending_to_active_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    try:
+        obj.assert_transition("Active")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Active"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_match.patch("/{item_id}/transitions/active-to-completed", response_model=MatchRead)
+def transition_active_to_completed_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    try:
+        obj.assert_transition("Completed")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Completed"
+    obj.finalize_result()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_match.patch("/{item_id}/transitions/active-to-draw", response_model=MatchRead)
+def transition_active_to_draw_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    try:
+        obj.assert_transition("Draw")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Draw"
+    obj.draw()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_match.patch("/{item_id}/transitions/pending-to-bye", response_model=MatchRead)
+def transition_pending_to_b_y_e_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    try:
+        obj.assert_transition("BYE")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "BYE"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_match.patch("/{item_id}/transitions/completed-to-active", response_model=MatchRead)
+def transition_completed_to_active_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    raise HTTPException(status_code=409, detail="Transition Completed -> Active is not allowed")
+
+@router_match.patch("/{item_id}/transitions/draw-to-active", response_model=MatchRead)
+def transition_draw_to_active_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    raise HTTPException(status_code=409, detail="Transition Draw -> Active is not allowed")
+
+@router_match.patch("/{item_id}/transitions/bye-to-active", response_model=MatchRead)
+def transition_b_y_e_to_active_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+    from fastapi import HTTPException
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    raise HTTPException(status_code=409, detail="Transition BYE -> Active is not allowed")
+
 @router_match.post("/{item_id}/record", status_code=status.HTTP_204_NO_CONTENT)
 def record_result_match(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
     obj = db.query(Match).filter(Match.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Match not found")
     obj.record_result(body.get("p1_wins"), body.get("p2_wins"))
+    db.commit()
+
+@router_match.post("/{item_id}/finalize", status_code=status.HTTP_204_NO_CONTENT)
+def finalize_result_match(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Match).filter(Match.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    obj.finalize_result()
     db.commit()
 
 @router_match.get("/{item_id}/winner", response_model=bool)

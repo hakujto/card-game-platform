@@ -35,9 +35,9 @@ class SeasonRead(SeasonBase):
 class TournamentBase(BaseModel):
     name: str
     description: str | None = None
+    status: str
     format: str
     tournament_type: str
-    status: str
     max_players: int
     entry_fee: float
     prize_pool: float
@@ -59,9 +59,9 @@ class TournamentCreate(TournamentBase):
 class TournamentUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    status: str | None = None
     format: str | None = None
     tournament_type: str | None = None
-    status: str | None = None
     max_players: int | None = None
     entry_fee: float | None = None
     prize_pool: float | None = None

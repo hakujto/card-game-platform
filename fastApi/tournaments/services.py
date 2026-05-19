@@ -266,6 +266,16 @@ class MatchService:
         db.commit()
 
     @staticmethod
+    def finalize_result(db: Session, pk: int):
+        obj = db.query(Match).filter(Match.id == pk).first()
+        if obj is None:
+            raise ValueError("Match not found: " + str(pk))
+        obj.finalize_result()
+        obj.determine_winner()  # @after
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
     def determine_winner(db: Session, pk: int) -> bool:
         obj = db.query(Match).filter(Match.id == pk).first()
         if obj is None:

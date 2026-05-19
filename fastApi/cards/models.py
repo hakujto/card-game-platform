@@ -60,25 +60,32 @@ class Card(Base):
     set = relationship("CardSet", foreign_keys=[set_id])
 
     def ban(self):
-        raise NotImplementedError("ban not implemented")
+        # TODO: implement ban
+        pass
 
     def unban(self):
-        raise NotImplementedError("unban not implemented")
+        # TODO: implement unban
+        pass
 
     def restrict(self):
-        raise NotImplementedError("restrict not implemented")
+        # TODO: implement restrict
+        pass
 
     def unrestrict(self):
-        raise NotImplementedError("unrestrict not implemented")
+        # TODO: implement unrestrict
+        pass
 
     def calculate_value(self) -> float:
-        raise NotImplementedError("calculate_value not implemented")
+        # TODO: implement calculate_value
+        return None  # type: ignore
 
     def apply_rarity_bonus(self, multiplier: int) -> float:
-        raise NotImplementedError("apply_rarity_bonus not implemented")
+        # TODO: implement apply_rarity_bonus
+        return None  # type: ignore
 
     def is_legal_in_format(self, format: str) -> bool:
-        raise NotImplementedError("is_legal_in_format not implemented")
+        # TODO: implement is_legal_in_format
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -97,6 +104,8 @@ class Card(Base):
             errors.append("Creature card must have attack and defense")
         if (self.card_type == "Planeswalker") and not (self.loyalty is not None):
             errors.append("Planeswalker card must have loyalty")
+        if (self.card_type == "Land") and not (self.mana_cost == 0):
+            errors.append("Land card must have zero mana cost")
         if (self.card_type != "Planeswalker") and not (self.loyalty is None):
             errors.append("Only Planeswalker cards can have loyalty")
         if (self.is_banned is True) and not (self.legal_formats == "message"):
@@ -125,16 +134,20 @@ class CardSet(Base):
     logo_url = Column(String(200), nullable=True)
 
     def is_legal_in_standard(self) -> bool:
-        raise NotImplementedError("is_legal_in_standard not implemented")
+        # TODO: implement is_legal_in_standard
+        return None  # type: ignore
 
     def is_legal_in_format(self, format: str) -> bool:
-        raise NotImplementedError("is_legal_in_format not implemented")
+        # TODO: implement is_legal_in_format
+        return None  # type: ignore
 
     def card_count_by_rarity(self, rarity: str) -> int:
-        raise NotImplementedError("card_count_by_rarity not implemented")
+        # TODO: implement card_count_by_rarity
+        return None  # type: ignore
 
     def rotate_out(self):
-        raise NotImplementedError("rotate_out not implemented")
+        # TODO: implement rotate_out
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -165,10 +178,12 @@ class CardRuling(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def is_current(self) -> bool:
-        raise NotImplementedError("is_current not implemented")
+        # TODO: implement is_current
+        return None  # type: ignore
 
     def supersedes_previous(self) -> bool:
-        raise NotImplementedError("supersedes_previous not implemented")
+        # TODO: implement supersedes_previous
+        return None  # type: ignore
 
     def __repr__(self) -> str:
         return f"<CardRuling id={{self.id}}>"
@@ -191,10 +206,12 @@ class CardAbility(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def is_usable_at(self, timing: str) -> bool:
-        raise NotImplementedError("is_usable_at not implemented")
+        # TODO: implement is_usable_at
+        return None  # type: ignore
 
     def describe(self) -> str:
-        raise NotImplementedError("describe not implemented")
+        # TODO: implement describe
+        return None  # type: ignore
 
 
     def validate_implies(self) -> list[str]:
@@ -233,28 +250,36 @@ class Deck(Base):
     tags = relationship("DeckTag", secondary=deck_tags_assoc)
 
     def validate_size(self) -> bool:
-        raise NotImplementedError("validate_size not implemented")
+        # TODO: implement validate_size
+        return None  # type: ignore
 
     def add_card(self, card_id: int, quantity: int):
-        raise NotImplementedError("add_card not implemented")
+        # TODO: implement add_card
+        pass
 
     def remove_card(self, card_id: int):
-        raise NotImplementedError("remove_card not implemented")
+        # TODO: implement remove_card
+        pass
 
     def win_rate(self) -> float:
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None  # type: ignore
 
     def clone(self) -> None:
-        raise NotImplementedError("clone not implemented")
+        # TODO: implement clone
+        return None  # type: ignore
 
     def publish(self):
-        raise NotImplementedError("publish not implemented")
+        # TODO: implement publish
+        pass
 
     def unpublish(self):
-        raise NotImplementedError("unpublish not implemented")
+        # TODO: implement unpublish
+        pass
 
     def certify_tournament_legal(self) -> bool:
-        raise NotImplementedError("certify_tournament_legal not implemented")
+        # TODO: implement certify_tournament_legal
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -288,16 +313,24 @@ class DeckCard(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def increment(self, amount: int):
-        raise NotImplementedError("increment not implemented")
+        # TODO: implement increment
+        pass
 
     def decrement(self, amount: int):
-        raise NotImplementedError("decrement not implemented")
+        # TODO: implement decrement
+        pass
 
 
     def validate_rules(self) -> list[str]:
         errors = []
         if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 4))):
             errors.append("A deck can contain between 1 and 4 copies of a card")
+        return errors
+
+    def validate_implies(self) -> list[str]:
+        errors = []
+        if (self.is_commander is True) and not (self.quantity == 1):
+            errors.append("Commander card must appear exactly once in the deck")
         return errors
     def __repr__(self) -> str:
         return f"<DeckCard id={{self.id}}>"
@@ -314,10 +347,12 @@ class DeckSideboardCard(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def increment(self, amount: int):
-        raise NotImplementedError("increment not implemented")
+        # TODO: implement increment
+        pass
 
     def decrement(self, amount: int):
-        raise NotImplementedError("decrement not implemented")
+        # TODO: implement decrement
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -337,10 +372,12 @@ class DeckTag(Base):
     color = Column(String(7), nullable=True)
 
     def rename(self, new_name: str):
-        raise NotImplementedError("rename not implemented")
+        # TODO: implement rename
+        pass
 
     def merge_into(self, target_tag_id: int):
-        raise NotImplementedError("merge_into not implemented")
+        # TODO: implement merge_into
+        pass
 
     def __repr__(self) -> str:
         return f"<DeckTag id={{self.id}}>"

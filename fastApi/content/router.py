@@ -63,6 +63,86 @@ def delete_draft_session(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_draft_session.patch("/{item_id}/transitions/waitingforplayers-to-drafting", response_model=DraftSessionRead)
+def transition_waiting_for_players_to_drafting_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    try:
+        obj.assert_transition("Drafting")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Drafting"
+    obj.start()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_draft_session.patch("/{item_id}/transitions/drafting-to-completed", response_model=DraftSessionRead)
+def transition_drafting_to_completed_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    try:
+        obj.assert_transition("Completed")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Completed"
+    obj.complete()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_draft_session.patch("/{item_id}/transitions/drafting-to-abandoned", response_model=DraftSessionRead)
+def transition_drafting_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    try:
+        obj.assert_transition("Abandoned")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Abandoned"
+    obj.abandon()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_draft_session.patch("/{item_id}/transitions/waitingforplayers-to-abandoned", response_model=DraftSessionRead)
+def transition_waiting_for_players_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    try:
+        obj.assert_transition("Abandoned")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Abandoned"
+    obj.abandon()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_draft_session.patch("/{item_id}/transitions/completed-to-drafting", response_model=DraftSessionRead)
+def transition_completed_to_drafting_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    raise HTTPException(status_code=409, detail="Transition Completed -> Drafting is not allowed")
+
+@router_draft_session.patch("/{item_id}/transitions/abandoned-to-drafting", response_model=DraftSessionRead)
+def transition_abandoned_to_drafting_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+    from fastapi import HTTPException
+    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="DraftSession not found")
+    raise HTTPException(status_code=409, detail="Transition Abandoned -> Drafting is not allowed")
+
 @router_draft_session.post("/{item_id}/api/draft-sessions/{id}/start", status_code=status.HTTP_204_NO_CONTENT)
 def start_draft_session(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
@@ -288,6 +368,65 @@ def delete_article(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_article.patch("/{item_id}/transitions/draft-to-published", response_model=ArticleRead)
+def transition_draft_to_published_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+    from fastapi import HTTPException
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    try:
+        obj.assert_transition("Published")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.title is None:
+        raise HTTPException(status_code=422, detail="title is required for Draft -> Published")
+    if obj.body is None:
+        raise HTTPException(status_code=422, detail="body is required for Draft -> Published")
+    obj.status = "Published"
+    obj.publish()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_article.patch("/{item_id}/transitions/published-to-archived", response_model=ArticleRead)
+def transition_published_to_archived_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+    from fastapi import HTTPException
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    try:
+        obj.assert_transition("Archived")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Archived"
+    obj.archive()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_article.patch("/{item_id}/transitions/archived-to-draft", response_model=ArticleRead)
+def transition_archived_to_draft_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+    from fastapi import HTTPException
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    try:
+        obj.assert_transition("Draft")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Draft"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_article.patch("/{item_id}/transitions/published-to-draft", response_model=ArticleRead)
+def transition_published_to_draft_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+    from fastapi import HTTPException
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    raise HTTPException(status_code=409, detail="Transition Published -> Draft is not allowed")
+
 @router_article.post("/{item_id}/publish", status_code=status.HTTP_204_NO_CONTENT)
 def publish_article(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(Article).filter(Article.id == item_id).first()
@@ -310,6 +449,22 @@ def increment_view_article(item_id: int, db: Session = Depends(get_db)):
     if obj is None:
         raise HTTPException(status_code=404, detail="Article not found")
     obj.increment_view()
+    db.commit()
+
+@router_article.post("/{item_id}/like", status_code=status.HTTP_204_NO_CONTENT)
+def like_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    obj.like()
+    db.commit()
+
+@router_article.delete("/{item_id}/like", status_code=status.HTTP_204_NO_CONTENT)
+def unlike_article(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Article).filter(Article.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Article not found")
+    obj.unlike()
     db.commit()
 
 @router_article.get("/{item_id}/reading-time", response_model=int)
@@ -556,6 +711,48 @@ def delete_stream(item_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail="Stream not found")
     db.delete(obj)
     db.commit()
+
+@router_stream.patch("/{item_id}/transitions/scheduled-to-live", response_model=StreamRead)
+def transition_scheduled_to_live_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:
+    from fastapi import HTTPException
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    try:
+        obj.assert_transition("Live")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.stream_url is None:
+        raise HTTPException(status_code=422, detail="stream_url is required for Scheduled -> Live")
+    obj.status = "Live"
+    obj.go_live()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_stream.patch("/{item_id}/transitions/live-to-ended", response_model=StreamRead)
+def transition_live_to_ended_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:
+    from fastapi import HTTPException
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    try:
+        obj.assert_transition("Ended")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Ended"
+    obj.end()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_stream.patch("/{item_id}/transitions/ended-to-live", response_model=StreamRead)
+def transition_ended_to_live_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:
+    from fastapi import HTTPException
+    obj = db.query(Stream).filter(Stream.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    raise HTTPException(status_code=409, detail="Transition Ended -> Live is not allowed")
 
 @router_stream.post("/{item_id}/live", status_code=status.HTTP_204_NO_CONTENT)
 def go_live_stream(item_id: int, db: Session = Depends(get_db)):

@@ -100,6 +100,16 @@ class OrderService:
         return result
 
     @staticmethod
+    def process_payment(db: Session, pk: int) -> bool:
+        obj = db.query(Order).filter(Order.id == pk).first()
+        if obj is None:
+            raise ValueError("Order not found: " + str(pk))
+        result = obj.process_payment()
+        db.add(obj)
+        db.commit()
+        return result
+
+    @staticmethod
     def calculate_total(db: Session, pk: int) -> float:
         obj = db.query(Order).filter(Order.id == pk).first()
         if obj is None:
@@ -419,6 +429,15 @@ class TradeDisputeService:
         if obj is None:
             raise ValueError("TradeDispute not found: " + str(pk))
         obj.resolve(resolution_text)
+        db.add(obj)
+        db.commit()
+
+    @staticmethod
+    def close_resolved(db: Session, pk: int):
+        obj = db.query(TradeDispute).filter(TradeDispute.id == pk).first()
+        if obj is None:
+            raise ValueError("TradeDispute not found: " + str(pk))
+        obj.close_resolved()
         db.add(obj)
         db.commit()
 

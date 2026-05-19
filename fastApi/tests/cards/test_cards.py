@@ -78,6 +78,13 @@ class TestCard:
         res = client.post("/api/cards", json=data)
         assert res.status_code == 422
 
+    def test_create_fails_when_land_has_no_mana_cost_violated(self, client: TestClient):
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        # IMPLIES: antecedent=true, consequent violated → 422
+        data = {"name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
+        res = client.post("/api/cards", json=data)
+        assert res.status_code == 422
+
     def test_create_fails_when_spell_or_artifact_no_loyalty_violated(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
@@ -88,21 +95,21 @@ class TestCard:
     def test_create_fails_when_mana_cost_range_violated(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         # Simple rule violated → 422
-        data = {"name": "test", "card_type": "Planeswalker", "rarity": "Common", "mana_cost": 21, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
+        data = {"name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 21, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
         res = client.post("/api/cards", json=data)
         assert res.status_code == 422
 
     def test_create_fails_when_power_level_range_violated(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         # Simple rule violated → 422
-        data = {"name": "test", "card_type": "Planeswalker", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": False, "power_level": 11, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
+        data = {"name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": False, "power_level": 11, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
         res = client.post("/api/cards", json=data)
         assert res.status_code == 422
 
     def test_create_fails_when_not_banned_and_restricted_violated(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         # Simple rule violated → 422
-        data = {"name": "test", "card_type": "Planeswalker", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": True, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
+        data = {"name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "message", "is_banned": True, "is_restricted": True, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}
         res = client.post("/api/cards", json=data)
         assert res.status_code == 422
 
@@ -349,7 +356,17 @@ class TestDeckCard:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         # Simple rule violated → 422
-        data = {"quantity": 5, "is_commander": False, "deck_id": _dep_deck["id"], "card_id": _dep_card["id"]}
+        data = {"quantity": 5, "is_commander": True, "deck_id": _dep_deck["id"], "card_id": _dep_card["id"]}
+        res = client.post("/api/deck_cards", json=data)
+        assert res.status_code == 422
+
+    def test_create_fails_when_commander_is_singleton_violated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_deck = client.post("/api/decks", json={"name": "test", "format": "Standard", "is_public": True, "is_tournament_legal": False, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        # IMPLIES: antecedent=true, consequent violated → 422
+        data = {"quantity": 0, "is_commander": True, "deck_id": _dep_deck["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/deck_cards", json=data)
         assert res.status_code == 422
 

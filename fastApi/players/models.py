@@ -59,25 +59,32 @@ class Player(Base):
     )
 
     def promote(self) -> bool:
-        raise NotImplementedError("promote not implemented")
+        # TODO: implement promote
+        return None  # type: ignore
 
     def demote(self) -> bool:
-        raise NotImplementedError("demote not implemented")
+        # TODO: implement demote
+        return None  # type: ignore
 
     def record_win(self):
-        raise NotImplementedError("record_win not implemented")
+        # TODO: implement record_win
+        pass
 
     def record_loss(self):
-        raise NotImplementedError("record_loss not implemented")
+        # TODO: implement record_loss
+        pass
 
     def win_rate(self) -> float:
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None  # type: ignore
 
     def verify(self):
-        raise NotImplementedError("verify not implemented")
+        # TODO: implement verify
+        pass
 
     def update_rating(self, delta: int):
-        raise NotImplementedError("update_rating not implemented")
+        # TODO: implement update_rating
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -113,13 +120,16 @@ class PlayerSeasonStats(Base):
     season = relationship("Season", foreign_keys=[season_id])
 
     def win_rate(self) -> float:
-        raise NotImplementedError("win_rate not implemented")
+        # TODO: implement win_rate
+        return None  # type: ignore
 
     def add_points(self, points: int):
-        raise NotImplementedError("add_points not implemented")
+        # TODO: implement add_points
+        pass
 
     def record_tournament_win(self):
-        raise NotImplementedError("record_tournament_win not implemented")
+        # TODO: implement record_tournament_win
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -157,13 +167,16 @@ class PlayerCollection(Base):
     card = relationship("Card", foreign_keys=[card_id])
 
     def add(self, quantity: int):
-        raise NotImplementedError("add not implemented")
+        # TODO: implement add
+        pass
 
     def remove(self, quantity: int):
-        raise NotImplementedError("remove not implemented")
+        # TODO: implement remove
+        pass
 
     def estimated_value(self) -> float:
-        raise NotImplementedError("estimated_value not implemented")
+        # TODO: implement estimated_value
+        return None  # type: ignore
 
 
     def validate_rules(self) -> list[str]:
@@ -191,13 +204,16 @@ class Friendship(Base):
     receiver = relationship("Player", foreign_keys=[receiver_id])
 
     def accept(self):
-        raise NotImplementedError("accept not implemented")
+        # TODO: implement accept
+        pass
 
     def decline(self):
-        raise NotImplementedError("decline not implemented")
+        # TODO: implement decline
+        pass
 
     def block(self):
-        raise NotImplementedError("block not implemented")
+        # TODO: implement block
+        pass
 
     def __repr__(self) -> str:
         return f"<Friendship id={{self.id}}>"
@@ -219,10 +235,12 @@ class Achievement(Base):
     is_hidden = Column(Boolean, default="false")
 
     def point_value(self, multiplier: int) -> int:
-        raise NotImplementedError("point_value not implemented")
+        # TODO: implement point_value
+        return None  # type: ignore
 
     def reveal(self):
-        raise NotImplementedError("reveal not implemented")
+        # TODO: implement reveal
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -247,10 +265,12 @@ class PlayerAchievement(Base):
     achievement = relationship("Achievement", foreign_keys=[achievement_id])
 
     def increment_progress(self, amount: int):
-        raise NotImplementedError("increment_progress not implemented")
+        # TODO: implement increment_progress
+        pass
 
     def complete(self):
-        raise NotImplementedError("complete not implemented")
+        # TODO: implement complete
+        pass
 
 
     def validate_rules(self) -> list[str]:
@@ -279,16 +299,20 @@ class CraftingRecipe(Base):
     required_cards = relationship("Card", secondary=crafting_recipe_required_cards_assoc)
 
     def can_craft(self, player_id: int) -> bool:
-        raise NotImplementedError("can_craft not implemented")
+        # TODO: implement can_craft
+        return None  # type: ignore
 
     def execute_craft(self, player_id: int):
-        raise NotImplementedError("execute_craft not implemented")
+        # TODO: implement execute_craft
+        pass
 
     def disable(self):
-        raise NotImplementedError("disable not implemented")
+        # TODO: implement disable
+        pass
 
     def enable(self):
-        raise NotImplementedError("enable not implemented")
+        # TODO: implement enable
+        pass
 
 
     def validate_rules(self) -> list[str]:

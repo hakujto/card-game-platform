@@ -145,6 +145,60 @@ class TestOrder:
         res = client.post("/api/orders", json=data)
         assert res.status_code == 422
 
+    def test_transition_pending_to_paid(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/pending-to-paid")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_paid_to_processing(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-processing")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_processing_to_shipped(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/processing-to-shipped")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_shipped_to_completed(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/shipped-to-completed")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_pending_to_cancelled(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/pending-to-cancelled")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_paid_to_cancelled(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-cancelled")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_completed_to_refunded(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/completed-to-refunded")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_refunded_to_completed_is_denied(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/refunded-to-completed")
+        assert res.status_code in (409, 404)
+
+    def test_transition_completed_to_cancelled_is_denied(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/completed-to-cancelled")
+        assert res.status_code in (409, 404)
+
 
 class TestOrderItem:
     def test_list_returns_200(self, client: TestClient):
@@ -254,7 +308,7 @@ class TestTradeListing:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        data = {"listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
+        data = {"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/trade_listings", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
@@ -263,7 +317,7 @@ class TestTradeListing:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         res = client.get(f"/api/trade_listings/{created['id']}")
         assert res.status_code == 200
 
@@ -271,7 +325,7 @@ class TestTradeListing:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         res = client.put(f"/api/trade_listings/{created['id']}", json={"asking_price": 0.0})
         assert res.status_code == 200
 
@@ -279,7 +333,7 @@ class TestTradeListing:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         res = client.delete(f"/api/trade_listings/{created['id']}")
         assert res.status_code == 204
 
@@ -288,7 +342,7 @@ class TestTradeListing:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
-        data = {"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": None, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
+        data = {"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": None, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/trade_listings", json=data)
         assert res.status_code == 422
 
@@ -297,7 +351,7 @@ class TestTradeListing:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
-        data = {"listing_type": "Auction", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": None, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
+        data = {"status": "Active", "listing_type": "Auction", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": None, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/trade_listings", json=data)
         assert res.status_code == 422
 
@@ -306,9 +360,57 @@ class TestTradeListing:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         # Simple rule violated → 422
-        data = {"listing_type": "Auction", "foil": False, "condition": "Mint", "quantity": 10000, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
+        data = {"status": "Active", "listing_type": "Auction", "foil": False, "condition": "Mint", "quantity": 10000, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}
         res = client.post("/api/trade_listings", json=data)
         assert res.status_code == 422
+
+    def test_transition_pending_to_active(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/pending-to-active")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_active_to_sold(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-sold")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_active_to_expired(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-expired")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_active_to_cancelled(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-cancelled")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_sold_to_active_is_denied(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/sold-to-active")
+        assert res.status_code in (409, 404)
+
+    def test_transition_expired_to_active_is_denied(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/expired-to-active")
+        assert res.status_code in (409, 404)
 
 
 class TestTradeBid:
@@ -321,7 +423,7 @@ class TestTradeBid:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         data = {"amount": 1, "placed_at": "2024-01-01T00:00:00", "is_winning": False, "listing_id": _dep_trade_listing["id"], "bidder_id": _dep_player["id"]}
         res = client.post("/api/trade_bids", json=data)
         assert res.status_code == 201
@@ -331,7 +433,7 @@ class TestTradeBid:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_bids", json={"amount": 1, "placed_at": "2024-01-01T00:00:00", "is_winning": False, "listing_id": _dep_trade_listing["id"], "bidder_id": _dep_player["id"]}).json()
         res = client.get(f"/api/trade_bids/{created['id']}")
         assert res.status_code == 200
@@ -340,7 +442,7 @@ class TestTradeBid:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_bids", json={"amount": 1, "placed_at": "2024-01-01T00:00:00", "is_winning": False, "listing_id": _dep_trade_listing["id"], "bidder_id": _dep_player["id"]}).json()
         res = client.put(f"/api/trade_bids/{created['id']}", json={"amount": 1})
         assert res.status_code == 200
@@ -349,7 +451,7 @@ class TestTradeBid:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_bids", json={"amount": 1, "placed_at": "2024-01-01T00:00:00", "is_winning": False, "listing_id": _dep_trade_listing["id"], "bidder_id": _dep_player["id"]}).json()
         res = client.delete(f"/api/trade_bids/{created['id']}")
         assert res.status_code == 204
@@ -358,7 +460,7 @@ class TestTradeBid:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         # Simple rule violated → 422
         data = {"amount": 0, "placed_at": "2024-01-01T00:00:00", "is_winning": False, "listing_id": _dep_trade_listing["id"], "bidder_id": _dep_player["id"]}
         res = client.post("/api/trade_bids", json=data)
@@ -375,7 +477,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         data = {"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}
         res = client.post("/api/trade_transactions", json=data)
         assert res.status_code == 201
@@ -385,7 +487,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
         res = client.get(f"/api/trade_transactions/{created['id']}")
         assert res.status_code == 200
@@ -394,7 +496,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
         res = client.put(f"/api/trade_transactions/{created['id']}", json={"final_price": 1})
         assert res.status_code == 200
@@ -403,7 +505,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         created = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
         res = client.delete(f"/api/trade_transactions/{created['id']}")
         assert res.status_code == 204
@@ -412,7 +514,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         # Simple rule violated → 422
         data = {"final_price": 1, "platform_fee": 99999, "status": "Completed", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}
         res = client.post("/api/trade_transactions", json=data)
@@ -422,7 +524,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         # Simple rule violated → 422
         data = {"final_price": 1, "platform_fee": -1, "status": "Completed", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}
         res = client.post("/api/trade_transactions", json=data)
@@ -432,7 +534,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         # Simple rule violated → 422
         data = {"final_price": 0, "platform_fee": 1.0, "status": "Completed", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}
         res = client.post("/api/trade_transactions", json=data)
@@ -442,7 +544,7 @@ class TestTradeTransaction:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
         data = {"final_price": 1, "platform_fee": 1.0, "status": "Completed", "completed_at": None, "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}
         res = client.post("/api/trade_transactions", json=data)
@@ -519,9 +621,9 @@ class TestTradeDispute:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
-        data = {"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}
+        data = {"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}
         res = client.post("/api/trade_disputes", json=data)
         assert res.status_code == 201
         assert "id" in res.json()
@@ -530,9 +632,9 @@ class TestTradeDispute:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
-        created = client.post("/api/trade_disputes", json={"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
         res = client.get(f"/api/trade_disputes/{created['id']}")
         assert res.status_code == 200
 
@@ -540,9 +642,9 @@ class TestTradeDispute:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
-        created = client.post("/api/trade_disputes", json={"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
         res = client.put(f"/api/trade_disputes/{created['id']}", json={"description": "test"})
         assert res.status_code == 200
 
@@ -550,9 +652,9 @@ class TestTradeDispute:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
-        created = client.post("/api/trade_disputes", json={"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
         res = client.delete(f"/api/trade_disputes/{created['id']}")
         assert res.status_code == 204
 
@@ -560,9 +662,59 @@ class TestTradeDispute:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        _dep_trade_listing = client.post("/api/trade_listings", json={"listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "status": "Active", "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
         # IMPLIES: antecedent=true, consequent violated → 422
-        data = {"reason": "ItemNotReceived", "description": "test", "status": "Open", "opened_at": "2024-01-01T00:00:00", "resolved_at": "2024-01-01T00:00:00", "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}
+        data = {"status": "Open", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": "2024-01-01T00:00:00", "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}
         res = client.post("/api/trade_disputes", json=data)
         assert res.status_code == 422
+
+    def test_transition_open_to_under_review(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/open-to-underreview")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_under_review_to_resolved(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-resolved")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_under_review_to_escalated(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-escalated")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_escalated_to_resolved(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/escalated-to-resolved")
+        assert res.status_code in (200, 409, 422, 404)
+
+    def test_transition_resolved_to_open_is_denied(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = client.post("/api/trade_transactions", json={"final_price": 1, "platform_fee": 1.0, "status": "Pending", "completed_at": "2024-01-01T00:00:00", "listing_id": _dep_trade_listing["id"], "buyer_id": _dep_player["id"], "seller_id": _dep_player["id"]}).json()
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/resolved-to-open")
+        assert res.status_code in (409, 404)

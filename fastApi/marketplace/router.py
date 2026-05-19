@@ -169,6 +169,136 @@ def delete_order(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_order.patch("/{item_id}/transitions/pending-to-paid", response_model=OrderRead)
+def transition_pending_to_paid_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Paid")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.payment_method is None:
+        raise HTTPException(status_code=422, detail="payment_method is required for Pending -> Paid")
+    obj.status = "Paid"
+    obj.process_payment()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/paid-to-processing", response_model=OrderRead)
+def transition_paid_to_processing_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Processing")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Processing"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/processing-to-shipped", response_model=OrderRead)
+def transition_processing_to_shipped_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Shipped")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.tracking_number is None:
+        raise HTTPException(status_code=422, detail="tracking_number is required for Processing -> Shipped")
+    obj.status = "Shipped"
+    obj.notify_shipped()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/shipped-to-completed", response_model=OrderRead)
+def transition_shipped_to_completed_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Completed")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Completed"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/pending-to-cancelled", response_model=OrderRead)
+def transition_pending_to_cancelled_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Cancelled")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Cancelled"
+    obj.cancel()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/paid-to-cancelled", response_model=OrderRead)
+def transition_paid_to_cancelled_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Cancelled")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Cancelled"
+    obj.cancel()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/completed-to-refunded", response_model=OrderRead)
+def transition_completed_to_refunded_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    try:
+        obj.assert_transition("Refunded")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Refunded"
+    obj.refund()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_order.patch("/{item_id}/transitions/refunded-to-completed", response_model=OrderRead)
+def transition_refunded_to_completed_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    raise HTTPException(status_code=409, detail="Transition Refunded -> Completed is not allowed")
+
+@router_order.patch("/{item_id}/transitions/completed-to-cancelled", response_model=OrderRead)
+def transition_completed_to_cancelled_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+    from fastapi import HTTPException
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    raise HTTPException(status_code=409, detail="Transition Completed -> Cancelled is not allowed")
+
 @router_order.delete("/{item_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_order(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(Order).filter(Order.id == item_id).first()
@@ -183,6 +313,15 @@ def pay_order(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
     result = obj.pay(body.get("payment_ref"))
+    db.commit()
+    return result
+
+@router_order.post("/{item_id}/process-payment", response_model=bool)
+def process_payment_order(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(Order).filter(Order.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    result = obj.process_payment()
     db.commit()
     return result
 
@@ -421,6 +560,87 @@ def delete_trade_listing(item_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail="TradeListing not found")
     db.delete(obj)
     db.commit()
+
+@router_trade_listing.patch("/{item_id}/transitions/pending-to-active", response_model=TradeListingRead)
+def transition_pending_to_active_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    try:
+        obj.assert_transition("Active")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.quantity is None:
+        raise HTTPException(status_code=422, detail="quantity is required for Pending -> Active")
+    obj.status = "Active"
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_listing.patch("/{item_id}/transitions/active-to-sold", response_model=TradeListingRead)
+def transition_active_to_sold_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    try:
+        obj.assert_transition("Sold")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Sold"
+    obj.finalize_auction()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_listing.patch("/{item_id}/transitions/active-to-expired", response_model=TradeListingRead)
+def transition_active_to_expired_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    try:
+        obj.assert_transition("Expired")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Expired"
+    obj.close()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_listing.patch("/{item_id}/transitions/active-to-cancelled", response_model=TradeListingRead)
+def transition_active_to_cancelled_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    try:
+        obj.assert_transition("Cancelled")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Cancelled"
+    obj.cancel()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_listing.patch("/{item_id}/transitions/sold-to-active", response_model=TradeListingRead)
+def transition_sold_to_active_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    raise HTTPException(status_code=409, detail="Transition Sold -> Active is not allowed")
+
+@router_trade_listing.patch("/{item_id}/transitions/expired-to-active", response_model=TradeListingRead)
+def transition_expired_to_active_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+    from fastapi import HTTPException
+    obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeListing not found")
+    raise HTTPException(status_code=409, detail="Transition Expired -> Active is not allowed")
 
 @router_trade_listing.post("/{item_id}/api/trade-listings/{id}/close", status_code=status.HTTP_204_NO_CONTENT)
 def close_trade_listing(item_id: int, db: Session = Depends(get_db)):
@@ -752,6 +972,82 @@ def delete_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> None:
     db.delete(obj)
     db.commit()
 
+@router_trade_dispute.patch("/{item_id}/transitions/open-to-underreview", response_model=TradeDisputeRead)
+def transition_open_to_under_review_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+    from fastapi import HTTPException
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    try:
+        obj.assert_transition("UnderReview")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "UnderReview"
+    obj.review()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_dispute.patch("/{item_id}/transitions/underreview-to-resolved", response_model=TradeDisputeRead)
+def transition_under_review_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+    from fastapi import HTTPException
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    try:
+        obj.assert_transition("Resolved")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.resolution is None:
+        raise HTTPException(status_code=422, detail="resolution is required for UnderReview -> Resolved")
+    obj.status = "Resolved"
+    obj.close_resolved()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_dispute.patch("/{item_id}/transitions/underreview-to-escalated", response_model=TradeDisputeRead)
+def transition_under_review_to_escalated_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+    from fastapi import HTTPException
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    try:
+        obj.assert_transition("Escalated")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    obj.status = "Escalated"
+    obj.escalate()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_dispute.patch("/{item_id}/transitions/escalated-to-resolved", response_model=TradeDisputeRead)
+def transition_escalated_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+    from fastapi import HTTPException
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    try:
+        obj.assert_transition("Resolved")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    if obj.resolution is None:
+        raise HTTPException(status_code=422, detail="resolution is required for Escalated -> Resolved")
+    obj.status = "Resolved"
+    obj.close_resolved()  # @after
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+@router_trade_dispute.patch("/{item_id}/transitions/resolved-to-open", response_model=TradeDisputeRead)
+def transition_resolved_to_open_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+    from fastapi import HTTPException
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    raise HTTPException(status_code=409, detail="Transition Resolved -> Open is not allowed")
+
 @router_trade_dispute.post("/{item_id}/api/disputes/{id}/escalate", status_code=status.HTTP_204_NO_CONTENT)
 def escalate_trade_dispute(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
@@ -766,6 +1062,14 @@ def resolve_trade_dispute(item_id: int, body: dict = {}, db: Session = Depends(g
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
     obj.resolve(body.get("resolution_text"))
+    db.commit()
+
+@router_trade_dispute.post("/{item_id}/api/disputes/{id}/close", status_code=status.HTTP_204_NO_CONTENT)
+def close_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db)):
+    obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
+    if obj is None:
+        raise HTTPException(status_code=404, detail="TradeDispute not found")
+    obj.close_resolved()
     db.commit()
 
 @router_trade_dispute.post("/{item_id}/api/disputes/{id}/review", status_code=status.HTTP_204_NO_CONTENT)
