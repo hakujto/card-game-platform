@@ -11,6 +11,7 @@ function validate(data: any): void {
   if (!(!((data.isBanned === true && data.isRestricted === true)))) throw new Error(`Card cannot be both banned and restricted at the same time`);
   if ((data.cardType === 'CREATURE') && !((data.attack === undefined || data.attack != null) && (data.defense === undefined || data.defense != null))) throw new Error(`Creature card must have attack and defense`);
   if ((data.cardType === 'PLANESWALKER') && !((data.loyalty === undefined || data.loyalty != null))) throw new Error(`Planeswalker card must have loyalty`);
+  if ((data.cardType === 'LAND') && !(data.manaCost === 0)) throw new Error(`Land card must have zero mana cost`);
   if ((data.cardType !== 'PLANESWALKER') && !(data.loyalty == null)) throw new Error(`Only Planeswalker cards can have loyalty`);
   if ((data.isBanned === true) && !(data.legalFormats === "message")) throw new Error(`banned_card_not_in_legal_formats`);
 }

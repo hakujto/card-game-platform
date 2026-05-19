@@ -37,7 +37,7 @@ describe('TradeTransaction API', () => {
   });
 
   it("POST /api/trade_transactions returns 400 when fee_not_exceed_price violated", async () => {
-    const res = await request(app).post('/api/trade_transactions').send({ finalPrice: 1, listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: 1 });
+    const res = await request(app).post('/api/trade_transactions').send({ listingId: 1, buyerId: 1, sellerId: 1, status: 'COMPLETED', completedAt: '2024-01-01T00:00:00.000Z', platformFee: 1, finalPrice: 0 });
     expect(res.status).toBe(400);
   });
 

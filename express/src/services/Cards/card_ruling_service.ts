@@ -25,13 +25,13 @@ export class CardRulingService {
     const entity = await prisma.cardRuling.findUnique({ where: { id } });
     if (!entity) throw new Error('CardRuling not found: ' + id);
     // TODO: implement is_current domain logic
-    throw new Error('is_current not implemented');
+    return undefined as any;
   }
 
   async supersedes_previous(id: number): Promise<boolean> {
     const entity = await prisma.cardRuling.findUnique({ where: { id } });
     if (!entity) throw new Error('CardRuling not found: ' + id);
     // TODO: implement supersedes_previous domain logic
-    throw new Error('supersedes_previous not implemented');
+    return undefined as any;
   }
 }

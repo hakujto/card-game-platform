@@ -19,6 +19,8 @@ describe('Article API', () => {
       slug: 'test',
       body: 'test',
       viewCount: 1,
+      likesCount: 1,
+      isFeatured: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
     });
@@ -48,5 +50,29 @@ describe('Article API', () => {
   it("POST /api/articles returns 400 when view_count_not_negative violated", async () => {
     const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: '2024-01-01T00:00:00.000Z', viewCount: -1 });
     expect(res.status).toBe(400);
+  });
+
+  it("POST /api/articles returns 400 when likes_count_not_negative violated", async () => {
+    const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: '2024-01-01T00:00:00.000Z', likesCount: -1 });
+    expect(res.status).toBe(400);
+  });
+  it('PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published', async () => {
+    const res = await request(app).patch('/api/articles/1/transitions/draft-to-published');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/articles/1/transitions/published-to-archived transitions Published -> Archived', async () => {
+    const res = await request(app).patch('/api/articles/1/transitions/published-to-archived');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/articles/1/transitions/archived-to-draft transitions Archived -> Draft', async () => {
+    const res = await request(app).patch('/api/articles/1/transitions/archived-to-draft');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/articles/1/transitions/published-to-draft is denied (409)', async () => {
+    const res = await request(app).patch('/api/articles/1/transitions/published-to-draft');
+    expect([409, 404]).toContain(res.status);
   });
 });

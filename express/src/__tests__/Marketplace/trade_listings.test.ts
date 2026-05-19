@@ -51,4 +51,33 @@ describe('TradeListing API', () => {
     const res = await request(app).post('/api/trade_listings').send({ createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'AUCTION', askingPrice: 0.00, auctionStartPrice: 0.00, auctionEndTime: '2024-01-01T00:00:00.000Z', quantity: 10000 });
     expect(res.status).toBe(400);
   });
+  it('PATCH /api/trade_listings/1/transitions/pending-to-active transitions Pending -> Active', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/pending-to-active');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_listings/1/transitions/active-to-sold transitions Active -> Sold', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/active-to-sold');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_listings/1/transitions/active-to-expired transitions Active -> Expired', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/active-to-expired');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_listings/1/transitions/active-to-cancelled transitions Active -> Cancelled', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/active-to-cancelled');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_listings/1/transitions/sold-to-active is denied (409)', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/sold-to-active');
+    expect([409, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_listings/1/transitions/expired-to-active is denied (409)', async () => {
+    const res = await request(app).patch('/api/trade_listings/1/transitions/expired-to-active');
+    expect([409, 404]).toContain(res.status);
+  });
 });

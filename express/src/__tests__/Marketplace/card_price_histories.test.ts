@@ -41,7 +41,7 @@ describe('CardPriceHistory API', () => {
   });
 
   it("POST /api/card_price_histories returns 400 when price_bounds_consistent violated", async () => {
-    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, maxPrice: 0.00, volume: 1, cardId: 1, minPrice: 1 });
+    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', maxPrice: 0.00, volume: 1, cardId: 1, minPrice: 1, avgPrice: 0 });
     expect(res.status).toBe(400);
   });
 

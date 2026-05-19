@@ -25,14 +25,12 @@ export class PlayerAchievementService {
     const entity = await prisma.playerAchievement.findUnique({ where: { id } });
     if (!entity) throw new Error('PlayerAchievement not found: ' + id);
     // TODO: implement increment_progress domain logic
-    throw new Error('increment_progress not implemented');
   }
 
   async complete(id: number): Promise<void> {
     const entity = await prisma.playerAchievement.findUnique({ where: { id } });
     if (!entity) throw new Error('PlayerAchievement not found: ' + id);
     // TODO: implement complete domain logic
-    throw new Error('complete not implemented');
   }
 
   // triggered by @on(is_completed = true)

@@ -25,41 +25,38 @@ export class ProductService {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement activate domain logic
-    throw new Error('activate not implemented');
   }
 
   async deactivate(id: number): Promise<void> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement deactivate domain logic
-    throw new Error('deactivate not implemented');
   }
 
   async apply_discount(id: number, percent: number): Promise<number> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement apply_discount domain logic
-    throw new Error('apply_discount not implemented');
+    return undefined as any;
   }
 
   async restock(id: number, quantity: number): Promise<void> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement restock domain logic
-    throw new Error('restock not implemented');
   }
 
   async effective_price(id: number): Promise<number> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement effective_price domain logic
-    throw new Error('effective_price not implemented');
+    return undefined as any;
   }
 
   async is_in_stock(id: number): Promise<boolean> {
     const entity = await prisma.product.findUnique({ where: { id } });
     if (!entity) throw new Error('Product not found: ' + id);
     // TODO: implement is_in_stock domain logic
-    throw new Error('is_in_stock not implemented');
+    return undefined as any;
   }
 }

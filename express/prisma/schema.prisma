@@ -284,9 +284,9 @@ model Season {
 
 model Tournament {
   id  Int  @id @default(autoincrement())
+  status  TournamentStatusEnum?
   format  TournamentFormatEnum?
   tournamentType  TournamentTournamentTypeEnum?
-  status  TournamentStatusEnum?
   name  String
   description  String?
   maxPlayers  Int @default(0)
@@ -469,9 +469,9 @@ model Coupon {
 
 model TradeListing {
   id  Int  @id @default(autoincrement())
+  status  TradeListingStatusEnum?
   listingType  TradeListingListingTypeEnum?
   condition  TradeListingConditionEnum?
-  status  TradeListingStatusEnum?
   askingPrice  Decimal?
   auctionStartPrice  Decimal?
   auctionCurrentBid  Decimal?
@@ -529,8 +529,8 @@ model CardPriceHistory {
 
 model TradeDispute {
   id  Int  @id @default(autoincrement())
-  reason  TradeDisputeReasonEnum?
   status  TradeDisputeStatusEnum?
+  reason  TradeDisputeReasonEnum?
   description  String
   resolution  String?
   openedAt  DateTime
@@ -548,6 +548,7 @@ model DraftSession {
   status  DraftSessionStatusEnum?
   draftType  DraftSessionDraftTypeEnum?
   seats  Int @default(8)
+  timePerPickSeconds  Int @default(30)
   createdAt  DateTime
   completedAt  DateTime?
   cardSetId  Int?
@@ -581,12 +582,15 @@ model Article {
   id  Int  @id @default(autoincrement())
   status  ArticleStatusEnum?
   articleType  ArticleArticleTypeEnum?
+  language  ArticleLanguageEnum?
   title  String
   slug  String
   body  String
   excerpt  String?
   coverImageUrl  String?
   viewCount  Int @default(0)
+  likesCount  Int @default(0)
+  isFeatured  Boolean @default(false)
   publishedAt  DateTime?
   createdAt  DateTime
   updatedAt  DateTime
@@ -631,10 +635,12 @@ model ArticleComment {
 
 model Stream {
   id  Int  @id @default(autoincrement())
-  platform  StreamPlatformEnum?
   status  StreamStatusEnum?
+  platform  StreamPlatformEnum?
+  language  StreamLanguageEnum?
   title  String
   streamUrl  String
+  isOfficial  Boolean @default(false)
   viewerCountPeak  Int @default(0)
   scheduledStart  DateTime
   actualStart  DateTime?
@@ -789,6 +795,14 @@ enum SeasonFormatEnum {
   DRAFT
 }
 
+enum TournamentStatusEnum {
+  DRAFT
+  REGISTRATION
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
 enum TournamentFormatEnum {
   STANDARD
   EXTENDED
@@ -803,14 +817,6 @@ enum TournamentTournamentTypeEnum {
   SINGLEELIMINATION
   DOUBLEELIMINATION
   ROUNDROBIN
-}
-
-enum TournamentStatusEnum {
-  DRAFT
-  REGISTRATION
-  ONGOING
-  COMPLETED
-  CANCELLED
 }
 
 enum TournamentJudgeRoleEnum {
@@ -892,6 +898,14 @@ enum CouponDiscountTypeEnum {
   FIXED
 }
 
+enum TradeListingStatusEnum {
+  ACTIVE
+  SOLD
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
 enum TradeListingListingTypeEnum {
   FIXEDPRICE
   AUCTION
@@ -906,14 +920,6 @@ enum TradeListingConditionEnum {
   PLAYED
 }
 
-enum TradeListingStatusEnum {
-  ACTIVE
-  SOLD
-  EXPIRED
-  CANCELLED
-  PENDING
-}
-
 enum TradeTransactionStatusEnum {
   PENDING
   COMPLETED
@@ -921,18 +927,18 @@ enum TradeTransactionStatusEnum {
   REFUNDED
 }
 
-enum TradeDisputeReasonEnum {
-  ITEMNOTRECEIVED
-  ITEMNOTASDESCRIBED
-  FRAUDSUSPECTED
-  OTHER
-}
-
 enum TradeDisputeStatusEnum {
   OPEN
   UNDERREVIEW
   RESOLVED
   ESCALATED
+}
+
+enum TradeDisputeReasonEnum {
+  ITEMNOTRECEIVED
+  ITEMNOTASDESCRIBED
+  FRAUDSUSPECTED
+  OTHER
 }
 
 enum DraftSessionStatusEnum {
@@ -963,6 +969,22 @@ enum ArticleArticleTypeEnum {
   DECKLIST
 }
 
+enum ArticleLanguageEnum {
+  EN
+  DE
+  FR
+  IT
+  ES
+  JP
+  PT
+}
+
+enum StreamStatusEnum {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
 enum StreamPlatformEnum {
   TWITCH
   YOUTUBE
@@ -970,8 +992,12 @@ enum StreamPlatformEnum {
   PLATFORM
 }
 
-enum StreamStatusEnum {
-  SCHEDULED
-  LIVE
-  ENDED
+enum StreamLanguageEnum {
+  EN
+  DE
+  FR
+  IT
+  ES
+  JP
+  PT
 }

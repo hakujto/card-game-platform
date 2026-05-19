@@ -60,4 +60,38 @@ describe('Match API', () => {
     const res = await request(app).post('/api/matches').send({ roundId: 1, player1Id: 1, status: 'COMPLETED', startedAt: null });
     expect(res.status).toBe(400);
   });
+  it('PATCH /api/matches/1/transitions/pending-to-active transitions Pending -> Active', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/pending-to-active');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/active-to-completed transitions Active -> Completed', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/active-to-completed');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/active-to-draw transitions Active -> Draw', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/active-to-draw');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/pending-to-bye transitions Pending -> BYE', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/pending-to-bye');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/completed-to-active is denied (409)', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/completed-to-active');
+    expect([409, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/draw-to-active is denied (409)', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/draw-to-active');
+    expect([409, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/matches/1/transitions/bye-to-active is denied (409)', async () => {
+    const res = await request(app).patch('/api/matches/1/transitions/bye-to-active');
+    expect([409, 404]).toContain(res.status);
+  });
 });

@@ -16,7 +16,7 @@ describe('Card API', () => {
       .post('/api/cards')
       .send({
       name: 'test',
-      manaCost: 1,
+      manaCost: 0,
       description: 'test',
       isBanned: false,
       isRestricted: true,
@@ -50,23 +50,28 @@ describe('Card API', () => {
     expect(res.status).toBe(400);
   });
 
+  it("POST /api/cards returns 400 when land_has_no_mana_cost violated", async () => {
+    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', legalFormats: "message", setId: 1, cardType: 'LAND', manaCost: 1 });
+    expect(res.status).toBe(400);
+  });
+
   it("POST /api/cards returns 400 when spell_or_artifact_no_loyalty violated", async () => {
     const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', legalFormats: "message", setId: 1, loyalty: 1 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/cards returns 400 when mana_cost_range violated", async () => {
-    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'PLANESWALKER', attack: 1, defense: 1, loyalty: null, isBanned: true, legalFormats: "message", manaCost: 21 });
+    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'LAND', attack: 1, defense: 1, loyalty: null, isBanned: true, legalFormats: "message", manaCost: 21 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/cards returns 400 when power_level_range violated", async () => {
-    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'PLANESWALKER', attack: 1, defense: 1, loyalty: null, isBanned: true, legalFormats: "message", powerLevel: 11 });
+    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'LAND', attack: 1, defense: 1, loyalty: null, manaCost: 0, isBanned: true, legalFormats: "message", powerLevel: 11 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/cards returns 400 when not_banned_and_restricted violated", async () => {
-    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'PLANESWALKER', attack: 1, defense: 1, loyalty: null, legalFormats: "message", isBanned: true, isRestricted: true });
+    const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', setId: 1, cardType: 'LAND', attack: 1, defense: 1, loyalty: null, manaCost: 0, legalFormats: "message", isBanned: true, isRestricted: true });
     expect(res.status).toBe(400);
   });
 

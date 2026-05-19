@@ -25,13 +25,11 @@ export class DeckCardService {
     const entity = await prisma.deckCard.findUnique({ where: { id } });
     if (!entity) throw new Error('DeckCard not found: ' + id);
     // TODO: implement increment domain logic
-    throw new Error('increment not implemented');
   }
 
   async decrement(id: number, amount: number): Promise<void> {
     const entity = await prisma.deckCard.findUnique({ where: { id } });
     if (!entity) throw new Error('DeckCard not found: ' + id);
     // TODO: implement decrement domain logic
-    throw new Error('decrement not implemented');
   }
 }

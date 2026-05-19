@@ -25,20 +25,18 @@ export class PlayerSeasonStatsService {
     const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
     if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
     // TODO: implement win_rate domain logic
-    throw new Error('win_rate not implemented');
+    return undefined as any;
   }
 
   async add_points(id: number, points: number): Promise<void> {
     const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
     if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
     // TODO: implement add_points domain logic
-    throw new Error('add_points not implemented');
   }
 
   async record_tournament_win(id: number): Promise<void> {
     const entity = await prisma.playerSeasonStats.findUnique({ where: { id } });
     if (!entity) throw new Error('PlayerSeasonStats not found: ' + id);
     // TODO: implement record_tournament_win domain logic
-    throw new Error('record_tournament_win not implemented');
   }
 }

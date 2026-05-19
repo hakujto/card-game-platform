@@ -8,6 +8,65 @@ const service = new TradeDisputeService();
 function validate(data: any): void {
   if ((data.resolvedAt != null) && !(data.status === 'RESOLVED')) throw new Error(`resolved_at_requires_terminal_status`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'Open': ['UnderReview'],
+  'UnderReview': ['Resolved', 'Escalated'],
+  'Escalated': ['Resolved']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class TradeDisputeLifecycleService {
+
+  async transitionOpenToUnderReview(id: number): Promise<any> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    assertTransition((entity as any).status, 'UnderReview');
+    const updated = await prisma.tradeDispute.update({ where: { id }, data: { status: 'UNDERREVIEW' as any } });
+    // TODO: entity.review(); // @after
+    return updated;
+  }
+
+  async transitionUnderReviewToResolved(id: number): Promise<any> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    assertTransition((entity as any).status, 'Resolved');
+    if ((entity as any).resolution == null) throw new Error('resolution is required for UnderReview -> Resolved');
+    const updated = await prisma.tradeDispute.update({ where: { id }, data: { status: 'RESOLVED' as any } });
+    // TODO: entity.closeResolved(); // @after
+    return updated;
+  }
+
+  async transitionUnderReviewToEscalated(id: number): Promise<any> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    assertTransition((entity as any).status, 'Escalated');
+    const updated = await prisma.tradeDispute.update({ where: { id }, data: { status: 'ESCALATED' as any } });
+    // TODO: entity.escalate(); // @after
+    return updated;
+  }
+
+  async transitionEscalatedToResolved(id: number): Promise<any> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    assertTransition((entity as any).status, 'Resolved');
+    if ((entity as any).resolution == null) throw new Error('resolution is required for Escalated -> Resolved');
+    const updated = await prisma.tradeDispute.update({ where: { id }, data: { status: 'RESOLVED' as any } });
+    // TODO: entity.closeResolved(); // @after
+    return updated;
+  }
+
+  async transitionResolvedToOpen(id: number): Promise<any> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    throw new Error('Transition Resolved -> Open is not allowed');
+  }
+}
+const lifecycleService = new TradeDisputeLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.tradeDispute.findMany();
@@ -17,9 +76,9 @@ router.get('/', async (_req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.reason !== undefined) data.reason = body.reason;
     if (body.description !== undefined) data.description = body.description;
-    if (body.status !== undefined) data.status = body.status;
     if (body.resolution !== undefined) data.resolution = body.resolution;
     if (body.openedAt !== undefined) data.openedAt = body.openedAt != null ? new Date(body.openedAt) : null;
     if (body.resolvedAt !== undefined) data.resolvedAt = body.resolvedAt != null ? new Date(body.resolvedAt) : null;
@@ -44,9 +103,9 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.reason !== undefined) data.reason = body.reason;
     if (body.description !== undefined) data.description = body.description;
-    if (body.status !== undefined) data.status = body.status;
     if (body.resolution !== undefined) data.resolution = body.resolution;
     if (body.openedAt !== undefined) data.openedAt = body.openedAt != null ? new Date(body.openedAt) : null;
     if (body.resolvedAt !== undefined) data.resolvedAt = body.resolvedAt != null ? new Date(body.resolvedAt) : null;
@@ -66,9 +125,9 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.reason !== undefined) data.reason = body.reason;
     if (body.description !== undefined) data.description = body.description;
-    if (body.status !== undefined) data.status = body.status;
     if (body.resolution !== undefined) data.resolution = body.resolution;
     if (body.openedAt !== undefined) data.openedAt = body.openedAt != null ? new Date(body.openedAt) : null;
     if (body.resolvedAt !== undefined) data.resolvedAt = body.resolvedAt != null ? new Date(body.resolvedAt) : null;
@@ -115,6 +174,16 @@ router.post('/:id/resolve', async (req, res) => {
   }
 });
 
+router.post('/:id/close', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.close_resolved(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
 router.post('/:id/review', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
@@ -122,6 +191,71 @@ router.post('/:id/review', async (req, res) => {
     res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/open-to-underreview', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionOpenToUnderReview(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/underreview-to-resolved', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionUnderReviewToResolved(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/underreview-to-escalated', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionUnderReviewToEscalated(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/escalated-to-resolved', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionEscalatedToResolved(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/resolved-to-open', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionResolvedToOpen(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;

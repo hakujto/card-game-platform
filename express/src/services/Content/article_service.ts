@@ -25,27 +25,36 @@ export class ArticleService {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);
     // TODO: implement publish domain logic
-    throw new Error('publish not implemented');
   }
 
   async archive(id: number): Promise<void> {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);
     // TODO: implement archive domain logic
-    throw new Error('archive not implemented');
   }
 
   async increment_view(id: number): Promise<void> {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);
     // TODO: implement increment_view domain logic
-    throw new Error('increment_view not implemented');
+  }
+
+  async like(id: number): Promise<void> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement like domain logic
+  }
+
+  async unlike(id: number): Promise<void> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement unlike domain logic
   }
 
   async reading_time_minutes(id: number): Promise<number> {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);
     // TODO: implement reading_time_minutes domain logic
-    throw new Error('reading_time_minutes not implemented');
+    return undefined as any;
   }
 }

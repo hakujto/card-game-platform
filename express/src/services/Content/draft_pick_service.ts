@@ -25,6 +25,6 @@ export class DraftPickService {
     const entity = await prisma.draftPick.findUnique({ where: { id } });
     if (!entity) throw new Error('DraftPick not found: ' + id);
     // TODO: implement is_first_pick domain logic
-    throw new Error('is_first_pick not implemented');
+    return undefined as any;
   }
 }

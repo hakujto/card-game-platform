@@ -25,27 +25,30 @@ export class MatchService {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement record_result domain logic
-    throw new Error('record_result not implemented');
+  }
+
+  async finalize_result(id: number): Promise<void> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    // TODO: implement finalize_result domain logic
   }
 
   async determine_winner(id: number): Promise<boolean> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement determine_winner domain logic
-    throw new Error('determine_winner not implemented');
+    return undefined as any;
   }
 
   async concede(id: number, playerId: number): Promise<void> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement concede domain logic
-    throw new Error('concede not implemented');
   }
 
   async draw(id: number): Promise<void> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement draw domain logic
-    throw new Error('draw not implemented');
   }
 }

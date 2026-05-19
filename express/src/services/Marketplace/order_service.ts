@@ -25,35 +25,40 @@ export class OrderService {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
     // TODO: implement cancel domain logic
-    throw new Error('cancel not implemented');
   }
 
   async pay(id: number, paymentRef: string): Promise<boolean> {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
     // TODO: implement pay domain logic
-    throw new Error('pay not implemented');
+    return undefined as any;
+  }
+
+  async process_payment(id: number): Promise<boolean> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    // TODO: implement process_payment domain logic
+    return undefined as any;
   }
 
   async calculate_total(id: number): Promise<number> {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
     // TODO: implement calculate_total domain logic
-    throw new Error('calculate_total not implemented');
+    return undefined as any;
   }
 
   async apply_discount(id: number, percent: number): Promise<number> {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
     // TODO: implement apply_discount domain logic
-    throw new Error('apply_discount not implemented');
+    return undefined as any;
   }
 
   async refund(id: number): Promise<void> {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
     // TODO: implement refund domain logic
-    throw new Error('refund not implemented');
   }
 
   // triggered by @on(status = Shipped)

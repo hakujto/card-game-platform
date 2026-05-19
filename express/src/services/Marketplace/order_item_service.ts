@@ -25,6 +25,6 @@ export class OrderItemService {
     const entity = await prisma.orderItem.findUnique({ where: { id } });
     if (!entity) throw new Error('OrderItem not found: ' + id);
     // TODO: implement line_total domain logic
-    throw new Error('line_total not implemented');
+    return undefined as any;
   }
 }

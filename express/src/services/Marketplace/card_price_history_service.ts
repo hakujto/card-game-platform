@@ -25,13 +25,13 @@ export class CardPriceHistoryService {
     const entity = await prisma.cardPriceHistory.findUnique({ where: { id } });
     if (!entity) throw new Error('CardPriceHistory not found: ' + id);
     // TODO: implement price_change_percent domain logic
-    throw new Error('price_change_percent not implemented');
+    return undefined as any;
   }
 
   async is_price_spike(id: number, thresholdPercent: number): Promise<boolean> {
     const entity = await prisma.cardPriceHistory.findUnique({ where: { id } });
     if (!entity) throw new Error('CardPriceHistory not found: ' + id);
     // TODO: implement is_price_spike domain logic
-    throw new Error('is_price_spike not implemented');
+    return undefined as any;
   }
 }

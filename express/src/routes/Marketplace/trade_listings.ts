@@ -10,6 +10,68 @@ function validate(data: any): void {
   if ((data.listingType === 'FIXEDPRICE') && !((data.askingPrice === undefined || data.askingPrice != null))) throw new Error(`Fixed price listing must have an asking price`);
   if ((data.listingType === 'AUCTION') && !((data.auctionStartPrice === undefined || data.auctionStartPrice != null) && (data.auctionEndTime === undefined || data.auctionEndTime != null))) throw new Error(`Auction listing must have a start price and end time`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'Pending': ['Active'],
+  'Active': ['Sold', 'Expired', 'Cancelled']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class TradeListingLifecycleService {
+
+  async transitionPendingToActive(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    assertTransition((entity as any).status, 'Active');
+    if ((entity as any).quantity == null) throw new Error('quantity is required for Pending -> Active');
+    const updated = await prisma.tradeListing.update({ where: { id }, data: { status: 'ACTIVE' as any } });
+    return updated;
+  }
+
+  async transitionActiveToSold(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    assertTransition((entity as any).status, 'Sold');
+    const updated = await prisma.tradeListing.update({ where: { id }, data: { status: 'SOLD' as any } });
+    // TODO: entity.finalizeAuction(); // @after
+    return updated;
+  }
+
+  async transitionActiveToExpired(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    assertTransition((entity as any).status, 'Expired');
+    const updated = await prisma.tradeListing.update({ where: { id }, data: { status: 'EXPIRED' as any } });
+    // TODO: entity.close(); // @after
+    return updated;
+  }
+
+  async transitionActiveToCancelled(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    assertTransition((entity as any).status, 'Cancelled');
+    const updated = await prisma.tradeListing.update({ where: { id }, data: { status: 'CANCELLED' as any } });
+    // TODO: entity.cancel(); // @after
+    return updated;
+  }
+
+  async transitionSoldToActive(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    throw new Error('Transition Sold -> Active is not allowed');
+  }
+
+  async transitionExpiredToActive(id: number): Promise<any> {
+    const entity = await prisma.tradeListing.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeListing not found: ' + id);
+    throw new Error('Transition Expired -> Active is not allowed');
+  }
+}
+const lifecycleService = new TradeListingLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.tradeListing.findMany();
@@ -19,6 +81,7 @@ router.get('/', async (_req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.listingType !== undefined) data.listingType = body.listingType;
     if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
     if (body.auctionStartPrice !== undefined) data.auctionStartPrice = body.auctionStartPrice;
@@ -27,7 +90,6 @@ router.post('/', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
     if (body.quantity !== undefined) data.quantity = body.quantity;
-    if (body.status !== undefined) data.status = body.status;
     if (body.description !== undefined) data.description = body.description;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.expiresAt !== undefined) data.expiresAt = body.expiresAt != null ? new Date(body.expiresAt) : null;
@@ -51,6 +113,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.listingType !== undefined) data.listingType = body.listingType;
     if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
     if (body.auctionStartPrice !== undefined) data.auctionStartPrice = body.auctionStartPrice;
@@ -59,7 +122,6 @@ router.put('/:id', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
     if (body.quantity !== undefined) data.quantity = body.quantity;
-    if (body.status !== undefined) data.status = body.status;
     if (body.description !== undefined) data.description = body.description;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.expiresAt !== undefined) data.expiresAt = body.expiresAt != null ? new Date(body.expiresAt) : null;
@@ -78,6 +140,7 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.status !== undefined) data.status = body.status;
     if (body.listingType !== undefined) data.listingType = body.listingType;
     if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
     if (body.auctionStartPrice !== undefined) data.auctionStartPrice = body.auctionStartPrice;
@@ -86,7 +149,6 @@ router.patch('/:id', async (req, res) => {
     if (body.foil !== undefined) data.foil = body.foil;
     if (body.condition !== undefined) data.condition = body.condition;
     if (body.quantity !== undefined) data.quantity = body.quantity;
-    if (body.status !== undefined) data.status = body.status;
     if (body.description !== undefined) data.description = body.description;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.expiresAt !== undefined) data.expiresAt = body.expiresAt != null ? new Date(body.expiresAt) : null;
@@ -159,6 +221,84 @@ router.post('/:id/finalize', async (req, res) => {
     res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/pending-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPendingToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/active-to-sold', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionActiveToSold(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/active-to-expired', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionActiveToExpired(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/active-to-cancelled', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionActiveToCancelled(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/sold-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionSoldToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/expired-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionExpiredToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;

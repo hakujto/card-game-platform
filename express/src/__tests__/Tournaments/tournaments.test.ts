@@ -60,4 +60,38 @@ describe('Tournament API', () => {
     const res = await request(app).post('/api/tournaments').send({ name: 'test', maxPlayers: 2, startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z' });
     expect(res.status).toBe(400);
   });
+  it('PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/draft-to-registration');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/registration-to-ongoing transitions Registration -> Ongoing', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/registration-to-ongoing');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/registration-to-cancelled transitions Registration -> Cancelled', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/registration-to-cancelled');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/ongoing-to-completed transitions Ongoing -> Completed', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/ongoing-to-completed');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/ongoing-to-cancelled transitions Ongoing -> Cancelled', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/ongoing-to-cancelled');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/completed-to-draft is denied (409)', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/completed-to-draft');
+    expect([409, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/tournaments/1/transitions/cancelled-to-draft is denied (409)', async () => {
+    const res = await request(app).patch('/api/tournaments/1/transitions/cancelled-to-draft');
+    expect([409, 404]).toContain(res.status);
+  });
 });

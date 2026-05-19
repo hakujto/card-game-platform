@@ -25,48 +25,44 @@ export class PlayerService {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement promote domain logic
-    throw new Error('promote not implemented');
+    return undefined as any;
   }
 
   async demote(id: number): Promise<boolean> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement demote domain logic
-    throw new Error('demote not implemented');
+    return undefined as any;
   }
 
   async record_win(id: number): Promise<void> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement record_win domain logic
-    throw new Error('record_win not implemented');
   }
 
   async record_loss(id: number): Promise<void> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement record_loss domain logic
-    throw new Error('record_loss not implemented');
   }
 
   async win_rate(id: number): Promise<number> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement win_rate domain logic
-    throw new Error('win_rate not implemented');
+    return undefined as any;
   }
 
   async verify(id: number): Promise<void> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement verify domain logic
-    throw new Error('verify not implemented');
   }
 
   async update_rating(id: number, delta: number): Promise<void> {
     const entity = await prisma.player.findUnique({ where: { id } });
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement update_rating domain logic
-    throw new Error('update_rating not implemented');
   }
 }

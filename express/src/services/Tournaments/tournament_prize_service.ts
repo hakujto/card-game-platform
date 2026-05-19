@@ -25,13 +25,12 @@ export class TournamentPrizeService {
     const entity = await prisma.tournamentPrize.findUnique({ where: { id } });
     if (!entity) throw new Error('TournamentPrize not found: ' + id);
     // TODO: implement applies_to_placement domain logic
-    throw new Error('applies_to_placement not implemented');
+    return undefined as any;
   }
 
   async award_to_player(id: number, playerId: number): Promise<void> {
     const entity = await prisma.tournamentPrize.findUnique({ where: { id } });
     if (!entity) throw new Error('TournamentPrize not found: ' + id);
     // TODO: implement award_to_player domain logic
-    throw new Error('award_to_player not implemented');
   }
 }

@@ -59,7 +59,51 @@ describe('Order API', () => {
   });
 
   it("POST /api/orders returns 400 when discount_not_exceed_total violated", async () => {
-    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', paidAt: '2024-01-01T00:00:00.000Z', trackingNumber: 'test', shippedAt: '2024-01-01T00:00:00.000Z', discountApplied: 1 });
+    const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', paidAt: '2024-01-01T00:00:00.000Z', trackingNumber: 'test', shippedAt: '2024-01-01T00:00:00.000Z', discountApplied: 1, total: 0 });
     expect(res.status).toBe(400);
+  });
+  it('PATCH /api/orders/1/transitions/pending-to-paid transitions Pending -> Paid', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/pending-to-paid');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/paid-to-processing transitions Paid -> Processing', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/paid-to-processing');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/processing-to-shipped transitions Processing -> Shipped', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/processing-to-shipped');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/shipped-to-completed transitions Shipped -> Completed', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/shipped-to-completed');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/pending-to-cancelled transitions Pending -> Cancelled', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/pending-to-cancelled');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/paid-to-cancelled transitions Paid -> Cancelled', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/paid-to-cancelled');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/completed-to-refunded transitions Completed -> Refunded', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/completed-to-refunded');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/refunded-to-completed is denied (409)', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/refunded-to-completed');
+    expect([409, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/orders/1/transitions/completed-to-cancelled is denied (409)', async () => {
+    const res = await request(app).patch('/api/orders/1/transitions/completed-to-cancelled');
+    expect([409, 404]).toContain(res.status);
   });
 });

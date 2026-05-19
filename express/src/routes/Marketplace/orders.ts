@@ -12,6 +12,98 @@ function validate(data: any): void {
   if ((data.status === 'SHIPPED') && !((data.trackingNumber === undefined || data.trackingNumber != null))) throw new Error(`Shipped order must have a tracking number`);
   if ((data.shippedAt != null) && !(data.status === 'SHIPPED')) throw new Error(`shipped_at_requires_shipped_status`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'Pending': ['Paid', 'Cancelled'],
+  'Paid': ['Processing', 'Cancelled'],
+  'Processing': ['Shipped'],
+  'Shipped': ['Completed'],
+  'Completed': ['Refunded']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class OrderLifecycleService {
+
+  async transitionPendingToPaid(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Paid');
+    if ((entity as any).paymentMethod == null) throw new Error('payment_method is required for Pending -> Paid');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'PAID' as any } });
+    // TODO: entity.processPayment(); // @after
+    return updated;
+  }
+
+  async transitionPaidToProcessing(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Processing');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'PROCESSING' as any } });
+    return updated;
+  }
+
+  async transitionProcessingToShipped(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Shipped');
+    if ((entity as any).trackingNumber == null) throw new Error('tracking_number is required for Processing -> Shipped');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'SHIPPED' as any } });
+    // TODO: entity.notifyShipped(); // @after
+    return updated;
+  }
+
+  async transitionShippedToCompleted(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Completed');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'COMPLETED' as any } });
+    return updated;
+  }
+
+  async transitionPendingToCancelled(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Cancelled');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'CANCELLED' as any } });
+    // TODO: entity.cancel(); // @after
+    return updated;
+  }
+
+  async transitionPaidToCancelled(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Cancelled');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'CANCELLED' as any } });
+    // TODO: entity.cancel(); // @after
+    return updated;
+  }
+
+  async transitionCompletedToRefunded(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    assertTransition((entity as any).status, 'Refunded');
+    const updated = await prisma.order.update({ where: { id }, data: { status: 'REFUNDED' as any } });
+    // TODO: entity.refund(); // @after
+    return updated;
+  }
+
+  async transitionRefundedToCompleted(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    throw new Error('Transition Refunded -> Completed is not allowed');
+  }
+
+  async transitionCompletedToCancelled(id: number): Promise<any> {
+    const entity = await prisma.order.findUnique({ where: { id } });
+    if (!entity) throw new Error('Order not found: ' + id);
+    throw new Error('Transition Completed -> Cancelled is not allowed');
+  }
+}
+const lifecycleService = new OrderLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.order.findMany();
@@ -131,6 +223,16 @@ router.post('/:id/pay', async (req, res) => {
   }
 });
 
+router.post('/:id/process-payment', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    const result = await service.process_payment(id);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
 router.get('/:id/total', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
@@ -159,6 +261,123 @@ router.post('/:id/refund', async (req, res) => {
     res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/pending-to-paid', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPendingToPaid(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/paid-to-processing', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPaidToProcessing(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/processing-to-shipped', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionProcessingToShipped(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/shipped-to-completed', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionShippedToCompleted(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/pending-to-cancelled', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPendingToCancelled(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/paid-to-cancelled', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPaidToCancelled(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/completed-to-refunded', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionCompletedToRefunded(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/refunded-to-completed', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionRefundedToCompleted(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/completed-to-cancelled', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionCompletedToCancelled(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;

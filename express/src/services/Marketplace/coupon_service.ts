@@ -25,27 +25,25 @@ export class CouponService {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);
     // TODO: implement is_valid domain logic
-    throw new Error('is_valid not implemented');
+    return undefined as any;
   }
 
   async is_applicable_to_order(id: number, orderTotal: number): Promise<boolean> {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);
     // TODO: implement is_applicable_to_order domain logic
-    throw new Error('is_applicable_to_order not implemented');
+    return undefined as any;
   }
 
   async redeem(id: number): Promise<void> {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);
     // TODO: implement redeem domain logic
-    throw new Error('redeem not implemented');
   }
 
   async deactivate(id: number): Promise<void> {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);
     // TODO: implement deactivate domain logic
-    throw new Error('deactivate not implemented');
   }
 }

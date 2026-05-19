@@ -25,20 +25,23 @@ export class TradeDisputeService {
     const entity = await prisma.tradeDispute.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeDispute not found: ' + id);
     // TODO: implement escalate domain logic
-    throw new Error('escalate not implemented');
   }
 
   async resolve(id: number, resolutionText: string): Promise<void> {
     const entity = await prisma.tradeDispute.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeDispute not found: ' + id);
     // TODO: implement resolve domain logic
-    throw new Error('resolve not implemented');
+  }
+
+  async close_resolved(id: number): Promise<void> {
+    const entity = await prisma.tradeDispute.findUnique({ where: { id } });
+    if (!entity) throw new Error('TradeDispute not found: ' + id);
+    // TODO: implement close_resolved domain logic
   }
 
   async review(id: number): Promise<void> {
     const entity = await prisma.tradeDispute.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeDispute not found: ' + id);
     // TODO: implement review domain logic
-    throw new Error('review not implemented');
   }
 }

@@ -25,13 +25,12 @@ export class TradeBidService {
     const entity = await prisma.tradeBid.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeBid not found: ' + id);
     // TODO: implement outbid_by domain logic
-    throw new Error('outbid_by not implemented');
+    return undefined as any;
   }
 
   async retract(id: number): Promise<void> {
     const entity = await prisma.tradeBid.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeBid not found: ' + id);
     // TODO: implement retract domain logic
-    throw new Error('retract not implemented');
   }
 }

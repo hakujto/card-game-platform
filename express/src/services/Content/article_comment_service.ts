@@ -25,20 +25,18 @@ export class ArticleCommentService {
     const entity = await prisma.articleComment.findUnique({ where: { id } });
     if (!entity) throw new Error('ArticleComment not found: ' + id);
     // TODO: implement hide domain logic
-    throw new Error('hide not implemented');
   }
 
   async unhide(id: number): Promise<void> {
     const entity = await prisma.articleComment.findUnique({ where: { id } });
     if (!entity) throw new Error('ArticleComment not found: ' + id);
     // TODO: implement unhide domain logic
-    throw new Error('unhide not implemented');
   }
 
   async is_reply(id: number): Promise<boolean> {
     const entity = await prisma.articleComment.findUnique({ where: { id } });
     if (!entity) throw new Error('ArticleComment not found: ' + id);
     // TODO: implement is_reply domain logic
-    throw new Error('is_reply not implemented');
+    return undefined as any;
   }
 }

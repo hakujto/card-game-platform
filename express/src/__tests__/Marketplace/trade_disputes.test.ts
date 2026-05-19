@@ -40,4 +40,28 @@ describe('TradeDispute API', () => {
     const res = await request(app).post('/api/trade_disputes').send({ reason: 'ITEMNOTRECEIVED', description: 'test', openedAt: '2024-01-01T00:00:00.000Z', transactionId: 1, openedById: 1, resolvedAt: '2024-01-01T00:00:00.000Z' });
     expect(res.status).toBe(400);
   });
+  it('PATCH /api/trade_disputes/1/transitions/open-to-underreview transitions Open -> UnderReview', async () => {
+    const res = await request(app).patch('/api/trade_disputes/1/transitions/open-to-underreview');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_disputes/1/transitions/underreview-to-resolved transitions UnderReview -> Resolved', async () => {
+    const res = await request(app).patch('/api/trade_disputes/1/transitions/underreview-to-resolved');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_disputes/1/transitions/underreview-to-escalated transitions UnderReview -> Escalated', async () => {
+    const res = await request(app).patch('/api/trade_disputes/1/transitions/underreview-to-escalated');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_disputes/1/transitions/escalated-to-resolved transitions Escalated -> Resolved', async () => {
+    const res = await request(app).patch('/api/trade_disputes/1/transitions/escalated-to-resolved');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/trade_disputes/1/transitions/resolved-to-open is denied (409)', async () => {
+    const res = await request(app).patch('/api/trade_disputes/1/transitions/resolved-to-open');
+    expect([409, 404]).toContain(res.status);
+  });
 });

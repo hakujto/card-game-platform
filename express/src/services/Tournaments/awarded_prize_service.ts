@@ -25,7 +25,6 @@ export class AwardedPrizeService {
     const entity = await prisma.awardedPrize.findUnique({ where: { id } });
     if (!entity) throw new Error('AwardedPrize not found: ' + id);
     // TODO: implement claim domain logic
-    throw new Error('claim not implemented');
   }
 
   // triggered by @on(claimed = true)

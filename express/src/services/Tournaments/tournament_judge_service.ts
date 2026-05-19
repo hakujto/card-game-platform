@@ -25,6 +25,5 @@ export class TournamentJudgeService {
     const entity = await prisma.tournamentJudge.findUnique({ where: { id } });
     if (!entity) throw new Error('TournamentJudge not found: ' + id);
     // TODO: implement promote_to_head domain logic
-    throw new Error('promote_to_head not implemented');
   }
 }

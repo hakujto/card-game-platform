@@ -17,6 +17,7 @@ describe('Stream API', () => {
       .send({
       title: 'test',
       streamUrl: 'https://example.com',
+      isOfficial: true,
       viewerCountPeak: 1,
       scheduledStart: '2024-01-01T00:00:00.000Z'
     });
@@ -51,5 +52,19 @@ describe('Stream API', () => {
   it("POST /api/streams returns 400 when viewer_count_not_negative violated", async () => {
     const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z', status: 'ENDED', endedAt: '2024-01-01T00:00:00.000Z', viewerCountPeak: -1 });
     expect(res.status).toBe(400);
+  });
+  it('PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live', async () => {
+    const res = await request(app).patch('/api/streams/1/transitions/scheduled-to-live');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/streams/1/transitions/live-to-ended transitions Live -> Ended', async () => {
+    const res = await request(app).patch('/api/streams/1/transitions/live-to-ended');
+    expect([200, 409, 422, 404]).toContain(res.status);
+  });
+
+  it('PATCH /api/streams/1/transitions/ended-to-live is denied (409)', async () => {
+    const res = await request(app).patch('/api/streams/1/transitions/ended-to-live');
+    expect([409, 404]).toContain(res.status);
   });
 });

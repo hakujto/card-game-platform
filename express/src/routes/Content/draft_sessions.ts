@@ -7,8 +7,71 @@ const service = new DraftSessionService();
 
 function validate(data: any): void {
   if (!((data.seats == null || (data.seats >= 2 && data.seats <= 16)))) throw new Error(`Draft session must have between 2 and 16 seats`);
+  if (!((data.timePerPickSeconds == null || data.timePerPickSeconds > 0))) throw new Error(`Time per pick must be greater than zero`);
   if ((data.completedAt != null) && !(data.status === 'COMPLETED')) throw new Error(`completed_at can only be set when draft status is Completed`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'WaitingForPlayers': ['Drafting', 'Abandoned'],
+  'Drafting': ['Completed', 'Abandoned']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class DraftSessionLifecycleService {
+
+  async transitionWaitingForPlayersToDrafting(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    assertTransition((entity as any).status, 'Drafting');
+    const updated = await prisma.draftSession.update({ where: { id }, data: { status: 'DRAFTING' as any } });
+    // TODO: entity.start(); // @after
+    return updated;
+  }
+
+  async transitionDraftingToCompleted(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    assertTransition((entity as any).status, 'Completed');
+    const updated = await prisma.draftSession.update({ where: { id }, data: { status: 'COMPLETED' as any } });
+    // TODO: entity.complete(); // @after
+    return updated;
+  }
+
+  async transitionDraftingToAbandoned(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    assertTransition((entity as any).status, 'Abandoned');
+    const updated = await prisma.draftSession.update({ where: { id }, data: { status: 'ABANDONED' as any } });
+    // TODO: entity.abandon(); // @after
+    return updated;
+  }
+
+  async transitionWaitingForPlayersToAbandoned(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    assertTransition((entity as any).status, 'Abandoned');
+    const updated = await prisma.draftSession.update({ where: { id }, data: { status: 'ABANDONED' as any } });
+    // TODO: entity.abandon(); // @after
+    return updated;
+  }
+
+  async transitionCompletedToDrafting(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    throw new Error('Transition Completed -> Drafting is not allowed');
+  }
+
+  async transitionAbandonedToDrafting(id: number): Promise<any> {
+    const entity = await prisma.draftSession.findUnique({ where: { id } });
+    if (!entity) throw new Error('DraftSession not found: ' + id);
+    throw new Error('Transition Abandoned -> Drafting is not allowed');
+  }
+}
+const lifecycleService = new DraftSessionLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.draftSession.findMany();
@@ -21,6 +84,7 @@ router.post('/', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
+    if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
@@ -45,6 +109,7 @@ router.put('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
+    if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
@@ -64,6 +129,7 @@ router.patch('/:id', async (req, res) => {
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
     if (body.seats !== undefined) data.seats = body.seats;
+    if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
@@ -123,6 +189,84 @@ router.get('/:id/full', async (req, res) => {
     res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/waitingforplayers-to-drafting', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionWaitingForPlayersToDrafting(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/drafting-to-completed', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionDraftingToCompleted(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/drafting-to-abandoned', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionDraftingToAbandoned(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/waitingforplayers-to-abandoned', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionWaitingForPlayersToAbandoned(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/completed-to-drafting', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionCompletedToDrafting(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/abandoned-to-drafting', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionAbandonedToDrafting(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;

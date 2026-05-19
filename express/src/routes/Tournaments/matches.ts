@@ -12,6 +12,72 @@ function validate(data: any): void {
   if ((data.endedAt != null) && !((data.endedAt == null || (data.startedAt != null && data.endedAt > data.startedAt)))) throw new Error(`Match end time must be after start time`);
   if ((data.status === 'COMPLETED') && !((data.startedAt === undefined || data.startedAt != null))) throw new Error(`Completed match must have a start time`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'Pending': ['Active', 'BYE'],
+  'Active': ['Completed', 'Draw']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class MatchLifecycleService {
+
+  async transitionPendingToActive(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    assertTransition((entity as any).status, 'Active');
+    const updated = await prisma.match.update({ where: { id }, data: { status: 'ACTIVE' as any } });
+    return updated;
+  }
+
+  async transitionActiveToCompleted(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    assertTransition((entity as any).status, 'Completed');
+    const updated = await prisma.match.update({ where: { id }, data: { status: 'COMPLETED' as any } });
+    // TODO: entity.finalizeResult(); // @after
+    return updated;
+  }
+
+  async transitionActiveToDraw(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    assertTransition((entity as any).status, 'Draw');
+    const updated = await prisma.match.update({ where: { id }, data: { status: 'DRAW' as any } });
+    // TODO: entity.draw(); // @after
+    return updated;
+  }
+
+  async transitionPendingToBYE(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    assertTransition((entity as any).status, 'BYE');
+    const updated = await prisma.match.update({ where: { id }, data: { status: 'BYE' as any } });
+    return updated;
+  }
+
+  async transitionCompletedToActive(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    throw new Error('Transition Completed -> Active is not allowed');
+  }
+
+  async transitionDrawToActive(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    throw new Error('Transition Draw -> Active is not allowed');
+  }
+
+  async transitionBYEToActive(id: number): Promise<any> {
+    const entity = await prisma.match.findUnique({ where: { id } });
+    if (!entity) throw new Error('Match not found: ' + id);
+    throw new Error('Transition BYE -> Active is not allowed');
+  }
+}
+const lifecycleService = new MatchLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.match.findMany();
@@ -113,6 +179,16 @@ router.post('/:id/record', async (req, res) => {
   }
 });
 
+router.post('/:id/finalize', async (req, res) => {
+  const id = Number((req.params as any).id);
+  try {
+    await service.finalize_result(id);
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
 router.get('/:id/winner', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
@@ -141,6 +217,97 @@ router.post('/:id/draw', async (req, res) => {
     res.status(204).send();
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/pending-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPendingToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/active-to-completed', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionActiveToCompleted(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/active-to-draw', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionActiveToDraw(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/pending-to-bye', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionPendingToBYE(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/completed-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionCompletedToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/draw-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionDrawToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/bye-to-active', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionBYEToActive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;

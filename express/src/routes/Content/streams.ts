@@ -10,6 +10,45 @@ function validate(data: any): void {
   if ((data.actualStart != null) && !(data.status === 'LIVE')) throw new Error(`actual_start_requires_live_or_ended`);
   if ((data.endedAt != null) && !(data.status === 'ENDED')) throw new Error(`ended_at can only be set when stream status is Ended`);
 }
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  'Scheduled': ['Live'],
+  'Live': ['Ended']
+};
+
+function assertTransition(current: string, to: string): void {
+  const allowed = ALLOWED_TRANSITIONS[current] ?? [];
+  if (!allowed.includes(to)) throw new Error(`Transition ${current} -> ${to} is not allowed`);
+}
+
+class StreamLifecycleService {
+
+  async transitionScheduledToLive(id: number): Promise<any> {
+    const entity = await prisma.stream.findUnique({ where: { id } });
+    if (!entity) throw new Error('Stream not found: ' + id);
+    assertTransition((entity as any).status, 'Live');
+    if ((entity as any).streamUrl == null) throw new Error('stream_url is required for Scheduled -> Live');
+    const updated = await prisma.stream.update({ where: { id }, data: { status: 'LIVE' as any } });
+    // TODO: entity.goLive(); // @after
+    return updated;
+  }
+
+  async transitionLiveToEnded(id: number): Promise<any> {
+    const entity = await prisma.stream.findUnique({ where: { id } });
+    if (!entity) throw new Error('Stream not found: ' + id);
+    assertTransition((entity as any).status, 'Ended');
+    const updated = await prisma.stream.update({ where: { id }, data: { status: 'ENDED' as any } });
+    // TODO: entity.end(); // @after
+    return updated;
+  }
+
+  async transitionEndedToLive(id: number): Promise<any> {
+    const entity = await prisma.stream.findUnique({ where: { id } });
+    if (!entity) throw new Error('Stream not found: ' + id);
+    throw new Error('Transition Ended -> Live is not allowed');
+  }
+}
+const lifecycleService = new StreamLifecycleService();
+
 
 router.get('/', async (_req, res) => {
   const items = await prisma.stream.findMany();
@@ -21,8 +60,10 @@ router.post('/', async (req, res) => {
   const data: any = {};
     if (body.title !== undefined) data.title = body.title;
     if (body.streamUrl !== undefined) data.streamUrl = body.streamUrl;
-    if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
+    if (body.platform !== undefined) data.platform = body.platform;
+    if (body.language !== undefined) data.language = body.language;
+    if (body.isOfficial !== undefined) data.isOfficial = body.isOfficial;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
     if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
     if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
@@ -50,8 +91,10 @@ router.put('/:id', async (req, res) => {
   const data: any = {};
     if (body.title !== undefined) data.title = body.title;
     if (body.streamUrl !== undefined) data.streamUrl = body.streamUrl;
-    if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
+    if (body.platform !== undefined) data.platform = body.platform;
+    if (body.language !== undefined) data.language = body.language;
+    if (body.isOfficial !== undefined) data.isOfficial = body.isOfficial;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
     if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
     if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
@@ -74,8 +117,10 @@ router.patch('/:id', async (req, res) => {
   const data: any = {};
     if (body.title !== undefined) data.title = body.title;
     if (body.streamUrl !== undefined) data.streamUrl = body.streamUrl;
-    if (body.platform !== undefined) data.platform = body.platform;
     if (body.status !== undefined) data.status = body.status;
+    if (body.platform !== undefined) data.platform = body.platform;
+    if (body.language !== undefined) data.language = body.language;
+    if (body.isOfficial !== undefined) data.isOfficial = body.isOfficial;
     if (body.viewerCountPeak !== undefined) data.viewerCountPeak = body.viewerCountPeak;
     if (body.scheduledStart !== undefined) data.scheduledStart = body.scheduledStart != null ? new Date(body.scheduledStart) : null;
     if (body.actualStart !== undefined) data.actualStart = body.actualStart != null ? new Date(body.actualStart) : null;
@@ -140,6 +185,45 @@ router.get('/:id/duration', async (req, res) => {
     res.json({ result });
   } catch (err: any) {
     res.status(404).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.patch('/:id/transitions/scheduled-to-live', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionScheduledToLive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/live-to-ended', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionLiveToEnded(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
+  }
+});
+
+router.patch('/:id/transitions/ended-to-live', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const entity = await lifecycleService.transitionEndedToLive(id);
+    res.json(entity);
+  } catch (err: any) {
+    const status = err?.message?.includes('not allowed') || err?.message?.includes('is not allowed') ? 409
+      : err?.message?.includes('required') || err?.message?.includes('must be') ? 422
+      : 404;
+    res.status(status).json({ error: err?.message ?? 'Error' });
   }
 });
 export default router;
