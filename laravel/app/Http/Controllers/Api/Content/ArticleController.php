@@ -26,7 +26,10 @@ class ArticleController extends Controller
             'cover_image_url' => 'nullable|string|url|max:200',
             'status' => 'required|string|in:Draft,Published,Archived|max:20',
             'article_type' => 'required|string|in:Guide,Tierlist,Matchup,News,Spotlight,Decklist|max:20',
+            'language' => 'required|string|in:EN,DE,FR,IT,ES,JP,PT|max:20',
             'view_count' => 'required|integer',
+            'likes_count' => 'required|integer',
+            'is_featured' => 'required|boolean',
             'published_at' => 'nullable|date',
             'created_at' => 'required|date',
             'updated_at' => 'required|date',
@@ -59,7 +62,10 @@ class ArticleController extends Controller
             'cover_image_url' => 'sometimes|nullable|string|url|max:200',
             'status' => 'sometimes|nullable|string|max:20',
             'article_type' => 'sometimes|nullable|string|max:20',
+            'language' => 'sometimes|nullable|string|max:20',
             'view_count' => 'sometimes|nullable|integer',
+            'likes_count' => 'sometimes|nullable|integer',
+            'is_featured' => 'sometimes|nullable|boolean',
             'published_at' => 'sometimes|nullable|date',
             'created_at' => 'sometimes|nullable|date',
             'updated_at' => 'sometimes|nullable|date',
@@ -103,10 +109,76 @@ class ArticleController extends Controller
         return response()->json(null, 204);
     }
 
+    public function like(Request $request, Article $article): JsonResponse
+    {
+        $article->like();
+        $article->save();
+        return response()->json(null, 204);
+    }
+
+    public function unlike(Request $request, Article $article): JsonResponse
+    {
+        $article->unlike();
+        $article->save();
+        return response()->json(null, 204);
+    }
+
     public function readingTimeMinutes(Request $request, Article $article): JsonResponse
     {
         $result = $article->readingTimeMinutes();
         $article->save();
         return response()->json(['result' => $result]);
+    }
+    public function transitionDraftToPublished(Article $article): JsonResponse
+    {
+        try {
+            $article->assertTransition('Published');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($article->title === null) {
+                throw new \RuntimeException('title is required for Draft -> Published');
+            }
+            if ($article->body === null) {
+                throw new \RuntimeException('body is required for Draft -> Published');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $article->status = 'Published';
+        $article->publish(); // @after
+        $article->save();
+        return response()->json($article);
+    }
+
+    public function transitionPublishedToArchived(Article $article): JsonResponse
+    {
+        try {
+            $article->assertTransition('Archived');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $article->status = 'Archived';
+        $article->archive(); // @after
+        $article->save();
+        return response()->json($article);
+    }
+
+    public function transitionArchivedToDraft(Article $article): JsonResponse
+    {
+        try {
+            $article->assertTransition('Draft');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $article->status = 'Draft';
+        $article->save();
+        return response()->json($article);
+    }
+
+    public function transitionPublishedToDraft(Article $article): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Published -> Draft is not allowed'], 409);
     }
 }

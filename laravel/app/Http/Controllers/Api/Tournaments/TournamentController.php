@@ -21,9 +21,9 @@ class TournamentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:200',
             'description' => 'nullable|string|max:200',
+            'status' => 'required|string|in:Draft,Registration,Ongoing,Completed,Cancelled|max:20',
             'format' => 'required|string|in:Standard,Extended,Legacy,Vintage,Commander,Draft|max:20',
             'tournament_type' => 'required|string|in:Swiss,SingleElimination,DoubleElimination,RoundRobin|max:20',
-            'status' => 'required|string|in:Draft,Registration,Ongoing,Completed,Cancelled|max:20',
             'max_players' => 'required|integer',
             'entry_fee' => 'required',
             'prize_pool' => 'required',
@@ -57,9 +57,9 @@ class TournamentController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|nullable|string|max:200',
             'description' => 'sometimes|nullable|string|max:200',
+            'status' => 'sometimes|nullable|string|max:20',
             'format' => 'sometimes|nullable|string|max:20',
             'tournament_type' => 'sometimes|nullable|string|max:20',
-            'status' => 'sometimes|nullable|string|max:20',
             'max_players' => 'sometimes|nullable|integer',
             'entry_fee' => 'sometimes|nullable',
             'prize_pool' => 'sometimes|nullable',
@@ -137,5 +137,89 @@ class TournamentController extends Controller
         $result = $tournament->isFull();
         $tournament->save();
         return response()->json(['result' => $result]);
+    }
+    public function transitionDraftToRegistration(Tournament $tournament): JsonResponse
+    {
+        try {
+            $tournament->assertTransition('Registration');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($tournament->name === null) {
+                throw new \RuntimeException('name is required for Draft -> Registration');
+            }
+            if ($tournament->start_time === null) {
+                throw new \RuntimeException('start_time is required for Draft -> Registration');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $tournament->status = 'Registration';
+        $tournament->save();
+        return response()->json($tournament);
+    }
+
+    public function transitionRegistrationToOngoing(Tournament $tournament): JsonResponse
+    {
+        try {
+            $tournament->assertTransition('Ongoing');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tournament->status = 'Ongoing';
+        $tournament->start(); // @after
+        $tournament->save();
+        return response()->json($tournament);
+    }
+
+    public function transitionRegistrationToCancelled(Tournament $tournament): JsonResponse
+    {
+        try {
+            $tournament->assertTransition('Cancelled');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tournament->status = 'Cancelled';
+        $tournament->cancel(); // @after
+        $tournament->save();
+        return response()->json($tournament);
+    }
+
+    public function transitionOngoingToCompleted(Tournament $tournament): JsonResponse
+    {
+        try {
+            $tournament->assertTransition('Completed');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tournament->status = 'Completed';
+        $tournament->complete(); // @after
+        $tournament->calculatePrizeDistribution(); // @after
+        $tournament->save();
+        return response()->json($tournament);
+    }
+
+    public function transitionOngoingToCancelled(Tournament $tournament): JsonResponse
+    {
+        try {
+            $tournament->assertTransition('Cancelled');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tournament->status = 'Cancelled';
+        $tournament->cancel(); // @after
+        $tournament->save();
+        return response()->json($tournament);
+    }
+
+    public function transitionCompletedToDraft(Tournament $tournament): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Completed -> Draft is not allowed'], 409);
+    }
+
+    public function transitionCancelledToDraft(Tournament $tournament): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Cancelled -> Draft is not allowed'], 409);
     }
 }

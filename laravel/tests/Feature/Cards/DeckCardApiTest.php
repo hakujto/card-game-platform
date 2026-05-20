@@ -67,7 +67,7 @@ class DeckCardApiTest extends TestCase
         ]);
         $entity = DeckCard::create([
             'quantity' => 1,
-            'is_commander' => true,
+            'is_commander' => false,
             'deck_id' => $this->depDeck->id,
             'card_id' => $this->depCard->id,
         ]);
@@ -84,7 +84,7 @@ class DeckCardApiTest extends TestCase
     {
         $response = $this->postJson('/api/deck_cards', [
             'quantity' => 1,
-            'is_commander' => true,
+            'is_commander' => false,
             'deck_id' => $this->depDeck->id,
             'card_id' => $this->depCard->id,
         ]);
@@ -114,7 +114,14 @@ class DeckCardApiTest extends TestCase
     public function test_create_fails_when_quantity_range_violated(): void
     {
         // A deck can contain between 1 and 4 copies of a card
-        $response = $this->postJson('/api/deck_cards', ['deck_id' => 1, 'card_id' => 1, 'quantity' => 5]);
+        $response = $this->postJson('/api/deck_cards', ['deck_id' => 1, 'card_id' => 1, 'is_commander' => true, 'quantity' => 5]);
+        $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_commander_is_singleton_violated(): void
+    {
+        // Commander card must appear exactly once in the deck
+        $response = $this->postJson('/api/deck_cards', ['deck_id' => 1, 'card_id' => 1, 'is_commander' => true, 'quantity' => 0]);
         $response->assertStatus(422);
     }
 }

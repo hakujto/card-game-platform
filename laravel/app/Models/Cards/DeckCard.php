@@ -42,16 +42,24 @@ class DeckCard extends Model
         }
     }
 
+    // ── Domain invariants (IMPLIES rules) ───────────────────────────────
+    public function validateImplies(): void
+    {
+        if ($this->is_commander === true && !($this->quantity === 1)) {
+            throw new \RuntimeException('Commander card must appear exactly once in the deck');
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function incrementAction($amount): void
     {
-        throw new \RuntimeException('increment not implemented');
+        // TODO: implement increment
     }
 
     public function decrementAction($amount): void
     {
-        throw new \RuntimeException('decrement not implemented');
+        // TODO: implement decrement
     }
 
 }

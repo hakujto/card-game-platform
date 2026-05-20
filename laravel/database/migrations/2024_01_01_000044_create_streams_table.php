@@ -12,8 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('title', 300);
             $table->string('stream_url', 200);
-            $table->string('platform', 20)->default('Twitch');
             $table->string('status', 20)->default('Scheduled');
+            $table->string('platform', 20)->default('Twitch');
+            $table->string('language', 20)->default('EN');
+            $table->boolean('is_official')->default(false);
             $table->integer('viewer_count_peak')->default(0);
             $table->dateTime('scheduled_start');
             $table->dateTime('actual_start')->nullable();

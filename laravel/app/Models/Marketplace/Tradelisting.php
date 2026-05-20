@@ -13,7 +13,7 @@ class TradeListing extends Model
 {
     protected $table = 'trade_listings';
 
-    protected $fillable = ['listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'status', 'description', 'expires_at', 'seller_id', 'card_id'];
+    protected $fillable = ['status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'expires_at', 'seller_id', 'card_id'];
 
     protected $casts = [
         'asking_price' => 'decimal:2',
@@ -24,9 +24,9 @@ class TradeListing extends Model
         'expires_at' => 'datetime',
     ];
 
+    const STATUS_VALUES = ['Active', 'Sold', 'Expired', 'Cancelled', 'Pending'];
     const LISTING_TYPE_VALUES = ['FixedPrice', 'Auction', 'TradeOffer'];
     const CONDITION_VALUES = ['Mint', 'NearMint', 'Excellent', 'Good', 'Played'];
-    const STATUS_VALUES = ['Active', 'Sold', 'Expired', 'Cancelled', 'Pending'];
 
     public function seller(): BelongsTo
     {
@@ -64,31 +64,46 @@ class TradeListing extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Pending' => ['Active'],
+        'Active' => ['Sold', 'Expired', 'Cancelled'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function close(): void
     {
-        throw new \RuntimeException('close not implemented');
+        // TODO: implement close
     }
 
     public function extend($days): void
     {
-        throw new \RuntimeException('extend not implemented');
+        // TODO: implement extend
     }
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
-    public function isExpired(): bool
+    public function isExpired(): ?bool
     {
-        throw new \RuntimeException('is_expired not implemented');
+        // TODO: implement is_expired
+        return null;
     }
 
     public function finalizeAuction(): void
     {
-        throw new \RuntimeException('finalize_auction not implemented');
+        // TODO: implement finalize_auction
     }
 
 }

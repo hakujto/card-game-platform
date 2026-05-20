@@ -21,6 +21,7 @@ class DraftSessionController extends Controller
             'status' => 'required|string|in:WaitingForPlayers,Drafting,Completed,Abandoned|max:20',
             'draft_type' => 'required|string|in:Booster,Cube,Rochester|max:20',
             'seats' => 'required|integer',
+            'time_per_pick_seconds' => 'required|integer',
             'created_at' => 'required|date',
             'completed_at' => 'nullable|date',
             'card_set_id' => 'required|exists:card_sets,id',
@@ -47,6 +48,7 @@ class DraftSessionController extends Controller
             'status' => 'sometimes|nullable|string|max:20',
             'draft_type' => 'sometimes|nullable|string|max:20',
             'seats' => 'sometimes|nullable|integer',
+            'time_per_pick_seconds' => 'sometimes|nullable|integer',
             'created_at' => 'sometimes|nullable|date',
             'completed_at' => 'sometimes|nullable|date',
             'card_set_id' => 'sometimes|nullable|exists:card_sets,id',
@@ -93,5 +95,66 @@ class DraftSessionController extends Controller
         $result = $draftSession->isFull();
         $draftSession->save();
         return response()->json(['result' => $result]);
+    }
+    public function transitionWaitingForPlayersToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $draftSession->assertTransition('Drafting');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $draftSession->status = 'Drafting';
+        $draftSession->start(); // @after
+        $draftSession->save();
+        return response()->json($draftSession);
+    }
+
+    public function transitionDraftingToCompleted(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $draftSession->assertTransition('Completed');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $draftSession->status = 'Completed';
+        $draftSession->complete(); // @after
+        $draftSession->save();
+        return response()->json($draftSession);
+    }
+
+    public function transitionDraftingToAbandoned(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $draftSession->assertTransition('Abandoned');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $draftSession->status = 'Abandoned';
+        $draftSession->abandon(); // @after
+        $draftSession->save();
+        return response()->json($draftSession);
+    }
+
+    public function transitionWaitingForPlayersToAbandoned(DraftSession $draftSession): JsonResponse
+    {
+        try {
+            $draftSession->assertTransition('Abandoned');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $draftSession->status = 'Abandoned';
+        $draftSession->abandon(); // @after
+        $draftSession->save();
+        return response()->json($draftSession);
+    }
+
+    public function transitionCompletedToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Completed -> Drafting is not allowed'], 409);
+    }
+
+    public function transitionAbandonedToDrafting(DraftSession $draftSession): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Abandoned -> Drafting is not allowed'], 409);
     }
 }

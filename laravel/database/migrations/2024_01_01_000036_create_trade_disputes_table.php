@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('trade_disputes', function (Blueprint $table) {
             $table->id();
+            $table->string('status', 20)->default('Open');
             $table->string('reason', 20);
             $table->text('description');
-            $table->string('status', 20)->default('Open');
             $table->text('resolution')->nullable();
             $table->dateTime('opened_at');
             $table->dateTime('resolved_at')->nullable();

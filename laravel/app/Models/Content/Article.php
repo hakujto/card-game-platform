@@ -13,14 +13,16 @@ class Article extends Model
 {
     protected $table = 'articles';
 
-    protected $fillable = ['title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'view_count', 'published_at', 'author_id', 'featured_deck_id'];
+    protected $fillable = ['title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'is_featured', 'published_at', 'author_id', 'featured_deck_id'];
 
     protected $casts = [
+        'is_featured' => 'boolean',
         'published_at' => 'datetime',
     ];
 
     const STATUS_VALUES = ['Draft', 'Published', 'Archived'];
     const ARTICLE_TYPE_VALUES = ['Guide', 'Tierlist', 'Matchup', 'News', 'Spotlight', 'Decklist'];
+    const LANGUAGE_VALUES = ['EN', 'DE', 'FR', 'IT', 'ES', 'JP', 'PT'];
 
     public function author(): BelongsTo
     {
@@ -44,6 +46,9 @@ class Article extends Model
         if (!(($this->view_count === null || $this->view_count >= 0))) {
             $errors['view_count_not_negative'] = 'Article view count must not be negative';
         }
+        if (!(($this->likes_count === null || $this->likes_count >= 0))) {
+            $errors['likes_count_not_negative'] = 'Article likes count must not be negative';
+        }
         if (!empty($errors)) {
             throw new \Illuminate\Validation\ValidationException(
                 \Illuminate\Support\Facades\Validator::make([], []),
@@ -60,26 +65,52 @@ class Article extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Draft' => ['Published'],
+        'Published' => ['Archived'],
+        'Archived' => ['Draft'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function publish(): void
     {
-        throw new \RuntimeException('publish not implemented');
+        // TODO: implement publish
     }
 
     public function archive(): void
     {
-        throw new \RuntimeException('archive not implemented');
+        // TODO: implement archive
     }
 
     public function incrementView(): void
     {
-        throw new \RuntimeException('increment_view not implemented');
+        // TODO: implement increment_view
     }
 
-    public function readingTimeMinutes(): int
+    public function like(): void
     {
-        throw new \RuntimeException('reading_time_minutes not implemented');
+        // TODO: implement like
+    }
+
+    public function unlike(): void
+    {
+        // TODO: implement unlike
+    }
+
+    public function readingTimeMinutes(): ?int
+    {
+        // TODO: implement reading_time_minutes
+        return null;
     }
 
 }

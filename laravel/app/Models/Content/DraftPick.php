@@ -48,9 +48,10 @@ class DraftPick extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isFirstPick(): bool
+    public function isFirstPick(): ?bool
     {
-        throw new \RuntimeException('is_first_pick not implemented');
+        // TODO: implement is_first_pick
+        return null;
     }
 
 }

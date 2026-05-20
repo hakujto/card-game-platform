@@ -23,6 +23,14 @@ class MatchRecordService
         $matchRecord->save();
     }
 
+    public function finalizeResult(int $id): void
+    {
+        $matchRecord = MatchRecord::findOrFail($id);
+        $matchRecord->finalizeResult();
+        $matchRecord->determineWinner(); // @after
+        $matchRecord->save();
+    }
+
     public function determineWinner(int $id): bool
     {
         $matchRecord = MatchRecord::findOrFail($id);

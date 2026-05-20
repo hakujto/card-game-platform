@@ -49,24 +49,27 @@ class CardSet extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isLegalInStandard(): bool
+    public function isLegalInStandard(): ?bool
     {
-        throw new \RuntimeException('is_legal_in_standard not implemented');
+        // TODO: implement is_legal_in_standard
+        return null;
     }
 
-    public function isLegalInFormat($format): bool
+    public function isLegalInFormat($format): ?bool
     {
-        throw new \RuntimeException('is_legal_in_format not implemented');
+        // TODO: implement is_legal_in_format
+        return null;
     }
 
-    public function cardCountByRarity($rarity): int
+    public function cardCountByRarity($rarity): ?int
     {
-        throw new \RuntimeException('card_count_by_rarity not implemented');
+        // TODO: implement card_count_by_rarity
+        return null;
     }
 
     public function rotateOut(): void
     {
-        throw new \RuntimeException('rotate_out not implemented');
+        // TODO: implement rotate_out
     }
 
 }

@@ -47,12 +47,13 @@ class DraftParticipant extends Model
 
     public function pickCard($card_id, $pack_number): void
     {
-        throw new \RuntimeException('pick_card not implemented');
+        // TODO: implement pick_card
     }
 
-    public function draftedCardCount(): int
+    public function draftedCardCount(): ?int
     {
-        throw new \RuntimeException('drafted_card_count not implemented');
+        // TODO: implement drafted_card_count
+        return null;
     }
 
 }

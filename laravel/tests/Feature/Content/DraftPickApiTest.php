@@ -38,6 +38,7 @@ class DraftPickApiTest extends TestCase
             'status' => 'WaitingForPlayers',
             'draft_type' => 'Booster',
             'seats' => 1,
+            'time_per_pick_seconds' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'card_set_id' => $this->auxCardSet->id,
         ]);

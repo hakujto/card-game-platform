@@ -17,7 +17,10 @@ return new class extends Migration
             $table->string('cover_image_url', 200)->nullable();
             $table->string('status', 20)->default('Draft');
             $table->string('article_type', 20)->default('Guide');
+            $table->string('language', 20)->default('EN');
             $table->integer('view_count')->default(0);
+            $table->integer('likes_count')->default(0);
+            $table->boolean('is_featured')->default(false);
             $table->dateTime('published_at')->nullable();
             $table->unsignedBigInteger('author_id');
             $table->foreign('author_id')->references('id')->on('players')->cascadeOnDelete();

@@ -19,6 +19,7 @@ class TradeListingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'status' => 'required|string|in:Active,Sold,Expired,Cancelled,Pending|max:20',
             'listing_type' => 'required|string|in:FixedPrice,Auction,TradeOffer|max:20',
             'asking_price' => 'nullable',
             'auction_start_price' => 'nullable',
@@ -27,7 +28,6 @@ class TradeListingController extends Controller
             'foil' => 'required|boolean',
             'condition' => 'required|string|in:Mint,NearMint,Excellent,Good,Played|max:20',
             'quantity' => 'required|integer',
-            'status' => 'required|string|in:Active,Sold,Expired,Cancelled,Pending|max:20',
             'description' => 'nullable|string|max:200',
             'created_at' => 'required|date',
             'expires_at' => 'nullable|date',
@@ -53,6 +53,7 @@ class TradeListingController extends Controller
     public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $validated = $request->validate([
+            'status' => 'sometimes|nullable|string|max:20',
             'listing_type' => 'sometimes|nullable|string|max:20',
             'asking_price' => 'sometimes|nullable',
             'auction_start_price' => 'sometimes|nullable',
@@ -61,7 +62,6 @@ class TradeListingController extends Controller
             'foil' => 'sometimes|nullable|boolean',
             'condition' => 'sometimes|nullable|string|max:20',
             'quantity' => 'sometimes|nullable|integer',
-            'status' => 'sometimes|nullable|string|max:20',
             'description' => 'sometimes|nullable|string|max:200',
             'created_at' => 'sometimes|nullable|date',
             'expires_at' => 'sometimes|nullable|date',
@@ -118,5 +118,72 @@ class TradeListingController extends Controller
         $tradeListing->finalizeAuction();
         $tradeListing->save();
         return response()->json(null, 204);
+    }
+    public function transitionPendingToActive(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $tradeListing->assertTransition('Active');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($tradeListing->quantity === null) {
+                throw new \RuntimeException('quantity is required for Pending -> Active');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $tradeListing->status = 'Active';
+        $tradeListing->save();
+        return response()->json($tradeListing);
+    }
+
+    public function transitionActiveToSold(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $tradeListing->assertTransition('Sold');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tradeListing->status = 'Sold';
+        $tradeListing->finalizeAuction(); // @after
+        $tradeListing->save();
+        return response()->json($tradeListing);
+    }
+
+    public function transitionActiveToExpired(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $tradeListing->assertTransition('Expired');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tradeListing->status = 'Expired';
+        $tradeListing->close(); // @after
+        $tradeListing->save();
+        return response()->json($tradeListing);
+    }
+
+    public function transitionActiveToCancelled(TradeListing $tradeListing): JsonResponse
+    {
+        try {
+            $tradeListing->assertTransition('Cancelled');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tradeListing->status = 'Cancelled';
+        $tradeListing->cancel(); // @after
+        $tradeListing->save();
+        return response()->json($tradeListing);
+    }
+
+    public function transitionSoldToActive(TradeListing $tradeListing): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Sold -> Active is not allowed'], 409);
+    }
+
+    public function transitionExpiredToActive(TradeListing $tradeListing): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Expired -> Active is not allowed'], 409);
     }
 }

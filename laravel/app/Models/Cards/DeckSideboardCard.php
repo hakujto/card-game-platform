@@ -42,12 +42,12 @@ class DeckSideboardCard extends Model
 
     public function incrementAction($amount): void
     {
-        throw new \RuntimeException('increment not implemented');
+        // TODO: implement increment
     }
 
     public function decrementAction($amount): void
     {
-        throw new \RuntimeException('decrement not implemented');
+        // TODO: implement decrement
     }
 
 }

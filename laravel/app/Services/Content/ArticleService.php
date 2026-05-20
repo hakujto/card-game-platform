@@ -36,6 +36,20 @@ class ArticleService
         $article->save();
     }
 
+    public function like(int $id): void
+    {
+        $article = Article::findOrFail($id);
+        $article->like();
+        $article->save();
+    }
+
+    public function unlike(int $id): void
+    {
+        $article = Article::findOrFail($id);
+        $article->unlike();
+        $article->save();
+    }
+
     public function readingTimeMinutes(int $id): int
     {
         $article = Article::findOrFail($id);

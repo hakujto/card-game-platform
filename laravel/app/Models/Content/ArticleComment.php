@@ -37,17 +37,18 @@ class ArticleComment extends Model
 
     public function hide(): void
     {
-        throw new \RuntimeException('hide not implemented');
+        // TODO: implement hide
     }
 
     public function unhide(): void
     {
-        throw new \RuntimeException('unhide not implemented');
+        // TODO: implement unhide
     }
 
-    public function isReply(): bool
+    public function isReply(): ?bool
     {
-        throw new \RuntimeException('is_reply not implemented');
+        // TODO: implement is_reply
+        return null;
     }
 
 }

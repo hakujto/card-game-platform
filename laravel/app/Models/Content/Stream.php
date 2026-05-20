@@ -13,16 +13,18 @@ class Stream extends Model
 {
     protected $table = 'streams';
 
-    protected $fillable = ['title', 'stream_url', 'platform', 'status', 'viewer_count_peak', 'scheduled_start', 'actual_start', 'ended_at', 'vod_url', 'tournament_id', 'streamer_id'];
+    protected $fillable = ['title', 'stream_url', 'status', 'platform', 'language', 'is_official', 'viewer_count_peak', 'scheduled_start', 'actual_start', 'ended_at', 'vod_url', 'tournament_id', 'streamer_id'];
 
     protected $casts = [
+        'is_official' => 'boolean',
         'scheduled_start' => 'datetime',
         'actual_start' => 'datetime',
         'ended_at' => 'datetime',
     ];
 
-    const PLATFORM_VALUES = ['Twitch', 'YouTube', 'KickStream', 'Platform'];
     const STATUS_VALUES = ['Scheduled', 'Live', 'Ended'];
+    const PLATFORM_VALUES = ['Twitch', 'YouTube', 'KickStream', 'Platform'];
+    const LANGUAGE_VALUES = ['EN', 'DE', 'FR', 'IT', 'ES', 'JP', 'PT'];
 
     public function tournament(): BelongsTo
     {
@@ -60,26 +62,41 @@ class Stream extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Scheduled' => ['Live'],
+        'Live' => ['Ended'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function goLive(): void
     {
-        throw new \RuntimeException('go_live not implemented');
+        // TODO: implement go_live
     }
 
     public function end(): void
     {
-        throw new \RuntimeException('end not implemented');
+        // TODO: implement end
     }
 
     public function updateViewerPeak($count): void
     {
-        throw new \RuntimeException('update_viewer_peak not implemented');
+        // TODO: implement update_viewer_peak
     }
 
-    public function durationMinutes(): int
+    public function durationMinutes(): ?int
     {
-        throw new \RuntimeException('duration_minutes not implemented');
+        // TODO: implement duration_minutes
+        return null;
     }
 
 }

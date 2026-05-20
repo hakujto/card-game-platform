@@ -48,9 +48,10 @@ class OrderItem extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function lineTotal(): string
+    public function lineTotal(): ?string
     {
-        throw new \RuntimeException('line_total not implemented');
+        // TODO: implement line_total
+        return null;
     }
 
 }

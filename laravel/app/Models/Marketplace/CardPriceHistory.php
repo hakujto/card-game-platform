@@ -50,14 +50,16 @@ class CardPriceHistory extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function priceChangePercent($previous_avg): string
+    public function priceChangePercent($previous_avg): ?string
     {
-        throw new \RuntimeException('price_change_percent not implemented');
+        // TODO: implement price_change_percent
+        return null;
     }
 
-    public function isPriceSpike($threshold_percent): bool
+    public function isPriceSpike($threshold_percent): ?bool
     {
-        throw new \RuntimeException('is_price_spike not implemented');
+        // TODO: implement is_price_spike
+        return null;
     }
 
 }

@@ -29,8 +29,10 @@ class StreamApiTest extends TestCase
         $entity = Stream::create([
             'title' => 'test',
             'stream_url' => 'https://example.com',
-            'platform' => 'Twitch',
             'status' => 'Live',
+            'platform' => 'Twitch',
+            'language' => 'EN',
+            'is_official' => true,
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
             'actual_start' => null,
@@ -51,8 +53,10 @@ class StreamApiTest extends TestCase
         $response = $this->postJson('/api/streams', [
             'title' => 'test',
             'stream_url' => 'https://example.com',
-            'platform' => 'Twitch',
             'status' => 'Live',
+            'platform' => 'Twitch',
+            'language' => 'EN',
+            'is_official' => true,
             'viewer_count_peak' => 1,
             'scheduled_start' => '2024-01-01 00:00:00',
             'actual_start' => null,
@@ -101,5 +105,25 @@ class StreamApiTest extends TestCase
         // Peak viewer count must not be negative
         $response = $this->postJson('/api/streams', ['title' => 'test', 'stream_url' => 'https://example.com', 'scheduled_start' => '2024-01-01 00:00:00', 'streamer_id' => 1, 'actual_start' => '2024-01-01 00:00:00', 'status' => 'Live', 'ended_at' => '2024-01-01 00:00:00', 'status' => 'Ended', 'viewer_count_peak' => -1]);
         $response->assertStatus(422);
+    }
+    public function test_transition_scheduled_to_live(): void
+    {
+        \DB::table('streams')->where('id', $this->entityId)->update(['status' => 'Scheduled']);
+        $response = $this->patchJson("/api/streams/{$this->entityId}/transitions/scheduled-to-live");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_live_to_ended(): void
+    {
+        \DB::table('streams')->where('id', $this->entityId)->update(['status' => 'Live']);
+        $response = $this->patchJson("/api/streams/{$this->entityId}/transitions/live-to-ended");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_ended_to_live(): void
+    {
+        \DB::table('streams')->where('id', $this->entityId)->update(['status' => 'Ended']);
+        $response = $this->patchJson("/api/streams/{$this->entityId}/transitions/ended-to-live");
+        $response->assertStatus(409);
     }
 }

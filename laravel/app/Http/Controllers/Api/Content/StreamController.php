@@ -21,8 +21,10 @@ class StreamController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:300',
             'stream_url' => 'required|string|url|max:200',
-            'platform' => 'required|string|in:Twitch,YouTube,KickStream,Platform|max:20',
             'status' => 'required|string|in:Scheduled,Live,Ended|max:20',
+            'platform' => 'required|string|in:Twitch,YouTube,KickStream,Platform|max:20',
+            'language' => 'required|string|in:EN,DE,FR,IT,ES,JP,PT|max:20',
+            'is_official' => 'required|boolean',
             'viewer_count_peak' => 'required|integer',
             'scheduled_start' => 'required|date',
             'actual_start' => 'nullable|date',
@@ -52,8 +54,10 @@ class StreamController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|nullable|string|max:300',
             'stream_url' => 'sometimes|nullable|string|url|max:200',
-            'platform' => 'sometimes|nullable|string|max:20',
             'status' => 'sometimes|nullable|string|max:20',
+            'platform' => 'sometimes|nullable|string|max:20',
+            'language' => 'sometimes|nullable|string|max:20',
+            'is_official' => 'sometimes|nullable|boolean',
             'viewer_count_peak' => 'sometimes|nullable|integer',
             'scheduled_start' => 'sometimes|nullable|date',
             'actual_start' => 'sometimes|nullable|date',
@@ -105,5 +109,42 @@ class StreamController extends Controller
         $result = $stream->durationMinutes();
         $stream->save();
         return response()->json(['result' => $result]);
+    }
+    public function transitionScheduledToLive(Stream $stream): JsonResponse
+    {
+        try {
+            $stream->assertTransition('Live');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($stream->stream_url === null) {
+                throw new \RuntimeException('stream_url is required for Scheduled -> Live');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $stream->status = 'Live';
+        $stream->goLive(); // @after
+        $stream->save();
+        return response()->json($stream);
+    }
+
+    public function transitionLiveToEnded(Stream $stream): JsonResponse
+    {
+        try {
+            $stream->assertTransition('Ended');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $stream->status = 'Ended';
+        $stream->end(); // @after
+        $stream->save();
+        return response()->json($stream);
+    }
+
+    public function transitionEndedToLive(Stream $stream): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Ended -> Live is not allowed'], 409);
     }
 }

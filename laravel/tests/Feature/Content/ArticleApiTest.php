@@ -32,7 +32,10 @@ class ArticleApiTest extends TestCase
             'body' => 'test',
             'status' => 'Draft',
             'article_type' => 'Guide',
+            'language' => 'EN',
             'view_count' => 1,
+            'likes_count' => 1,
+            'is_featured' => true,
             'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
@@ -55,7 +58,10 @@ class ArticleApiTest extends TestCase
             'body' => 'test',
             'status' => 'Draft',
             'article_type' => 'Guide',
+            'language' => 'EN',
             'view_count' => 1,
+            'likes_count' => 1,
+            'is_featured' => true,
             'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',
@@ -96,5 +102,39 @@ class ArticleApiTest extends TestCase
         // Article view count must not be negative
         $response = $this->postJson('/api/articles', ['title' => 'test', 'slug' => 'test', 'body' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'author_id' => 1, 'status' => 'Published', 'published_at' => '2024-01-01 00:00:00', 'view_count' => -1]);
         $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_likes_count_not_negative_violated(): void
+    {
+        // Article likes count must not be negative
+        $response = $this->postJson('/api/articles', ['title' => 'test', 'slug' => 'test', 'body' => 'test', 'created_at' => '2024-01-01 00:00:00', 'updated_at' => '2024-01-01 00:00:00', 'author_id' => 1, 'status' => 'Published', 'published_at' => '2024-01-01 00:00:00', 'likes_count' => -1]);
+        $response->assertStatus(422);
+    }
+    public function test_transition_draft_to_published(): void
+    {
+        \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Draft']);
+        $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/draft-to-published");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_published_to_archived(): void
+    {
+        \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Published']);
+        $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/published-to-archived");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_archived_to_draft(): void
+    {
+        \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Archived']);
+        $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/archived-to-draft");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_published_to_draft(): void
+    {
+        \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Published']);
+        $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/published-to-draft");
+        $response->assertStatus(409);
     }
 }

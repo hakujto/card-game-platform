@@ -14,6 +14,7 @@ class DraftSessionResource extends JsonResource
             'status' => $this->status,
             'draft_type' => $this->draft_type,
             'seats' => $this->seats,
+            'time_per_pick_seconds' => $this->time_per_pick_seconds,
             'created_at' => $this->created_at,
             'completed_at' => $this->completed_at,
             'card_set_id' => $this->card_set_id,

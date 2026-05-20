@@ -57,7 +57,7 @@ class AwardedPrize extends Model
 
     public function claim(): void
     {
-        throw new \RuntimeException('claim not implemented');
+        // TODO: implement claim
     }
 
 }

@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->string('name', 200);
             $table->text('description')->nullable();
+            $table->string('status', 20)->default('Draft');
             $table->string('format', 20)->default('Standard');
             $table->string('tournament_type', 20)->default('Swiss');
-            $table->string('status', 20)->default('Draft');
             $table->integer('max_players');
             $table->decimal('entry_fee', 10, 2)->default('0');
             $table->decimal('prize_pool', 10, 2)->default('0');

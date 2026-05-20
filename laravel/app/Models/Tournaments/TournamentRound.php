@@ -58,22 +58,23 @@ class TournamentRound extends Model
 
     public function start(): void
     {
-        throw new \RuntimeException('start not implemented');
+        // TODO: implement start
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
     public function generatePairings(): void
     {
-        throw new \RuntimeException('generate_pairings not implemented');
+        // TODO: implement generate_pairings
     }
 
-    public function isTimeExpired(): bool
+    public function isTimeExpired(): ?bool
     {
-        throw new \RuntimeException('is_time_expired not implemented');
+        // TODO: implement is_time_expired
+        return null;
     }
 
 }

@@ -54,24 +54,26 @@ class Coupon extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isValid(): bool
+    public function isValid(): ?bool
     {
-        throw new \RuntimeException('is_valid not implemented');
+        // TODO: implement is_valid
+        return null;
     }
 
-    public function isApplicableToOrder($order_total): bool
+    public function isApplicableToOrder($order_total): ?bool
     {
-        throw new \RuntimeException('is_applicable_to_order not implemented');
+        // TODO: implement is_applicable_to_order
+        return null;
     }
 
     public function redeem(): void
     {
-        throw new \RuntimeException('redeem not implemented');
+        // TODO: implement redeem
     }
 
     public function deactivate(): void
     {
-        throw new \RuntimeException('deactivate not implemented');
+        // TODO: implement deactivate
     }
 
 }

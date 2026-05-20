@@ -31,14 +31,16 @@ class CardAbility extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isUsableAt($timing): bool
+    public function isUsableAt($timing): ?bool
     {
-        throw new \RuntimeException('is_usable_at not implemented');
+        // TODO: implement is_usable_at
+        return null;
     }
 
-    public function describe(): string
+    public function describe(): ?string
     {
-        throw new \RuntimeException('describe not implemented');
+        // TODO: implement describe
+        return null;
     }
 
 }

@@ -29,6 +29,13 @@ class TradeDisputeService
         $tradeDispute->save();
     }
 
+    public function closeResolved(int $id): void
+    {
+        $tradeDispute = TradeDispute::findOrFail($id);
+        $tradeDispute->closeResolved();
+        $tradeDispute->save();
+    }
+
     public function review(int $id): void
     {
         $tradeDispute = TradeDispute::findOrFail($id);

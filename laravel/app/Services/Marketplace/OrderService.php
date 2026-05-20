@@ -30,6 +30,14 @@ class OrderService
         return $result;
     }
 
+    public function processPayment(int $id): bool
+    {
+        $order = Order::findOrFail($id);
+        $result = $order->processPayment();
+        $order->save();
+        return $result;
+    }
+
     public function calculateTotal(int $id): string
     {
         $order = Order::findOrFail($id);

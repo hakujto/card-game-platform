@@ -52,6 +52,7 @@ class TradeListingApiTest extends TestCase
             'set_id' => $this->auxCardSet->id,
         ]);
         $entity = TradeListing::create([
+            'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'asking_price' => '0.00',
             'auction_start_price' => '0.00',
@@ -59,7 +60,6 @@ class TradeListingApiTest extends TestCase
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
-            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
             'seller_id' => $this->depSeller->id,
             'card_id' => $this->depCard->id,
@@ -76,6 +76,7 @@ class TradeListingApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/trade_listings', [
+            'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'asking_price' => '0.00',
             'auction_start_price' => '0.00',
@@ -83,7 +84,6 @@ class TradeListingApiTest extends TestCase
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
-            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
             'seller_id' => $this->depSeller->id,
             'card_id' => $this->depCard->id,
@@ -130,5 +130,46 @@ class TradeListingApiTest extends TestCase
         // Listing quantity must be between 1 and 9999
         $response = $this->postJson('/api/trade_listings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => '0.00', 'listing_type' => 'Auction', 'auction_start_price' => '0.00', 'auction_end_time' => '2024-01-01 00:00:00', 'quantity' => 10000]);
         $response->assertStatus(422);
+    }
+    public function test_transition_pending_to_active(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/pending-to-active");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_active_to_sold(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/active-to-sold");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_active_to_expired(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/active-to-expired");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_active_to_cancelled(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/active-to-cancelled");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_sold_to_active(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Sold']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/sold-to-active");
+        $response->assertStatus(409);
+    }
+
+    public function test_transition_expired_to_active(): void
+    {
+        \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Expired']);
+        $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/expired-to-active");
+        $response->assertStatus(409);
     }
 }

@@ -12,7 +12,7 @@ class Tournament extends Model
 {
     protected $table = 'tournaments';
 
-    protected $fillable = ['name', 'description', 'format', 'tournament_type', 'status', 'max_players', 'entry_fee', 'prize_pool', 'start_time', 'end_time', 'is_online', 'location', 'rules_text', 'season_id', 'organizer_id'];
+    protected $fillable = ['name', 'description', 'status', 'format', 'tournament_type', 'max_players', 'entry_fee', 'prize_pool', 'start_time', 'end_time', 'is_online', 'location', 'rules_text', 'season_id', 'organizer_id'];
 
     protected $casts = [
         'entry_fee' => 'decimal:2',
@@ -22,9 +22,9 @@ class Tournament extends Model
         'is_online' => 'boolean',
     ];
 
+    const STATUS_VALUES = ['Draft', 'Registration', 'Ongoing', 'Completed', 'Cancelled'];
     const FORMAT_VALUES = ['Standard', 'Extended', 'Legacy', 'Vintage', 'Commander', 'Draft'];
     const TOURNAMENT_TYPE_VALUES = ['Swiss', 'SingleElimination', 'DoubleElimination', 'RoundRobin'];
-    const STATUS_VALUES = ['Draft', 'Registration', 'Ongoing', 'Completed', 'Cancelled'];
 
     public function season(): BelongsTo
     {
@@ -70,41 +70,58 @@ class Tournament extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Draft' => ['Registration'],
+        'Registration' => ['Ongoing', 'Cancelled'],
+        'Ongoing' => ['Completed', 'Cancelled'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function start(): void
     {
-        throw new \RuntimeException('start not implemented');
+        // TODO: implement start
     }
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
     public function generateRound(): void
     {
-        throw new \RuntimeException('generate_round not implemented');
+        // TODO: implement generate_round
     }
 
-    public function calculatePrizeDistribution(): string
+    public function calculatePrizeDistribution(): ?string
     {
-        throw new \RuntimeException('calculate_prize_distribution not implemented');
+        // TODO: implement calculate_prize_distribution
+        return null;
     }
 
     public function registerPlayer($player_id, $deck_id): void
     {
-        throw new \RuntimeException('register_player not implemented');
+        // TODO: implement register_player
     }
 
-    public function isFull(): bool
+    public function isFull(): ?bool
     {
-        throw new \RuntimeException('is_full not implemented');
+        // TODO: implement is_full
+        return null;
     }
 
 }

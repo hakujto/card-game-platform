@@ -11,6 +11,7 @@ class TradeListingResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'status' => $this->status,
             'listing_type' => $this->listing_type,
             'asking_price' => $this->asking_price,
             'auction_start_price' => $this->auction_start_price,
@@ -19,7 +20,6 @@ class TradeListingResource extends JsonResource
             'foil' => $this->foil,
             'condition' => $this->condition,
             'quantity' => $this->quantity,
-            'status' => $this->status,
             'description' => $this->description,
             'created_at' => $this->created_at,
             'expires_at' => $this->expires_at,

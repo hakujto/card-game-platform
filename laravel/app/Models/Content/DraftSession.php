@@ -12,7 +12,7 @@ class DraftSession extends Model
 {
     protected $table = 'draft_sessions';
 
-    protected $fillable = ['status', 'draft_type', 'seats', 'completed_at', 'card_set_id'];
+    protected $fillable = ['status', 'draft_type', 'seats', 'time_per_pick_seconds', 'completed_at', 'card_set_id'];
 
     protected $casts = [
         'completed_at' => 'datetime',
@@ -33,6 +33,9 @@ class DraftSession extends Model
         if (!(($this->seats === null || ($this->seats >= 2 && $this->seats <= 16)))) {
             $errors['seats_range'] = 'Draft session must have between 2 and 16 seats';
         }
+        if (!(($this->time_per_pick_seconds === null || $this->time_per_pick_seconds > 0))) {
+            $errors['time_per_pick_positive'] = 'Time per pick must be greater than zero';
+        }
         if (!empty($errors)) {
             throw new \Illuminate\Validation\ValidationException(
                 \Illuminate\Support\Facades\Validator::make([], []),
@@ -49,26 +52,41 @@ class DraftSession extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'WaitingForPlayers' => ['Drafting', 'Abandoned'],
+        'Drafting' => ['Completed', 'Abandoned'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function start(): void
     {
-        throw new \RuntimeException('start not implemented');
+        // TODO: implement start
     }
 
     public function abandon(): void
     {
-        throw new \RuntimeException('abandon not implemented');
+        // TODO: implement abandon
     }
 
     public function complete(): void
     {
-        throw new \RuntimeException('complete not implemented');
+        // TODO: implement complete
     }
 
-    public function isFull(): bool
+    public function isFull(): ?bool
     {
-        throw new \RuntimeException('is_full not implemented');
+        // TODO: implement is_full
+        return null;
     }
 
 }

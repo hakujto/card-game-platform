@@ -56,11 +56,11 @@ class TradeTransactionApiTest extends TestCase
             'set_id' => $this->auxCardSet->id,
         ]);
         $this->depListing = TradeListing::create([
+            'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
-            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
             'seller_id' => $this->auxPlayer->id,
             'card_id' => $this->auxCard->id,
@@ -101,7 +101,7 @@ class TradeTransactionApiTest extends TestCase
 
     public function test_create_returns_201(): void
     {
-        $freshListing = TradeListing::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
+        $freshListing = TradeListing::create(['status' => 'Active', 'listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
         $response = $this->postJson('/api/trade_transactions', [
             'final_price' => '0.01',
             'platform_fee' => '0.01',

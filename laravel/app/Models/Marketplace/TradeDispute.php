@@ -12,15 +12,15 @@ class TradeDispute extends Model
 {
     protected $table = 'trade_disputes';
 
-    protected $fillable = ['reason', 'description', 'status', 'resolution', 'opened_at', 'resolved_at', 'transaction_id', 'opened_by_id', 'resolved_by_id'];
+    protected $fillable = ['status', 'reason', 'description', 'resolution', 'opened_at', 'resolved_at', 'transaction_id', 'opened_by_id', 'resolved_by_id'];
 
     protected $casts = [
         'opened_at' => 'datetime',
         'resolved_at' => 'datetime',
     ];
 
-    const REASON_VALUES = ['ItemNotReceived', 'ItemNotAsDescribed', 'FraudSuspected', 'Other'];
     const STATUS_VALUES = ['Open', 'UnderReview', 'Resolved', 'Escalated'];
+    const REASON_VALUES = ['ItemNotReceived', 'ItemNotAsDescribed', 'FraudSuspected', 'Other'];
 
     public function transaction(): BelongsTo
     {
@@ -45,21 +45,41 @@ class TradeDispute extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Open' => ['UnderReview'],
+        'UnderReview' => ['Resolved', 'Escalated'],
+        'Escalated' => ['Resolved'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function escalate(): void
     {
-        throw new \RuntimeException('escalate not implemented');
+        // TODO: implement escalate
     }
 
     public function resolve($resolution_text): void
     {
-        throw new \RuntimeException('resolve not implemented');
+        // TODO: implement resolve
+    }
+
+    public function closeResolved(): void
+    {
+        // TODO: implement close_resolved
     }
 
     public function review(): void
     {
-        throw new \RuntimeException('review not implemented');
+        // TODO: implement review
     }
 
 }

@@ -24,14 +24,16 @@ class CardRuling extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function isCurrent(): bool
+    public function isCurrent(): ?bool
     {
-        throw new \RuntimeException('is_current not implemented');
+        // TODO: implement is_current
+        return null;
     }
 
-    public function supersedesPrevious(): bool
+    public function supersedesPrevious(): ?bool
     {
-        throw new \RuntimeException('supersedes_previous not implemented');
+        // TODO: implement supersedes_previous
+        return null;
     }
 
 }

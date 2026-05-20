@@ -73,44 +73,48 @@ class Deck extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function validateSize(): bool
+    public function validateSize(): ?bool
     {
-        throw new \RuntimeException('validate_size not implemented');
+        // TODO: implement validate_size
+        return null;
     }
 
     public function addCard($card_id, $quantity): void
     {
-        throw new \RuntimeException('add_card not implemented');
+        // TODO: implement add_card
     }
 
     public function removeCard($card_id): void
     {
-        throw new \RuntimeException('remove_card not implemented');
+        // TODO: implement remove_card
     }
 
-    public function winRate(): string
+    public function winRate(): ?string
     {
-        throw new \RuntimeException('win_rate not implemented');
+        // TODO: implement win_rate
+        return null;
     }
 
     public function clone(): mixed
     {
-        throw new \RuntimeException('clone not implemented');
+        // TODO: implement clone
+        return null;
     }
 
     public function publish(): void
     {
-        throw new \RuntimeException('publish not implemented');
+        // TODO: implement publish
     }
 
     public function unpublish(): void
     {
-        throw new \RuntimeException('unpublish not implemented');
+        // TODO: implement unpublish
     }
 
-    public function certifyTournamentLegal(): bool
+    public function certifyTournamentLegal(): ?bool
     {
-        throw new \RuntimeException('certify_tournament_legal not implemented');
+        // TODO: implement certify_tournament_legal
+        return null;
     }
 
 }

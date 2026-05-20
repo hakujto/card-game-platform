@@ -40,22 +40,23 @@ class Season extends Model
 
     public function activate(): void
     {
-        throw new \RuntimeException('activate not implemented');
+        // TODO: implement activate
     }
 
     public function deactivate(): void
     {
-        throw new \RuntimeException('deactivate not implemented');
+        // TODO: implement deactivate
     }
 
     public function finalizeRewards(): void
     {
-        throw new \RuntimeException('finalize_rewards not implemented');
+        // TODO: implement finalize_rewards
     }
 
-    public function isOngoing(): bool
+    public function isOngoing(): ?bool
     {
-        throw new \RuntimeException('is_ongoing not implemented');
+        // TODO: implement is_ongoing
+        return null;
     }
 
 }

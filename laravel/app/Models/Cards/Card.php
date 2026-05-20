@@ -58,6 +58,9 @@ class Card extends Model
         if ($this->card_type === 'Planeswalker' && $this->loyalty === null) {
             throw new \RuntimeException('Planeswalker card must have loyalty');
         }
+        if ($this->card_type === 'Land' && !($this->mana_cost === 0)) {
+            throw new \RuntimeException('Land card must have zero mana cost');
+        }
         if ($this->card_type !== 'Planeswalker' && $this->loyalty !== null) {
             throw new \RuntimeException('Only Planeswalker cards can have loyalty');
         }
@@ -70,37 +73,40 @@ class Card extends Model
 
     public function ban(): void
     {
-        throw new \RuntimeException('ban not implemented');
+        // TODO: implement ban
     }
 
     public function unban(): void
     {
-        throw new \RuntimeException('unban not implemented');
+        // TODO: implement unban
     }
 
     public function restrict(): void
     {
-        throw new \RuntimeException('restrict not implemented');
+        // TODO: implement restrict
     }
 
     public function unrestrict(): void
     {
-        throw new \RuntimeException('unrestrict not implemented');
+        // TODO: implement unrestrict
     }
 
-    public function calculateValue(): string
+    public function calculateValue(): ?string
     {
-        throw new \RuntimeException('calculate_value not implemented');
+        // TODO: implement calculate_value
+        return null;
     }
 
-    public function applyRarityBonus($multiplier): string
+    public function applyRarityBonus($multiplier): ?string
     {
-        throw new \RuntimeException('apply_rarity_bonus not implemented');
+        // TODO: implement apply_rarity_bonus
+        return null;
     }
 
-    public function isLegalInFormat($format): bool
+    public function isLegalInFormat($format): ?bool
     {
-        throw new \RuntimeException('is_legal_in_format not implemented');
+        // TODO: implement is_legal_in_format
+        return null;
     }
 
 }

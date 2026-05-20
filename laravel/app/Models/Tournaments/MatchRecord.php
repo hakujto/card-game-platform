@@ -68,26 +68,46 @@ class MatchRecord extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Pending' => ['Active', 'BYE'],
+        'Active' => ['Completed', 'Draw'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function recordResult($p1_wins, $p2_wins): void
     {
-        throw new \RuntimeException('record_result not implemented');
+        // TODO: implement record_result
     }
 
-    public function determineWinner(): bool
+    public function finalizeResult(): void
     {
-        throw new \RuntimeException('determine_winner not implemented');
+        // TODO: implement finalize_result
+    }
+
+    public function determineWinner(): ?bool
+    {
+        // TODO: implement determine_winner
+        return null;
     }
 
     public function concede($player_id): void
     {
-        throw new \RuntimeException('concede not implemented');
+        // TODO: implement concede
     }
 
     public function draw(): void
     {
-        throw new \RuntimeException('draw not implemented');
+        // TODO: implement draw
     }
 
 }

@@ -39,9 +39,9 @@ class TournamentPrizeApiTest extends TestCase
         ]);
         $this->depTournament = Tournament::create([
             'name' => 'test',
+            'status' => 'Draft',
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
-            'status' => 'Draft',
             'max_players' => 1,
             'entry_fee' => '0.00',
             'prize_pool' => '0.00',

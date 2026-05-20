@@ -47,14 +47,15 @@ class TournamentPrize extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function appliesToPlacement($placement): bool
+    public function appliesToPlacement($placement): ?bool
     {
-        throw new \RuntimeException('applies_to_placement not implemented');
+        // TODO: implement applies_to_placement
+        return null;
     }
 
     public function awardToPlayer($player_id): void
     {
-        throw new \RuntimeException('award_to_player not implemented');
+        // TODO: implement award_to_player
     }
 
 }

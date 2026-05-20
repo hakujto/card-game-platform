@@ -19,9 +19,9 @@ class TradeDisputeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'status' => 'required|string|in:Open,UnderReview,Resolved,Escalated|max:20',
             'reason' => 'required|string|in:ItemNotReceived,ItemNotAsDescribed,FraudSuspected,Other|max:20',
             'description' => 'required|string|max:200',
-            'status' => 'required|string|in:Open,UnderReview,Resolved,Escalated|max:20',
             'resolution' => 'nullable|string|max:200',
             'opened_at' => 'required|date',
             'resolved_at' => 'nullable|date',
@@ -47,9 +47,9 @@ class TradeDisputeController extends Controller
     public function update(Request $request, TradeDispute $tradeDispute): JsonResponse
     {
         $validated = $request->validate([
+            'status' => 'sometimes|nullable|string|max:20',
             'reason' => 'sometimes|nullable|string|max:20',
             'description' => 'sometimes|nullable|string|max:200',
-            'status' => 'sometimes|nullable|string|max:20',
             'resolution' => 'sometimes|nullable|string|max:200',
             'opened_at' => 'sometimes|nullable|date',
             'resolved_at' => 'sometimes|nullable|date',
@@ -87,10 +87,87 @@ class TradeDisputeController extends Controller
         return response()->json(null, 204);
     }
 
+    public function closeResolved(Request $request, TradeDispute $tradeDispute): JsonResponse
+    {
+        $tradeDispute->closeResolved();
+        $tradeDispute->save();
+        return response()->json(null, 204);
+    }
+
     public function review(Request $request, TradeDispute $tradeDispute): JsonResponse
     {
         $tradeDispute->review();
         $tradeDispute->save();
         return response()->json(null, 204);
+    }
+    public function transitionOpenToUnderReview(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $tradeDispute->assertTransition('UnderReview');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tradeDispute->status = 'UnderReview';
+        $tradeDispute->review(); // @after
+        $tradeDispute->save();
+        return response()->json($tradeDispute);
+    }
+
+    public function transitionUnderReviewToResolved(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $tradeDispute->assertTransition('Resolved');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($tradeDispute->resolution === null) {
+                throw new \RuntimeException('resolution is required for UnderReview -> Resolved');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $tradeDispute->status = 'Resolved';
+        $tradeDispute->closeResolved(); // @after
+        $tradeDispute->save();
+        return response()->json($tradeDispute);
+    }
+
+    public function transitionUnderReviewToEscalated(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $tradeDispute->assertTransition('Escalated');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $tradeDispute->status = 'Escalated';
+        $tradeDispute->escalate(); // @after
+        $tradeDispute->save();
+        return response()->json($tradeDispute);
+    }
+
+    public function transitionEscalatedToResolved(TradeDispute $tradeDispute): JsonResponse
+    {
+        try {
+            $tradeDispute->assertTransition('Resolved');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        try {
+            if ($tradeDispute->resolution === null) {
+                throw new \RuntimeException('resolution is required for Escalated -> Resolved');
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+        $tradeDispute->status = 'Resolved';
+        $tradeDispute->closeResolved(); // @after
+        $tradeDispute->save();
+        return response()->json($tradeDispute);
+    }
+
+    public function transitionResolvedToOpen(TradeDispute $tradeDispute): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Resolved -> Open is not allowed'], 409);
     }
 }

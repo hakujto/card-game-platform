@@ -110,4 +110,52 @@ class MatchRecordApiTest extends TestCase
         $response = $this->postJson('/api/matches', ['round_id' => 1, 'player1_id' => 1, 'status' => 'Completed', 'started_at' => null]);
         $response->assertStatus(422);
     }
+    public function test_transition_pending_to_active(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/pending-to-active");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_active_to_completed(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/active-to-completed");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_active_to_draw(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/active-to-draw");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_pending_to_bye(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/pending-to-bye");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_completed_to_active(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Completed']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/completed-to-active");
+        $response->assertStatus(409);
+    }
+
+    public function test_transition_draw_to_active(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Draw']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/draw-to-active");
+        $response->assertStatus(409);
+    }
+
+    public function test_transition_bye_to_active(): void
+    {
+        \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'BYE']);
+        $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/bye-to-active");
+        $response->assertStatus(409);
+    }
 }

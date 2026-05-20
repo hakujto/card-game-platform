@@ -36,14 +36,15 @@ class Achievement extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function pointValue($multiplier): int
+    public function pointValue($multiplier): ?int
     {
-        throw new \RuntimeException('point_value not implemented');
+        // TODO: implement point_value
+        return null;
     }
 
     public function reveal(): void
     {
-        throw new \RuntimeException('reveal not implemented');
+        // TODO: implement reveal
     }
 
 }

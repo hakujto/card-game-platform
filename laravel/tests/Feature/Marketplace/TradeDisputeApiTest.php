@@ -57,11 +57,11 @@ class TradeDisputeApiTest extends TestCase
             'set_id' => $this->auxCardSet->id,
         ]);
         $this->auxTradeListing = TradeListing::create([
+            'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
-            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
             'seller_id' => $this->auxPlayer->id,
             'card_id' => $this->auxCard->id,
@@ -83,9 +83,9 @@ class TradeDisputeApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $entity = TradeDispute::create([
+            'status' => 'Resolved',
             'reason' => 'ItemNotReceived',
             'description' => 'test',
-            'status' => 'Resolved',
             'opened_at' => '2024-01-01 00:00:00',
             'resolved_at' => null,
             'transaction_id' => $this->depTransaction->id,
@@ -102,12 +102,12 @@ class TradeDisputeApiTest extends TestCase
 
     public function test_create_returns_201(): void
     {
-        $freshSubListing = TradeListing::create(['listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'status' => 'Active', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
+        $freshSubListing = TradeListing::create(['status' => 'Active', 'listing_type' => 'FixedPrice', 'foil' => true, 'condition' => 'Mint', 'quantity' => 1, 'created_at' => '2024-01-01 00:00:00', 'seller_id' => $this->auxPlayer->id, 'card_id' => $this->auxCard->id]);
         $freshTransaction = TradeTransaction::create(['final_price' => '0.00', 'platform_fee' => '0.00', 'status' => 'Pending', 'listing_id' => $freshSubListing->id, 'buyer_id' => $this->auxPlayer->id, 'seller_id' => $this->auxPlayer->id]);
         $response = $this->postJson('/api/trade_disputes', [
+            'status' => 'Resolved',
             'reason' => 'ItemNotReceived',
             'description' => 'test',
-            'status' => 'Resolved',
             'opened_at' => '2024-01-01 00:00:00',
             'resolved_at' => null,
             'transaction_id' => $freshTransaction->id,
@@ -141,5 +141,53 @@ class TradeDisputeApiTest extends TestCase
         // resolved_at_requires_terminal_status
         $response = $this->postJson('/api/trade_disputes', ['reason' => 'ItemNotReceived', 'description' => 'test', 'opened_at' => '2024-01-01 00:00:00', 'transaction_id' => 1, 'opened_by_id' => 1, 'resolved_at' => '2024-01-01 00:00:00', 'status' => 'Open']);
         $response->assertStatus(422);
+    }
+    public function test_transition_open_to_underreview(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Open']);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/open-to-underreview");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_underreview_to_resolved(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview']);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-resolved");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_underreview_to_resolved_fails_when_resolution_null(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview', 'resolution' => null]);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-resolved");
+        $response->assertStatus(422);
+    }
+
+    public function test_transition_underreview_to_escalated(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview']);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-escalated");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_escalated_to_resolved(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Escalated']);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/escalated-to-resolved");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_escalated_to_resolved_fails_when_resolution_null(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Escalated', 'resolution' => null]);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/escalated-to-resolved");
+        $response->assertStatus(422);
+    }
+
+    public function test_transition_resolved_to_open(): void
+    {
+        \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Resolved']);
+        $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/resolved-to-open");
+        $response->assertStatus(409);
     }
 }

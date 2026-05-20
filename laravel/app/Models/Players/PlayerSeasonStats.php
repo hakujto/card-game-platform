@@ -52,19 +52,20 @@ class PlayerSeasonStats extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function winRate(): string
+    public function winRate(): ?string
     {
-        throw new \RuntimeException('win_rate not implemented');
+        // TODO: implement win_rate
+        return null;
     }
 
     public function addPoints($points): void
     {
-        throw new \RuntimeException('add_points not implemented');
+        // TODO: implement add_points
     }
 
     public function recordTournamentWin(): void
     {
-        throw new \RuntimeException('record_tournament_win not implemented');
+        // TODO: implement record_tournament_win
     }
 
 }

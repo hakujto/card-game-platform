@@ -85,6 +85,13 @@ class MatchRecordController extends Controller
         return response()->json(null, 204);
     }
 
+    public function finalizeResult(Request $request, MatchRecord $matchRecord): JsonResponse
+    {
+        $matchRecord->finalizeResult();
+        $matchRecord->save();
+        return response()->json(null, 204);
+    }
+
     public function determineWinner(Request $request, MatchRecord $matchRecord): JsonResponse
     {
         $result = $matchRecord->determineWinner();
@@ -105,5 +112,69 @@ class MatchRecordController extends Controller
         $matchRecord->draw();
         $matchRecord->save();
         return response()->json(null, 204);
+    }
+    public function transitionPendingToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $matchRecord->assertTransition('Active');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $matchRecord->status = 'Active';
+        $matchRecord->save();
+        return response()->json($matchRecord);
+    }
+
+    public function transitionActiveToCompleted(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $matchRecord->assertTransition('Completed');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $matchRecord->status = 'Completed';
+        $matchRecord->finalizeResult(); // @after
+        $matchRecord->save();
+        return response()->json($matchRecord);
+    }
+
+    public function transitionActiveToDraw(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $matchRecord->assertTransition('Draw');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $matchRecord->status = 'Draw';
+        $matchRecord->draw(); // @after
+        $matchRecord->save();
+        return response()->json($matchRecord);
+    }
+
+    public function transitionPendingToBYE(MatchRecord $matchRecord): JsonResponse
+    {
+        try {
+            $matchRecord->assertTransition('BYE');
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 409);
+        }
+        $matchRecord->status = 'BYE';
+        $matchRecord->save();
+        return response()->json($matchRecord);
+    }
+
+    public function transitionCompletedToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Completed -> Active is not allowed'], 409);
+    }
+
+    public function transitionDrawToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return response()->json(['error' => 'Transition Draw -> Active is not allowed'], 409);
+    }
+
+    public function transitionBYEToActive(MatchRecord $matchRecord): JsonResponse
+    {
+        return response()->json(['error' => 'Transition BYE -> Active is not allowed'], 409);
     }
 }

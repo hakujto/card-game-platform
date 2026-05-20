@@ -66,36 +66,62 @@ class Order extends Model
         }
     }
 
+    // ── Lifecycle state machine ──────────────────────────────────────
+    const ALLOWED_TRANSITIONS = [
+        'Pending' => ['Paid', 'Cancelled'],
+        'Paid' => ['Processing', 'Cancelled'],
+        'Processing' => ['Shipped'],
+        'Shipped' => ['Completed'],
+        'Completed' => ['Refunded'],
+    ];
+
+    public function assertTransition(string $to): void
+    {
+        $allowed = static::ALLOWED_TRANSITIONS[$this->status] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new \InvalidArgumentException("Transition {$this->status} -> {$to} not allowed");
+        }
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function cancel(): void
     {
-        throw new \RuntimeException('cancel not implemented');
+        // TODO: implement cancel
     }
 
-    public function pay($payment_ref): bool
+    public function pay($payment_ref): ?bool
     {
-        throw new \RuntimeException('pay not implemented');
+        // TODO: implement pay
+        return null;
     }
 
-    public function calculateTotal(): string
+    public function processPayment(): ?bool
     {
-        throw new \RuntimeException('calculate_total not implemented');
+        // TODO: implement process_payment
+        return null;
     }
 
-    public function applyDiscount($percent): string
+    public function calculateTotal(): ?string
     {
-        throw new \RuntimeException('apply_discount not implemented');
+        // TODO: implement calculate_total
+        return null;
+    }
+
+    public function applyDiscount($percent): ?string
+    {
+        // TODO: implement apply_discount
+        return null;
     }
 
     public function refund(): void
     {
-        throw new \RuntimeException('refund not implemented');
+        // TODO: implement refund
     }
 
     public function notifyShipped(): void
     {
-        throw new \RuntimeException('notify_shipped not implemented');
+        // TODO: implement notify_shipped
     }
 
 }

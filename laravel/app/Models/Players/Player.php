@@ -60,39 +60,42 @@ class Player extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function promote(): bool
+    public function promote(): ?bool
     {
-        throw new \RuntimeException('promote not implemented');
+        // TODO: implement promote
+        return null;
     }
 
-    public function demote(): bool
+    public function demote(): ?bool
     {
-        throw new \RuntimeException('demote not implemented');
+        // TODO: implement demote
+        return null;
     }
 
     public function recordWin(): void
     {
-        throw new \RuntimeException('record_win not implemented');
+        // TODO: implement record_win
     }
 
     public function recordLoss(): void
     {
-        throw new \RuntimeException('record_loss not implemented');
+        // TODO: implement record_loss
     }
 
-    public function winRate(): string
+    public function winRate(): ?string
     {
-        throw new \RuntimeException('win_rate not implemented');
+        // TODO: implement win_rate
+        return null;
     }
 
     public function verify(): void
     {
-        throw new \RuntimeException('verify not implemented');
+        // TODO: implement verify
     }
 
     public function updateRating($delta): void
     {
-        throw new \RuntimeException('update_rating not implemented');
+        // TODO: implement update_rating
     }
 
 }

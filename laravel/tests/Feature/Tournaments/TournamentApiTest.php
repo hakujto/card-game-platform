@@ -37,9 +37,9 @@ class TournamentApiTest extends TestCase
         ]);
         $entity = Tournament::create([
             'name' => 'test',
+            'status' => 'Draft',
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
-            'status' => 'Draft',
             'max_players' => 2,
             'entry_fee' => '0.00',
             'prize_pool' => '0.00',
@@ -63,9 +63,9 @@ class TournamentApiTest extends TestCase
     {
         $response = $this->postJson('/api/tournaments', [
             'name' => 'test',
+            'status' => 'Draft',
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
-            'status' => 'Draft',
             'max_players' => 2,
             'entry_fee' => '0.00',
             'prize_pool' => '0.00',
@@ -125,5 +125,53 @@ class TournamentApiTest extends TestCase
         // End time must be after start time
         $response = $this->postJson('/api/tournaments', ['name' => 'test', 'max_players' => 1, 'start_time' => '2024-01-01 00:00:00', 'created_at' => '2024-01-01 00:00:00', 'season_id' => 1, 'organizer_id' => 1, 'end_time' => '2024-01-01 00:00:00', 'end_time' => '2024-01-01 00:00:00']);
         $response->assertStatus(422);
+    }
+    public function test_transition_draft_to_registration(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Draft']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/draft-to-registration");
+        $this->assertContains($response->status(), [200, 422]);
+    }
+
+    public function test_transition_registration_to_ongoing(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Registration']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/registration-to-ongoing");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_registration_to_cancelled(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Registration']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/registration-to-cancelled");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_ongoing_to_completed(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Ongoing']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/ongoing-to-completed");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_ongoing_to_cancelled(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Ongoing']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/ongoing-to-cancelled");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_completed_to_draft(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Completed']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/completed-to-draft");
+        $response->assertStatus(409);
+    }
+
+    public function test_transition_cancelled_to_draft(): void
+    {
+        \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Cancelled']);
+        $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/cancelled-to-draft");
+        $response->assertStatus(409);
     }
 }

@@ -26,6 +26,11 @@ class DeckCardController extends Controller
         ]);
         $item = DeckCard::create($validated);
         $item->validateRules();
+        try {
+            $item->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
 
         return response()->json($item, 201);
     }
@@ -45,6 +50,11 @@ class DeckCardController extends Controller
         ]);
         $deckCard->update($validated);
         $deckCard->validateRules();
+        try {
+            $deckCard->validateImplies();
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
 
         return response()->json($deckCard);
     }

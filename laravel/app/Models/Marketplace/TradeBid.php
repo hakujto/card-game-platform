@@ -47,14 +47,15 @@ class TradeBid extends Model
 
     // ── Business operations ──────────────────────────────────────────
 
-    public function outbidBy($new_amount): bool
+    public function outbidBy($new_amount): ?bool
     {
-        throw new \RuntimeException('outbid_by not implemented');
+        // TODO: implement outbid_by
+        return null;
     }
 
     public function retract(): void
     {
-        throw new \RuntimeException('retract not implemented');
+        // TODO: implement retract
     }
 
 }

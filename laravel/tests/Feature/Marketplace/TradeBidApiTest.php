@@ -55,11 +55,11 @@ class TradeBidApiTest extends TestCase
             'set_id' => $this->auxCardSet->id,
         ]);
         $this->depListing = TradeListing::create([
+            'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'foil' => true,
             'condition' => 'Mint',
             'quantity' => 1,
-            'status' => 'Active',
             'created_at' => '2024-01-01 00:00:00',
             'seller_id' => $this->auxPlayer->id,
             'card_id' => $this->auxCard->id,

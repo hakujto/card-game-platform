@@ -30,6 +30,7 @@ class DraftSessionApiTest extends TestCase
             'status' => 'Completed',
             'draft_type' => 'Booster',
             'seats' => 2,
+            'time_per_pick_seconds' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'completed_at' => null,
             'card_set_id' => $this->depCardSet->id,
@@ -49,6 +50,7 @@ class DraftSessionApiTest extends TestCase
             'status' => 'Completed',
             'draft_type' => 'Booster',
             'seats' => 2,
+            'time_per_pick_seconds' => 1,
             'created_at' => '2024-01-01 00:00:00',
             'completed_at' => null,
             'card_set_id' => $this->depCardSet->id,
@@ -88,5 +90,53 @@ class DraftSessionApiTest extends TestCase
         // completed_at can only be set when draft status is Completed
         $response = $this->postJson('/api/draft_sessions', ['created_at' => '2024-01-01 00:00:00', 'card_set_id' => 1, 'completed_at' => '2024-01-01 00:00:00', 'status' => 'WaitingForPlayers']);
         $response->assertStatus(422);
+    }
+
+    public function test_create_fails_when_time_per_pick_positive_violated(): void
+    {
+        // Time per pick must be greater than zero
+        $response = $this->postJson('/api/draft_sessions', ['created_at' => '2024-01-01 00:00:00', 'card_set_id' => 1, 'completed_at' => '2024-01-01 00:00:00', 'status' => 'Completed', 'time_per_pick_seconds' => 0]);
+        $response->assertStatus(422);
+    }
+    public function test_transition_waitingforplayers_to_drafting(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'WaitingForPlayers']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/waitingforplayers-to-drafting");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_drafting_to_completed(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'Drafting']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/drafting-to-completed");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_drafting_to_abandoned(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'Drafting']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/drafting-to-abandoned");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_waitingforplayers_to_abandoned(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'WaitingForPlayers']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/waitingforplayers-to-abandoned");
+        $response->assertStatus(200);
+    }
+
+    public function test_transition_completed_to_drafting(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'Completed']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/completed-to-drafting");
+        $response->assertStatus(409);
+    }
+
+    public function test_transition_abandoned_to_drafting(): void
+    {
+        \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'Abandoned']);
+        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/abandoned-to-drafting");
+        $response->assertStatus(409);
     }
 }

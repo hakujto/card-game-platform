@@ -11,9 +11,9 @@ class TradeDisputeResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'status' => $this->status,
             'reason' => $this->reason,
             'description' => $this->description,
-            'status' => $this->status,
             'resolution' => $this->resolution,
             'opened_at' => $this->opened_at,
             'resolved_at' => $this->resolved_at,

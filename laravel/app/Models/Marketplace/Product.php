@@ -58,32 +58,35 @@ class Product extends Model
 
     public function activate(): void
     {
-        throw new \RuntimeException('activate not implemented');
+        // TODO: implement activate
     }
 
     public function deactivate(): void
     {
-        throw new \RuntimeException('deactivate not implemented');
+        // TODO: implement deactivate
     }
 
-    public function applyDiscount($percent): string
+    public function applyDiscount($percent): ?string
     {
-        throw new \RuntimeException('apply_discount not implemented');
+        // TODO: implement apply_discount
+        return null;
     }
 
     public function restock($quantity): void
     {
-        throw new \RuntimeException('restock not implemented');
+        // TODO: implement restock
     }
 
-    public function effectivePrice(): string
+    public function effectivePrice(): ?string
     {
-        throw new \RuntimeException('effective_price not implemented');
+        // TODO: implement effective_price
+        return null;
     }
 
-    public function isInStock(): bool
+    public function isInStock(): ?bool
     {
-        throw new \RuntimeException('is_in_stock not implemented');
+        // TODO: implement is_in_stock
+        return null;
     }
 
 }

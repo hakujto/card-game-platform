@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('trade_listings', function (Blueprint $table) {
             $table->id();
+            $table->string('status', 20)->default('Active');
             $table->string('listing_type', 20)->default('FixedPrice');
             $table->decimal('asking_price', 10, 2)->nullable();
             $table->decimal('auction_start_price', 10, 2)->nullable();
@@ -18,7 +19,6 @@ return new class extends Migration
             $table->boolean('foil')->default(false);
             $table->string('condition', 20)->default('Mint');
             $table->integer('quantity')->default(1);
-            $table->string('status', 20)->default('Active');
             $table->text('description')->nullable();
             $table->dateTime('expires_at')->nullable();
             $table->unsignedBigInteger('seller_id');
