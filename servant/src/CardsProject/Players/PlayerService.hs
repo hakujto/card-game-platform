@@ -8,45 +8,38 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Player
 validatePlayer :: NewPlayer -> Either String NewPlayer
 validatePlayer body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 promote :: Int -> IO Bool
-promote eid = do
-  throwIO (userError "promote not implemented")
+promote _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 demote :: Int -> IO Bool
-demote eid = do
-  throwIO (userError "demote not implemented")
+demote _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 record_win :: Int -> IO ()
-record_win eid = do
-  throwIO (userError "record_win not implemented")
+record_win _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 record_loss :: Int -> IO ()
-record_loss eid = do
-  throwIO (userError "record_loss not implemented")
+record_loss _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 win_rate :: Int -> IO Text
-win_rate eid = do
-  throwIO (userError "win_rate not implemented")
+win_rate _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 verify :: Int -> IO ()
-verify eid = do
-  throwIO (userError "verify not implemented")
+verify _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 update_rating :: Int -> IO ()
-update_rating eid = do
-  -- params: delta: Int -- extract from body in handler when implementing
-  throwIO (userError "update_rating not implemented")
+update_rating _eid = return ()
 

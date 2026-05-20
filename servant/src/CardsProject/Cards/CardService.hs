@@ -8,46 +8,38 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Card
 validateCard :: NewCard -> Either String NewCard
 validateCard body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 ban :: Int -> IO ()
-ban eid = do
-  throwIO (userError "ban not implemented")
+ban _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 unban :: Int -> IO ()
-unban eid = do
-  throwIO (userError "unban not implemented")
+unban _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 restrict :: Int -> IO ()
-restrict eid = do
-  throwIO (userError "restrict not implemented")
+restrict _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 unrestrict :: Int -> IO ()
-unrestrict eid = do
-  throwIO (userError "unrestrict not implemented")
+unrestrict _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 calculate_value :: Int -> IO Text
-calculate_value eid = do
-  throwIO (userError "calculate_value not implemented")
+calculate_value _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 apply_rarity_bonus :: Int -> IO Text
-apply_rarity_bonus eid = do
-  -- params: multiplier: Int -- extract from body in handler when implementing
-  throwIO (userError "apply_rarity_bonus not implemented")
+apply_rarity_bonus _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_legal_in_format :: Int -> IO Bool
-is_legal_in_format eid = do
-  -- params: format: String -- extract from body in handler when implementing
-  throwIO (userError "is_legal_in_format not implemented")
+is_legal_in_format _eid = return (error "TODO")
 

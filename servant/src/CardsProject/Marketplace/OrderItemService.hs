@@ -8,14 +8,14 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for OrderItem
 validateOrderItem :: NewOrderItem -> Either String NewOrderItem
 validateOrderItem body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 line_total :: Int -> IO Text
-line_total eid = do
-  throwIO (userError "line_total not implemented")
+line_total _eid = return (error "TODO")
 

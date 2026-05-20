@@ -8,21 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for DeckSideboardCard
 validateDeckSideboardCard :: NewDeckSideboardCard -> Either String NewDeckSideboardCard
 validateDeckSideboardCard body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 increment :: Int -> IO ()
-increment eid = do
-  -- params: amount: Int -- extract from body in handler when implementing
-  throwIO (userError "increment not implemented")
+increment _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 decrement :: Int -> IO ()
-decrement eid = do
-  -- params: amount: Int -- extract from body in handler when implementing
-  throwIO (userError "decrement not implemented")
+decrement _eid = return ()
 

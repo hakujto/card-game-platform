@@ -8,20 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Game
 validateGame :: NewGame -> Either String NewGame
 validateGame body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 record_winner :: Int -> IO ()
-record_winner eid = do
-  -- params: winner_side: String -- extract from body in handler when implementing
-  throwIO (userError "record_winner not implemented")
+record_winner _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 duration_minutes :: Int -> IO Text
-duration_minutes eid = do
-  throwIO (userError "duration_minutes not implemented")
+duration_minutes _eid = return (error "TODO")
 

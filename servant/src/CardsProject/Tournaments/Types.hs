@@ -104,6 +104,47 @@ instance FromJSON NewSeason where
 instance ToRow NewSeason where
   toRow b = [toField (bSeasonName b), toField (bSeasonStartDate b), toField (bSeasonEndDate b), toField (bSeasonFormat b), toField (bSeasonIsActive b), toField (bSeasonRewardDescription b)]
 
+data TournamentStatusType
+  = TournamentStatusType_Draft
+  | TournamentStatusType_Registration
+  | TournamentStatusType_Ongoing
+  | TournamentStatusType_Completed
+  | TournamentStatusType_Cancelled
+  deriving (Show, Eq, Generic)
+
+instance ToJSON TournamentStatusType where
+  toJSON v = case v of
+    TournamentStatusType_Draft -> toJSON ("Draft" :: Text)
+    TournamentStatusType_Registration -> toJSON ("Registration" :: Text)
+    TournamentStatusType_Ongoing -> toJSON ("Ongoing" :: Text)
+    TournamentStatusType_Completed -> toJSON ("Completed" :: Text)
+    TournamentStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
+instance FromJSON TournamentStatusType where
+  parseJSON = withText "TournamentStatusType" $ \txt ->
+    if txt == "Draft" then pure TournamentStatusType_Draft
+    else if txt == "Registration" then pure TournamentStatusType_Registration
+    else if txt == "Ongoing" then pure TournamentStatusType_Ongoing
+    else if txt == "Completed" then pure TournamentStatusType_Completed
+    else if txt == "Cancelled" then pure TournamentStatusType_Cancelled
+    else fail ("Unknown TournamentStatusType: " ++ show txt)
+
+instance ToField TournamentStatusType where
+  toField TournamentStatusType_Draft = toField ("Draft" :: Text)
+  toField TournamentStatusType_Registration = toField ("Registration" :: Text)
+  toField TournamentStatusType_Ongoing = toField ("Ongoing" :: Text)
+  toField TournamentStatusType_Completed = toField ("Completed" :: Text)
+  toField TournamentStatusType_Cancelled = toField ("Cancelled" :: Text)
+
+instance FromField TournamentStatusType where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    if txt == "Draft" then return TournamentStatusType_Draft
+    else if txt == "Registration" then return TournamentStatusType_Registration
+    else if txt == "Ongoing" then return TournamentStatusType_Ongoing
+    else if txt == "Completed" then return TournamentStatusType_Completed
+    else if txt == "Cancelled" then return TournamentStatusType_Cancelled
+    else returnError ConversionFailed f ("Unknown TournamentStatusType: " ++ show txt)
+
 data TournamentFormatType
   = TournamentFormatType_Standard
   | TournamentFormatType_Extended
@@ -186,47 +227,6 @@ instance FromField TournamentTournamentTypeType where
     else if txt == "RoundRobin" then return TournamentTournamentTypeType_RoundRobin
     else returnError ConversionFailed f ("Unknown TournamentTournamentTypeType: " ++ show txt)
 
-data TournamentStatusType
-  = TournamentStatusType_Draft
-  | TournamentStatusType_Registration
-  | TournamentStatusType_Ongoing
-  | TournamentStatusType_Completed
-  | TournamentStatusType_Cancelled
-  deriving (Show, Eq, Generic)
-
-instance ToJSON TournamentStatusType where
-  toJSON v = case v of
-    TournamentStatusType_Draft -> toJSON ("Draft" :: Text)
-    TournamentStatusType_Registration -> toJSON ("Registration" :: Text)
-    TournamentStatusType_Ongoing -> toJSON ("Ongoing" :: Text)
-    TournamentStatusType_Completed -> toJSON ("Completed" :: Text)
-    TournamentStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
-instance FromJSON TournamentStatusType where
-  parseJSON = withText "TournamentStatusType" $ \txt ->
-    if txt == "Draft" then pure TournamentStatusType_Draft
-    else if txt == "Registration" then pure TournamentStatusType_Registration
-    else if txt == "Ongoing" then pure TournamentStatusType_Ongoing
-    else if txt == "Completed" then pure TournamentStatusType_Completed
-    else if txt == "Cancelled" then pure TournamentStatusType_Cancelled
-    else fail ("Unknown TournamentStatusType: " ++ show txt)
-
-instance ToField TournamentStatusType where
-  toField TournamentStatusType_Draft = toField ("Draft" :: Text)
-  toField TournamentStatusType_Registration = toField ("Registration" :: Text)
-  toField TournamentStatusType_Ongoing = toField ("Ongoing" :: Text)
-  toField TournamentStatusType_Completed = toField ("Completed" :: Text)
-  toField TournamentStatusType_Cancelled = toField ("Cancelled" :: Text)
-
-instance FromField TournamentStatusType where
-  fromField f = do
-    txt <- fromField f :: Ok Text
-    if txt == "Draft" then return TournamentStatusType_Draft
-    else if txt == "Registration" then return TournamentStatusType_Registration
-    else if txt == "Ongoing" then return TournamentStatusType_Ongoing
-    else if txt == "Completed" then return TournamentStatusType_Completed
-    else if txt == "Cancelled" then return TournamentStatusType_Cancelled
-    else returnError ConversionFailed f ("Unknown TournamentStatusType: " ++ show txt)
-
 _tournamentOpts :: Options
 _tournamentOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 10 }
@@ -235,9 +235,9 @@ data Tournament = Tournament
   { tournamentId :: Int
   , tournamentName :: Text
   , tournamentDescription :: Maybe Text
+  , tournamentStatus :: TournamentStatusType
   , tournamentFormat :: TournamentFormatType
   , tournamentTournamentType :: TournamentTournamentTypeType
-  , tournamentStatus :: TournamentStatusType
   , tournamentMaxPlayers :: Int
   , tournamentEntryFee :: Text
   , tournamentPrizePool :: Text
@@ -269,9 +269,9 @@ _newTournamentOpts = defaultOptions
 data NewTournament = NewTournament
   { bTournamentName :: Text
   , bTournamentDescription :: Maybe Text
+  , bTournamentStatus :: TournamentStatusType
   , bTournamentFormat :: TournamentFormatType
   , bTournamentTournamentType :: TournamentTournamentTypeType
-  , bTournamentStatus :: TournamentStatusType
   , bTournamentMaxPlayers :: Int
   , bTournamentEntryFee :: Text
   , bTournamentPrizePool :: Text
@@ -294,7 +294,7 @@ instance FromJSON NewTournament where
   parseJSON = genericParseJSON _newTournamentOpts
 
 instance ToRow NewTournament where
-  toRow b = [toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentStatus b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b), toField (bTournamentRegistrationsId b), toField (bTournamentRoundsId b), toField (bTournamentPrizesId b)]
+  toRow b = [toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentStatus b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b), toField (bTournamentRegistrationsId b), toField (bTournamentRoundsId b), toField (bTournamentPrizesId b)]
 
 data TournamentJudgeRoleType
   = TournamentJudgeRoleType_HeadJudge

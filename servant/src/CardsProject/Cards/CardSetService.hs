@@ -8,31 +8,26 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for CardSet
 validateCardSet :: NewCardSet -> Either String NewCardSet
 validateCardSet body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_legal_in_standard :: Int -> IO Bool
-is_legal_in_standard eid = do
-  throwIO (userError "is_legal_in_standard not implemented")
+is_legal_in_standard _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_legal_in_format :: Int -> IO Bool
-is_legal_in_format eid = do
-  -- params: format: String -- extract from body in handler when implementing
-  throwIO (userError "is_legal_in_format not implemented")
+is_legal_in_format _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 card_count_by_rarity :: Int -> IO Int
-card_count_by_rarity eid = do
-  -- params: rarity: String -- extract from body in handler when implementing
-  throwIO (userError "card_count_by_rarity not implemented")
+card_count_by_rarity _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 rotate_out :: Int -> IO ()
-rotate_out eid = do
-  throwIO (userError "rotate_out not implemented")
+rotate_out _eid = return ()
 

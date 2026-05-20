@@ -371,6 +371,47 @@ instance FromJSON NewCoupon where
 instance ToRow NewCoupon where
   toRow b = [toField (bCouponCode b), toField (bCouponDiscountType b), toField (bCouponDiscountValue b), toField (bCouponMinOrderValue b), toField (bCouponMaxUses b), toField (bCouponUsesCount b), toField (bCouponValidFrom b), toField (bCouponValidUntil b), toField (bCouponIsActive b)]
 
+data TradeListingStatusType
+  = TradeListingStatusType_Active
+  | TradeListingStatusType_Sold
+  | TradeListingStatusType_Expired
+  | TradeListingStatusType_Cancelled
+  | TradeListingStatusType_Pending
+  deriving (Show, Eq, Generic)
+
+instance ToJSON TradeListingStatusType where
+  toJSON v = case v of
+    TradeListingStatusType_Active -> toJSON ("Active" :: Text)
+    TradeListingStatusType_Sold -> toJSON ("Sold" :: Text)
+    TradeListingStatusType_Expired -> toJSON ("Expired" :: Text)
+    TradeListingStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
+    TradeListingStatusType_Pending -> toJSON ("Pending" :: Text)
+instance FromJSON TradeListingStatusType where
+  parseJSON = withText "TradeListingStatusType" $ \txt ->
+    if txt == "Active" then pure TradeListingStatusType_Active
+    else if txt == "Sold" then pure TradeListingStatusType_Sold
+    else if txt == "Expired" then pure TradeListingStatusType_Expired
+    else if txt == "Cancelled" then pure TradeListingStatusType_Cancelled
+    else if txt == "Pending" then pure TradeListingStatusType_Pending
+    else fail ("Unknown TradeListingStatusType: " ++ show txt)
+
+instance ToField TradeListingStatusType where
+  toField TradeListingStatusType_Active = toField ("Active" :: Text)
+  toField TradeListingStatusType_Sold = toField ("Sold" :: Text)
+  toField TradeListingStatusType_Expired = toField ("Expired" :: Text)
+  toField TradeListingStatusType_Cancelled = toField ("Cancelled" :: Text)
+  toField TradeListingStatusType_Pending = toField ("Pending" :: Text)
+
+instance FromField TradeListingStatusType where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    if txt == "Active" then return TradeListingStatusType_Active
+    else if txt == "Sold" then return TradeListingStatusType_Sold
+    else if txt == "Expired" then return TradeListingStatusType_Expired
+    else if txt == "Cancelled" then return TradeListingStatusType_Cancelled
+    else if txt == "Pending" then return TradeListingStatusType_Pending
+    else returnError ConversionFailed f ("Unknown TradeListingStatusType: " ++ show txt)
+
 data TradeListingListingTypeType
   = TradeListingListingTypeType_FixedPrice
   | TradeListingListingTypeType_Auction
@@ -443,53 +484,13 @@ instance FromField TradeListingConditionType where
     else if txt == "Played" then return TradeListingConditionType_Played
     else returnError ConversionFailed f ("Unknown TradeListingConditionType: " ++ show txt)
 
-data TradeListingStatusType
-  = TradeListingStatusType_Active
-  | TradeListingStatusType_Sold
-  | TradeListingStatusType_Expired
-  | TradeListingStatusType_Cancelled
-  | TradeListingStatusType_Pending
-  deriving (Show, Eq, Generic)
-
-instance ToJSON TradeListingStatusType where
-  toJSON v = case v of
-    TradeListingStatusType_Active -> toJSON ("Active" :: Text)
-    TradeListingStatusType_Sold -> toJSON ("Sold" :: Text)
-    TradeListingStatusType_Expired -> toJSON ("Expired" :: Text)
-    TradeListingStatusType_Cancelled -> toJSON ("Cancelled" :: Text)
-    TradeListingStatusType_Pending -> toJSON ("Pending" :: Text)
-instance FromJSON TradeListingStatusType where
-  parseJSON = withText "TradeListingStatusType" $ \txt ->
-    if txt == "Active" then pure TradeListingStatusType_Active
-    else if txt == "Sold" then pure TradeListingStatusType_Sold
-    else if txt == "Expired" then pure TradeListingStatusType_Expired
-    else if txt == "Cancelled" then pure TradeListingStatusType_Cancelled
-    else if txt == "Pending" then pure TradeListingStatusType_Pending
-    else fail ("Unknown TradeListingStatusType: " ++ show txt)
-
-instance ToField TradeListingStatusType where
-  toField TradeListingStatusType_Active = toField ("Active" :: Text)
-  toField TradeListingStatusType_Sold = toField ("Sold" :: Text)
-  toField TradeListingStatusType_Expired = toField ("Expired" :: Text)
-  toField TradeListingStatusType_Cancelled = toField ("Cancelled" :: Text)
-  toField TradeListingStatusType_Pending = toField ("Pending" :: Text)
-
-instance FromField TradeListingStatusType where
-  fromField f = do
-    txt <- fromField f :: Ok Text
-    if txt == "Active" then return TradeListingStatusType_Active
-    else if txt == "Sold" then return TradeListingStatusType_Sold
-    else if txt == "Expired" then return TradeListingStatusType_Expired
-    else if txt == "Cancelled" then return TradeListingStatusType_Cancelled
-    else if txt == "Pending" then return TradeListingStatusType_Pending
-    else returnError ConversionFailed f ("Unknown TradeListingStatusType: " ++ show txt)
-
 _tradeListingOpts :: Options
 _tradeListingOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 12 }
 
 data TradeListing = TradeListing
   { tradeListingId :: Int
+  , tradeListingStatus :: TradeListingStatusType
   , tradeListingListingType :: TradeListingListingTypeType
   , tradeListingAskingPrice :: Maybe Text
   , tradeListingAuctionStartPrice :: Maybe Text
@@ -498,7 +499,6 @@ data TradeListing = TradeListing
   , tradeListingFoil :: Bool
   , tradeListingCondition :: TradeListingConditionType
   , tradeListingQuantity :: Int
-  , tradeListingStatus :: TradeListingStatusType
   , tradeListingDescription :: Maybe Text
   , tradeListingCreatedAt :: Text
   , tradeListingExpiresAt :: Maybe Text
@@ -520,7 +520,8 @@ _newTradeListingOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 13 }
 
 data NewTradeListing = NewTradeListing
-  { bTradeListingListingType :: TradeListingListingTypeType
+  { bTradeListingStatus :: TradeListingStatusType
+  , bTradeListingListingType :: TradeListingListingTypeType
   , bTradeListingAskingPrice :: Maybe Text
   , bTradeListingAuctionStartPrice :: Maybe Text
   , bTradeListingAuctionCurrentBid :: Maybe Text
@@ -528,7 +529,6 @@ data NewTradeListing = NewTradeListing
   , bTradeListingFoil :: Bool
   , bTradeListingCondition :: TradeListingConditionType
   , bTradeListingQuantity :: Int
-  , bTradeListingStatus :: TradeListingStatusType
   , bTradeListingDescription :: Maybe Text
   , bTradeListingCreatedAt :: Text
   , bTradeListingExpiresAt :: Maybe Text
@@ -543,7 +543,7 @@ instance FromJSON NewTradeListing where
   parseJSON = genericParseJSON _newTradeListingOpts
 
 instance ToRow NewTradeListing where
-  toRow b = [toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingStatus b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b), toField (bTradeListingBidsId b)]
+  toRow b = [toField (bTradeListingStatus b), toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b), toField (bTradeListingBidsId b)]
 
 _tradeBidOpts :: Options
 _tradeBidOpts = defaultOptions
@@ -712,42 +712,6 @@ instance FromJSON NewCardPriceHistory where
 instance ToRow NewCardPriceHistory where
   toRow b = [toField (bCardPriceHistoryPriceDate b), toField (bCardPriceHistoryAvgPrice b), toField (bCardPriceHistoryMinPrice b), toField (bCardPriceHistoryMaxPrice b), toField (bCardPriceHistoryVolume b), toField (bCardPriceHistoryFoil b), toField (bCardPriceHistoryCardId b)]
 
-data TradeDisputeReasonType
-  = TradeDisputeReasonType_ItemNotReceived
-  | TradeDisputeReasonType_ItemNotAsDescribed
-  | TradeDisputeReasonType_FraudSuspected
-  | TradeDisputeReasonType_Other
-  deriving (Show, Eq, Generic)
-
-instance ToJSON TradeDisputeReasonType where
-  toJSON v = case v of
-    TradeDisputeReasonType_ItemNotReceived -> toJSON ("ItemNotReceived" :: Text)
-    TradeDisputeReasonType_ItemNotAsDescribed -> toJSON ("ItemNotAsDescribed" :: Text)
-    TradeDisputeReasonType_FraudSuspected -> toJSON ("FraudSuspected" :: Text)
-    TradeDisputeReasonType_Other -> toJSON ("Other" :: Text)
-instance FromJSON TradeDisputeReasonType where
-  parseJSON = withText "TradeDisputeReasonType" $ \txt ->
-    if txt == "ItemNotReceived" then pure TradeDisputeReasonType_ItemNotReceived
-    else if txt == "ItemNotAsDescribed" then pure TradeDisputeReasonType_ItemNotAsDescribed
-    else if txt == "FraudSuspected" then pure TradeDisputeReasonType_FraudSuspected
-    else if txt == "Other" then pure TradeDisputeReasonType_Other
-    else fail ("Unknown TradeDisputeReasonType: " ++ show txt)
-
-instance ToField TradeDisputeReasonType where
-  toField TradeDisputeReasonType_ItemNotReceived = toField ("ItemNotReceived" :: Text)
-  toField TradeDisputeReasonType_ItemNotAsDescribed = toField ("ItemNotAsDescribed" :: Text)
-  toField TradeDisputeReasonType_FraudSuspected = toField ("FraudSuspected" :: Text)
-  toField TradeDisputeReasonType_Other = toField ("Other" :: Text)
-
-instance FromField TradeDisputeReasonType where
-  fromField f = do
-    txt <- fromField f :: Ok Text
-    if txt == "ItemNotReceived" then return TradeDisputeReasonType_ItemNotReceived
-    else if txt == "ItemNotAsDescribed" then return TradeDisputeReasonType_ItemNotAsDescribed
-    else if txt == "FraudSuspected" then return TradeDisputeReasonType_FraudSuspected
-    else if txt == "Other" then return TradeDisputeReasonType_Other
-    else returnError ConversionFailed f ("Unknown TradeDisputeReasonType: " ++ show txt)
-
 data TradeDisputeStatusType
   = TradeDisputeStatusType_Open
   | TradeDisputeStatusType_UnderReview
@@ -784,15 +748,51 @@ instance FromField TradeDisputeStatusType where
     else if txt == "Escalated" then return TradeDisputeStatusType_Escalated
     else returnError ConversionFailed f ("Unknown TradeDisputeStatusType: " ++ show txt)
 
+data TradeDisputeReasonType
+  = TradeDisputeReasonType_ItemNotReceived
+  | TradeDisputeReasonType_ItemNotAsDescribed
+  | TradeDisputeReasonType_FraudSuspected
+  | TradeDisputeReasonType_Other
+  deriving (Show, Eq, Generic)
+
+instance ToJSON TradeDisputeReasonType where
+  toJSON v = case v of
+    TradeDisputeReasonType_ItemNotReceived -> toJSON ("ItemNotReceived" :: Text)
+    TradeDisputeReasonType_ItemNotAsDescribed -> toJSON ("ItemNotAsDescribed" :: Text)
+    TradeDisputeReasonType_FraudSuspected -> toJSON ("FraudSuspected" :: Text)
+    TradeDisputeReasonType_Other -> toJSON ("Other" :: Text)
+instance FromJSON TradeDisputeReasonType where
+  parseJSON = withText "TradeDisputeReasonType" $ \txt ->
+    if txt == "ItemNotReceived" then pure TradeDisputeReasonType_ItemNotReceived
+    else if txt == "ItemNotAsDescribed" then pure TradeDisputeReasonType_ItemNotAsDescribed
+    else if txt == "FraudSuspected" then pure TradeDisputeReasonType_FraudSuspected
+    else if txt == "Other" then pure TradeDisputeReasonType_Other
+    else fail ("Unknown TradeDisputeReasonType: " ++ show txt)
+
+instance ToField TradeDisputeReasonType where
+  toField TradeDisputeReasonType_ItemNotReceived = toField ("ItemNotReceived" :: Text)
+  toField TradeDisputeReasonType_ItemNotAsDescribed = toField ("ItemNotAsDescribed" :: Text)
+  toField TradeDisputeReasonType_FraudSuspected = toField ("FraudSuspected" :: Text)
+  toField TradeDisputeReasonType_Other = toField ("Other" :: Text)
+
+instance FromField TradeDisputeReasonType where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    if txt == "ItemNotReceived" then return TradeDisputeReasonType_ItemNotReceived
+    else if txt == "ItemNotAsDescribed" then return TradeDisputeReasonType_ItemNotAsDescribed
+    else if txt == "FraudSuspected" then return TradeDisputeReasonType_FraudSuspected
+    else if txt == "Other" then return TradeDisputeReasonType_Other
+    else returnError ConversionFailed f ("Unknown TradeDisputeReasonType: " ++ show txt)
+
 _tradeDisputeOpts :: Options
 _tradeDisputeOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 12 }
 
 data TradeDispute = TradeDispute
   { tradeDisputeId :: Int
+  , tradeDisputeStatus :: TradeDisputeStatusType
   , tradeDisputeReason :: TradeDisputeReasonType
   , tradeDisputeDescription :: Text
-  , tradeDisputeStatus :: TradeDisputeStatusType
   , tradeDisputeResolution :: Maybe Text
   , tradeDisputeOpenedAt :: Text
   , tradeDisputeResolvedAt :: Maybe Text
@@ -814,9 +814,9 @@ _newTradeDisputeOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 13 }
 
 data NewTradeDispute = NewTradeDispute
-  { bTradeDisputeReason :: TradeDisputeReasonType
+  { bTradeDisputeStatus :: TradeDisputeStatusType
+  , bTradeDisputeReason :: TradeDisputeReasonType
   , bTradeDisputeDescription :: Text
-  , bTradeDisputeStatus :: TradeDisputeStatusType
   , bTradeDisputeResolution :: Maybe Text
   , bTradeDisputeOpenedAt :: Text
   , bTradeDisputeResolvedAt :: Maybe Text
@@ -831,5 +831,5 @@ instance FromJSON NewTradeDispute where
   parseJSON = genericParseJSON _newTradeDisputeOpts
 
 instance ToRow NewTradeDispute where
-  toRow b = [toField (bTradeDisputeReason b), toField (bTradeDisputeDescription b), toField (bTradeDisputeStatus b), toField (bTradeDisputeResolution b), toField (bTradeDisputeOpenedAt b), toField (bTradeDisputeResolvedAt b), toField (bTradeDisputeTransactionId b), toField (bTradeDisputeOpenedById b), toField (bTradeDisputeResolvedById b)]
+  toRow b = [toField (bTradeDisputeStatus b), toField (bTradeDisputeReason b), toField (bTradeDisputeDescription b), toField (bTradeDisputeResolution b), toField (bTradeDisputeOpenedAt b), toField (bTradeDisputeResolvedAt b), toField (bTradeDisputeTransactionId b), toField (bTradeDisputeOpenedById b), toField (bTradeDisputeResolvedById b)]
 

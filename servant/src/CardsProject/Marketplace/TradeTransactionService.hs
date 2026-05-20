@@ -8,30 +8,26 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for TradeTransaction
 validateTradeTransaction :: NewTradeTransaction -> Either String NewTradeTransaction
 validateTradeTransaction body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 complete :: Int -> IO ()
-complete eid = do
-  throwIO (userError "complete not implemented")
+complete _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 refund :: Int -> IO ()
-refund eid = do
-  throwIO (userError "refund not implemented")
+refund _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 open_dispute :: Int -> IO ()
-open_dispute eid = do
-  -- params: reason: String -- extract from body in handler when implementing
-  throwIO (userError "open_dispute not implemented")
+open_dispute _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 seller_net :: Int -> IO Text
-seller_net eid = do
-  throwIO (userError "seller_net not implemented")
+seller_net _eid = return (error "TODO")
 

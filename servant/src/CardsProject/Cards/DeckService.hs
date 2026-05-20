@@ -8,51 +8,42 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Deck
 validateDeck :: NewDeck -> Either String NewDeck
 validateDeck body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 validate_size :: Int -> IO Bool
-validate_size eid = do
-  throwIO (userError "validate_size not implemented")
+validate_size _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 add_card :: Int -> IO ()
-add_card eid = do
-  -- params: card_id: Int, quantity: Int -- extract from body in handler when implementing
-  throwIO (userError "add_card not implemented")
+add_card _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 remove_card :: Int -> IO ()
-remove_card eid = do
-  -- params: card_id: Int -- extract from body in handler when implementing
-  throwIO (userError "remove_card not implemented")
+remove_card _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 win_rate :: Int -> IO Text
-win_rate eid = do
-  throwIO (userError "win_rate not implemented")
+win_rate _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 clone :: Int -> IO Text
-clone eid = do
-  throwIO (userError "clone not implemented")
+clone _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 publish :: Int -> IO ()
-publish eid = do
-  throwIO (userError "publish not implemented")
+publish _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 unpublish :: Int -> IO ()
-unpublish eid = do
-  throwIO (userError "unpublish not implemented")
+unpublish _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 certify_tournament_legal :: Int -> IO Bool
-certify_tournament_legal eid = do
-  throwIO (userError "certify_tournament_legal not implemented")
+certify_tournament_legal _eid = return (error "TODO")
 

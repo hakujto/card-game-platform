@@ -8,25 +8,22 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for TournamentRegistration
 validateTournamentRegistration :: NewTournamentRegistration -> Either String NewTournamentRegistration
 validateTournamentRegistration body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 withdraw :: Int -> IO ()
-withdraw eid = do
-  throwIO (userError "withdraw not implemented")
+withdraw _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 disqualify :: Int -> IO ()
-disqualify eid = do
-  -- params: reason: String -- extract from body in handler when implementing
-  throwIO (userError "disqualify not implemented")
+disqualify _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 promote_from_waitlist :: Int -> IO ()
-promote_from_waitlist eid = do
-  throwIO (userError "promote_from_waitlist not implemented")
+promote_from_waitlist _eid = return ()
 

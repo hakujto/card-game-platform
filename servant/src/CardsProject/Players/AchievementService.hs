@@ -8,20 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Achievement
 validateAchievement :: NewAchievement -> Either String NewAchievement
 validateAchievement body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 point_value :: Int -> IO Int
-point_value eid = do
-  -- params: multiplier: Int -- extract from body in handler when implementing
-  throwIO (userError "point_value not implemented")
+point_value _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 reveal :: Int -> IO ()
-reveal eid = do
-  throwIO (userError "reveal not implemented")
+reveal _eid = return ()
 

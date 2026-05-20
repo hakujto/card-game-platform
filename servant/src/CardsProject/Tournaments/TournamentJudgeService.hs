@@ -8,19 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for TournamentJudge
 validateTournamentJudge :: NewTournamentJudge -> Either String NewTournamentJudge
 validateTournamentJudge body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 promote_to_head :: Int -> IO ()
-promote_to_head eid = do
-  throwIO (userError "promote_to_head not implemented")
+promote_to_head _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 remove :: Int -> IO ()
-remove eid = do
-  throwIO (userError "remove not implemented")
+remove _eid = return ()
 

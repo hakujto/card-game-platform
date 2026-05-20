@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/streams" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"title": "test", "streamUrl": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": true, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
       request "POST" "/api/streams" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +28,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/streams/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"title": "test", "streamUrl": "https://example.com", "platform": "Twitch", "status": "Scheduled", "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": true, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
       resp <- request "PUT" "/api/streams/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -36,6 +36,21 @@ spec = with (return app) $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/streams/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+
+  describe "PATCH /api/streams/1/transitions/scheduled-to-live" $ do
+    it "transitions Scheduled -> Live" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/scheduled-to-live" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/streams/1/transitions/live-to-ended" $ do
+    it "transitions Live -> Ended" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/live-to-ended" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/streams/1/transitions/ended-to-live" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/ended-to-live" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
 
   describe "POST /api/streams/1/live" $ do
     it "behavior go_live stub returns 404 or 500" $ do

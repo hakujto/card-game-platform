@@ -91,6 +91,7 @@ data DraftSession = DraftSession
   , draftSessionStatus :: DraftSessionStatusType
   , draftSessionDraftType :: DraftSessionDraftTypeType
   , draftSessionSeats :: Int
+  , draftSessionTimePerPickSeconds :: Int
   , draftSessionCreatedAt :: Text
   , draftSessionCompletedAt :: Maybe Text
   , draftSessionCardSetId :: Maybe Int
@@ -103,7 +104,7 @@ instance FromJSON DraftSession where
   parseJSON = genericParseJSON _draftSessionOpts
 
 instance FromRow DraftSession where
-  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newDraftSessionOpts :: Options
 _newDraftSessionOpts = defaultOptions
@@ -113,6 +114,7 @@ data NewDraftSession = NewDraftSession
   { bDraftSessionStatus :: DraftSessionStatusType
   , bDraftSessionDraftType :: DraftSessionDraftTypeType
   , bDraftSessionSeats :: Int
+  , bDraftSessionTimePerPickSeconds :: Int
   , bDraftSessionCreatedAt :: Text
   , bDraftSessionCompletedAt :: Maybe Text
   , bDraftSessionCardSetId :: Maybe Int
@@ -125,7 +127,7 @@ instance FromJSON NewDraftSession where
   parseJSON = genericParseJSON _newDraftSessionOpts
 
 instance ToRow NewDraftSession where
-  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionSeats b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b), toField (bDraftSessionParticipantsId b)]
+  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionSeats b), toField (bDraftSessionTimePerPickSeconds b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b), toField (bDraftSessionParticipantsId b)]
 
 _draftParticipantOpts :: Options
 _draftParticipantOpts = defaultOptions
@@ -286,6 +288,57 @@ instance FromField ArticleArticleTypeType where
     else if txt == "Decklist" then return ArticleArticleTypeType_Decklist
     else returnError ConversionFailed f ("Unknown ArticleArticleTypeType: " ++ show txt)
 
+data ArticleLanguageType
+  = ArticleLanguageType_EN
+  | ArticleLanguageType_DE
+  | ArticleLanguageType_FR
+  | ArticleLanguageType_IT
+  | ArticleLanguageType_ES
+  | ArticleLanguageType_JP
+  | ArticleLanguageType_PT
+  deriving (Show, Eq, Generic)
+
+instance ToJSON ArticleLanguageType where
+  toJSON v = case v of
+    ArticleLanguageType_EN -> toJSON ("EN" :: Text)
+    ArticleLanguageType_DE -> toJSON ("DE" :: Text)
+    ArticleLanguageType_FR -> toJSON ("FR" :: Text)
+    ArticleLanguageType_IT -> toJSON ("IT" :: Text)
+    ArticleLanguageType_ES -> toJSON ("ES" :: Text)
+    ArticleLanguageType_JP -> toJSON ("JP" :: Text)
+    ArticleLanguageType_PT -> toJSON ("PT" :: Text)
+instance FromJSON ArticleLanguageType where
+  parseJSON = withText "ArticleLanguageType" $ \txt ->
+    if txt == "EN" then pure ArticleLanguageType_EN
+    else if txt == "DE" then pure ArticleLanguageType_DE
+    else if txt == "FR" then pure ArticleLanguageType_FR
+    else if txt == "IT" then pure ArticleLanguageType_IT
+    else if txt == "ES" then pure ArticleLanguageType_ES
+    else if txt == "JP" then pure ArticleLanguageType_JP
+    else if txt == "PT" then pure ArticleLanguageType_PT
+    else fail ("Unknown ArticleLanguageType: " ++ show txt)
+
+instance ToField ArticleLanguageType where
+  toField ArticleLanguageType_EN = toField ("EN" :: Text)
+  toField ArticleLanguageType_DE = toField ("DE" :: Text)
+  toField ArticleLanguageType_FR = toField ("FR" :: Text)
+  toField ArticleLanguageType_IT = toField ("IT" :: Text)
+  toField ArticleLanguageType_ES = toField ("ES" :: Text)
+  toField ArticleLanguageType_JP = toField ("JP" :: Text)
+  toField ArticleLanguageType_PT = toField ("PT" :: Text)
+
+instance FromField ArticleLanguageType where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    if txt == "EN" then return ArticleLanguageType_EN
+    else if txt == "DE" then return ArticleLanguageType_DE
+    else if txt == "FR" then return ArticleLanguageType_FR
+    else if txt == "IT" then return ArticleLanguageType_IT
+    else if txt == "ES" then return ArticleLanguageType_ES
+    else if txt == "JP" then return ArticleLanguageType_JP
+    else if txt == "PT" then return ArticleLanguageType_PT
+    else returnError ConversionFailed f ("Unknown ArticleLanguageType: " ++ show txt)
+
 _articleOpts :: Options
 _articleOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 7 }
@@ -299,7 +352,10 @@ data Article = Article
   , articleCoverImageUrl :: Maybe Text
   , articleStatus :: ArticleStatusType
   , articleArticleType :: ArticleArticleTypeType
+  , articleLanguage :: ArticleLanguageType
   , articleViewCount :: Int
+  , articleLikesCount :: Int
+  , articleIsFeatured :: Bool
   , articlePublishedAt :: Maybe Text
   , articleCreatedAt :: Text
   , articleUpdatedAt :: Text
@@ -314,7 +370,7 @@ instance FromJSON Article where
   parseJSON = genericParseJSON _articleOpts
 
 instance FromRow Article where
-  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newArticleOpts :: Options
 _newArticleOpts = defaultOptions
@@ -328,7 +384,10 @@ data NewArticle = NewArticle
   , bArticleCoverImageUrl :: Maybe Text
   , bArticleStatus :: ArticleStatusType
   , bArticleArticleType :: ArticleArticleTypeType
+  , bArticleLanguage :: ArticleLanguageType
   , bArticleViewCount :: Int
+  , bArticleLikesCount :: Int
+  , bArticleIsFeatured :: Bool
   , bArticlePublishedAt :: Maybe Text
   , bArticleCreatedAt :: Text
   , bArticleUpdatedAt :: Text
@@ -343,7 +402,7 @@ instance FromJSON NewArticle where
   parseJSON = genericParseJSON _newArticleOpts
 
 instance ToRow NewArticle where
-  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleViewCount b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b), toField (bArticleCommentsId b)]
+  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleLanguage b), toField (bArticleViewCount b), toField (bArticleLikesCount b), toField (bArticleIsFeatured b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b), toField (bArticleCommentsId b)]
 
 _articleTagOpts :: Options
 _articleTagOpts = defaultOptions
@@ -458,6 +517,37 @@ instance FromJSON NewArticleComment where
 instance ToRow NewArticleComment where
   toRow b = [toField (bArticleCommentBody b), toField (bArticleCommentIsHidden b), toField (bArticleCommentCreatedAt b), toField (bArticleCommentArticleId b), toField (bArticleCommentAuthorId b), toField (bArticleCommentParentCommentId b)]
 
+data StreamStatusType
+  = StreamStatusType_Scheduled
+  | StreamStatusType_Live
+  | StreamStatusType_Ended
+  deriving (Show, Eq, Generic)
+
+instance ToJSON StreamStatusType where
+  toJSON v = case v of
+    StreamStatusType_Scheduled -> toJSON ("Scheduled" :: Text)
+    StreamStatusType_Live -> toJSON ("Live" :: Text)
+    StreamStatusType_Ended -> toJSON ("Ended" :: Text)
+instance FromJSON StreamStatusType where
+  parseJSON = withText "StreamStatusType" $ \txt ->
+    if txt == "Scheduled" then pure StreamStatusType_Scheduled
+    else if txt == "Live" then pure StreamStatusType_Live
+    else if txt == "Ended" then pure StreamStatusType_Ended
+    else fail ("Unknown StreamStatusType: " ++ show txt)
+
+instance ToField StreamStatusType where
+  toField StreamStatusType_Scheduled = toField ("Scheduled" :: Text)
+  toField StreamStatusType_Live = toField ("Live" :: Text)
+  toField StreamStatusType_Ended = toField ("Ended" :: Text)
+
+instance FromField StreamStatusType where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    if txt == "Scheduled" then return StreamStatusType_Scheduled
+    else if txt == "Live" then return StreamStatusType_Live
+    else if txt == "Ended" then return StreamStatusType_Ended
+    else returnError ConversionFailed f ("Unknown StreamStatusType: " ++ show txt)
+
 data StreamPlatformType
   = StreamPlatformType_Twitch
   | StreamPlatformType_YouTube
@@ -494,36 +584,56 @@ instance FromField StreamPlatformType where
     else if txt == "Platform" then return StreamPlatformType_Platform
     else returnError ConversionFailed f ("Unknown StreamPlatformType: " ++ show txt)
 
-data StreamStatusType
-  = StreamStatusType_Scheduled
-  | StreamStatusType_Live
-  | StreamStatusType_Ended
+data StreamLanguageType
+  = StreamLanguageType_EN
+  | StreamLanguageType_DE
+  | StreamLanguageType_FR
+  | StreamLanguageType_IT
+  | StreamLanguageType_ES
+  | StreamLanguageType_JP
+  | StreamLanguageType_PT
   deriving (Show, Eq, Generic)
 
-instance ToJSON StreamStatusType where
+instance ToJSON StreamLanguageType where
   toJSON v = case v of
-    StreamStatusType_Scheduled -> toJSON ("Scheduled" :: Text)
-    StreamStatusType_Live -> toJSON ("Live" :: Text)
-    StreamStatusType_Ended -> toJSON ("Ended" :: Text)
-instance FromJSON StreamStatusType where
-  parseJSON = withText "StreamStatusType" $ \txt ->
-    if txt == "Scheduled" then pure StreamStatusType_Scheduled
-    else if txt == "Live" then pure StreamStatusType_Live
-    else if txt == "Ended" then pure StreamStatusType_Ended
-    else fail ("Unknown StreamStatusType: " ++ show txt)
+    StreamLanguageType_EN -> toJSON ("EN" :: Text)
+    StreamLanguageType_DE -> toJSON ("DE" :: Text)
+    StreamLanguageType_FR -> toJSON ("FR" :: Text)
+    StreamLanguageType_IT -> toJSON ("IT" :: Text)
+    StreamLanguageType_ES -> toJSON ("ES" :: Text)
+    StreamLanguageType_JP -> toJSON ("JP" :: Text)
+    StreamLanguageType_PT -> toJSON ("PT" :: Text)
+instance FromJSON StreamLanguageType where
+  parseJSON = withText "StreamLanguageType" $ \txt ->
+    if txt == "EN" then pure StreamLanguageType_EN
+    else if txt == "DE" then pure StreamLanguageType_DE
+    else if txt == "FR" then pure StreamLanguageType_FR
+    else if txt == "IT" then pure StreamLanguageType_IT
+    else if txt == "ES" then pure StreamLanguageType_ES
+    else if txt == "JP" then pure StreamLanguageType_JP
+    else if txt == "PT" then pure StreamLanguageType_PT
+    else fail ("Unknown StreamLanguageType: " ++ show txt)
 
-instance ToField StreamStatusType where
-  toField StreamStatusType_Scheduled = toField ("Scheduled" :: Text)
-  toField StreamStatusType_Live = toField ("Live" :: Text)
-  toField StreamStatusType_Ended = toField ("Ended" :: Text)
+instance ToField StreamLanguageType where
+  toField StreamLanguageType_EN = toField ("EN" :: Text)
+  toField StreamLanguageType_DE = toField ("DE" :: Text)
+  toField StreamLanguageType_FR = toField ("FR" :: Text)
+  toField StreamLanguageType_IT = toField ("IT" :: Text)
+  toField StreamLanguageType_ES = toField ("ES" :: Text)
+  toField StreamLanguageType_JP = toField ("JP" :: Text)
+  toField StreamLanguageType_PT = toField ("PT" :: Text)
 
-instance FromField StreamStatusType where
+instance FromField StreamLanguageType where
   fromField f = do
     txt <- fromField f :: Ok Text
-    if txt == "Scheduled" then return StreamStatusType_Scheduled
-    else if txt == "Live" then return StreamStatusType_Live
-    else if txt == "Ended" then return StreamStatusType_Ended
-    else returnError ConversionFailed f ("Unknown StreamStatusType: " ++ show txt)
+    if txt == "EN" then return StreamLanguageType_EN
+    else if txt == "DE" then return StreamLanguageType_DE
+    else if txt == "FR" then return StreamLanguageType_FR
+    else if txt == "IT" then return StreamLanguageType_IT
+    else if txt == "ES" then return StreamLanguageType_ES
+    else if txt == "JP" then return StreamLanguageType_JP
+    else if txt == "PT" then return StreamLanguageType_PT
+    else returnError ConversionFailed f ("Unknown StreamLanguageType: " ++ show txt)
 
 _streamOpts :: Options
 _streamOpts = defaultOptions
@@ -533,8 +643,10 @@ data Stream = Stream
   { streamId :: Int
   , streamTitle :: Text
   , streamStreamUrl :: Text
-  , streamPlatform :: StreamPlatformType
   , streamStatus :: StreamStatusType
+  , streamPlatform :: StreamPlatformType
+  , streamLanguage :: StreamLanguageType
+  , streamIsOfficial :: Bool
   , streamViewerCountPeak :: Int
   , streamScheduledStart :: Text
   , streamActualStart :: Maybe Text
@@ -550,7 +662,7 @@ instance FromJSON Stream where
   parseJSON = genericParseJSON _streamOpts
 
 instance FromRow Stream where
-  fromRow = Stream <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Stream <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newStreamOpts :: Options
 _newStreamOpts = defaultOptions
@@ -559,8 +671,10 @@ _newStreamOpts = defaultOptions
 data NewStream = NewStream
   { bStreamTitle :: Text
   , bStreamStreamUrl :: Text
-  , bStreamPlatform :: StreamPlatformType
   , bStreamStatus :: StreamStatusType
+  , bStreamPlatform :: StreamPlatformType
+  , bStreamLanguage :: StreamLanguageType
+  , bStreamIsOfficial :: Bool
   , bStreamViewerCountPeak :: Int
   , bStreamScheduledStart :: Text
   , bStreamActualStart :: Maybe Text
@@ -576,5 +690,5 @@ instance FromJSON NewStream where
   parseJSON = genericParseJSON _newStreamOpts
 
 instance ToRow NewStream where
-  toRow b = [toField (bStreamTitle b), toField (bStreamStreamUrl b), toField (bStreamPlatform b), toField (bStreamStatus b), toField (bStreamViewerCountPeak b), toField (bStreamScheduledStart b), toField (bStreamActualStart b), toField (bStreamEndedAt b), toField (bStreamVodUrl b), toField (bStreamTournamentId b), toField (bStreamStreamerId b)]
+  toRow b = [toField (bStreamTitle b), toField (bStreamStreamUrl b), toField (bStreamStatus b), toField (bStreamPlatform b), toField (bStreamLanguage b), toField (bStreamIsOfficial b), toField (bStreamViewerCountPeak b), toField (bStreamScheduledStart b), toField (bStreamActualStart b), toField (bStreamEndedAt b), toField (bStreamVodUrl b), toField (bStreamTournamentId b), toField (bStreamStreamerId b)]
 

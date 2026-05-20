@@ -8,26 +8,22 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for PlayerCollection
 validatePlayerCollection :: NewPlayerCollection -> Either String NewPlayerCollection
 validatePlayerCollection body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 add :: Int -> IO ()
-add eid = do
-  -- params: quantity: Int -- extract from body in handler when implementing
-  throwIO (userError "add not implemented")
+add _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 remove :: Int -> IO ()
-remove eid = do
-  -- params: quantity: Int -- extract from body in handler when implementing
-  throwIO (userError "remove not implemented")
+remove _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 estimated_value :: Int -> IO Text
-estimated_value eid = do
-  throwIO (userError "estimated_value not implemented")
+estimated_value _eid = return (error "TODO")
 

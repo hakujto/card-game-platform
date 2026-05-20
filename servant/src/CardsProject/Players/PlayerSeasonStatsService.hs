@@ -8,25 +8,22 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for PlayerSeasonStats
 validatePlayerSeasonStats :: NewPlayerSeasonStats -> Either String NewPlayerSeasonStats
 validatePlayerSeasonStats body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 win_rate :: Int -> IO Text
-win_rate eid = do
-  throwIO (userError "win_rate not implemented")
+win_rate _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 add_points :: Int -> IO ()
-add_points eid = do
-  -- params: points: Int -- extract from body in handler when implementing
-  throwIO (userError "add_points not implemented")
+add_points _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 record_tournament_win :: Int -> IO ()
-record_tournament_win eid = do
-  throwIO (userError "record_tournament_win not implemented")
+record_tournament_win _eid = return ()
 

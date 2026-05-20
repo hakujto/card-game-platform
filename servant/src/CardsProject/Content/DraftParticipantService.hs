@@ -8,20 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for DraftParticipant
 validateDraftParticipant :: NewDraftParticipant -> Either String NewDraftParticipant
 validateDraftParticipant body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 pick_card :: Int -> IO ()
-pick_card eid = do
-  -- params: card_id: Int, pack_number: Int -- extract from body in handler when implementing
-  throwIO (userError "pick_card not implemented")
+pick_card _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 drafted_card_count :: Int -> IO Int
-drafted_card_count eid = do
-  throwIO (userError "drafted_card_count not implemented")
+drafted_card_count _eid = return (error "TODO")
 

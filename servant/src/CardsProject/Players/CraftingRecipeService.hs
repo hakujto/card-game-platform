@@ -8,31 +8,26 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for CraftingRecipe
 validateCraftingRecipe :: NewCraftingRecipe -> Either String NewCraftingRecipe
 validateCraftingRecipe body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 can_craft :: Int -> IO Bool
-can_craft eid = do
-  -- params: player_id: Int -- extract from body in handler when implementing
-  throwIO (userError "can_craft not implemented")
+can_craft _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 execute_craft :: Int -> IO ()
-execute_craft eid = do
-  -- params: player_id: Int -- extract from body in handler when implementing
-  throwIO (userError "execute_craft not implemented")
+execute_craft _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 disable :: Int -> IO ()
-disable eid = do
-  throwIO (userError "disable not implemented")
+disable _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 enable :: Int -> IO ()
-enable eid = do
-  throwIO (userError "enable not implemented")
+enable _eid = return ()
 

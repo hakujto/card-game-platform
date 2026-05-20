@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/tournaments" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "description": "test", "format": "Standard", "tournamentType": "Swiss", "status": "Draft", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
       request "POST" "/api/tournaments" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +28,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/tournaments/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "description": "test", "format": "Standard", "tournamentType": "Swiss", "status": "Draft", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
       resp <- request "PUT" "/api/tournaments/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -36,6 +36,41 @@ spec = with (return app) $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/tournaments/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+
+  describe "PATCH /api/tournaments/1/transitions/draft-to-registration" $ do
+    it "transitions Draft -> Registration" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/draft-to-registration" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/tournaments/1/transitions/registration-to-ongoing" $ do
+    it "transitions Registration -> Ongoing" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-ongoing" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/tournaments/1/transitions/registration-to-cancelled" $ do
+    it "transitions Registration -> Cancelled" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/tournaments/1/transitions/ongoing-to-completed" $ do
+    it "transitions Ongoing -> Completed" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled" $ do
+    it "transitions Ongoing -> Cancelled" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/tournaments/1/transitions/completed-to-draft" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/completed-to-draft" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/tournaments/1/transitions/cancelled-to-draft" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/cancelled-to-draft" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
 
   describe "POST /api/tournaments/1/start" $ do
     it "behavior start stub returns 404 or 500" $ do

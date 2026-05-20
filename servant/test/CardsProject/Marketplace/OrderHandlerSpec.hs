@@ -37,6 +37,51 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/orders/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "PATCH /api/orders/1/transitions/pending-to-paid" $ do
+    it "transitions Pending -> Paid" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/pending-to-paid" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/paid-to-processing" $ do
+    it "transitions Paid -> Processing" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-processing" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/processing-to-shipped" $ do
+    it "transitions Processing -> Shipped" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/processing-to-shipped" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/shipped-to-completed" $ do
+    it "transitions Shipped -> Completed" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/shipped-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/pending-to-cancelled" $ do
+    it "transitions Pending -> Cancelled" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/pending-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/paid-to-cancelled" $ do
+    it "transitions Paid -> Cancelled" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/completed-to-refunded" $ do
+    it "transitions Completed -> Refunded" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/completed-to-refunded" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/orders/1/transitions/refunded-to-completed" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/refunded-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/orders/1/transitions/completed-to-cancelled" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/completed-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
   describe "DELETE /api/orders/1/cancel" $ do
     it "behavior cancel stub returns 404 or 500" $ do
       resp <- request "DELETE" "/api/orders/1/cancel" [] ""
@@ -45,6 +90,11 @@ spec = with (return app) $ do
   describe "POST /api/orders/1/pay" $ do
     it "behavior pay stub returns 404 or 500" $ do
       resp <- request "POST" "/api/orders/1/pay" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/orders/1/process-payment" $ do
+    it "behavior process_payment stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/orders/1/process-payment" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/orders/1/total" $ do

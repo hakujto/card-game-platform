@@ -8,19 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for CardRuling
 validateCardRuling :: NewCardRuling -> Either String NewCardRuling
 validateCardRuling body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_current :: Int -> IO Bool
-is_current eid = do
-  throwIO (userError "is_current not implemented")
+is_current _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 supersedes_previous :: Int -> IO Bool
-supersedes_previous eid = do
-  throwIO (userError "supersedes_previous not implemented")
+supersedes_previous _eid = return (error "TODO")
 

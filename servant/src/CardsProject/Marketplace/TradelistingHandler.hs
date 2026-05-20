@@ -10,6 +10,8 @@ import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Marketplace.TradeListingService as TradeListingSvc
+import Data.Text (Text)
+import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
 
@@ -25,6 +27,12 @@ type TradeListingAPI
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "cancel" :> DeleteNoContent
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "expired" :> Get '[JSON] Bool
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "finalize" :> Post '[JSON] NoContent
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-sold" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-expired" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-cancelled" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "sold-to-active" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "expired-to-active" :> Patch '[JSON] TradeListing
 
 tradeListingServer :: Server TradeListingAPI
 tradeListingServer = listAll
@@ -38,15 +46,21 @@ tradeListingServer = listAll
   :<|> behaviorCancel
   :<|> behaviorIsExpired
   :<|> behaviorFinalizeAuction
+  :<|> transitionHandlerPendingToActive
+  :<|> transitionHandlerActiveToSold
+  :<|> transitionHandlerActiveToExpired
+  :<|> transitionHandlerActiveToCancelled
+  :<|> transitionHandlerSoldToActive
+  :<|> transitionHandlerExpiredToActive
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings" :: IO [TradeListing]
+      query_ conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings" :: IO [TradeListing]
 
     create body = do
       mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO trade_listings (listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
+        execute conn "INSERT INTO trade_listings (status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
         rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [TradeListing]
+        rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [TradeListing]
         return $ case rows of { (r:_) -> Just r; [] -> Nothing }
       case mRow of
         Just r  -> return r
@@ -54,7 +68,7 @@ tradeListingServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -62,8 +76,8 @@ tradeListingServer = listAll
     update eid body = do
       rows <- liftIO $ withDb $ \conn -> do
         let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE trade_listings SET listing_type = ?, asking_price = ?, auction_start_price = ?, auction_current_bid = ?, auction_end_time = ?, foil = ?, condition = ?, quantity = ?, status = ?, description = ?, created_at = ?, expires_at = ?, seller_id = ?, card_id = ?, bids_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        execute conn "UPDATE trade_listings SET status = ?, listing_type = ?, asking_price = ?, auction_start_price = ?, auction_current_bid = ?, auction_end_time = ?, foil = ?, condition = ?, quantity = ?, description = ?, created_at = ?, expires_at = ?, seller_id = ?, card_id = ?, bids_id = ? WHERE id = ?" bodyRow
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -77,7 +91,7 @@ tradeListingServer = listAll
 
     behaviorClose eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -86,7 +100,7 @@ tradeListingServer = listAll
 
     behaviorExtend eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -95,7 +109,7 @@ tradeListingServer = listAll
 
     behaviorCancel eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -104,7 +118,7 @@ tradeListingServer = listAll
 
     behaviorIsExpired eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -113,10 +127,70 @@ tradeListingServer = listAll
 
     behaviorFinalizeAuction eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, status, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+        query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case rows of
         []    -> throwError err404
         (_:_) -> do
           liftIO $ TradeListingSvc.finalize_auction eid
           return NoContent
+
+    transitionHandlerPendingToActive eid = do
+      result <- liftIO $ (TradeListingSvc.transitionPendingToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerActiveToSold eid = do
+      result <- liftIO $ (TradeListingSvc.transitionActiveToSold eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerActiveToExpired eid = do
+      result <- liftIO $ (TradeListingSvc.transitionActiveToExpired eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerActiveToCancelled eid = do
+      result <- liftIO $ (TradeListingSvc.transitionActiveToCancelled eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerSoldToActive eid = do
+      result <- liftIO $ (TradeListingSvc.transitionSoldToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerExpiredToActive eid = do
+      result <- liftIO $ (TradeListingSvc.transitionExpiredToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
 

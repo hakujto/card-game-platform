@@ -8,24 +8,22 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Friendship
 validateFriendship :: NewFriendship -> Either String NewFriendship
 validateFriendship body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 accept :: Int -> IO ()
-accept eid = do
-  throwIO (userError "accept not implemented")
+accept _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 decline :: Int -> IO ()
-decline eid = do
-  throwIO (userError "decline not implemented")
+decline _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 block :: Int -> IO ()
-block eid = do
-  throwIO (userError "block not implemented")
+block _eid = return ()
 

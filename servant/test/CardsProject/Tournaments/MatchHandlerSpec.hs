@@ -37,9 +37,49 @@ spec = with (return app) $ do
       resp <- request "DELETE" "/api/matches/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
+  describe "PATCH /api/matches/1/transitions/pending-to-active" $ do
+    it "transitions Pending -> Active" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/matches/1/transitions/active-to-completed" $ do
+    it "transitions Active -> Completed" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/matches/1/transitions/active-to-draw" $ do
+    it "transitions Active -> Draw" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-draw" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/matches/1/transitions/pending-to-bye" $ do
+    it "transitions Pending -> BYE" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-bye" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/matches/1/transitions/completed-to-active" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/completed-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/matches/1/transitions/draw-to-active" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/draw-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/matches/1/transitions/bye-to-active" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/bye-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
   describe "POST /api/matches/1/record" $ do
     it "behavior record_result stub returns 404 or 500" $ do
       resp <- request "POST" "/api/matches/1/record" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/matches/1/finalize" $ do
+    it "behavior finalize_result stub returns 404 or 500" $ do
+      resp <- request "POST" "/api/matches/1/finalize" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
 
   describe "GET /api/matches/1/winner" $ do

@@ -10,6 +10,8 @@ import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Tournaments.TournamentService as TournamentSvc
+import Data.Text (Text)
+import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
 
@@ -27,6 +29,13 @@ type TournamentAPI
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "prizes" :> Get '[JSON] Text
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "register" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "full" :> Get '[JSON] Bool
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "draft-to-registration" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-ongoing" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-cancelled" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-completed" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-cancelled" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "completed-to-draft" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "cancelled-to-draft" :> Patch '[JSON] Tournament
 
 tournamentServer :: Server TournamentAPI
 tournamentServer = listAll
@@ -42,15 +51,22 @@ tournamentServer = listAll
   :<|> behaviorCalculatePrizeDistribution
   :<|> behaviorRegisterPlayer
   :<|> behaviorIsFull
+  :<|> transitionHandlerDraftToRegistration
+  :<|> transitionHandlerRegistrationToOngoing
+  :<|> transitionHandlerRegistrationToCancelled
+  :<|> transitionHandlerOngoingToCompleted
+  :<|> transitionHandlerOngoingToCancelled
+  :<|> transitionHandlerCompletedToDraft
+  :<|> transitionHandlerCancelledToDraft
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments" :: IO [Tournament]
+      query_ conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments" :: IO [Tournament]
 
     create body = do
       mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO tournaments (name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
+        execute conn "INSERT INTO tournaments (name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
         rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Tournament]
+        rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Tournament]
         return $ case rows of { (r:_) -> Just r; [] -> Nothing }
       case mRow of
         Just r  -> return r
@@ -58,7 +74,7 @@ tournamentServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -66,8 +82,8 @@ tournamentServer = listAll
     update eid body = do
       rows <- liftIO $ withDb $ \conn -> do
         let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE tournaments SET name = ?, description = ?, format = ?, tournament_type = ?, status = ?, max_players = ?, entry_fee = ?, prize_pool = ?, start_time = ?, end_time = ?, is_online = ?, location = ?, rules_text = ?, created_at = ?, season_id = ?, organizer_id = ?, registrations_id = ?, rounds_id = ?, prizes_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        execute conn "UPDATE tournaments SET name = ?, description = ?, status = ?, format = ?, tournament_type = ?, max_players = ?, entry_fee = ?, prize_pool = ?, start_time = ?, end_time = ?, is_online = ?, location = ?, rules_text = ?, created_at = ?, season_id = ?, organizer_id = ?, registrations_id = ?, rounds_id = ?, prizes_id = ? WHERE id = ?" bodyRow
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -81,7 +97,7 @@ tournamentServer = listAll
 
     behaviorStart eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -90,7 +106,7 @@ tournamentServer = listAll
 
     behaviorCancel eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -99,7 +115,7 @@ tournamentServer = listAll
 
     behaviorComplete eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -108,7 +124,7 @@ tournamentServer = listAll
 
     behaviorGenerateRound eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -117,7 +133,7 @@ tournamentServer = listAll
 
     behaviorCalculatePrizeDistribution eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -126,7 +142,7 @@ tournamentServer = listAll
 
     behaviorRegisterPlayer eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -135,10 +151,80 @@ tournamentServer = listAll
 
     behaviorIsFull eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, description, format, tournament_type, status, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+        query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id, registrations_id, rounds_id, prizes_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case rows of
         []    -> throwError err404
         (_:_) -> do
           result <- liftIO $ TournamentSvc.is_full eid
           return result
+
+    transitionHandlerDraftToRegistration eid = do
+      result <- liftIO $ (TournamentSvc.transitionDraftToRegistration eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerRegistrationToOngoing eid = do
+      result <- liftIO $ (TournamentSvc.transitionRegistrationToOngoing eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerRegistrationToCancelled eid = do
+      result <- liftIO $ (TournamentSvc.transitionRegistrationToCancelled eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerOngoingToCompleted eid = do
+      result <- liftIO $ (TournamentSvc.transitionOngoingToCompleted eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerOngoingToCancelled eid = do
+      result <- liftIO $ (TournamentSvc.transitionOngoingToCancelled eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerCompletedToDraft eid = do
+      result <- liftIO $ (TournamentSvc.transitionCompletedToDraft eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerCancelledToDraft eid = do
+      result <- liftIO $ (TournamentSvc.transitionCancelledToDraft eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
 

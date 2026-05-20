@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/trade_listings" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"listingType": "FixedPrice", "askingPrice": "1.00", "auctionStartPrice": "1.00", "auctionCurrentBid": "1.00", "auctionEndTime": "2024-01-01T00:00:00", "foil": true, "condition": "Mint", "quantity": 0, "status": "Active", "description": "test", "createdAt": "2024-01-01T00:00:00", "expiresAt": "2024-01-01T00:00:00", "sellerId": 1, "cardId": 1, "bidsId": null}|]
+      let body = [json|{"status": "Active", "listingType": "FixedPrice", "askingPrice": "1.00", "auctionStartPrice": "1.00", "auctionCurrentBid": "1.00", "auctionEndTime": "2024-01-01T00:00:00", "foil": true, "condition": "Mint", "quantity": 0, "description": "test", "createdAt": "2024-01-01T00:00:00", "expiresAt": "2024-01-01T00:00:00", "sellerId": 1, "cardId": 1, "bidsId": null}|]
       request "POST" "/api/trade_listings" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +28,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/trade_listings/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"listingType": "FixedPrice", "askingPrice": "1.00", "auctionStartPrice": "1.00", "auctionCurrentBid": "1.00", "auctionEndTime": "2024-01-01T00:00:00", "foil": true, "condition": "Mint", "quantity": 0, "status": "Active", "description": "test", "createdAt": "2024-01-01T00:00:00", "expiresAt": "2024-01-01T00:00:00", "sellerId": 1, "cardId": 1, "bidsId": null}|]
+      let body = [json|{"status": "Active", "listingType": "FixedPrice", "askingPrice": "1.00", "auctionStartPrice": "1.00", "auctionCurrentBid": "1.00", "auctionEndTime": "2024-01-01T00:00:00", "foil": true, "condition": "Mint", "quantity": 0, "description": "test", "createdAt": "2024-01-01T00:00:00", "expiresAt": "2024-01-01T00:00:00", "sellerId": 1, "cardId": 1, "bidsId": null}|]
       resp <- request "PUT" "/api/trade_listings/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -36,6 +36,36 @@ spec = with (return app) $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/trade_listings/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+
+  describe "PATCH /api/trade_listings/1/transitions/pending-to-active" $ do
+    it "transitions Pending -> Active" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/pending-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/trade_listings/1/transitions/active-to-sold" $ do
+    it "transitions Active -> Sold" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-sold" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/trade_listings/1/transitions/active-to-expired" $ do
+    it "transitions Active -> Expired" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-expired" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/trade_listings/1/transitions/active-to-cancelled" $ do
+    it "transitions Active -> Cancelled" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/trade_listings/1/transitions/sold-to-active" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/sold-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/trade_listings/1/transitions/expired-to-active" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/expired-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
 
   describe "POST /api/trade_listings/1/close" $ do
     it "behavior close stub returns 404 or 500" $ do

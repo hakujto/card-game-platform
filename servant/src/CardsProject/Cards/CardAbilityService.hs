@@ -8,20 +8,18 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for CardAbility
 validateCardAbility :: NewCardAbility -> Either String NewCardAbility
 validateCardAbility body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_usable_at :: Int -> IO Bool
-is_usable_at eid = do
-  -- params: timing: String -- extract from body in handler when implementing
-  throwIO (userError "is_usable_at not implemented")
+is_usable_at _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 describe :: Int -> IO Text
-describe eid = do
-  throwIO (userError "describe not implemented")
+describe _eid = return (error "TODO")
 

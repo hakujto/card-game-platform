@@ -8,29 +8,26 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Season
 validateSeason :: NewSeason -> Either String NewSeason
 validateSeason body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 activate :: Int -> IO ()
-activate eid = do
-  throwIO (userError "activate not implemented")
+activate _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 deactivate :: Int -> IO ()
-deactivate eid = do
-  throwIO (userError "deactivate not implemented")
+deactivate _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 finalize_rewards :: Int -> IO ()
-finalize_rewards eid = do
-  throwIO (userError "finalize_rewards not implemented")
+finalize_rewards _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_ongoing :: Int -> IO Bool
-is_ongoing eid = do
-  throwIO (userError "is_ongoing not implemented")
+is_ongoing _eid = return (error "TODO")
 

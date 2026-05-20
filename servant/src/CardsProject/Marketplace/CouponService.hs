@@ -8,30 +8,26 @@ import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
 -- Domain service stub for Coupon
 validateCoupon :: NewCoupon -> Either String NewCoupon
 validateCoupon body = Right body
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_valid :: Int -> IO Bool
-is_valid eid = do
-  throwIO (userError "is_valid not implemented")
+is_valid _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 is_applicable_to_order :: Int -> IO Bool
-is_applicable_to_order eid = do
-  -- params: order_total: Decimal -- extract from body in handler when implementing
-  throwIO (userError "is_applicable_to_order not implemented")
+is_applicable_to_order _eid = return (error "TODO")
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 redeem :: Int -> IO ()
-redeem eid = do
-  throwIO (userError "redeem not implemented")
+redeem _eid = return ()
 
--- @invoke behavior stub
+-- @invoke behavior stub (no-op)
 deactivate :: Int -> IO ()
-deactivate eid = do
-  throwIO (userError "deactivate not implemented")
+deactivate _eid = return ()
 

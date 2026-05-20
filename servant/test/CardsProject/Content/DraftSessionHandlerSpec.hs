@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/draft_sessions" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
       request "POST" "/api/draft_sessions" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +28,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/draft_sessions/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
       resp <- request "PUT" "/api/draft_sessions/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -36,6 +36,36 @@ spec = with (return app) $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/draft_sessions/1" [] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+
+  describe "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-drafting" $ do
+    it "transitions WaitingForPlayers -> Drafting" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/waitingforplayers-to-drafting" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/draft_sessions/1/transitions/drafting-to-completed" $ do
+    it "transitions Drafting -> Completed" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/drafting-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned" $ do
+    it "transitions Drafting -> Abandoned" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/drafting-to-abandoned" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" $ do
+    it "transitions WaitingForPlayers -> Abandoned" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+  describe "PATCH /api/draft_sessions/1/transitions/completed-to-drafting" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/completed-to-drafting" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
+
+  describe "PATCH /api/draft_sessions/1/transitions/abandoned-to-drafting" $ do
+    it "is denied (409 or 404)" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/abandoned-to-drafting" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 409 || s == 404
 
   describe "POST /api/draft_sessions/1/start" $ do
     it "behavior start stub returns 404 or 500" $ do

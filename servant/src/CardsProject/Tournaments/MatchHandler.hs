@@ -10,6 +10,8 @@ import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Tournaments.MatchService as MatchSvc
+import Data.Text (Text)
+import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
 
@@ -21,9 +23,17 @@ type MatchAPI
   :<|> "api" :> "matches" :> Capture "id" Int :> ReqBody '[JSON] NewMatch :> Patch '[JSON] Match
   :<|> "api" :> "matches" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "record" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "matches" :> Capture "id" Int :> "finalize" :> Post '[JSON] NoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "winner" :> Get '[JSON] Bool
   :<|> "api" :> "matches" :> Capture "id" Int :> "concede" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "draw" :> Post '[JSON] NoContent
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-completed" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-draw" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-bye" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "completed-to-active" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "draw-to-active" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "bye-to-active" :> Patch '[JSON] Match
 
 matchServer :: Server MatchAPI
 matchServer = listAll
@@ -33,9 +43,17 @@ matchServer = listAll
   :<|> partialUpdate
   :<|> delete
   :<|> behaviorRecordResult
+  :<|> behaviorFinalizeResult
   :<|> behaviorDetermineWinner
   :<|> behaviorConcede
   :<|> behaviorDraw
+  :<|> transitionHandlerPendingToActive
+  :<|> transitionHandlerActiveToCompleted
+  :<|> transitionHandlerActiveToDraw
+  :<|> transitionHandlerPendingToBYE
+  :<|> transitionHandlerCompletedToActive
+  :<|> transitionHandlerDrawToActive
+  :<|> transitionHandlerBYEToActive
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches" :: IO [Match]
@@ -82,6 +100,15 @@ matchServer = listAll
           liftIO $ MatchSvc.record_result eid
           return NoContent
 
+    behaviorFinalizeResult eid = do
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          liftIO $ MatchSvc.finalize_result eid
+          return NoContent
+
     behaviorDetermineWinner eid = do
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
@@ -108,4 +135,74 @@ matchServer = listAll
         (_:_) -> do
           liftIO $ MatchSvc.draw eid
           return NoContent
+
+    transitionHandlerPendingToActive eid = do
+      result <- liftIO $ (MatchSvc.transitionPendingToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerActiveToCompleted eid = do
+      result <- liftIO $ (MatchSvc.transitionActiveToCompleted eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerActiveToDraw eid = do
+      result <- liftIO $ (MatchSvc.transitionActiveToDraw eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerPendingToBYE eid = do
+      result <- liftIO $ (MatchSvc.transitionPendingToBYE eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerCompletedToActive eid = do
+      result <- liftIO $ (MatchSvc.transitionCompletedToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerDrawToActive eid = do
+      result <- liftIO $ (MatchSvc.transitionDrawToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
+
+    transitionHandlerBYEToActive eid = do
+      result <- liftIO $ (MatchSvc.transitionBYEToActive eid >>= (return . Right))
+        `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+      case result of
+        Right r -> return r
+        Left msg ->
+          if "not allowed" `elem` words msg
+            then throwError $ err409 { errBody = "Transition not allowed" }
+            else throwError $ err404 { errBody = "Not found or precondition failed" }
 
