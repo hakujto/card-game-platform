@@ -62,6 +62,8 @@ func (m *Friendship) ApplyUpdate(req FriendshipUpdateRequest) {
 	if req.ReceiverID != nil { m.ReceiverID = *req.ReceiverID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Friendship) Accept()  error {
 	return fmt.Errorf("Accept: not implemented")
 }

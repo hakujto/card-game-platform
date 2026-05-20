@@ -93,6 +93,8 @@ func (m *TournamentRegistration) ApplyUpdate(req TournamentRegistrationUpdateReq
 	if req.DeckID != nil { m.DeckID = *req.DeckID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TournamentRegistration) Withdraw()  error {
 	return fmt.Errorf("Withdraw: not implemented")
 }

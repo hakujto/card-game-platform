@@ -49,6 +49,8 @@ func (m *DeckTag) ApplyUpdate(req DeckTagUpdateRequest) {
 	if req.Color != nil { m.Color = req.Color }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *DeckTag) Rename(newName string)  error {
 	return fmt.Errorf("Rename: not implemented")
 }

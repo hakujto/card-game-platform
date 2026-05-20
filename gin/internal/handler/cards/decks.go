@@ -236,6 +236,7 @@ func (h *DeckHandler) CertifyTournamentLegal(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateDeck(req *model.DeckCreateRequest) []string {
 	var errs []string
 	if !(req.Wins >= 0) {

@@ -129,12 +129,36 @@ func (m *Order) ApplyUpdate(req OrderUpdateRequest) {
 	if req.CouponID != nil { m.CouponID = req.CouponID }
 }
 
+// ── Lifecycle state machine ──────────────────────────────────────
+var OrderAllowedTransitions = map[string]map[string]bool{
+		"Pending": {"Paid": true, "Cancelled": true},
+		"Paid": {"Processing": true, "Cancelled": true},
+		"Processing": {"Shipped": true},
+		"Shipped": {"Completed": true},
+		"Completed": {"Refunded": true},
+}
+
+func (m *Order) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := OrderAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Order) Cancel()  error {
 	return fmt.Errorf("Cancel: not implemented")
 }
 
 func (m *Order) Pay(paymentRef string)  (bool, error) {
 	return false, fmt.Errorf("Pay: not implemented")
+}
+
+func (m *Order) ProcessPayment()  (bool, error) {
+	return false, fmt.Errorf("ProcessPayment: not implemented")
 }
 
 func (m *Order) CalculateTotal()  (float64, error) {

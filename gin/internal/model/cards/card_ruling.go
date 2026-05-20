@@ -61,6 +61,8 @@ func (m *CardRuling) ApplyUpdate(req CardRulingUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *CardRuling) IsCurrent()  (bool, error) {
 	return false, fmt.Errorf("IsCurrent: not implemented")
 }

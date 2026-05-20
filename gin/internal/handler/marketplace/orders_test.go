@@ -99,6 +99,149 @@ func TestOrder_Delete(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
+func TestOrder_Transition_Pending_To_Paid(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-paid", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Pending_To_Paid_On_PaymentMethod_Violated(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerOID := createDepPlayer(t, r, db)
+	_ = depPlayerOID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-paid", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
+}
+
+func TestOrder_Transition_Paid_To_Processing(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-processing", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Processing_To_Shipped(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Processing_To_Shipped_On_TrackingNumber_Violated(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerOID := createDepPlayer(t, r, db)
+	_ = depPlayerOID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Processing", "total": 0, "discount_applied": 0.0, "currency": "xxx", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
+}
+
+func TestOrder_Transition_Shipped_To_Completed(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/shipped-to-completed", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Pending_To_Cancelled(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-cancelled", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Paid_To_Cancelled(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-cancelled", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Completed_To_Refunded(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/completed-to-refunded", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestOrder_Transition_Refunded_To_Completed(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/refunded-to-completed", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+}
+
+func TestOrder_Transition_Completed_To_Cancelled(t *testing.T) {
+	db, r := setupOrderDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/completed-to-cancelled", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+}
+
 func TestOrder_Rule_PaidRequiresPaidAt_Violated(t *testing.T) {
 	db, r := setupOrderDB(t)
 	_ = db

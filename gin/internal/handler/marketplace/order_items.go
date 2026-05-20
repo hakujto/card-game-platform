@@ -114,6 +114,7 @@ func (h *OrderItemHandler) LineTotal(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateOrderItem(req *model.OrderItemCreateRequest) []string {
 	var errs []string
 	if !(req.Quantity > 0) {

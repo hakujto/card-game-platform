@@ -138,6 +138,7 @@ func (h *GameHandler) DurationMinutes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateGame(req *model.GameCreateRequest) []string {
 	var errs []string
 	if !((req.GameNumber >= 1 && req.GameNumber <= 3)) {

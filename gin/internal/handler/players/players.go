@@ -211,6 +211,7 @@ func (h *PlayerHandler) UpdateRating(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validatePlayer(req *model.PlayerCreateRequest) []string {
 	var errs []string
 	if !((req.Rating >= 0 && req.Rating <= 9999)) {

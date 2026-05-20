@@ -145,3 +145,23 @@ func TestDeckCard_Rule_QuantityRange_Violated(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func TestDeckCard_Rule_CommanderIsSingleton_Violated(t *testing.T) {
+	db, r := setupDeckCardDB(t)
+	_ = db
+	depPlayerRID := createDepPlayer(t, r, db)
+	_ = depPlayerRID
+	depDeckRID := createDepDeck(t, r, db)
+	_ = depDeckRID
+	depCardSetRID := createDepCardSet(t, r, db)
+	_ = depCardSetRID
+	depCardRID := createDepCard(t, r, db)
+	_ = depCardRID
+	body := map[string]interface{}{"quantity": 0, "is_commander": "true", "deck_id": depDeckRID, "card_id": depCardRID}
+	b, _ := json.Marshal(body)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/deck_cards", bytes.NewBuffer(b))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}

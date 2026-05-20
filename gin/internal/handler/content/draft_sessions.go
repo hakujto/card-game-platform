@@ -28,6 +28,12 @@ func (h *DraftSessionHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/api/draft-sessions/{id}/abandon", h.Abandon)
 	g.POST("/:id/api/draft-sessions/{id}/complete", h.Complete)
 	g.GET("/:id/api/draft-sessions/{id}/full", h.IsFull)
+	g.PATCH("/:id/transitions/waitingforplayers-to-drafting", h.TransitionWaitingForPlayersToDrafting)
+	g.PATCH("/:id/transitions/drafting-to-completed", h.TransitionDraftingToCompleted)
+	g.PATCH("/:id/transitions/drafting-to-abandoned", h.TransitionDraftingToAbandoned)
+	g.PATCH("/:id/transitions/waitingforplayers-to-abandoned", h.TransitionWaitingForPlayersToAbandoned)
+	g.PATCH("/:id/transitions/completed-to-drafting", h.TransitionCompletedToDrafting)
+	g.PATCH("/:id/transitions/abandoned-to-drafting", h.TransitionAbandonedToDrafting)
 }
 
 func (h *DraftSessionHandler) List(c *gin.Context) {
@@ -53,6 +59,7 @@ func (h *DraftSessionHandler) Create(c *gin.Context) {
 	row.Status = req.Status
 	row.DraftType = req.DraftType
 	row.Seats = req.Seats
+	row.TimePerPickSeconds = req.TimePerPickSeconds
 	row.CompletedAt = req.CompletedAt
 	row.CardSetID = req.CardSetID
 	if err := h.db.Create(&row).Error; err != nil {
@@ -156,6 +163,101 @@ func (h *DraftSessionHandler) IsFull(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *DraftSessionHandler) TransitionWaitingForPlayersToDrafting(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Drafting"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.DraftSessionStatusType_Drafting
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Start() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *DraftSessionHandler) TransitionDraftingToCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Completed"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.DraftSessionStatusType_Completed
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Complete() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *DraftSessionHandler) TransitionDraftingToAbandoned(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Abandoned"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.DraftSessionStatusType_Abandoned
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Abandon() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *DraftSessionHandler) TransitionWaitingForPlayersToAbandoned(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Abandoned"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.DraftSessionStatusType_Abandoned
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Abandon() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *DraftSessionHandler) TransitionCompletedToDrafting(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Completed -> Drafting is not allowed")
+	return
+}
+
+func (h *DraftSessionHandler) TransitionAbandonedToDrafting(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.DraftSession
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Abandoned -> Drafting is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateDraftSession(req *model.DraftSessionCreateRequest) []string {
 	var errs []string
 	if !((req.Seats >= 2 && req.Seats <= 16)) {
@@ -163,6 +265,9 @@ func validateDraftSession(req *model.DraftSessionCreateRequest) []string {
 	}
 	if !((!( req.CompletedAt != nil ) || (req.Status == model.DraftSessionStatusType_Completed))) {
 		errs = append(errs, "completed_at can only be set when draft status is Completed")
+	}
+	if !(req.TimePerPickSeconds > 0) {
+		errs = append(errs, "Time per pick must be greater than zero")
 	}
 	return errs
 }
@@ -172,6 +277,7 @@ func toCreateRequestDraftSession(m *model.DraftSession) model.DraftSessionCreate
 		Status: m.Status,
 		DraftType: m.DraftType,
 		Seats: m.Seats,
+		TimePerPickSeconds: m.TimePerPickSeconds,
 		CompletedAt: m.CompletedAt,
 		CardSetID: m.CardSetID,
 	}

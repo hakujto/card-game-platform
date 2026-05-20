@@ -120,6 +120,8 @@ func (m *Deck) ApplyUpdate(req DeckUpdateRequest) {
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Deck) ValidateSize()  (bool, error) {
 	return false, fmt.Errorf("ValidateSize: not implemented")
 }

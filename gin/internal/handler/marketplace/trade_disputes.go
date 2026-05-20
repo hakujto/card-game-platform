@@ -26,7 +26,13 @@ func (h *TradeDisputeHandler) RegisterRoutes(r gin.IRouter) {
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/disputes/{id}/escalate", h.Escalate)
 	g.POST("/:id/api/disputes/{id}/resolve", h.Resolve)
+	g.POST("/:id/api/disputes/{id}/close", h.CloseResolved)
 	g.POST("/:id/api/disputes/{id}/review", h.Review)
+	g.PATCH("/:id/transitions/open-to-underreview", h.TransitionOpenToUnderReview)
+	g.PATCH("/:id/transitions/underreview-to-resolved", h.TransitionUnderReviewToResolved)
+	g.PATCH("/:id/transitions/underreview-to-escalated", h.TransitionUnderReviewToEscalated)
+	g.PATCH("/:id/transitions/escalated-to-resolved", h.TransitionEscalatedToResolved)
+	g.PATCH("/:id/transitions/resolved-to-open", h.TransitionResolvedToOpen)
 }
 
 func (h *TradeDisputeHandler) List(c *gin.Context) {
@@ -49,9 +55,9 @@ func (h *TradeDisputeHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.TradeDispute{}
+	row.Status = req.Status
 	row.Reason = req.Reason
 	row.Description = req.Description
-	row.Status = req.Status
 	row.Resolution = req.Resolution
 	row.OpenedAt = req.OpenedAt
 	row.ResolvedAt = req.ResolvedAt
@@ -140,6 +146,19 @@ func (h *TradeDisputeHandler) Resolve(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *TradeDisputeHandler) CloseResolved(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.CloseResolved()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
 func (h *TradeDisputeHandler) Review(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.TradeDispute
@@ -153,6 +172,96 @@ func (h *TradeDisputeHandler) Review(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *TradeDisputeHandler) TransitionOpenToUnderReview(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("UnderReview"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TradeDisputeStatusType_UnderReview
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Review() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeDisputeHandler) TransitionUnderReviewToResolved(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Resolved"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.Resolution == nil {
+		handler.UnprocessableError(c, "resolution is required for this transition"); return
+	}
+	row.Status = model.TradeDisputeStatusType_Resolved
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.CloseResolved() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeDisputeHandler) TransitionUnderReviewToEscalated(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Escalated"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TradeDisputeStatusType_Escalated
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Escalate() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeDisputeHandler) TransitionEscalatedToResolved(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Resolved"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.Resolution == nil {
+		handler.UnprocessableError(c, "resolution is required for this transition"); return
+	}
+	row.Status = model.TradeDisputeStatusType_Resolved
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.CloseResolved() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeDisputeHandler) TransitionResolvedToOpen(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeDispute
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Resolved -> Open is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateTradeDispute(req *model.TradeDisputeCreateRequest) []string {
 	var errs []string
 	if !((!( req.ResolvedAt != nil ) || (req.Status == model.TradeDisputeStatusType_Resolved))) {
@@ -163,9 +272,9 @@ func validateTradeDispute(req *model.TradeDisputeCreateRequest) []string {
 
 func toCreateRequestTradeDispute(m *model.TradeDispute) model.TradeDisputeCreateRequest {
 	return model.TradeDisputeCreateRequest{
+		Status: m.Status,
 		Reason: m.Reason,
 		Description: m.Description,
-		Status: m.Status,
 		Resolution: m.Resolution,
 		OpenedAt: m.OpenedAt,
 		ResolvedAt: m.ResolvedAt,

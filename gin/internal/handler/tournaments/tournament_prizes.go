@@ -145,6 +145,7 @@ func (h *TournamentPrizeHandler) AwardToPlayer(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateTournamentPrize(req *model.TournamentPrizeCreateRequest) []string {
 	var errs []string
 	if !(req.PlacementTo >= req.PlacementFrom) {

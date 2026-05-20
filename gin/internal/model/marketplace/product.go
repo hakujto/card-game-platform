@@ -113,6 +113,8 @@ func (m *Product) ApplyUpdate(req ProductUpdateRequest) {
 	if req.CardSetID != nil { m.CardSetID = req.CardSetID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Product) Activate()  error {
 	return fmt.Errorf("Activate: not implemented")
 }

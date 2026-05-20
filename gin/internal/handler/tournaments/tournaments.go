@@ -31,6 +31,13 @@ func (h *TournamentHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id/prizes", h.CalculatePrizeDistribution)
 	g.POST("/:id/register", h.RegisterPlayer)
 	g.GET("/:id/full", h.IsFull)
+	g.PATCH("/:id/transitions/draft-to-registration", h.TransitionDraftToRegistration)
+	g.PATCH("/:id/transitions/registration-to-ongoing", h.TransitionRegistrationToOngoing)
+	g.PATCH("/:id/transitions/registration-to-cancelled", h.TransitionRegistrationToCancelled)
+	g.PATCH("/:id/transitions/ongoing-to-completed", h.TransitionOngoingToCompleted)
+	g.PATCH("/:id/transitions/ongoing-to-cancelled", h.TransitionOngoingToCancelled)
+	g.PATCH("/:id/transitions/completed-to-draft", h.TransitionCompletedToDraft)
+	g.PATCH("/:id/transitions/cancelled-to-draft", h.TransitionCancelledToDraft)
 }
 
 func (h *TournamentHandler) List(c *gin.Context) {
@@ -55,9 +62,9 @@ func (h *TournamentHandler) Create(c *gin.Context) {
 	row := model.Tournament{}
 	row.Name = req.Name
 	row.Description = req.Description
+	row.Status = req.Status
 	row.Format = req.Format
 	row.TournamentType = req.TournamentType
-	row.Status = req.Status
 	row.MaxPlayers = req.MaxPlayers
 	row.EntryFee = req.EntryFee
 	row.PrizePool = req.PrizePool
@@ -220,6 +227,125 @@ func (h *TournamentHandler) IsFull(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *TournamentHandler) TransitionDraftToRegistration(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Registration"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.Name == "" {
+		handler.UnprocessableError(c, "name is required for this transition"); return
+	}
+	if row.StartTime == "" {
+		handler.UnprocessableError(c, "start_time is required for this transition"); return
+	}
+	row.Status = model.TournamentStatusType_Registration
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TournamentHandler) TransitionRegistrationToOngoing(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Ongoing"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TournamentStatusType_Ongoing
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Start() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TournamentHandler) TransitionRegistrationToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Cancelled"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TournamentStatusType_Cancelled
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Cancel() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TournamentHandler) TransitionOngoingToCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Completed"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TournamentStatusType_Completed
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Complete() // @after
+	_, _ = row.CalculatePrizeDistribution() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TournamentHandler) TransitionOngoingToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Cancelled"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TournamentStatusType_Cancelled
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Cancel() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TournamentHandler) TransitionCompletedToDraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Completed -> Draft is not allowed")
+	return
+}
+
+func (h *TournamentHandler) TransitionCancelledToDraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Tournament
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Cancelled -> Draft is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateTournament(req *model.TournamentCreateRequest) []string {
 	var errs []string
 	if !((req.MaxPlayers >= 2 && req.MaxPlayers <= 512)) {
@@ -241,9 +367,9 @@ func toCreateRequestTournament(m *model.Tournament) model.TournamentCreateReques
 	return model.TournamentCreateRequest{
 		Name: m.Name,
 		Description: m.Description,
+		Status: m.Status,
 		Format: m.Format,
 		TournamentType: m.TournamentType,
-		Status: m.Status,
 		MaxPlayers: m.MaxPlayers,
 		EntryFee: m.EntryFee,
 		PrizePool: m.PrizePool,

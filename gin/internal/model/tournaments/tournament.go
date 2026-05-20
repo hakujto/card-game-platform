@@ -8,6 +8,15 @@ import (
 	"fmt"
 )
 
+type TournamentStatusType string
+const (
+	TournamentStatusType_Draft TournamentStatusType = "Draft"
+	TournamentStatusType_Registration TournamentStatusType = "Registration"
+	TournamentStatusType_Ongoing TournamentStatusType = "Ongoing"
+	TournamentStatusType_Completed TournamentStatusType = "Completed"
+	TournamentStatusType_Cancelled TournamentStatusType = "Cancelled"
+)
+
 type TournamentFormatType string
 const (
 	TournamentFormatType_Standard TournamentFormatType = "Standard"
@@ -26,22 +35,13 @@ const (
 	TournamentTournamentTypeType_RoundRobin TournamentTournamentTypeType = "RoundRobin"
 )
 
-type TournamentStatusType string
-const (
-	TournamentStatusType_Draft TournamentStatusType = "Draft"
-	TournamentStatusType_Registration TournamentStatusType = "Registration"
-	TournamentStatusType_Ongoing TournamentStatusType = "Ongoing"
-	TournamentStatusType_Completed TournamentStatusType = "Completed"
-	TournamentStatusType_Cancelled TournamentStatusType = "Cancelled"
-)
-
 // TournamentCreateRequest is the POST body.
 type TournamentCreateRequest struct {
 	Name string `json:"name" binding:"required"`
 	Description *string `json:"description"`
+	Status TournamentStatusType `json:"status" binding:"required"`
 	Format TournamentFormatType `json:"format" binding:"required"`
 	TournamentType TournamentTournamentTypeType `json:"tournament_type" binding:"required"`
-	Status TournamentStatusType `json:"status" binding:"required"`
 	MaxPlayers int `json:"max_players"`
 	EntryFee types.Decimal `json:"entry_fee"`
 	PrizePool types.Decimal `json:"prize_pool"`
@@ -58,9 +58,9 @@ type TournamentCreateRequest struct {
 type TournamentUpdateRequest struct {
 	Name *string `json:"name"`
 	Description *string `json:"description"`
+	Status *TournamentStatusType `json:"status"`
 	Format *TournamentFormatType `json:"format"`
 	TournamentType *TournamentTournamentTypeType `json:"tournament_type"`
-	Status *TournamentStatusType `json:"status"`
 	MaxPlayers *int `json:"max_players"`
 	EntryFee *types.Decimal `json:"entry_fee"`
 	PrizePool *types.Decimal `json:"prize_pool"`
@@ -80,9 +80,9 @@ type TournamentResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Name string `json:"name"`
 	Description *string `json:"description"`
+	Status TournamentStatusType `json:"status"`
 	Format TournamentFormatType `json:"format"`
 	TournamentType TournamentTournamentTypeType `json:"tournament_type"`
-	Status TournamentStatusType `json:"status"`
 	MaxPlayers int `json:"max_players"`
 	EntryFee types.Decimal `json:"entry_fee"`
 	PrizePool types.Decimal `json:"prize_pool"`
@@ -99,9 +99,9 @@ type Tournament struct {
 	gorm.Model
 	Name string `gorm:"column:name;not null"`
 	Description *string `gorm:"column:description;type:text"`
+	Status TournamentStatusType `gorm:"column:status;not null;default:'Draft'"`
 	Format TournamentFormatType `gorm:"column:format;not null;default:'Standard'"`
 	TournamentType TournamentTournamentTypeType `gorm:"column:tournament_type;not null;default:'Swiss'"`
-	Status TournamentStatusType `gorm:"column:status;not null;default:'Draft'"`
 	MaxPlayers int `gorm:"column:max_players;not null"`
 	EntryFee types.Decimal `gorm:"column:entry_fee;type:decimal(10,2);not null;default:0"`
 	PrizePool types.Decimal `gorm:"column:prize_pool;type:decimal(10,2);not null;default:0"`
@@ -122,9 +122,9 @@ func (m *Tournament) ToResponse() TournamentResponse {
 		UpdatedAt: m.UpdatedAt,
 		Name: m.Name,
 		Description: m.Description,
+		Status: m.Status,
 		Format: m.Format,
 		TournamentType: m.TournamentType,
-		Status: m.Status,
 		MaxPlayers: m.MaxPlayers,
 		EntryFee: m.EntryFee,
 		PrizePool: m.PrizePool,
@@ -141,9 +141,9 @@ func (m *Tournament) ToResponse() TournamentResponse {
 func (m *Tournament) ApplyUpdate(req TournamentUpdateRequest) {
 	if req.Name != nil { m.Name = *req.Name }
 	if req.Description != nil { m.Description = req.Description }
+	if req.Status != nil { m.Status = *req.Status }
 	if req.Format != nil { m.Format = *req.Format }
 	if req.TournamentType != nil { m.TournamentType = *req.TournamentType }
-	if req.Status != nil { m.Status = *req.Status }
 	if req.MaxPlayers != nil { m.MaxPlayers = *req.MaxPlayers }
 	if req.EntryFee != nil { m.EntryFee = *req.EntryFee }
 	if req.PrizePool != nil { m.PrizePool = *req.PrizePool }
@@ -155,6 +155,24 @@ func (m *Tournament) ApplyUpdate(req TournamentUpdateRequest) {
 	if req.SeasonID != nil { m.SeasonID = *req.SeasonID }
 	if req.OrganizerID != nil { m.OrganizerID = *req.OrganizerID }
 }
+
+// ── Lifecycle state machine ──────────────────────────────────────
+var TournamentAllowedTransitions = map[string]map[string]bool{
+		"Draft": {"Registration": true},
+		"Registration": {"Ongoing": true, "Cancelled": true},
+		"Ongoing": {"Completed": true, "Cancelled": true},
+}
+
+func (m *Tournament) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := TournamentAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
 
 func (m *Tournament) Start()  error {
 	return fmt.Errorf("Start: not implemented")

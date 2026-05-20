@@ -168,6 +168,7 @@ func (h *CraftingRecipeHandler) Enable(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCraftingRecipe(req *model.CraftingRecipeCreateRequest) []string {
 	var errs []string
 	if !(req.DustCost > 0) {

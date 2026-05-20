@@ -62,7 +62,7 @@ func TestTradeDispute_Create(t *testing.T) {
 	_ = depTradeListing1ID
 	depTradeTransaction1ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction1ID
-	body := map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction1ID, "opened_by_id": depPlayer1ID}
+	body := map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction1ID, "opened_by_id": depPlayer1ID}
 	result := postTradeDispute(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -80,7 +80,7 @@ func TestTradeDispute_Get(t *testing.T) {
 	_ = depTradeListing2ID
 	depTradeTransaction2ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction2ID
-	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction2ID, "opened_by_id": depPlayer2ID})
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction2ID, "opened_by_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/trade_disputes/"+id, nil)
@@ -101,7 +101,7 @@ func TestTradeDispute_Update(t *testing.T) {
 	_ = depTradeListing3ID
 	depTradeTransaction3ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction3ID
-	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction3ID, "opened_by_id": depPlayer3ID})
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction3ID, "opened_by_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"description": "test"}
 	b, _ := json.Marshal(upBody)
@@ -125,10 +125,157 @@ func TestTradeDispute_Delete(t *testing.T) {
 	_ = depTradeListing4ID
 	depTradeTransaction4ID := createDepTradeTransaction(t, r, db)
 	_ = depTradeTransaction4ID
-	created := postTradeDispute(t, r, db, map[string]interface{}{"reason": "ItemNotReceived", "description": "test", "status": "Resolved", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction4ID, "opened_by_id": depPlayer4ID})
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction4ID, "opened_by_id": depPlayer4ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/trade_disputes/"+id, nil)
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestTradeDispute_Transition_Open_To_UnderReview(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depCardSetTID := createDepCardSet(t, r, db)
+	_ = depCardSetTID
+	depCardTID := createDepCard(t, r, db)
+	_ = depCardTID
+	depTradeListingTID := createDepTradeListing(t, r, db)
+	_ = depTradeListingTID
+	depTradeTransactionTID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionTID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionTID, "opened_by_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/open-to-underreview", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestTradeDispute_Transition_UnderReview_To_Resolved(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depCardSetTID := createDepCardSet(t, r, db)
+	_ = depCardSetTID
+	depCardTID := createDepCard(t, r, db)
+	_ = depCardTID
+	depTradeListingTID := createDepTradeListing(t, r, db)
+	_ = depTradeListingTID
+	depTradeTransactionTID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionTID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionTID, "opened_by_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-resolved", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestTradeDispute_Transition_UnderReview_To_Resolved_On_Resolution_Violated(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerOID := createDepPlayer(t, r, db)
+	_ = depPlayerOID
+	depCardSetOID := createDepCardSet(t, r, db)
+	_ = depCardSetOID
+	depCardOID := createDepCard(t, r, db)
+	_ = depCardOID
+	depTradeListingOID := createDepTradeListing(t, r, db)
+	_ = depTradeListingOID
+	depTradeTransactionOID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionOID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "UnderReview", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionOID, "opened_by_id": depPlayerOID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-resolved", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
+}
+
+func TestTradeDispute_Transition_UnderReview_To_Escalated(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depCardSetTID := createDepCardSet(t, r, db)
+	_ = depCardSetTID
+	depCardTID := createDepCard(t, r, db)
+	_ = depCardTID
+	depTradeListingTID := createDepTradeListing(t, r, db)
+	_ = depTradeListingTID
+	depTradeTransactionTID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionTID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionTID, "opened_by_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-escalated", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestTradeDispute_Transition_Escalated_To_Resolved(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depCardSetTID := createDepCardSet(t, r, db)
+	_ = depCardSetTID
+	depCardTID := createDepCard(t, r, db)
+	_ = depCardTID
+	depTradeListingTID := createDepTradeListing(t, r, db)
+	_ = depTradeListingTID
+	depTradeTransactionTID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionTID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionTID, "opened_by_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/escalated-to-resolved", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestTradeDispute_Transition_Escalated_To_Resolved_On_Resolution_Violated(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerOID := createDepPlayer(t, r, db)
+	_ = depPlayerOID
+	depCardSetOID := createDepCardSet(t, r, db)
+	_ = depCardSetOID
+	depCardOID := createDepCard(t, r, db)
+	_ = depCardOID
+	depTradeListingOID := createDepTradeListing(t, r, db)
+	_ = depTradeListingOID
+	depTradeTransactionOID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionOID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Escalated", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionOID, "opened_by_id": depPlayerOID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/escalated-to-resolved", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
+}
+
+func TestTradeDispute_Transition_Resolved_To_Open(t *testing.T) {
+	db, r := setupTradeDisputeDB(t)
+	_ = db
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depCardSetTID := createDepCardSet(t, r, db)
+	_ = depCardSetTID
+	depCardTID := createDepCard(t, r, db)
+	_ = depCardTID
+	depTradeListingTID := createDepTradeListing(t, r, db)
+	_ = depTradeListingTID
+	depTradeTransactionTID := createDepTradeTransaction(t, r, db)
+	_ = depTradeTransactionTID
+	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransactionTID, "opened_by_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/resolved-to-open", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
 }

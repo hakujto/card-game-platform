@@ -62,6 +62,8 @@ func (m *TournamentJudge) ApplyUpdate(req TournamentJudgeUpdateRequest) {
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TournamentJudge) PromoteToHead()  error {
 	return fmt.Errorf("PromoteToHead: not implemented")
 }

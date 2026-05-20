@@ -68,6 +68,8 @@ func (m *TradeBid) ApplyUpdate(req TradeBidUpdateRequest) {
 	if req.BidderID != nil { m.BidderID = *req.BidderID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TradeBid) OutbidBy(newAmount float64)  (bool, error) {
 	return false, fmt.Errorf("OutbidBy: not implemented")
 }

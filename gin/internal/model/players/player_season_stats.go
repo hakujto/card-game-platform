@@ -96,6 +96,8 @@ func (m *PlayerSeasonStats) ApplyUpdate(req PlayerSeasonStatsUpdateRequest) {
 	if req.SeasonID != nil { m.SeasonID = *req.SeasonID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *PlayerSeasonStats) WinRate()  (float64, error) {
 	return 0.0, fmt.Errorf("WinRate: not implemented")
 }

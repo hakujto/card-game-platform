@@ -157,6 +157,7 @@ func (h *SeasonHandler) IsOngoing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateSeason(req *model.SeasonCreateRequest) []string {
 	var errs []string
 	if !(req.EndDate > req.StartDate) {

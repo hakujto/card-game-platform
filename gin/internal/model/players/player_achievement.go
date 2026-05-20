@@ -67,6 +67,8 @@ func (m *PlayerAchievement) ApplyUpdate(req PlayerAchievementUpdateRequest) {
 	if req.AchievementID != nil { m.AchievementID = *req.AchievementID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *PlayerAchievement) IncrementProgress(amount int)  error {
 	return fmt.Errorf("IncrementProgress: not implemented")
 }

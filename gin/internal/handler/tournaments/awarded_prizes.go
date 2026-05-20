@@ -134,6 +134,7 @@ func (h *AwardedPrizeHandler) SetClaimed(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateAwardedPrize(req *model.AwardedPrizeCreateRequest) []string {
 	var errs []string
 	if !((!( req.Claimed ) || (req.ClaimedAt != nil))) {

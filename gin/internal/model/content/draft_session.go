@@ -27,6 +27,7 @@ type DraftSessionCreateRequest struct {
 	Status DraftSessionStatusType `json:"status" binding:"required"`
 	DraftType DraftSessionDraftTypeType `json:"draft_type" binding:"required"`
 	Seats int `json:"seats"`
+	TimePerPickSeconds int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completed_at"`
 	CardSetID uint `json:"card_set_id"`
 }
@@ -36,6 +37,7 @@ type DraftSessionUpdateRequest struct {
 	Status *DraftSessionStatusType `json:"status"`
 	DraftType *DraftSessionDraftTypeType `json:"draft_type"`
 	Seats *int `json:"seats"`
+	TimePerPickSeconds *int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completed_at"`
 	CardSetID *uint `json:"card_set_id"`
 }
@@ -48,6 +50,7 @@ type DraftSessionResponse struct {
 	Status DraftSessionStatusType `json:"status"`
 	DraftType DraftSessionDraftTypeType `json:"draft_type"`
 	Seats int `json:"seats"`
+	TimePerPickSeconds int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completed_at"`
 	CardSetID uint `json:"card_set_id"`
 }
@@ -57,6 +60,7 @@ type DraftSession struct {
 	Status DraftSessionStatusType `gorm:"column:status;not null;default:'WaitingForPlayers'"`
 	DraftType DraftSessionDraftTypeType `gorm:"column:draft_type;not null;default:'Booster'"`
 	Seats int `gorm:"column:seats;not null;default:8"`
+	TimePerPickSeconds int `gorm:"column:time_per_pick_seconds;not null;default:30"`
 	CompletedAt *string `gorm:"column:completed_at"`
 	CardSetID uint `gorm:"column:card_set_id"`
 }
@@ -69,6 +73,7 @@ func (m *DraftSession) ToResponse() DraftSessionResponse {
 		Status: m.Status,
 		DraftType: m.DraftType,
 		Seats: m.Seats,
+		TimePerPickSeconds: m.TimePerPickSeconds,
 		CompletedAt: m.CompletedAt,
 		CardSetID: m.CardSetID,
 	}
@@ -78,9 +83,27 @@ func (m *DraftSession) ApplyUpdate(req DraftSessionUpdateRequest) {
 	if req.Status != nil { m.Status = *req.Status }
 	if req.DraftType != nil { m.DraftType = *req.DraftType }
 	if req.Seats != nil { m.Seats = *req.Seats }
+	if req.TimePerPickSeconds != nil { m.TimePerPickSeconds = *req.TimePerPickSeconds }
 	if req.CompletedAt != nil { m.CompletedAt = req.CompletedAt }
 	if req.CardSetID != nil { m.CardSetID = *req.CardSetID }
 }
+
+// ── Lifecycle state machine ──────────────────────────────────────
+var DraftSessionAllowedTransitions = map[string]map[string]bool{
+		"WaitingForPlayers": {"Drafting": true, "Abandoned": true},
+		"Drafting": {"Completed": true, "Abandoned": true},
+}
+
+func (m *DraftSession) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := DraftSessionAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
 
 func (m *DraftSession) Start()  error {
 	return fmt.Errorf("Start: not implemented")

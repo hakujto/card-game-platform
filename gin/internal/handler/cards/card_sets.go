@@ -174,6 +174,7 @@ func (h *CardSetHandler) RotateOut(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCardSet(req *model.CardSetCreateRequest) []string {
 	var errs []string
 	if !(req.TotalCards > 0) {

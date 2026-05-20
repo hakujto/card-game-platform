@@ -165,6 +165,7 @@ func (h *TradeTransactionHandler) SellerNet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateTradeTransaction(req *model.TradeTransactionCreateRequest) []string {
 	var errs []string
 	if !(float64(req.PlatformFee) <= float64(req.FinalPrice)) {

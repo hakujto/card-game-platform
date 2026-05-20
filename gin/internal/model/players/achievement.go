@@ -82,6 +82,8 @@ func (m *Achievement) ApplyUpdate(req AchievementUpdateRequest) {
 	if req.IsHidden != nil { m.IsHidden = *req.IsHidden }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Achievement) PointValue(multiplier int)  (int, error) {
 	return 0, fmt.Errorf("PointValue: not implemented")
 }

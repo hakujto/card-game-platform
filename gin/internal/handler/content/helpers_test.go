@@ -27,7 +27,7 @@ func createDepCardSet(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepDraftSession(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "card_set_id": 1}
+	body := map[string]interface{}{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/draft_sessions", bytes.NewBuffer(b))
@@ -83,7 +83,7 @@ func createDepCard(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepArticle(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "view_count": 1, "author_id": 1}
+	body := map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/articles", bytes.NewBuffer(b))

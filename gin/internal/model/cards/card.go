@@ -178,6 +178,8 @@ func (m *Card) ApplyUpdate(req CardUpdateRequest) {
 	if req.SetID != nil { m.SetID = *req.SetID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Card) Ban()  error {
 	return fmt.Errorf("Ban: not implemented")
 }

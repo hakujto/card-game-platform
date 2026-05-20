@@ -114,6 +114,7 @@ func (h *DraftPickHandler) IsFirstPick(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateDraftPick(req *model.DraftPickCreateRequest) []string {
 	var errs []string
 	if !(req.PickNumber > 0) {

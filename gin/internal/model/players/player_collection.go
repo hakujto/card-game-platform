@@ -97,6 +97,8 @@ func (m *PlayerCollection) ApplyUpdate(req PlayerCollectionUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *PlayerCollection) Add(quantity int)  error {
 	return fmt.Errorf("Add: not implemented")
 }

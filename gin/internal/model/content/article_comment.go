@@ -67,6 +67,8 @@ func (m *ArticleComment) ApplyUpdate(req ArticleCommentUpdateRequest) {
 	if req.ParentCommentID != nil { m.ParentCommentID = req.ParentCommentID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *ArticleComment) Hide()  error {
 	return fmt.Errorf("Hide: not implemented")
 }

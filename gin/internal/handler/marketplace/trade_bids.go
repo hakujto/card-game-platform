@@ -135,6 +135,7 @@ func (h *TradeBidHandler) Retract(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateTradeBid(req *model.TradeBidCreateRequest) []string {
 	var errs []string
 	if !(float64(req.Amount) > 0) {

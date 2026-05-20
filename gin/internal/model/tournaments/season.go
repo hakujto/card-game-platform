@@ -83,6 +83,8 @@ func (m *Season) ApplyUpdate(req SeasonUpdateRequest) {
 	if req.RewardDescription != nil { m.RewardDescription = req.RewardDescription }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Season) Activate()  error {
 	return fmt.Errorf("Activate: not implemented")
 }

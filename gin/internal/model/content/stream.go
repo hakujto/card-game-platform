@@ -7,6 +7,13 @@ import (
 	"fmt"
 )
 
+type StreamStatusType string
+const (
+	StreamStatusType_Scheduled StreamStatusType = "Scheduled"
+	StreamStatusType_Live StreamStatusType = "Live"
+	StreamStatusType_Ended StreamStatusType = "Ended"
+)
+
 type StreamPlatformType string
 const (
 	StreamPlatformType_Twitch StreamPlatformType = "Twitch"
@@ -15,19 +22,25 @@ const (
 	StreamPlatformType_Platform StreamPlatformType = "Platform"
 )
 
-type StreamStatusType string
+type StreamLanguageType string
 const (
-	StreamStatusType_Scheduled StreamStatusType = "Scheduled"
-	StreamStatusType_Live StreamStatusType = "Live"
-	StreamStatusType_Ended StreamStatusType = "Ended"
+	StreamLanguageType_EN StreamLanguageType = "EN"
+	StreamLanguageType_DE StreamLanguageType = "DE"
+	StreamLanguageType_FR StreamLanguageType = "FR"
+	StreamLanguageType_IT StreamLanguageType = "IT"
+	StreamLanguageType_ES StreamLanguageType = "ES"
+	StreamLanguageType_JP StreamLanguageType = "JP"
+	StreamLanguageType_PT StreamLanguageType = "PT"
 )
 
 // StreamCreateRequest is the POST body.
 type StreamCreateRequest struct {
 	Title string `json:"title" binding:"required"`
 	StreamUrl string `json:"stream_url" binding:"required"`
-	Platform StreamPlatformType `json:"platform" binding:"required"`
 	Status StreamStatusType `json:"status" binding:"required"`
+	Platform StreamPlatformType `json:"platform" binding:"required"`
+	Language StreamLanguageType `json:"language" binding:"required"`
+	IsOfficial bool `json:"is_official"`
 	ViewerCountPeak int `json:"viewer_count_peak"`
 	ScheduledStart string `json:"scheduled_start" binding:"required"`
 	ActualStart *string `json:"actual_start"`
@@ -41,8 +54,10 @@ type StreamCreateRequest struct {
 type StreamUpdateRequest struct {
 	Title *string `json:"title"`
 	StreamUrl *string `json:"stream_url"`
-	Platform *StreamPlatformType `json:"platform"`
 	Status *StreamStatusType `json:"status"`
+	Platform *StreamPlatformType `json:"platform"`
+	Language *StreamLanguageType `json:"language"`
+	IsOfficial *bool `json:"is_official"`
 	ViewerCountPeak *int `json:"viewer_count_peak"`
 	ScheduledStart *string `json:"scheduled_start"`
 	ActualStart *string `json:"actual_start"`
@@ -59,8 +74,10 @@ type StreamResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Title string `json:"title"`
 	StreamUrl string `json:"stream_url"`
-	Platform StreamPlatformType `json:"platform"`
 	Status StreamStatusType `json:"status"`
+	Platform StreamPlatformType `json:"platform"`
+	Language StreamLanguageType `json:"language"`
+	IsOfficial bool `json:"is_official"`
 	ViewerCountPeak int `json:"viewer_count_peak"`
 	ScheduledStart string `json:"scheduled_start"`
 	ActualStart *string `json:"actual_start"`
@@ -74,8 +91,10 @@ type Stream struct {
 	gorm.Model
 	Title string `gorm:"column:title;not null"`
 	StreamUrl string `gorm:"column:stream_url;not null"`
-	Platform StreamPlatformType `gorm:"column:platform;not null;default:'Twitch'"`
 	Status StreamStatusType `gorm:"column:status;not null;default:'Scheduled'"`
+	Platform StreamPlatformType `gorm:"column:platform;not null;default:'Twitch'"`
+	Language StreamLanguageType `gorm:"column:language;not null;default:'EN'"`
+	IsOfficial bool `gorm:"column:is_official;default:false"`
 	ViewerCountPeak int `gorm:"column:viewer_count_peak;not null;default:0"`
 	ScheduledStart string `gorm:"column:scheduled_start;not null"`
 	ActualStart *string `gorm:"column:actual_start"`
@@ -92,8 +111,10 @@ func (m *Stream) ToResponse() StreamResponse {
 		UpdatedAt: m.UpdatedAt,
 		Title: m.Title,
 		StreamUrl: m.StreamUrl,
-		Platform: m.Platform,
 		Status: m.Status,
+		Platform: m.Platform,
+		Language: m.Language,
+		IsOfficial: m.IsOfficial,
 		ViewerCountPeak: m.ViewerCountPeak,
 		ScheduledStart: m.ScheduledStart,
 		ActualStart: m.ActualStart,
@@ -107,8 +128,10 @@ func (m *Stream) ToResponse() StreamResponse {
 func (m *Stream) ApplyUpdate(req StreamUpdateRequest) {
 	if req.Title != nil { m.Title = *req.Title }
 	if req.StreamUrl != nil { m.StreamUrl = *req.StreamUrl }
-	if req.Platform != nil { m.Platform = *req.Platform }
 	if req.Status != nil { m.Status = *req.Status }
+	if req.Platform != nil { m.Platform = *req.Platform }
+	if req.Language != nil { m.Language = *req.Language }
+	if req.IsOfficial != nil { m.IsOfficial = *req.IsOfficial }
 	if req.ViewerCountPeak != nil { m.ViewerCountPeak = *req.ViewerCountPeak }
 	if req.ScheduledStart != nil { m.ScheduledStart = *req.ScheduledStart }
 	if req.ActualStart != nil { m.ActualStart = req.ActualStart }
@@ -117,6 +140,23 @@ func (m *Stream) ApplyUpdate(req StreamUpdateRequest) {
 	if req.TournamentID != nil { m.TournamentID = req.TournamentID }
 	if req.StreamerID != nil { m.StreamerID = *req.StreamerID }
 }
+
+// ── Lifecycle state machine ──────────────────────────────────────
+var StreamAllowedTransitions = map[string]map[string]bool{
+		"Scheduled": {"Live": true},
+		"Live": {"Ended": true},
+}
+
+func (m *Stream) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := StreamAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
 
 func (m *Stream) GoLive()  error {
 	return fmt.Errorf("GoLive: not implemented")

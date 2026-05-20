@@ -144,6 +144,7 @@ func (h *CardPriceHistoryHandler) IsPriceSpike(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCardPriceHistory(req *model.CardPriceHistoryCreateRequest) []string {
 	var errs []string
 	if !((float64(req.MinPrice) <= float64(req.AvgPrice) && float64(req.AvgPrice) <= float64(req.MaxPrice))) {

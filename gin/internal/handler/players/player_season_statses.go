@@ -152,6 +152,7 @@ func (h *PlayerSeasonStatsHandler) RecordTournamentWin(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validatePlayerSeasonStats(req *model.PlayerSeasonStatsCreateRequest) []string {
 	var errs []string
 	if !(req.Wins >= 0) {

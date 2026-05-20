@@ -83,6 +83,8 @@ func (m *CardAbility) ApplyUpdate(req CardAbilityUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *CardAbility) IsUsableAt(timing string)  (bool, error) {
 	return false, fmt.Errorf("IsUsableAt: not implemented")
 }

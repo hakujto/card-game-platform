@@ -61,6 +61,8 @@ func (m *DeckCard) ApplyUpdate(req DeckCardUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *DeckCard) Increment(amount int)  error {
 	return fmt.Errorf("Increment: not implemented")
 }

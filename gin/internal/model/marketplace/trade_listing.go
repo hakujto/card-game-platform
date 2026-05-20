@@ -8,6 +8,15 @@ import (
 	"fmt"
 )
 
+type TradeListingStatusType string
+const (
+	TradeListingStatusType_Active TradeListingStatusType = "Active"
+	TradeListingStatusType_Sold TradeListingStatusType = "Sold"
+	TradeListingStatusType_Expired TradeListingStatusType = "Expired"
+	TradeListingStatusType_Cancelled TradeListingStatusType = "Cancelled"
+	TradeListingStatusType_Pending TradeListingStatusType = "Pending"
+)
+
 type TradeListingListingTypeType string
 const (
 	TradeListingListingTypeType_FixedPrice TradeListingListingTypeType = "FixedPrice"
@@ -24,17 +33,9 @@ const (
 	TradeListingConditionType_Played TradeListingConditionType = "Played"
 )
 
-type TradeListingStatusType string
-const (
-	TradeListingStatusType_Active TradeListingStatusType = "Active"
-	TradeListingStatusType_Sold TradeListingStatusType = "Sold"
-	TradeListingStatusType_Expired TradeListingStatusType = "Expired"
-	TradeListingStatusType_Cancelled TradeListingStatusType = "Cancelled"
-	TradeListingStatusType_Pending TradeListingStatusType = "Pending"
-)
-
 // TradeListingCreateRequest is the POST body.
 type TradeListingCreateRequest struct {
+	Status TradeListingStatusType `json:"status" binding:"required"`
 	ListingType TradeListingListingTypeType `json:"listing_type" binding:"required"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
@@ -43,7 +44,6 @@ type TradeListingCreateRequest struct {
 	Foil bool `json:"foil"`
 	Condition TradeListingConditionType `json:"condition" binding:"required"`
 	Quantity int `json:"quantity"`
-	Status TradeListingStatusType `json:"status" binding:"required"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID uint `json:"seller_id"`
@@ -52,6 +52,7 @@ type TradeListingCreateRequest struct {
 
 // TradeListingUpdateRequest is the PUT/PATCH body — all fields optional.
 type TradeListingUpdateRequest struct {
+	Status *TradeListingStatusType `json:"status"`
 	ListingType *TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
@@ -60,7 +61,6 @@ type TradeListingUpdateRequest struct {
 	Foil *bool `json:"foil"`
 	Condition *TradeListingConditionType `json:"condition"`
 	Quantity *int `json:"quantity"`
-	Status *TradeListingStatusType `json:"status"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID *uint `json:"seller_id"`
@@ -72,6 +72,7 @@ type TradeListingResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Status TradeListingStatusType `json:"status"`
 	ListingType TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
@@ -80,7 +81,6 @@ type TradeListingResponse struct {
 	Foil bool `json:"foil"`
 	Condition TradeListingConditionType `json:"condition"`
 	Quantity int `json:"quantity"`
-	Status TradeListingStatusType `json:"status"`
 	Description *string `json:"description"`
 	ExpiresAt *string `json:"expires_at"`
 	SellerID uint `json:"seller_id"`
@@ -89,6 +89,7 @@ type TradeListingResponse struct {
 
 type TradeListing struct {
 	gorm.Model
+	Status TradeListingStatusType `gorm:"column:status;not null;default:'Active'"`
 	ListingType TradeListingListingTypeType `gorm:"column:listing_type;not null;default:'FixedPrice'"`
 	AskingPrice *types.Decimal `gorm:"column:asking_price;type:decimal(10,2)"`
 	AuctionStartPrice *types.Decimal `gorm:"column:auction_start_price;type:decimal(10,2)"`
@@ -97,7 +98,6 @@ type TradeListing struct {
 	Foil bool `gorm:"column:foil;default:false"`
 	Condition TradeListingConditionType `gorm:"column:condition;not null;default:'Mint'"`
 	Quantity int `gorm:"column:quantity;not null;default:1"`
-	Status TradeListingStatusType `gorm:"column:status;not null;default:'Active'"`
 	Description *string `gorm:"column:description;type:text"`
 	ExpiresAt *string `gorm:"column:expires_at"`
 	SellerID uint `gorm:"column:seller_id"`
@@ -109,6 +109,7 @@ func (m *TradeListing) ToResponse() TradeListingResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		Status: m.Status,
 		ListingType: m.ListingType,
 		AskingPrice: m.AskingPrice,
 		AuctionStartPrice: m.AuctionStartPrice,
@@ -117,7 +118,6 @@ func (m *TradeListing) ToResponse() TradeListingResponse {
 		Foil: m.Foil,
 		Condition: m.Condition,
 		Quantity: m.Quantity,
-		Status: m.Status,
 		Description: m.Description,
 		ExpiresAt: m.ExpiresAt,
 		SellerID: m.SellerID,
@@ -126,6 +126,7 @@ func (m *TradeListing) ToResponse() TradeListingResponse {
 }
 
 func (m *TradeListing) ApplyUpdate(req TradeListingUpdateRequest) {
+	if req.Status != nil { m.Status = *req.Status }
 	if req.ListingType != nil { m.ListingType = *req.ListingType }
 	if req.AskingPrice != nil { m.AskingPrice = req.AskingPrice }
 	if req.AuctionStartPrice != nil { m.AuctionStartPrice = req.AuctionStartPrice }
@@ -134,12 +135,28 @@ func (m *TradeListing) ApplyUpdate(req TradeListingUpdateRequest) {
 	if req.Foil != nil { m.Foil = *req.Foil }
 	if req.Condition != nil { m.Condition = *req.Condition }
 	if req.Quantity != nil { m.Quantity = *req.Quantity }
-	if req.Status != nil { m.Status = *req.Status }
 	if req.Description != nil { m.Description = req.Description }
 	if req.ExpiresAt != nil { m.ExpiresAt = req.ExpiresAt }
 	if req.SellerID != nil { m.SellerID = *req.SellerID }
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
+
+// ── Lifecycle state machine ──────────────────────────────────────
+var TradeListingAllowedTransitions = map[string]map[string]bool{
+		"Pending": {"Active": true},
+		"Active": {"Sold": true, "Expired": true, "Cancelled": true},
+}
+
+func (m *TradeListing) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := TradeListingAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
 
 func (m *TradeListing) Close()  error {
 	return fmt.Errorf("Close: not implemented")

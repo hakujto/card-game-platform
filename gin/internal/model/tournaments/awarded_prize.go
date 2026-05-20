@@ -73,6 +73,8 @@ func (m *AwardedPrize) ApplyUpdate(req AwardedPrizeUpdateRequest) {
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *AwardedPrize) Claim()  error {
 	return fmt.Errorf("Claim: not implemented")
 }

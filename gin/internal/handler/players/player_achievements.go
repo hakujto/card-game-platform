@@ -154,6 +154,7 @@ func (h *PlayerAchievementHandler) SetIsCompleted(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validatePlayerAchievement(req *model.PlayerAchievementCreateRequest) []string {
 	var errs []string
 	if !((!( req.IsCompleted ) || (req.Progress > 0))) {

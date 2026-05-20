@@ -135,6 +135,7 @@ func (h *CardAbilityHandler) Describe(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCardAbility(req *model.CardAbilityCreateRequest) []string {
 	var errs []string
 	if !((!( req.AbilityType == model.CardAbilityAbilityTypeType_Keyword ) || (req.Keyword != nil))) {

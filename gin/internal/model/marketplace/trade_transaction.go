@@ -88,6 +88,8 @@ func (m *TradeTransaction) ApplyUpdate(req TradeTransactionUpdateRequest) {
 	if req.SellerID != nil { m.SellerID = *req.SellerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TradeTransaction) Complete()  error {
 	return fmt.Errorf("Complete: not implemented")
 }

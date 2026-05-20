@@ -61,6 +61,8 @@ func (m *DraftParticipant) ApplyUpdate(req DraftParticipantUpdateRequest) {
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *DraftParticipant) PickCard(cardId int, packNumber int)  error {
 	return fmt.Errorf("PickCard: not implemented")
 }

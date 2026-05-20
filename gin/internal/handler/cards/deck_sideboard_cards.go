@@ -140,6 +140,7 @@ func (h *DeckSideboardCardHandler) Decrement(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateDeckSideboardCard(req *model.DeckSideboardCardCreateRequest) []string {
 	var errs []string
 	if !((req.Quantity >= 1 && req.Quantity <= 4)) {

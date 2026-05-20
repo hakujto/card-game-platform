@@ -49,6 +49,8 @@ func (m *ArticleTag) ApplyUpdate(req ArticleTagUpdateRequest) {
 	if req.Slug != nil { m.Slug = *req.Slug }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *ArticleTag) Rename(newName string)  error {
 	return fmt.Errorf("Rename: not implemented")
 }

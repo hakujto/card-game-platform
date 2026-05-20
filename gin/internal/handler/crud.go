@@ -33,6 +33,16 @@ func ValidationError(c *gin.Context, msg string) {
 	c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 }
 
+// ConflictError writes a 409.
+func ConflictError(c *gin.Context, msg string) {
+	c.JSON(http.StatusConflict, gin.H{"error": msg})
+}
+
+// UnprocessableError writes a 422.
+func UnprocessableError(c *gin.Context, msg string) {
+	c.JSON(http.StatusUnprocessableEntity, gin.H{"error": msg})
+}
+
 // Paginate reads optional query params skip/limit with sensible defaults.
 func Paginate(c *gin.Context) (int, int) {
 	skip, _ := strconv.Atoi(c.DefaultQuery("skip", "0"))

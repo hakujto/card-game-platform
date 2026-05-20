@@ -157,6 +157,7 @@ func (h *TournamentRoundHandler) IsTimeExpired(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateTournamentRound(req *model.TournamentRoundCreateRequest) []string {
 	var errs []string
 	if !((!( req.EndedAt != nil ) || ((req.StartedAt != nil && *req.EndedAt > *req.StartedAt)))) {

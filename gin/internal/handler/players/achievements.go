@@ -136,6 +136,7 @@ func (h *AchievementHandler) Reveal(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateAchievement(req *model.AchievementCreateRequest) []string {
 	var errs []string
 	if !(req.Points > 0) {

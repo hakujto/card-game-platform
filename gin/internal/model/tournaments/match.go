@@ -106,8 +106,29 @@ func (m *Match) ApplyUpdate(req MatchUpdateRequest) {
 	if req.Player2ID != nil { m.Player2ID = req.Player2ID }
 }
 
+// ── Lifecycle state machine ──────────────────────────────────────
+var MatchAllowedTransitions = map[string]map[string]bool{
+		"Pending": {"Active": true, "BYE": true},
+		"Active": {"Completed": true, "Draw": true},
+}
+
+func (m *Match) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := MatchAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Match) RecordResult(p1Wins int, p2Wins int)  error {
 	return fmt.Errorf("RecordResult: not implemented")
+}
+
+func (m *Match) FinalizeResult()  error {
+	return fmt.Errorf("FinalizeResult: not implemented")
 }
 
 func (m *Match) DetermineWinner()  (bool, error) {

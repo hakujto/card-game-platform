@@ -126,6 +126,8 @@ func (m *Player) ApplyUpdate(req PlayerUpdateRequest) {
 	if req.UserID != nil { m.UserID = *req.UserID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Player) Promote()  (bool, error) {
 	return false, fmt.Errorf("Promote: not implemented")
 }

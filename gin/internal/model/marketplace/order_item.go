@@ -68,6 +68,8 @@ func (m *OrderItem) ApplyUpdate(req OrderItemUpdateRequest) {
 	if req.ProductID != nil { m.ProductID = *req.ProductID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *OrderItem) LineTotal()  (float64, error) {
 	return 0.0, fmt.Errorf("LineTotal: not implemented")
 }

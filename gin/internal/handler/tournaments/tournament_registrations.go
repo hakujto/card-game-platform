@@ -152,6 +152,7 @@ func (h *TournamentRegistrationHandler) PromoteFromWaitlist(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateTournamentRegistration(req *model.TournamentRegistrationCreateRequest) []string {
 	var errs []string
 	if !(req.PointsEarned >= 0) {

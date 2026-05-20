@@ -100,6 +100,8 @@ func (m *CardSet) ApplyUpdate(req CardSetUpdateRequest) {
 	if req.LogoUrl != nil { m.LogoUrl = req.LogoUrl }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *CardSet) IsLegalInStandard()  (bool, error) {
 	return false, fmt.Errorf("IsLegalInStandard: not implemented")
 }

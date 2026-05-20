@@ -224,6 +224,7 @@ func (h *CardHandler) IsLegalInFormat(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCard(req *model.CardCreateRequest) []string {
 	var errs []string
 	if !((!( req.CardType == model.CardCardTypeType_Creature ) || (req.Attack != nil && req.Defense != nil))) {
@@ -231,6 +232,9 @@ func validateCard(req *model.CardCreateRequest) []string {
 	}
 	if !((!( req.CardType == model.CardCardTypeType_Planeswalker ) || (req.Loyalty != nil))) {
 		errs = append(errs, "Planeswalker card must have loyalty")
+	}
+	if !((!( req.CardType == model.CardCardTypeType_Land ) || (req.ManaCost == 0))) {
+		errs = append(errs, "Land card must have zero mana cost")
 	}
 	if !((!( req.CardType != model.CardCardTypeType_Planeswalker ) || (req.Loyalty == nil))) {
 		errs = append(errs, "Only Planeswalker cards can have loyalty")

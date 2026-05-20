@@ -83,7 +83,7 @@ func createDepCard(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 
 func createDepTradeListing(t *testing.T, r *gin.Engine, db *gorm.DB) uint {
 	_ = db
-	body := map[string]interface{}{"listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "status": "Active", "seller_id": 1, "card_id": 1}
+	body := map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/trade_listings", bytes.NewBuffer(b))

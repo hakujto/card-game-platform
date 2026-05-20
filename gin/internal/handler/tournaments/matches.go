@@ -25,9 +25,17 @@ func (h *MatchHandler) RegisterRoutes(r gin.IRouter) {
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/record", h.RecordResult)
+	g.POST("/:id/finalize", h.FinalizeResult)
 	g.GET("/:id/winner", h.DetermineWinner)
 	g.POST("/:id/concede", h.Concede)
 	g.POST("/:id/draw", h.Draw)
+	g.PATCH("/:id/transitions/pending-to-active", h.TransitionPendingToActive)
+	g.PATCH("/:id/transitions/active-to-completed", h.TransitionActiveToCompleted)
+	g.PATCH("/:id/transitions/active-to-draw", h.TransitionActiveToDraw)
+	g.PATCH("/:id/transitions/pending-to-bye", h.TransitionPendingToBYE)
+	g.PATCH("/:id/transitions/completed-to-active", h.TransitionCompletedToActive)
+	g.PATCH("/:id/transitions/draw-to-active", h.TransitionDrawToActive)
+	g.PATCH("/:id/transitions/bye-to-active", h.TransitionBYEToActive)
 }
 
 func (h *MatchHandler) List(c *gin.Context) {
@@ -135,6 +143,20 @@ func (h *MatchHandler) RecordResult(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *MatchHandler) FinalizeResult(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.FinalizeResult()
+	if err != nil { handler.DbError(c, err); return }
+	_, _ = row.DetermineWinner() // @after
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
 func (h *MatchHandler) DetermineWinner(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Match
@@ -181,6 +203,110 @@ func (h *MatchHandler) Draw(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *MatchHandler) TransitionPendingToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Active"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.MatchStatusType_Active
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *MatchHandler) TransitionActiveToCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Completed"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.MatchStatusType_Completed
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.FinalizeResult() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *MatchHandler) TransitionActiveToDraw(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Draw"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.MatchStatusType_Draw
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Draw() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *MatchHandler) TransitionPendingToBYE(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("BYE"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.MatchStatusType_BYE
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *MatchHandler) TransitionCompletedToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Completed -> Active is not allowed")
+	return
+}
+
+func (h *MatchHandler) TransitionDrawToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Draw -> Active is not allowed")
+	return
+}
+
+func (h *MatchHandler) TransitionBYEToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Match
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition BYE -> Active is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateMatch(req *model.MatchCreateRequest) []string {
 	var errs []string
 	if !((req.Player1Wins >= 0 && req.Player2Wins >= 0)) {

@@ -56,6 +56,8 @@ func (m *CraftingRecipe) ApplyUpdate(req CraftingRecipeUpdateRequest) {
 	if req.ResultCardID != nil { m.ResultCardID = *req.ResultCardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *CraftingRecipe) CanCraft(playerId int)  (bool, error) {
 	return false, fmt.Errorf("CanCraft: not implemented")
 }

@@ -7,14 +7,6 @@ import (
 	"fmt"
 )
 
-type TradeDisputeReasonType string
-const (
-	TradeDisputeReasonType_ItemNotReceived TradeDisputeReasonType = "ItemNotReceived"
-	TradeDisputeReasonType_ItemNotAsDescribed TradeDisputeReasonType = "ItemNotAsDescribed"
-	TradeDisputeReasonType_FraudSuspected TradeDisputeReasonType = "FraudSuspected"
-	TradeDisputeReasonType_Other TradeDisputeReasonType = "Other"
-)
-
 type TradeDisputeStatusType string
 const (
 	TradeDisputeStatusType_Open TradeDisputeStatusType = "Open"
@@ -23,11 +15,19 @@ const (
 	TradeDisputeStatusType_Escalated TradeDisputeStatusType = "Escalated"
 )
 
+type TradeDisputeReasonType string
+const (
+	TradeDisputeReasonType_ItemNotReceived TradeDisputeReasonType = "ItemNotReceived"
+	TradeDisputeReasonType_ItemNotAsDescribed TradeDisputeReasonType = "ItemNotAsDescribed"
+	TradeDisputeReasonType_FraudSuspected TradeDisputeReasonType = "FraudSuspected"
+	TradeDisputeReasonType_Other TradeDisputeReasonType = "Other"
+)
+
 // TradeDisputeCreateRequest is the POST body.
 type TradeDisputeCreateRequest struct {
+	Status TradeDisputeStatusType `json:"status" binding:"required"`
 	Reason TradeDisputeReasonType `json:"reason" binding:"required"`
 	Description string `json:"description" binding:"required"`
-	Status TradeDisputeStatusType `json:"status" binding:"required"`
 	Resolution *string `json:"resolution"`
 	OpenedAt string `json:"opened_at" binding:"required"`
 	ResolvedAt *string `json:"resolved_at"`
@@ -38,9 +38,9 @@ type TradeDisputeCreateRequest struct {
 
 // TradeDisputeUpdateRequest is the PUT/PATCH body — all fields optional.
 type TradeDisputeUpdateRequest struct {
+	Status *TradeDisputeStatusType `json:"status"`
 	Reason *TradeDisputeReasonType `json:"reason"`
 	Description *string `json:"description"`
-	Status *TradeDisputeStatusType `json:"status"`
 	Resolution *string `json:"resolution"`
 	OpenedAt *string `json:"opened_at"`
 	ResolvedAt *string `json:"resolved_at"`
@@ -54,9 +54,9 @@ type TradeDisputeResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Status TradeDisputeStatusType `json:"status"`
 	Reason TradeDisputeReasonType `json:"reason"`
 	Description string `json:"description"`
-	Status TradeDisputeStatusType `json:"status"`
 	Resolution *string `json:"resolution"`
 	OpenedAt string `json:"opened_at"`
 	ResolvedAt *string `json:"resolved_at"`
@@ -67,9 +67,9 @@ type TradeDisputeResponse struct {
 
 type TradeDispute struct {
 	gorm.Model
+	Status TradeDisputeStatusType `gorm:"column:status;not null;default:'Open'"`
 	Reason TradeDisputeReasonType `gorm:"column:reason;not null"`
 	Description string `gorm:"column:description;type:text;not null"`
-	Status TradeDisputeStatusType `gorm:"column:status;not null;default:'Open'"`
 	Resolution *string `gorm:"column:resolution;type:text"`
 	OpenedAt string `gorm:"column:opened_at;not null"`
 	ResolvedAt *string `gorm:"column:resolved_at"`
@@ -83,9 +83,9 @@ func (m *TradeDispute) ToResponse() TradeDisputeResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		Status: m.Status,
 		Reason: m.Reason,
 		Description: m.Description,
-		Status: m.Status,
 		Resolution: m.Resolution,
 		OpenedAt: m.OpenedAt,
 		ResolvedAt: m.ResolvedAt,
@@ -96,9 +96,9 @@ func (m *TradeDispute) ToResponse() TradeDisputeResponse {
 }
 
 func (m *TradeDispute) ApplyUpdate(req TradeDisputeUpdateRequest) {
+	if req.Status != nil { m.Status = *req.Status }
 	if req.Reason != nil { m.Reason = *req.Reason }
 	if req.Description != nil { m.Description = *req.Description }
-	if req.Status != nil { m.Status = *req.Status }
 	if req.Resolution != nil { m.Resolution = req.Resolution }
 	if req.OpenedAt != nil { m.OpenedAt = *req.OpenedAt }
 	if req.ResolvedAt != nil { m.ResolvedAt = req.ResolvedAt }
@@ -107,12 +107,34 @@ func (m *TradeDispute) ApplyUpdate(req TradeDisputeUpdateRequest) {
 	if req.ResolvedByID != nil { m.ResolvedByID = req.ResolvedByID }
 }
 
+// ── Lifecycle state machine ──────────────────────────────────────
+var TradeDisputeAllowedTransitions = map[string]map[string]bool{
+		"Open": {"UnderReview": true},
+		"UnderReview": {"Resolved": true, "Escalated": true},
+		"Escalated": {"Resolved": true},
+}
+
+func (m *TradeDispute) AssertTransition(to string) error {
+	current := string(m.Status)
+	allowed, ok := TradeDisputeAllowedTransitions[current]
+	if !ok || !allowed[to] {
+		return fmt.Errorf("transition %s -> %s is not allowed", current, to)
+	}
+	return nil
+}
+
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TradeDispute) Escalate()  error {
 	return fmt.Errorf("Escalate: not implemented")
 }
 
 func (m *TradeDispute) Resolve(resolutionText string)  error {
 	return fmt.Errorf("Resolve: not implemented")
+}
+
+func (m *TradeDispute) CloseResolved()  error {
+	return fmt.Errorf("CloseResolved: not implemented")
 }
 
 func (m *TradeDispute) Review()  error {

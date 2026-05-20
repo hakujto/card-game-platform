@@ -100,6 +100,8 @@ func (m *Game) ApplyUpdate(req GameUpdateRequest) {
 	if req.WinnerID != nil { m.WinnerID = req.WinnerID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Game) RecordWinner(winnerSide string)  error {
 	return fmt.Errorf("RecordWinner: not implemented")
 }

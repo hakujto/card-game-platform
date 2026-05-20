@@ -204,6 +204,7 @@ func (h *ProductHandler) IsInStock(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateProduct(req *model.ProductCreateRequest) []string {
 	var errs []string
 	if !(float64(req.Price) > 0) {

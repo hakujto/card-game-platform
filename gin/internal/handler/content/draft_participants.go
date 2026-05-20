@@ -139,6 +139,7 @@ func (h *DraftParticipantHandler) DraftedCardCount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateDraftParticipant(req *model.DraftParticipantCreateRequest) []string {
 	var errs []string
 	if !(req.SeatNumber > 0) {

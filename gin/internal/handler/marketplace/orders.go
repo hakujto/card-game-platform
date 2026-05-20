@@ -26,9 +26,19 @@ func (h *OrderHandler) RegisterRoutes(r gin.IRouter) {
 	g.DELETE("/:id", h.Delete)
 	g.DELETE("/:id/cancel", h.Cancel)
 	g.POST("/:id/pay", h.Pay)
+	g.POST("/:id/process-payment", h.ProcessPayment)
 	g.GET("/:id/total", h.CalculateTotal)
 	g.PATCH("/:id/discount", h.ApplyDiscount)
 	g.POST("/:id/refund", h.Refund)
+	g.PATCH("/:id/transitions/pending-to-paid", h.TransitionPendingToPaid)
+	g.PATCH("/:id/transitions/paid-to-processing", h.TransitionPaidToProcessing)
+	g.PATCH("/:id/transitions/processing-to-shipped", h.TransitionProcessingToShipped)
+	g.PATCH("/:id/transitions/shipped-to-completed", h.TransitionShippedToCompleted)
+	g.PATCH("/:id/transitions/pending-to-cancelled", h.TransitionPendingToCancelled)
+	g.PATCH("/:id/transitions/paid-to-cancelled", h.TransitionPaidToCancelled)
+	g.PATCH("/:id/transitions/completed-to-refunded", h.TransitionCompletedToRefunded)
+	g.PATCH("/:id/transitions/refunded-to-completed", h.TransitionRefundedToCompleted)
+	g.PATCH("/:id/transitions/completed-to-cancelled", h.TransitionCompletedToCancelled)
 }
 
 func (h *OrderHandler) List(c *gin.Context) {
@@ -145,6 +155,19 @@ func (h *OrderHandler) Pay(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *OrderHandler) ProcessPayment(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	result, err := row.ProcessPayment()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
 func (h *OrderHandler) CalculateTotal(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Order
@@ -210,6 +233,159 @@ func (h *OrderHandler) SetStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
+func (h *OrderHandler) TransitionPendingToPaid(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Paid"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.PaymentMethod == nil {
+		handler.UnprocessableError(c, "payment_method is required for this transition"); return
+	}
+	row.Status = model.OrderStatusType_Paid
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_, _ = row.ProcessPayment() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionPaidToProcessing(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Processing"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.OrderStatusType_Processing
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionProcessingToShipped(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Shipped"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.TrackingNumber == nil {
+		handler.UnprocessableError(c, "tracking_number is required for this transition"); return
+	}
+	row.Status = model.OrderStatusType_Shipped
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.NotifyShipped() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionShippedToCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Completed"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.OrderStatusType_Completed
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionPendingToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Cancelled"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.OrderStatusType_Cancelled
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Cancel() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionPaidToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Cancelled"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.OrderStatusType_Cancelled
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Cancel() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionCompletedToRefunded(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Refunded"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.OrderStatusType_Refunded
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Refund() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *OrderHandler) TransitionRefundedToCompleted(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Refunded -> Completed is not allowed")
+	return
+}
+
+func (h *OrderHandler) TransitionCompletedToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Order
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Completed -> Cancelled is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateOrder(req *model.OrderCreateRequest) []string {
 	var errs []string
 	if !((!( req.Status == model.OrderStatusType_Paid ) || (req.PaidAt != nil))) {

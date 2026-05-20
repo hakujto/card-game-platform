@@ -98,6 +98,8 @@ func (m *Coupon) ApplyUpdate(req CouponUpdateRequest) {
 	if req.IsActive != nil { m.IsActive = *req.IsActive }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *Coupon) IsValid()  (bool, error) {
 	return false, fmt.Errorf("IsValid: not implemented")
 }

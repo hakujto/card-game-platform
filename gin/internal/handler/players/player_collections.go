@@ -158,6 +158,7 @@ func (h *PlayerCollectionHandler) EstimatedValue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validatePlayerCollection(req *model.PlayerCollectionCreateRequest) []string {
 	var errs []string
 	if !(req.Quantity > 0) {

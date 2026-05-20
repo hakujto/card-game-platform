@@ -96,6 +96,8 @@ func (m *TournamentPrize) ApplyUpdate(req TournamentPrizeUpdateRequest) {
 	if req.TournamentID != nil { m.TournamentID = *req.TournamentID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TournamentPrize) AppliesToPlacement(placement int)  (bool, error) {
 	return false, fmt.Errorf("AppliesToPlacement: not implemented")
 }

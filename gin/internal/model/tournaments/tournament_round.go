@@ -80,6 +80,8 @@ func (m *TournamentRound) ApplyUpdate(req TournamentRoundUpdateRequest) {
 	if req.TournamentID != nil { m.TournamentID = *req.TournamentID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *TournamentRound) Start()  error {
 	return fmt.Errorf("Start: not implemented")
 }

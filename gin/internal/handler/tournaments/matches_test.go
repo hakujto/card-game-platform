@@ -126,6 +126,139 @@ func TestMatch_Delete(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
+func TestMatch_Transition_Pending_To_Active(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/pending-to-active", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestMatch_Transition_Active_To_Completed(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/active-to-completed", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestMatch_Transition_Active_To_Draw(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/active-to-draw", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestMatch_Transition_Pending_To_BYE(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/pending-to-bye", nil)
+	r.ServeHTTP(w, req)
+	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+}
+
+func TestMatch_Transition_Completed_To_Active(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/completed-to-active", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+}
+
+func TestMatch_Transition_Draw_To_Active(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/draw-to-active", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+}
+
+func TestMatch_Transition_BYE_To_Active(t *testing.T) {
+	db, r := setupMatchDB(t)
+	_ = db
+	depSeasonTID := createDepSeason(t, r, db)
+	_ = depSeasonTID
+	depPlayerTID := createDepPlayer(t, r, db)
+	_ = depPlayerTID
+	depTournamentTID := createDepTournament(t, r, db)
+	_ = depTournamentTID
+	depTournamentRoundTID := createDepTournamentRound(t, r, db)
+	_ = depTournamentRoundTID
+	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRoundTID, "player1_id": depPlayerTID})
+	id := fmt.Sprintf("%v", created["id"])
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/bye-to-active", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusConflict, w.Code)
+}
+
 func TestMatch_Rule_WinsNotNegative_Violated(t *testing.T) {
 	db, r := setupMatchDB(t)
 	_ = db

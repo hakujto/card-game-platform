@@ -141,10 +141,14 @@ func (h *DeckCardHandler) Decrement(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateDeckCard(req *model.DeckCardCreateRequest) []string {
 	var errs []string
 	if !((req.Quantity >= 1 && req.Quantity <= 4)) {
 		errs = append(errs, "A deck can contain between 1 and 4 copies of a card")
+	}
+	if !((!( req.IsCommander ) || (req.Quantity == 1))) {
+		errs = append(errs, "Commander card must appear exactly once in the deck")
 	}
 	return errs
 }

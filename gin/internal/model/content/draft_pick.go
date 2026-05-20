@@ -67,6 +67,8 @@ func (m *DraftPick) ApplyUpdate(req DraftPickUpdateRequest) {
 	if req.CardID != nil { m.CardID = *req.CardID }
 }
 
+// ── Business operations ──────────────────────────────────────────
+
 func (m *DraftPick) IsFirstPick()  (bool, error) {
 	return false, fmt.Errorf("IsFirstPick: not implemented")
 }

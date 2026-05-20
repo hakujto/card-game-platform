@@ -29,6 +29,12 @@ func (h *TradeListingHandler) RegisterRoutes(r gin.IRouter) {
 	g.DELETE("/:id/api/trade-listings/{id}/cancel", h.Cancel)
 	g.GET("/:id/api/trade-listings/{id}/expired", h.IsExpired)
 	g.POST("/:id/api/trade-listings/{id}/finalize", h.FinalizeAuction)
+	g.PATCH("/:id/transitions/pending-to-active", h.TransitionPendingToActive)
+	g.PATCH("/:id/transitions/active-to-sold", h.TransitionActiveToSold)
+	g.PATCH("/:id/transitions/active-to-expired", h.TransitionActiveToExpired)
+	g.PATCH("/:id/transitions/active-to-cancelled", h.TransitionActiveToCancelled)
+	g.PATCH("/:id/transitions/sold-to-active", h.TransitionSoldToActive)
+	g.PATCH("/:id/transitions/expired-to-active", h.TransitionExpiredToActive)
 }
 
 func (h *TradeListingHandler) List(c *gin.Context) {
@@ -51,6 +57,7 @@ func (h *TradeListingHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.TradeListing{}
+	row.Status = req.Status
 	row.ListingType = req.ListingType
 	row.AskingPrice = req.AskingPrice
 	row.AuctionStartPrice = req.AuctionStartPrice
@@ -59,7 +66,6 @@ func (h *TradeListingHandler) Create(c *gin.Context) {
 	row.Foil = req.Foil
 	row.Condition = req.Condition
 	row.Quantity = req.Quantity
-	row.Status = req.Status
 	row.Description = req.Description
 	row.ExpiresAt = req.ExpiresAt
 	row.SellerID = req.SellerID
@@ -204,6 +210,103 @@ func (h *TradeListingHandler) SetStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
+func (h *TradeListingHandler) TransitionPendingToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Active"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.Quantity == 0 {
+		handler.UnprocessableError(c, "quantity is required for this transition"); return
+	}
+	row.Status = model.TradeListingStatusType_Active
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeListingHandler) TransitionActiveToSold(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Sold"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TradeListingStatusType_Sold
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.FinalizeAuction() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeListingHandler) TransitionActiveToExpired(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Expired"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TradeListingStatusType_Expired
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Close() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeListingHandler) TransitionActiveToCancelled(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Cancelled"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.TradeListingStatusType_Cancelled
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Cancel() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *TradeListingHandler) TransitionSoldToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Sold -> Active is not allowed")
+	return
+}
+
+func (h *TradeListingHandler) TransitionExpiredToActive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.TradeListing
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Expired -> Active is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateTradeListing(req *model.TradeListingCreateRequest) []string {
 	var errs []string
 	if !((!( req.ListingType == model.TradeListingListingTypeType_FixedPrice ) || (req.AskingPrice != nil))) {
@@ -220,6 +323,7 @@ func validateTradeListing(req *model.TradeListingCreateRequest) []string {
 
 func toCreateRequestTradeListing(m *model.TradeListing) model.TradeListingCreateRequest {
 	return model.TradeListingCreateRequest{
+		Status: m.Status,
 		ListingType: m.ListingType,
 		AskingPrice: m.AskingPrice,
 		AuctionStartPrice: m.AuctionStartPrice,
@@ -228,7 +332,6 @@ func toCreateRequestTradeListing(m *model.TradeListing) model.TradeListingCreate
 		Foil: m.Foil,
 		Condition: m.Condition,
 		Quantity: m.Quantity,
-		Status: m.Status,
 		Description: m.Description,
 		ExpiresAt: m.ExpiresAt,
 		SellerID: m.SellerID,

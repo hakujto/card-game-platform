@@ -167,6 +167,7 @@ func (h *CouponHandler) Deactivate(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ── Validation rules ─────────────────────────────────────────────
 func validateCoupon(req *model.CouponCreateRequest) []string {
 	var errs []string
 	if !(req.ValidUntil > req.ValidFrom) {

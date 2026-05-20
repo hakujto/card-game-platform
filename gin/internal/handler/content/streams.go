@@ -28,6 +28,9 @@ func (h *StreamHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/end", h.End)
 	g.PATCH("/:id/viewers", h.UpdateViewerPeak)
 	g.GET("/:id/duration", h.DurationMinutes)
+	g.PATCH("/:id/transitions/scheduled-to-live", h.TransitionScheduledToLive)
+	g.PATCH("/:id/transitions/live-to-ended", h.TransitionLiveToEnded)
+	g.PATCH("/:id/transitions/ended-to-live", h.TransitionEndedToLive)
 }
 
 func (h *StreamHandler) List(c *gin.Context) {
@@ -52,8 +55,10 @@ func (h *StreamHandler) Create(c *gin.Context) {
 	row := model.Stream{}
 	row.Title = req.Title
 	row.StreamUrl = req.StreamUrl
-	row.Platform = req.Platform
 	row.Status = req.Status
+	row.Platform = req.Platform
+	row.Language = req.Language
+	row.IsOfficial = req.IsOfficial
 	row.ViewerCountPeak = req.ViewerCountPeak
 	row.ScheduledStart = req.ScheduledStart
 	row.ActualStart = req.ActualStart
@@ -169,6 +174,57 @@ func (h *StreamHandler) DurationMinutes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *StreamHandler) TransitionScheduledToLive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Stream
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Live"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.StreamUrl == "" {
+		handler.UnprocessableError(c, "stream_url is required for this transition"); return
+	}
+	row.Status = model.StreamStatusType_Live
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.GoLive() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *StreamHandler) TransitionLiveToEnded(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Stream
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Ended"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.StreamStatusType_Ended
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.End() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *StreamHandler) TransitionEndedToLive(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Stream
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Ended -> Live is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateStream(req *model.StreamCreateRequest) []string {
 	var errs []string
 	if !((!( req.ActualStart != nil ) || (req.Status == model.StreamStatusType_Live))) {
@@ -187,8 +243,10 @@ func toCreateRequestStream(m *model.Stream) model.StreamCreateRequest {
 	return model.StreamCreateRequest{
 		Title: m.Title,
 		StreamUrl: m.StreamUrl,
-		Platform: m.Platform,
 		Status: m.Status,
+		Platform: m.Platform,
+		Language: m.Language,
+		IsOfficial: m.IsOfficial,
 		ViewerCountPeak: m.ViewerCountPeak,
 		ScheduledStart: m.ScheduledStart,
 		ActualStart: m.ActualStart,

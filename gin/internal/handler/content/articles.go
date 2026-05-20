@@ -27,7 +27,13 @@ func (h *ArticleHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("/:id/publish", h.Publish)
 	g.POST("/:id/archive", h.Archive)
 	g.POST("/:id/view", h.IncrementView)
+	g.POST("/:id/like", h.Like)
+	g.DELETE("/:id/like", h.Unlike)
 	g.GET("/:id/reading-time", h.ReadingTimeMinutes)
+	g.PATCH("/:id/transitions/draft-to-published", h.TransitionDraftToPublished)
+	g.PATCH("/:id/transitions/published-to-archived", h.TransitionPublishedToArchived)
+	g.PATCH("/:id/transitions/archived-to-draft", h.TransitionArchivedToDraft)
+	g.PATCH("/:id/transitions/published-to-draft", h.TransitionPublishedToDraft)
 }
 
 func (h *ArticleHandler) List(c *gin.Context) {
@@ -57,7 +63,10 @@ func (h *ArticleHandler) Create(c *gin.Context) {
 	row.CoverImageUrl = req.CoverImageUrl
 	row.Status = req.Status
 	row.ArticleType = req.ArticleType
+	row.Language = req.Language
 	row.ViewCount = req.ViewCount
+	row.LikesCount = req.LikesCount
+	row.IsFeatured = req.IsFeatured
 	row.PublishedAt = req.PublishedAt
 	row.AuthorID = req.AuthorID
 	row.FeaturedDeckID = req.FeaturedDeckID
@@ -149,6 +158,32 @@ func (h *ArticleHandler) IncrementView(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *ArticleHandler) Like(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Like()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
+func (h *ArticleHandler) Unlike(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	err := row.Unlike()
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.Status(http.StatusNoContent)
+}
+
 func (h *ArticleHandler) ReadingTimeMinutes(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Article
@@ -162,6 +197,77 @@ func (h *ArticleHandler) ReadingTimeMinutes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
+func (h *ArticleHandler) TransitionDraftToPublished(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Published"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	if row.Title == "" {
+		handler.UnprocessableError(c, "title is required for this transition"); return
+	}
+	if row.Body == "" {
+		handler.UnprocessableError(c, "body is required for this transition"); return
+	}
+	row.Status = model.ArticleStatusType_Published
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Publish() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *ArticleHandler) TransitionPublishedToArchived(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Archived"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.ArticleStatusType_Archived
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	_ = row.Archive() // @after
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *ArticleHandler) TransitionArchivedToDraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	if err := row.AssertTransition("Draft"); err != nil {
+		handler.ConflictError(c, err.Error()); return
+	}
+	row.Status = model.ArticleStatusType_Draft
+	if err := h.db.Save(&row).Error; err != nil {
+		handler.DbError(c, err); return
+	}
+	c.JSON(http.StatusOK, row.ToResponse())
+}
+
+func (h *ArticleHandler) TransitionPublishedToDraft(c *gin.Context) {
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	handler.ConflictError(c, "transition Published -> Draft is not allowed")
+	return
+}
+
+// ── Validation rules ─────────────────────────────────────────────
 func validateArticle(req *model.ArticleCreateRequest) []string {
 	var errs []string
 	if !((!( req.Status == model.ArticleStatusType_Published ) || (req.PublishedAt != nil))) {
@@ -169,6 +275,9 @@ func validateArticle(req *model.ArticleCreateRequest) []string {
 	}
 	if !(req.ViewCount >= 0) {
 		errs = append(errs, "Article view count must not be negative")
+	}
+	if !(req.LikesCount >= 0) {
+		errs = append(errs, "Article likes count must not be negative")
 	}
 	return errs
 }
@@ -182,7 +291,10 @@ func toCreateRequestArticle(m *model.Article) model.ArticleCreateRequest {
 		CoverImageUrl: m.CoverImageUrl,
 		Status: m.Status,
 		ArticleType: m.ArticleType,
+		Language: m.Language,
 		ViewCount: m.ViewCount,
+		LikesCount: m.LikesCount,
+		IsFeatured: m.IsFeatured,
 		PublishedAt: m.PublishedAt,
 		AuthorID: m.AuthorID,
 		FeaturedDeckID: m.FeaturedDeckID,
