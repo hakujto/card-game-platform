@@ -4,6 +4,7 @@ namespace App\Entity\Content;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\DraftSessionRepository;
 use App\Entity\Cards\CardSet;
 
@@ -34,10 +35,12 @@ class DraftSession
     private int $timePerPickSeconds = 30;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('completedAt')]
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private ?\DateTimeInterface $completedAt = null;
 

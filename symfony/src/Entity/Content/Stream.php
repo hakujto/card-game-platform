@@ -4,6 +4,7 @@ namespace App\Entity\Content;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\StreamRepository;
 use App\Entity\Tournaments\Tournament;
 use App\Entity\Players\Player;
@@ -47,14 +48,17 @@ class Stream
     private int $viewerCountPeak = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('scheduledStart')]
     #[Groups(['stream:read', 'stream:write'])]
     private ?\DateTimeInterface $scheduledStart = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('actualStart')]
     #[Groups(['stream:read', 'stream:write'])]
     private ?\DateTimeInterface $actualStart = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('endedAt')]
     #[Groups(['stream:read', 'stream:write'])]
     private ?\DateTimeInterface $endedAt = null;
 

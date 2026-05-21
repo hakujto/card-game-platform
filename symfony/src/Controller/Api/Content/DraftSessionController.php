@@ -24,6 +24,7 @@ class DraftSessionController extends AbstractController
         private CardSetRepository $cardSetRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

@@ -4,6 +4,7 @@ namespace App\Entity\Tournaments;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\TournamentRoundRepository;
 
 #[ORM\Entity(repositoryClass: TournamentRoundRepository::class)]
@@ -25,10 +26,12 @@ class TournamentRound
     private string $status = 'Pending';
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('startedAt')]
     #[Groups(['tournamentRound:read', 'tournamentRound:write'])]
     private ?\DateTimeInterface $startedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('endedAt')]
     #[Groups(['tournamentRound:read', 'tournamentRound:write'])]
     private ?\DateTimeInterface $endedAt = null;
 

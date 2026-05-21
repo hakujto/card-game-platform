@@ -8,6 +8,7 @@ use App\Repository\Cards\CardRepository;
 
 #[ORM\Entity(repositoryClass: CardRepository::class)]
 #[ORM\Table(name: 'card')]
+#[ORM\HasLifecycleCallbacks]
 class Card
 {
     #[ORM\Id]
@@ -359,6 +360,15 @@ class Card
     {
         // TODO: implement is_legal_in_format
         return null;
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function validateLegality(): void
+    {
+        // TODO: implement validate_legality
     }
 
 }

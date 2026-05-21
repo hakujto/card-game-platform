@@ -25,6 +25,7 @@ class PlayerSeasonStatsController extends AbstractController
         private SeasonRepository $seasonRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

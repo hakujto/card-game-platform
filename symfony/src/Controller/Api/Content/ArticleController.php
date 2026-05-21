@@ -27,10 +27,19 @@ class ArticleController extends AbstractController
         private DeckRepository $deckRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $items = $this->repository->findAll();
+        $q = $request->query->get('q');
+        if ($q) {
+            $qb = $this->repository->createQueryBuilder('e');
+            $items = $qb->where($qb->expr()->orX($qb->expr()->like('e.title', ':q'), $qb->expr()->like('e.excerpt', ':q')))
+                ->setParameter('q', '%' . $q . '%')
+                ->getQuery()->getResult();
+        } else {
+            $items = $this->repository->findAll();
+        }
         return $this->json($items, context: ['groups' => ['article:read']]);
     }
 

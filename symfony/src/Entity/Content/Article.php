@@ -4,6 +4,7 @@ namespace App\Entity\Content;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\ArticleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,6 +13,7 @@ use App\Entity\Cards\Deck;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ORM\Table(name: 'article')]
+#[ORM\HasLifecycleCallbacks]
 class Article
 {
     #[ORM\Id]
@@ -65,14 +67,17 @@ class Article
     private bool $isFeatured = false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('publishedAt')]
     #[Groups(['article:read', 'article:write'])]
     private ?\DateTimeInterface $publishedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['article:read', 'article:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('updatedAt')]
     #[Groups(['article:read', 'article:write'])]
     private ?\DateTimeInterface $updatedAt = null;
 
@@ -372,6 +377,15 @@ class Article
         if (!in_array($to, $allowed, true)) {
             throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
         }
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostPersist]
+    #[ORM\PostUpdate]
+    public function updateSearchIndex(): void
+    {
+        // TODO: implement update_search_index
     }
 
 }

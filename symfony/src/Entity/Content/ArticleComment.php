@@ -4,6 +4,7 @@ namespace App\Entity\Content;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\ArticleCommentRepository;
 use App\Entity\Players\Player;
 
@@ -26,6 +27,7 @@ class ArticleComment
     private bool $isHidden = false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['articleComment:read', 'articleComment:write'])]
     private ?\DateTimeInterface $createdAt = null;
 

@@ -4,6 +4,7 @@ namespace App\Entity\Tournaments;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\AwardedPrizeRepository;
 use App\Entity\Players\Player;
 
@@ -22,6 +23,7 @@ class AwardedPrize
     private int $finalPlacement = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('awardedAt')]
     #[Groups(['awardedPrize:read', 'awardedPrize:write'])]
     private ?\DateTimeInterface $awardedAt = null;
 
@@ -30,6 +32,7 @@ class AwardedPrize
     private bool $claimed = false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('claimedAt')]
     #[Groups(['awardedPrize:read', 'awardedPrize:write'])]
     private ?\DateTimeInterface $claimedAt = null;
 

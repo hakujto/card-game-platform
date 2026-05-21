@@ -25,6 +25,7 @@ class DeckCardController extends AbstractController
         private CardRepository $cardRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

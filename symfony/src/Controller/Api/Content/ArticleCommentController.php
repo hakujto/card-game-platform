@@ -26,6 +26,7 @@ class ArticleCommentController extends AbstractController
         private ArticleCommentRepository $articleCommentRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

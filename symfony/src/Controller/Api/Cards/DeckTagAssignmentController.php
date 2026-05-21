@@ -25,6 +25,7 @@ class DeckTagAssignmentController extends AbstractController
         private DeckTagRepository $deckTagRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

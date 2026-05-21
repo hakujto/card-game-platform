@@ -4,6 +4,7 @@ namespace App\Entity\Players;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\FriendshipRepository;
 
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
@@ -21,6 +22,7 @@ class Friendship
     private string $status = 'Pending';
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['friendship:read', 'friendship:write'])]
     private ?\DateTimeInterface $createdAt = null;
 

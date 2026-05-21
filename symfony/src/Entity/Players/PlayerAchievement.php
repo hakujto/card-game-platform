@@ -4,6 +4,7 @@ namespace App\Entity\Players;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\PlayerAchievementRepository;
 
 #[ORM\Entity(repositoryClass: PlayerAchievementRepository::class)]
@@ -17,6 +18,7 @@ class PlayerAchievement
     private ?int $id = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('earnedAt')]
     #[Groups(['playerAchievement:read', 'playerAchievement:write'])]
     private ?\DateTimeInterface $earnedAt = null;
 

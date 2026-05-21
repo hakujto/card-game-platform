@@ -4,6 +4,7 @@ namespace App\Entity\Marketplace;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\TradeListingRepository;
 use App\Entity\Players\Player;
 use App\Entity\Cards\Card;
@@ -39,6 +40,7 @@ class TradeListing
     private ?string $auctionCurrentBid = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('auctionEndTime')]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $auctionEndTime = null;
 
@@ -59,10 +61,12 @@ class TradeListing
     private ?string $description = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('expiresAt')]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $expiresAt = null;
 

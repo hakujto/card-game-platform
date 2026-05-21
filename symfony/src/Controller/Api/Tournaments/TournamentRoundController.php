@@ -22,6 +22,7 @@ class TournamentRoundController extends AbstractController
         private TournamentRepository $tournamentRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

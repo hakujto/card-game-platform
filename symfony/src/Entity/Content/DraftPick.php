@@ -4,6 +4,7 @@ namespace App\Entity\Content;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\DraftPickRepository;
 use App\Entity\Cards\Card;
 
@@ -26,6 +27,7 @@ class DraftPick
     private int $packNumber = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('pickedAt')]
     #[Groups(['draftPick:read', 'draftPick:write'])]
     private ?\DateTimeInterface $pickedAt = null;
 

@@ -25,6 +25,7 @@ class PlayerAchievementController extends AbstractController
         private AchievementRepository $achievementRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

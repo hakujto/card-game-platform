@@ -25,6 +25,7 @@ class ArticleTagAssignmentController extends AbstractController
         private ArticleTagRepository $articleTagRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

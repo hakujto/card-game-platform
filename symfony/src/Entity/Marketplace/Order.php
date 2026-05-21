@@ -4,11 +4,13 @@ namespace App\Entity\Marketplace;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\OrderRepository;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
+#[ORM\HasLifecycleCallbacks]
 class Order
 {
     #[ORM\Id]
@@ -50,14 +52,17 @@ class Order
     private ?string $trackingNumber = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['order:read', 'order:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('paidAt')]
     #[Groups(['order:read', 'order:write'])]
     private ?\DateTimeInterface $paidAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('shippedAt')]
     #[Groups(['order:read', 'order:write'])]
     private ?\DateTimeInterface $shippedAt = null;
 
@@ -312,6 +317,14 @@ class Order
         if (!in_array($to, $allowed, true)) {
             throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
         }
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostUpdate]
+    public function notifyStatusChange(): void
+    {
+        // TODO: implement notify_status_change
     }
 
 }

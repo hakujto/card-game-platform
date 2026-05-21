@@ -4,6 +4,7 @@ namespace App\Entity\Cards;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Cards\DeckRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +12,7 @@ use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: DeckRepository::class)]
 #[ORM\Table(name: 'deck')]
+#[ORM\HasLifecycleCallbacks]
 class Deck
 {
     #[ORM\Id]
@@ -56,10 +58,12 @@ class Deck
     private int $draws = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['deck:read', 'deck:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('updatedAt')]
     #[Groups(['deck:read', 'deck:write'])]
     private ?\DateTimeInterface $updatedAt = null;
 
@@ -357,6 +361,15 @@ class Deck
     {
         // TODO: implement certify_tournament_legal
         return null;
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostPersist]
+    #[ORM\PostUpdate]
+    public function recalculateTournamentLegal(): void
+    {
+        // TODO: implement recalculate_tournament_legal
     }
 
 }

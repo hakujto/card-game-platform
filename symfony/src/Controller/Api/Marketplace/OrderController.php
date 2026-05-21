@@ -27,6 +27,7 @@ class OrderController extends AbstractController
         private CouponRepository $couponRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

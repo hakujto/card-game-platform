@@ -4,6 +4,7 @@ namespace App\Entity\Tournaments;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\MatchRecordRepository;
 use App\Entity\Players\Player;
 
@@ -34,10 +35,12 @@ class MatchRecord
     private int $player2Wins = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('startedAt')]
     #[Groups(['matchRecord:read', 'matchRecord:write'])]
     private ?\DateTimeInterface $startedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('endedAt')]
     #[Groups(['matchRecord:read', 'matchRecord:write'])]
     private ?\DateTimeInterface $endedAt = null;
 

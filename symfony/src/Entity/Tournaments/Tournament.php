@@ -4,6 +4,7 @@ namespace App\Entity\Tournaments;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\TournamentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +12,7 @@ use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: TournamentRepository::class)]
 #[ORM\Table(name: 'tournament')]
+#[ORM\HasLifecycleCallbacks]
 class Tournament
 {
     #[ORM\Id]
@@ -52,10 +54,12 @@ class Tournament
     private string $prizePool = '0.00';
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('startTime')]
     #[Groups(['tournament:read', 'tournament:write'])]
     private ?\DateTimeInterface $startTime = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('endTime')]
     #[Groups(['tournament:read', 'tournament:write'])]
     private ?\DateTimeInterface $endTime = null;
 
@@ -72,6 +76,7 @@ class Tournament
     private ?string $rulesText = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['tournament:read', 'tournament:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -383,6 +388,14 @@ class Tournament
         if (!in_array($to, $allowed, true)) {
             throw new \RuntimeException("Transition {$from} -> {$to} not allowed");
         }
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostUpdate]
+    public function syncSeasonStats(): void
+    {
+        // TODO: implement sync_season_stats
     }
 
 }

@@ -4,6 +4,7 @@ namespace App\Entity\Marketplace;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\TradeTransactionRepository;
 use App\Entity\Players\Player;
 
@@ -30,6 +31,7 @@ class TradeTransaction
     private string $status = 'Pending';
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('completedAt')]
     #[Groups(['tradeTransaction:read', 'tradeTransaction:write'])]
     private ?\DateTimeInterface $completedAt = null;
 

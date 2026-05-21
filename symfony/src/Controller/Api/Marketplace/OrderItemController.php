@@ -25,6 +25,7 @@ class OrderItemController extends AbstractController
         private ProductRepository $productRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

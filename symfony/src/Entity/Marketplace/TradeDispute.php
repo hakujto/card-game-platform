@@ -4,6 +4,7 @@ namespace App\Entity\Marketplace;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\TradeDisputeRepository;
 use App\Entity\Players\Player;
 
@@ -34,10 +35,12 @@ class TradeDispute
     private ?string $resolution = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('openedAt')]
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
     private ?\DateTimeInterface $openedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('resolvedAt')]
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
     private ?\DateTimeInterface $resolvedAt = null;
 

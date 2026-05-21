@@ -4,6 +4,7 @@ namespace App\Entity\Players;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\PlayerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +12,7 @@ use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: PlayerRepository::class)]
 #[ORM\Table(name: 'player')]
+#[ORM\HasLifecycleCallbacks]
 class Player
 {
     #[ORM\Id]
@@ -56,10 +58,12 @@ class Player
     private bool $isVerified = false;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('createdAt')]
     #[Groups(['player:read', 'player:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('lastActiveAt')]
     #[Groups(['player:read', 'player:write'])]
     private ?\DateTimeInterface $lastActiveAt = null;
 
@@ -319,6 +323,14 @@ class Player
     public function updateRating($delta): void
     {
         // TODO: implement update_rating
+    }
+
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostUpdate]
+    public function updateRank(): void
+    {
+        // TODO: implement update_rank
     }
 
 }

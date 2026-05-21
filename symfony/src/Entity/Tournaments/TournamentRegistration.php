@@ -4,6 +4,7 @@ namespace App\Entity\Tournaments;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\TournamentRegistrationRepository;
 use App\Entity\Players\Player;
 use App\Entity\Cards\Deck;
@@ -35,6 +36,7 @@ class TournamentRegistration
     private int $pointsEarned = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('registeredAt')]
     #[Groups(['tournamentRegistration:read', 'tournamentRegistration:write'])]
     private ?\DateTimeInterface $registeredAt = null;
 

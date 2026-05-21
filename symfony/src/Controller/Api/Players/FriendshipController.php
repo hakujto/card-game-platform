@@ -22,6 +22,7 @@ class FriendshipController extends AbstractController
         private PlayerRepository $playerRepository,
     ) {}
 
+
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {

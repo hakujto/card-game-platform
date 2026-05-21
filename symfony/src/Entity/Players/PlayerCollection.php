@@ -4,6 +4,7 @@ namespace App\Entity\Players;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\PlayerCollectionRepository;
 use App\Entity\Cards\Card;
 
@@ -30,6 +31,7 @@ class PlayerCollection
     private string $condition = 'Mint';
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[SerializedName('acquiredAt')]
     #[Groups(['playerCollection:read', 'playerCollection:write'])]
     private ?\DateTimeInterface $acquiredAt = null;
 
