@@ -17,14 +17,10 @@ public class CardPriceHistoryController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<CardPriceHistory> list() {
         return service.findAll();
-    }
-
-    @PostMapping
-    public ResponseEntity<CardPriceHistory> create(@Valid @RequestBody CardPriceHistory entity) {
-        return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
@@ -34,34 +30,26 @@ public class CardPriceHistoryController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CardPriceHistory> update(@PathVariable Long id, @Valid @RequestBody CardPriceHistory entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<CardPriceHistory> patch(@PathVariable Long id, @Valid @RequestBody CardPriceHistory entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/change")
     public ResponseEntity<java.math.BigDecimal> priceChangePercent(@PathVariable Long id, @RequestParam java.math.BigDecimal previousAvg) {
-        return ResponseEntity.ok(service.priceChangePercent(id, previousAvg));
+        try {
+            return ResponseEntity.ok(service.priceChangePercent(id, previousAvg));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/spike")
     public ResponseEntity<Boolean> isPriceSpike(@PathVariable Long id, @RequestParam Integer thresholdPercent) {
-        return ResponseEntity.ok(service.isPriceSpike(id, thresholdPercent));
+        try {
+            return ResponseEntity.ok(service.isPriceSpike(id, thresholdPercent));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

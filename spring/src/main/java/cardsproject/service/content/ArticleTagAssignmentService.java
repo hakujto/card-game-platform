@@ -30,4 +30,9 @@ public class ArticleTagAssignmentService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(ArticleTagAssignment entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("articleId") && patch.get("articleId") != null) entity.setArticleId(Long.valueOf(patch.get("articleId").toString()));
+        if (patch.containsKey("tagId") && patch.get("tagId") != null) entity.setTagId(Long.valueOf(patch.get("tagId").toString()));
+    }
 }

@@ -30,4 +30,10 @@ public class CraftingIngredientService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(CraftingIngredient entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("quantity") && patch.get("quantity") != null) entity.setQuantity(Integer.valueOf(patch.get("quantity").toString()));
+        if (patch.containsKey("recipeId") && patch.get("recipeId") != null) entity.setRecipeId(Long.valueOf(patch.get("recipeId").toString()));
+        if (patch.containsKey("cardId") && patch.get("cardId") != null) entity.setCardId(Long.valueOf(patch.get("cardId").toString()));
+    }
 }

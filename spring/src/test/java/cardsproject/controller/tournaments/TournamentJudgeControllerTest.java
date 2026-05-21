@@ -24,7 +24,6 @@ public class TournamentJudgeControllerTest {
         mockMvc.perform(get("/api/tournament_judges"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournament_judges")
@@ -32,7 +31,6 @@ public class TournamentJudgeControllerTest {
             .content("{}"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/tournament_judges/1"))
@@ -41,13 +39,12 @@ public class TournamentJudgeControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
     void delete_returns204or404() throws Exception {
         mockMvc.perform(delete("/api/tournament_judges/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 204 || status == 404;
             });
     }
 }

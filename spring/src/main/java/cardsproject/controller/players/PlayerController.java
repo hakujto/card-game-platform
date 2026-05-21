@@ -17,9 +17,10 @@ public class PlayerController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Player> list() {
-        return service.findAll();
+    public List<Player> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -34,63 +35,93 @@ public class PlayerController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Player> update(@PathVariable Long id, @Valid @RequestBody Player entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<Player> patch(@PathVariable Long id, @Valid @RequestBody Player entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Player> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/promote")
     public ResponseEntity<Boolean> promote(@PathVariable Long id) {
-        return ResponseEntity.ok(service.promote(id));
+        try {
+            return ResponseEntity.ok(service.promote(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/demote")
     public ResponseEntity<Boolean> demote(@PathVariable Long id) {
-        return ResponseEntity.ok(service.demote(id));
+        try {
+            return ResponseEntity.ok(service.demote(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/win")
     public ResponseEntity<Void> recordWin(@PathVariable Long id) {
-        service.recordWin(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.recordWin(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/loss")
     public ResponseEntity<Void> recordLoss(@PathVariable Long id) {
-        service.recordLoss(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.recordLoss(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/win-rate")
     public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
-        return ResponseEntity.ok(service.winRate(id));
+        try {
+            return ResponseEntity.ok(service.winRate(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/verify")
     public ResponseEntity<Void> verify(@PathVariable Long id) {
-        service.verify(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.verify(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/rating")
     public ResponseEntity<Void> updateRating(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.updateRating(id, (Integer) body.get("delta"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.updateRating(id, (Integer) body.get("delta"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

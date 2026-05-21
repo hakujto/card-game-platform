@@ -2,6 +2,8 @@ package cardsproject.domain.content;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "articles")
@@ -60,10 +62,13 @@ public class Article {
     public void setLikesCount(Integer likesCount) { this.likesCount = likesCount; }
     public Boolean getIsFeatured() { return isFeatured; }
     public void setIsFeatured(Boolean isFeatured) { this.isFeatured = isFeatured; }
+    @JsonProperty("publishedAt")
     public LocalDateTime getPublishedAt() { return publishedAt; }
     public void setPublishedAt(LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("updatedAt")
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public Long getAuthorId() { return authorId; }
@@ -123,5 +128,12 @@ public class Article {
         if (!allowed.contains(to)) {
             throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
         }
+    }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostPersist
+    @PostUpdate
+    public void updateSearchIndex() {
+        // TODO: implement update_search_index
     }
 }

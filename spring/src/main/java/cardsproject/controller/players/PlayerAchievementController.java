@@ -17,14 +17,10 @@ public class PlayerAchievementController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<PlayerAchievement> list() {
         return service.findAll();
-    }
-
-    @PostMapping
-    public ResponseEntity<PlayerAchievement> create(@Valid @RequestBody PlayerAchievement entity) {
-        return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
@@ -34,36 +30,28 @@ public class PlayerAchievementController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PlayerAchievement> update(@PathVariable Long id, @Valid @RequestBody PlayerAchievement entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<PlayerAchievement> patch(@PathVariable Long id, @Valid @RequestBody PlayerAchievement entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PatchMapping("/{id}/progress")
     public ResponseEntity<Void> incrementProgress(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.incrementProgress(id, (Integer) body.get("amount"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.incrementProgress(id, (Integer) body.get("amount"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/complete")
     public ResponseEntity<Void> complete(@PathVariable Long id) {
-        service.complete(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.complete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

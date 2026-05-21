@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.TournamentJudgeRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.TournamentJudgeRoleType;
 
 @Service
 public class TournamentJudgeService {
@@ -29,6 +30,12 @@ public class TournamentJudgeService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(TournamentJudge entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("role")) entity.setRole(TournamentJudgeRoleType.valueOf(patch.get("role").toString()));
+        if (patch.containsKey("tournamentId") && patch.get("tournamentId") != null) entity.setTournamentId(Long.valueOf(patch.get("tournamentId").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
     }
 
     public void promoteToHead(Long id) {

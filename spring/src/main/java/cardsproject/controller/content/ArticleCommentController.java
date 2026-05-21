@@ -17,6 +17,7 @@ public class ArticleCommentController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<ArticleComment> list() {
         return service.findAll();
@@ -34,20 +35,6 @@ public class ArticleCommentController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleComment> update(@PathVariable Long id, @Valid @RequestBody ArticleComment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ArticleComment> patch(@PathVariable Long id, @Valid @RequestBody ArticleComment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
@@ -55,20 +42,39 @@ public class ArticleCommentController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PostMapping("/{id}/hide")
     public ResponseEntity<Void> hide(@PathVariable Long id) {
-        service.hide(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.hide(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/unhide")
     public ResponseEntity<Void> unhide(@PathVariable Long id) {
-        service.unhide(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.unhide(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/is-reply")
     public ResponseEntity<Boolean> isReply(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isReply(id));
+        try {
+            return ResponseEntity.ok(service.isReply(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

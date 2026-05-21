@@ -2,6 +2,8 @@ package cardsproject.domain.content;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "article_comments")
@@ -28,6 +30,7 @@ public class ArticleComment {
     public void setBody(String body) { this.body = body; }
     public Boolean getIsHidden() { return isHidden; }
     public void setIsHidden(Boolean isHidden) { this.isHidden = isHidden; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Long getArticleId() { return articleId; }

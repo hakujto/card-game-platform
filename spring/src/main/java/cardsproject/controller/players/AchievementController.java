@@ -17,9 +17,10 @@ public class AchievementController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Achievement> list() {
-        return service.findAll();
+    public List<Achievement> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,27 +43,34 @@ public class AchievementController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Achievement> patch(@PathVariable Long id, @Valid @RequestBody Achievement entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Achievement> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/point-value")
     public ResponseEntity<Integer> pointValue(@PathVariable Long id, @RequestParam Integer multiplier) {
-        return ResponseEntity.ok(service.pointValue(id, multiplier));
+        try {
+            return ResponseEntity.ok(service.pointValue(id, multiplier));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/reveal")
     public ResponseEntity<Void> reveal(@PathVariable Long id) {
-        service.reveal(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.reveal(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

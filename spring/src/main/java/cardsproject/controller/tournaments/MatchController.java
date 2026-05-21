@@ -17,6 +17,7 @@ public class MatchController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<Match> list() {
         return service.findAll();
@@ -34,54 +35,64 @@ public class MatchController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Match> update(@PathVariable Long id, @Valid @RequestBody Match entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Match> patch(@PathVariable Long id, @Valid @RequestBody Match entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/record")
     public ResponseEntity<Void> recordResult(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.recordResult(id, (Integer) body.get("p1_wins"), (Integer) body.get("p2_wins"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.recordResult(id, (Integer) body.get("p1_wins"), (Integer) body.get("p2_wins"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizeResult(@PathVariable Long id) {
-        service.finalizeResult(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.finalizeResult(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/winner")
     public ResponseEntity<Boolean> determineWinner(@PathVariable Long id) {
-        return ResponseEntity.ok(service.determineWinner(id));
+        try {
+            return ResponseEntity.ok(service.determineWinner(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/concede")
     public ResponseEntity<Void> concede(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.concede(id, (Integer) body.get("player_id"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.concede(id, (Integer) body.get("player_id"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/draw")
     public ResponseEntity<Void> draw(@PathVariable Long id) {
-        service.draw(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.draw(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
@@ -93,6 +104,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -105,6 +118,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -117,6 +132,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -129,6 +146,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -141,6 +160,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -153,6 +174,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -165,6 +188,8 @@ public class MatchController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

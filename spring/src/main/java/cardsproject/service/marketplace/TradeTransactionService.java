@@ -32,6 +32,16 @@ public class TradeTransactionService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(TradeTransaction entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("finalPrice") && patch.get("finalPrice") != null) entity.setFinalPrice(new java.math.BigDecimal(patch.get("finalPrice").toString()));
+        if (patch.containsKey("platformFee") && patch.get("platformFee") != null) entity.setPlatformFee(new java.math.BigDecimal(patch.get("platformFee").toString()));
+        if (patch.containsKey("status")) entity.setStatus(TradeTransactionStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("completedAt") && patch.get("completedAt") != null) entity.setCompletedAt(java.time.LocalDateTime.parse(patch.get("completedAt").toString()));
+        if (patch.containsKey("listingId") && patch.get("listingId") != null) entity.setListingId(Long.valueOf(patch.get("listingId").toString()));
+        if (patch.containsKey("buyerId") && patch.get("buyerId") != null) entity.setBuyerId(Long.valueOf(patch.get("buyerId").toString()));
+        if (patch.containsKey("sellerId") && patch.get("sellerId") != null) entity.setSellerId(Long.valueOf(patch.get("sellerId").toString()));
+    }
     private void validate(TradeTransaction entity) {
         if (TradeTransactionStatusType.COMPLETED.equals(entity.getStatus()) && entity.getCompletedAt() == null) throw new IllegalStateException("Completed transaction must have a completed_at timestamp");
     }

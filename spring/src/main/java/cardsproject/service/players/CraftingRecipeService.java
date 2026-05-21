@@ -31,6 +31,12 @@ public class CraftingRecipeService {
         repository.deleteById(id);
     }
 
+    public void applyPatch(CraftingRecipe entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("dustCost") && patch.get("dustCost") != null) entity.setDustCost(Integer.valueOf(patch.get("dustCost").toString()));
+        if (patch.containsKey("isAvailable") && patch.get("isAvailable") != null) entity.setIsAvailable(Boolean.valueOf(patch.get("isAvailable").toString()));
+        if (patch.containsKey("resultCardId") && patch.get("resultCardId") != null) entity.setResultCardId(Long.valueOf(patch.get("resultCardId").toString()));
+    }
+
     public Boolean canCraft(Long id, Integer playerId) {
         CraftingRecipe entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("CraftingRecipe not found: " + id));

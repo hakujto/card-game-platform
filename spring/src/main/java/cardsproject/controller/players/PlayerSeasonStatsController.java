@@ -17,14 +17,10 @@ public class PlayerSeasonStatsController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<PlayerSeasonStats> list() {
         return service.findAll();
-    }
-
-    @PostMapping
-    public ResponseEntity<PlayerSeasonStats> create(@Valid @RequestBody PlayerSeasonStats entity) {
-        return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
@@ -34,41 +30,39 @@ public class PlayerSeasonStatsController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PlayerSeasonStats> update(@PathVariable Long id, @Valid @RequestBody PlayerSeasonStats entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<PlayerSeasonStats> patch(@PathVariable Long id, @Valid @RequestBody PlayerSeasonStats entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/win-rate")
     public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
-        return ResponseEntity.ok(service.winRate(id));
+        try {
+            return ResponseEntity.ok(service.winRate(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/points")
     public ResponseEntity<Void> addPoints(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.addPoints(id, (Integer) body.get("points"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.addPoints(id, (Integer) body.get("points"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/tournament-win")
     public ResponseEntity<Void> recordTournamentWin(@PathVariable Long id) {
-        service.recordTournamentWin(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.recordTournamentWin(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

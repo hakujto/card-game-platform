@@ -17,6 +17,7 @@ public class OrderItemController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<OrderItem> list() {
         return service.findAll();
@@ -34,20 +35,6 @@ public class OrderItemController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderItem> update(@PathVariable Long id, @Valid @RequestBody OrderItem entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<OrderItem> patch(@PathVariable Long id, @Valid @RequestBody OrderItem entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
@@ -55,8 +42,15 @@ public class OrderItemController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}/total")
     public ResponseEntity<java.math.BigDecimal> lineTotal(@PathVariable Long id) {
-        return ResponseEntity.ok(service.lineTotal(id));
+        try {
+            return ResponseEntity.ok(service.lineTotal(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -24,7 +24,11 @@ public class PlayerControllerTest {
         mockMvc.perform(get("/api/players"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/players?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/players")
@@ -32,7 +36,6 @@ public class PlayerControllerTest {
             .content("{ \"displayName\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"peakRating\": 1000 }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/players/1"))
@@ -41,13 +44,14 @@ public class PlayerControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/players/1"))
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/players/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
             });
     }
     @Test

@@ -2,6 +2,8 @@ package cardsproject.domain.players;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "players")
@@ -51,8 +53,10 @@ public class Player {
     public void setPreferredFormat(PlayerPreferredFormatType preferredFormat) { this.preferredFormat = preferredFormat; }
     public Boolean getIsVerified() { return isVerified; }
     public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("lastActiveAt")
     public LocalDateTime getLastActiveAt() { return lastActiveAt; }
     public void setLastActiveAt(LocalDateTime lastActiveAt) { this.lastActiveAt = lastActiveAt; }
     public Long getUserId() { return userId; }
@@ -105,5 +109,11 @@ public class Player {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isDisplayNameNotEmptyValid() {
         return getDisplayName() != null;
+    }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostUpdate
+    public void updateRank() {
+        // TODO: implement update_rank
     }
 }

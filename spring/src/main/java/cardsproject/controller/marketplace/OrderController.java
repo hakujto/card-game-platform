@@ -17,6 +17,7 @@ public class OrderController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<Order> list() {
         return service.findAll();
@@ -34,57 +35,73 @@ public class OrderController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Order> update(@PathVariable Long id, @Valid @RequestBody Order entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Order> patch(@PathVariable Long id, @Valid @RequestBody Order entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @DeleteMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
-        service.cancel(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.cancel(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/pay")
     public ResponseEntity<Boolean> pay(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        return ResponseEntity.ok(service.pay(id, (String) body.get("payment_ref")));
+        try {
+            return ResponseEntity.ok(service.pay(id, (String) body.get("payment_ref")));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/process-payment")
     public ResponseEntity<Boolean> processPayment(@PathVariable Long id) {
-        return ResponseEntity.ok(service.processPayment(id));
+        try {
+            return ResponseEntity.ok(service.processPayment(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/total")
     public ResponseEntity<java.math.BigDecimal> calculateTotal(@PathVariable Long id) {
-        return ResponseEntity.ok(service.calculateTotal(id));
+        try {
+            return ResponseEntity.ok(service.calculateTotal(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/discount")
     public ResponseEntity<java.math.BigDecimal> applyDiscount(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+        try {
+            return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/refund")
     public ResponseEntity<Void> refund(@PathVariable Long id) {
-        service.refund(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.refund(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/transitions/pending-to-paid")
@@ -95,6 +112,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -107,6 +126,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -119,6 +140,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -131,6 +154,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -142,6 +167,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -154,6 +181,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -166,6 +195,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -178,6 +209,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -190,6 +223,8 @@ public class OrderController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

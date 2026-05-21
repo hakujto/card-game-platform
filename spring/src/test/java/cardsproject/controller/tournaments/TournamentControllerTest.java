@@ -24,7 +24,11 @@ public class TournamentControllerTest {
         mockMvc.perform(get("/api/tournaments"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/tournaments?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournaments")
@@ -32,7 +36,6 @@ public class TournamentControllerTest {
             .content("{ \"name\": \"test\", \"maxPlayers\": 2, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/tournaments/1"))
@@ -41,13 +44,24 @@ public class TournamentControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/tournaments/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/tournaments/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"maxPlayers\": 2, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/tournaments/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test
@@ -140,7 +154,7 @@ public class TournamentControllerTest {
         mockMvc.perform(patch("/api/tournaments/1/transitions/completed-to-draft"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 
@@ -149,7 +163,7 @@ public class TournamentControllerTest {
         mockMvc.perform(patch("/api/tournaments/1/transitions/cancelled-to-draft"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

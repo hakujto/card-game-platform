@@ -17,6 +17,7 @@ public class ArticleTagAssignmentController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<ArticleTagAssignment> list() {
         return service.findAll();
@@ -34,24 +35,11 @@ public class ArticleTagAssignmentController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleTagAssignment> update(@PathVariable Long id, @Valid @RequestBody ArticleTagAssignment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ArticleTagAssignment> patch(@PathVariable Long id, @Valid @RequestBody ArticleTagAssignment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

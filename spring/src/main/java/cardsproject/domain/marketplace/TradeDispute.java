@@ -2,6 +2,8 @@ package cardsproject.domain.marketplace;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "trade_disputes")
@@ -37,8 +39,10 @@ public class TradeDispute {
     public void setDescription(String description) { this.description = description; }
     public String getResolution() { return resolution; }
     public void setResolution(String resolution) { this.resolution = resolution; }
+    @JsonProperty("openedAt")
     public LocalDateTime getOpenedAt() { return openedAt; }
     public void setOpenedAt(LocalDateTime openedAt) { this.openedAt = openedAt; }
+    @JsonProperty("resolvedAt")
     public LocalDateTime getResolvedAt() { return resolvedAt; }
     public void setResolvedAt(LocalDateTime resolvedAt) { this.resolvedAt = resolvedAt; }
     public Long getTransactionId() { return transactionId; }

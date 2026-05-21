@@ -17,6 +17,7 @@ public class TournamentPrizeController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<TournamentPrize> list() {
         return service.findAll();
@@ -42,10 +43,11 @@ public class TournamentPrizeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TournamentPrize> patch(@PathVariable Long id, @Valid @RequestBody TournamentPrize entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<TournamentPrize> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,14 +57,27 @@ public class TournamentPrizeController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}/applies")
     public ResponseEntity<Boolean> appliesToPlacement(@PathVariable Long id, @RequestParam Integer placement) {
-        return ResponseEntity.ok(service.appliesToPlacement(id, placement));
+        try {
+            return ResponseEntity.ok(service.appliesToPlacement(id, placement));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/award")
     public ResponseEntity<Void> awardToPlayer(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.awardToPlayer(id, (Integer) body.get("player_id"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.awardToPlayer(id, (Integer) body.get("player_id"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

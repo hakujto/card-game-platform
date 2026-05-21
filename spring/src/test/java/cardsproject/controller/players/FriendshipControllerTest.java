@@ -24,7 +24,6 @@ public class FriendshipControllerTest {
         mockMvc.perform(get("/api/friendships"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/friendships")
@@ -32,7 +31,6 @@ public class FriendshipControllerTest {
             .content("{ \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/friendships/1"))
@@ -41,13 +39,12 @@ public class FriendshipControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
     void delete_returns204or404() throws Exception {
         mockMvc.perform(delete("/api/friendships/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 204 || status == 404;
             });
     }
 }

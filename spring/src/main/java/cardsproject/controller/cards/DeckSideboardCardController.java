@@ -17,6 +17,7 @@ public class DeckSideboardCardController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<DeckSideboardCard> list() {
         return service.findAll();
@@ -34,18 +35,12 @@ public class DeckSideboardCardController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DeckSideboardCard> update(@PathVariable Long id, @Valid @RequestBody DeckSideboardCard entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<DeckSideboardCard> patch(@PathVariable Long id, @Valid @RequestBody DeckSideboardCard entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<DeckSideboardCard> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,15 +50,28 @@ public class DeckSideboardCardController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PatchMapping("/{id}/increment")
     public ResponseEntity<Void> increment(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.increment(id, (Integer) body.get("amount"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.increment(id, (Integer) body.get("amount"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/decrement")
     public ResponseEntity<Void> decrement(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.decrement(id, (Integer) body.get("amount"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.decrement(id, (Integer) body.get("amount"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

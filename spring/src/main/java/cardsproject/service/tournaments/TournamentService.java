@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.tournaments.TournamentStatusType;
+import cardsproject.domain.tournaments.TournamentFormatType;
+import cardsproject.domain.tournaments.TournamentTournamentTypeType;
 
 @Service
 public class TournamentService {
@@ -20,6 +22,13 @@ public class TournamentService {
         return repository.findAll();
     }
 
+    public List<Tournament> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(q.toLowerCase())) || (e.getDescription() != null && e.getDescription().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<Tournament> findById(Long id) {
         return repository.findById(id);
     }
@@ -31,6 +40,25 @@ public class TournamentService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Tournament entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("description") && patch.get("description") != null) entity.setDescription(patch.get("description").toString());
+        if (patch.containsKey("status")) entity.setStatus(TournamentStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("format")) entity.setFormat(TournamentFormatType.valueOf(patch.get("format").toString()));
+        if (patch.containsKey("tournamentType")) entity.setTournamentType(TournamentTournamentTypeType.valueOf(patch.get("tournamentType").toString()));
+        if (patch.containsKey("maxPlayers") && patch.get("maxPlayers") != null) entity.setMaxPlayers(Integer.valueOf(patch.get("maxPlayers").toString()));
+        if (patch.containsKey("entryFee") && patch.get("entryFee") != null) entity.setEntryFee(new java.math.BigDecimal(patch.get("entryFee").toString()));
+        if (patch.containsKey("prizePool") && patch.get("prizePool") != null) entity.setPrizePool(new java.math.BigDecimal(patch.get("prizePool").toString()));
+        if (patch.containsKey("startTime") && patch.get("startTime") != null) entity.setStartTime(java.time.LocalDateTime.parse(patch.get("startTime").toString()));
+        if (patch.containsKey("endTime") && patch.get("endTime") != null) entity.setEndTime(java.time.LocalDateTime.parse(patch.get("endTime").toString()));
+        if (patch.containsKey("isOnline") && patch.get("isOnline") != null) entity.setIsOnline(Boolean.valueOf(patch.get("isOnline").toString()));
+        if (patch.containsKey("location") && patch.get("location") != null) entity.setLocation(patch.get("location").toString());
+        if (patch.containsKey("rulesText") && patch.get("rulesText") != null) entity.setRulesText(patch.get("rulesText").toString());
+        if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
+        if (patch.containsKey("seasonId") && patch.get("seasonId") != null) entity.setSeasonId(Long.valueOf(patch.get("seasonId").toString()));
+        if (patch.containsKey("organizerId") && patch.get("organizerId") != null) entity.setOrganizerId(Long.valueOf(patch.get("organizerId").toString()));
     }
     private void validate(Tournament entity) {
         if (entity.getEndTime() != null && !((entity.getEndTime() == null || (entity.getStartTime() != null && entity.getEndTime().isAfter(entity.getStartTime()))))) throw new IllegalStateException("End time must be after start time");

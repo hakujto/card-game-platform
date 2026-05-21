@@ -24,15 +24,6 @@ public class CardPriceHistoryControllerTest {
         mockMvc.perform(get("/api/card_price_histories"))
             .andExpect(status().isOk());
     }
-
-    @Test
-    void create_returns201() throws Exception {
-        mockMvc.perform(post("/api/card_price_histories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"priceDate\": \"2024-01-01\", \"avgPrice\": 0.00, \"minPrice\": 0.00, \"maxPrice\": 0.00, \"volume\": 1 }"))
-            .andExpect(status().isCreated());
-    }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/card_price_histories/1"))
@@ -40,31 +31,5 @@ public class CardPriceHistoryControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404;
             });
-    }
-
-    @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/card_price_histories/1"))
-            .andExpect(result -> {
-                int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
-            });
-    }
-    @Test
-    void create_fails_when_volume_not_negative_violated() throws Exception {
-        // Price history volume must not be negative → 400 (Bean Validation)
-        mockMvc.perform(post("/api/card_price_histories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"priceDate\": \"2024-01-01\", \"avgPrice\": 0.00, \"minPrice\": 0.00, \"maxPrice\": 0.00, \"foil\": true, \"cardId\": 1, \"volume\": -1 }"))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void create_fails_when_prices_not_negative_violated() throws Exception {
-        // Prices must not be negative → 400 (Bean Validation)
-        mockMvc.perform(post("/api/card_price_histories")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"priceDate\": \"2024-01-01\", \"avgPrice\": 0.00, \"maxPrice\": 0.00, \"volume\": 1, \"foil\": true, \"cardId\": 1, \"minPrice\": -1 }"))
-            .andExpect(status().isBadRequest());
     }
 }

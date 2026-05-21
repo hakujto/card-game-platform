@@ -17,14 +17,10 @@ public class TradeTransactionController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<TradeTransaction> list() {
         return service.findAll();
-    }
-
-    @PostMapping
-    public ResponseEntity<TradeTransaction> create(@Valid @RequestBody TradeTransaction entity) {
-        return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
@@ -34,47 +30,51 @@ public class TradeTransactionController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TradeTransaction> update(@PathVariable Long id, @Valid @RequestBody TradeTransaction entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TradeTransaction> patch(@PathVariable Long id, @Valid @RequestBody TradeTransaction entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/complete")
     public ResponseEntity<Void> complete(@PathVariable Long id) {
-        service.complete(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.complete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/refund")
     public ResponseEntity<Void> refund(@PathVariable Long id) {
-        service.refund(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.refund(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/dispute")
     public ResponseEntity<Void> openDispute(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.openDispute(id, (String) body.get("reason"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.openDispute(id, (String) body.get("reason"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/seller-net")
     public ResponseEntity<java.math.BigDecimal> sellerNet(@PathVariable Long id) {
-        return ResponseEntity.ok(service.sellerNet(id));
+        try {
+            return ResponseEntity.ok(service.sellerNet(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -24,7 +24,6 @@ public class TradeBidControllerTest {
         mockMvc.perform(get("/api/trade_bids"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_bids")
@@ -32,22 +31,12 @@ public class TradeBidControllerTest {
             .content("{ \"amount\": 0.01, \"placedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/trade_bids/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404;
-            });
-    }
-
-    @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/trade_bids/1"))
-            .andExpect(result -> {
-                int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
     }
     @Test

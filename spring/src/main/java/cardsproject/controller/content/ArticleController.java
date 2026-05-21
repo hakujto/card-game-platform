@@ -17,9 +17,10 @@ public class ArticleController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Article> list() {
-        return service.findAll();
+    public List<Article> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,52 +43,83 @@ public class ArticleController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Article> patch(@PathVariable Long id, @Valid @RequestBody Article entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Article> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/publish")
     public ResponseEntity<Void> publish(@PathVariable Long id) {
-        service.publish(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.publish(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/archive")
     public ResponseEntity<Void> archive(@PathVariable Long id) {
-        service.archive(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.archive(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/view")
     public ResponseEntity<Void> incrementView(@PathVariable Long id) {
-        service.incrementView(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.incrementView(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Void> like(@PathVariable Long id) {
-        service.like(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.like(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}/like")
     public ResponseEntity<Void> unlike(@PathVariable Long id) {
-        service.unlike(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.unlike(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/reading-time")
     public ResponseEntity<Integer> readingTimeMinutes(@PathVariable Long id) {
-        return ResponseEntity.ok(service.readingTimeMinutes(id));
+        try {
+            return ResponseEntity.ok(service.readingTimeMinutes(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR')")
@@ -99,6 +131,8 @@ public class ArticleController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -111,6 +145,8 @@ public class ArticleController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -123,6 +159,8 @@ public class ArticleController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -135,6 +173,8 @@ public class ArticleController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

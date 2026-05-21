@@ -17,9 +17,10 @@ public class SeasonController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Season> list() {
-        return service.findAll();
+    public List<Season> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,39 +43,58 @@ public class SeasonController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Season> patch(@PathVariable Long id, @Valid @RequestBody Season entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Season> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable Long id) {
-        service.activate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.activate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        service.deactivate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.deactivate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizeRewards(@PathVariable Long id) {
-        service.finalizeRewards(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.finalizeRewards(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/ongoing")
     public ResponseEntity<Boolean> isOngoing(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isOngoing(id));
+        try {
+            return ResponseEntity.ok(service.isOngoing(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

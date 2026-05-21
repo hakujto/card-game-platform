@@ -2,6 +2,8 @@ package cardsproject.domain.players;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "player_achievements")
@@ -22,6 +24,7 @@ public class PlayerAchievement {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    @JsonProperty("earnedAt")
     public LocalDateTime getEarnedAt() { return earnedAt; }
     public void setEarnedAt(LocalDateTime earnedAt) { this.earnedAt = earnedAt; }
     public Integer getProgress() { return progress; }

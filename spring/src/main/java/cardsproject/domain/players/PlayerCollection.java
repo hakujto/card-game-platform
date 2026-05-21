@@ -2,6 +2,8 @@ package cardsproject.domain.players;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "player_collections")
@@ -32,6 +34,7 @@ public class PlayerCollection {
     public void setFoil(Boolean foil) { this.foil = foil; }
     public PlayerCollectionConditionType getCondition() { return condition; }
     public void setCondition(PlayerCollectionConditionType condition) { this.condition = condition; }
+    @JsonProperty("acquiredAt")
     public LocalDateTime getAcquiredAt() { return acquiredAt; }
     public void setAcquiredAt(LocalDateTime acquiredAt) { this.acquiredAt = acquiredAt; }
     public PlayerCollectionAcquiredViaType getAcquiredVia() { return acquiredVia; }

@@ -2,6 +2,8 @@ package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "decks")
@@ -52,8 +54,10 @@ public class Deck {
     public void setLosses(Integer losses) { this.losses = losses; }
     public Integer getDraws() { return draws; }
     public void setDraws(Integer draws) { this.draws = draws; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("updatedAt")
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public Long getPlayerId() { return playerId; }
@@ -110,5 +114,12 @@ public class Deck {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isDrawsNotNegativeValid() {
         return (getDraws() == null || getDraws() >= 0);
+    }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostPersist
+    @PostUpdate
+    public void recalculateTournamentLegal() {
+        // TODO: implement recalculate_tournament_legal
     }
 }

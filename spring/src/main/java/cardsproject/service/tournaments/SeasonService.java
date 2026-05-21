@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.SeasonRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.SeasonFormatType;
 
 @Service
 public class SeasonService {
@@ -19,6 +20,13 @@ public class SeasonService {
         return repository.findAll();
     }
 
+    public List<Season> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<Season> findById(Long id) {
         return repository.findById(id);
     }
@@ -29,6 +37,15 @@ public class SeasonService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Season entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("startDate") && patch.get("startDate") != null) entity.setStartDate(java.time.LocalDate.parse(patch.get("startDate").toString()));
+        if (patch.containsKey("endDate") && patch.get("endDate") != null) entity.setEndDate(java.time.LocalDate.parse(patch.get("endDate").toString()));
+        if (patch.containsKey("format")) entity.setFormat(SeasonFormatType.valueOf(patch.get("format").toString()));
+        if (patch.containsKey("isActive") && patch.get("isActive") != null) entity.setIsActive(Boolean.valueOf(patch.get("isActive").toString()));
+        if (patch.containsKey("rewardDescription") && patch.get("rewardDescription") != null) entity.setRewardDescription(patch.get("rewardDescription").toString());
     }
 
     public void activate(Long id) {

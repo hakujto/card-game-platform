@@ -17,6 +17,7 @@ public class DeckTagAssignmentController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<DeckTagAssignment> list() {
         return service.findAll();
@@ -34,24 +35,11 @@ public class DeckTagAssignmentController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DeckTagAssignment> update(@PathVariable Long id, @Valid @RequestBody DeckTagAssignment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<DeckTagAssignment> patch(@PathVariable Long id, @Valid @RequestBody DeckTagAssignment entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

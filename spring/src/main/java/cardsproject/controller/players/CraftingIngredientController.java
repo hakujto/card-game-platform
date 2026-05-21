@@ -17,6 +17,7 @@ public class CraftingIngredientController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<CraftingIngredient> list() {
         return service.findAll();
@@ -34,24 +35,11 @@ public class CraftingIngredientController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CraftingIngredient> update(@PathVariable Long id, @Valid @RequestBody CraftingIngredient entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<CraftingIngredient> patch(@PathVariable Long id, @Valid @RequestBody CraftingIngredient entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

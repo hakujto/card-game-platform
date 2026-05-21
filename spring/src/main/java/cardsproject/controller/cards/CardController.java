@@ -17,9 +17,10 @@ public class CardController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Card> list() {
-        return service.findAll();
+    public List<Card> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,55 +43,92 @@ public class CardController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Card> patch(@PathVariable Long id, @Valid @RequestBody Card entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Card> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/ban")
     public ResponseEntity<Void> ban(@PathVariable Long id) {
-        service.ban(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.ban(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/unban")
     public ResponseEntity<Void> unban(@PathVariable Long id) {
-        service.unban(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.unban(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/restrict")
     public ResponseEntity<Void> restrict(@PathVariable Long id) {
-        service.restrict(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.restrict(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/unrestrict")
     public ResponseEntity<Void> unrestrict(@PathVariable Long id) {
-        service.unrestrict(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.unrestrict(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/value")
     public ResponseEntity<java.math.BigDecimal> calculateValue(@PathVariable Long id) {
-        return ResponseEntity.ok(service.calculateValue(id));
+        try {
+            return ResponseEntity.ok(service.calculateValue(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/rarity-bonus")
     public ResponseEntity<java.math.BigDecimal> applyRarityBonus(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        return ResponseEntity.ok(service.applyRarityBonus(id, (Integer) body.get("multiplier")));
+        try {
+            return ResponseEntity.ok(service.applyRarityBonus(id, (Integer) body.get("multiplier")));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/legal")
     public ResponseEntity<Boolean> isLegalInFormat(@PathVariable Long id, @RequestParam String format) {
-        return ResponseEntity.ok(service.isLegalInFormat(id, format));
+        try {
+            return ResponseEntity.ok(service.isLegalInFormat(id, format));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

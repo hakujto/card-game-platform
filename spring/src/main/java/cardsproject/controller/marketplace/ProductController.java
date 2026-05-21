@@ -17,9 +17,10 @@ public class ProductController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Product> list() {
-        return service.findAll();
+    public List<Product> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,49 +43,80 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Product> patch(@PathVariable Long id, @Valid @RequestBody Product entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Product> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable Long id) {
-        service.activate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.activate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        service.deactivate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.deactivate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/discount")
     public ResponseEntity<java.math.BigDecimal> applyDiscount(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+        try {
+            return ResponseEntity.ok(service.applyDiscount(id, (Integer) body.get("percent")));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/restock")
     public ResponseEntity<Void> restock(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.restock(id, (Integer) body.get("quantity"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.restock(id, (Integer) body.get("quantity"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/effective-price")
     public ResponseEntity<java.math.BigDecimal> effectivePrice(@PathVariable Long id) {
-        return ResponseEntity.ok(service.effectivePrice(id));
+        try {
+            return ResponseEntity.ok(service.effectivePrice(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/in-stock")
     public ResponseEntity<Boolean> isInStock(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isInStock(id));
+        try {
+            return ResponseEntity.ok(service.isInStock(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

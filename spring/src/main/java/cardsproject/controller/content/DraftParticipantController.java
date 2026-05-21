@@ -17,6 +17,7 @@ public class DraftParticipantController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<DraftParticipant> list() {
         return service.findAll();
@@ -34,35 +35,27 @@ public class DraftParticipantController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DraftParticipant> update(@PathVariable Long id, @Valid @RequestBody DraftParticipant entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<DraftParticipant> patch(@PathVariable Long id, @Valid @RequestBody DraftParticipant entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/pick")
     public ResponseEntity<Void> pickCard(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.pickCard(id, (Integer) body.get("card_id"), (Integer) body.get("pack_number"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.pickCard(id, (Integer) body.get("card_id"), (Integer) body.get("pack_number"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/card-count")
     public ResponseEntity<Integer> draftedCardCount(@PathVariable Long id) {
-        return ResponseEntity.ok(service.draftedCardCount(id));
+        try {
+            return ResponseEntity.ok(service.draftedCardCount(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

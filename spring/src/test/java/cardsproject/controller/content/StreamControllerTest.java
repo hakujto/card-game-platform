@@ -24,7 +24,11 @@ public class StreamControllerTest {
         mockMvc.perform(get("/api/streams"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/streams?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/streams")
@@ -32,7 +36,6 @@ public class StreamControllerTest {
             .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"scheduledStart\": \"2024-01-01T00:00:00\", \"actualStart\": null, \"endedAt\": null }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/streams/1"))
@@ -41,13 +44,24 @@ public class StreamControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/streams/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/streams/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"title\": \"test\", \"streamUrl\": \"https://example.com\", \"scheduledStart\": \"2024-01-01T00:00:00\", \"actualStart\": null, \"endedAt\": null }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/streams/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test
@@ -101,7 +115,7 @@ public class StreamControllerTest {
         mockMvc.perform(patch("/api/streams/1/transitions/ended-to-live"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

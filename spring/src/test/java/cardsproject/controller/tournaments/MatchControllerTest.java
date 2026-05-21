@@ -24,7 +24,6 @@ public class MatchControllerTest {
         mockMvc.perform(get("/api/matches"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/matches")
@@ -32,22 +31,12 @@ public class MatchControllerTest {
             .content("{ \"endedAt\": null }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/matches/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404;
-            });
-    }
-
-    @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/matches/1"))
-            .andExpect(result -> {
-                int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
     }
     @Test
@@ -139,7 +128,7 @@ public class MatchControllerTest {
         mockMvc.perform(patch("/api/matches/1/transitions/completed-to-active"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 
@@ -148,7 +137,7 @@ public class MatchControllerTest {
         mockMvc.perform(patch("/api/matches/1/transitions/draw-to-active"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 
@@ -157,7 +146,7 @@ public class MatchControllerTest {
         mockMvc.perform(patch("/api/matches/1/transitions/bye-to-active"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

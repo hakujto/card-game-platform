@@ -17,9 +17,10 @@ public class TradeListingController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<TradeListing> list() {
-        return service.findAll();
+    public List<TradeListing> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -34,54 +35,72 @@ public class TradeListingController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TradeListing> update(@PathVariable Long id, @Valid @RequestBody TradeListing entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<TradeListing> patch(@PathVariable Long id, @Valid @RequestBody TradeListing entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<TradeListing> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/close")
     public ResponseEntity<Void> close(@PathVariable Long id) {
-        service.close(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.close(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PatchMapping("/{id}/extend")
     public ResponseEntity<Void> extend(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.extend(id, (Integer) body.get("days"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.extend(id, (Integer) body.get("days"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
-        service.cancel(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.cancel(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/expired")
     public ResponseEntity<Boolean> isExpired(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isExpired(id));
+        try {
+            return ResponseEntity.ok(service.isExpired(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizeAuction(@PathVariable Long id) {
-        service.finalizeAuction(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.finalizeAuction(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_SELLER')")
@@ -93,6 +112,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -104,6 +125,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -115,6 +138,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -127,6 +152,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -139,6 +166,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -151,6 +180,8 @@ public class TradeListingController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

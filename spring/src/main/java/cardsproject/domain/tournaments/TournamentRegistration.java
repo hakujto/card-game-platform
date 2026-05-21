@@ -2,6 +2,8 @@ package cardsproject.domain.tournaments;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "tournament_registrations")
@@ -35,6 +37,7 @@ public class TournamentRegistration {
     public void setFinalStanding(Integer finalStanding) { this.finalStanding = finalStanding; }
     public Integer getPointsEarned() { return pointsEarned; }
     public void setPointsEarned(Integer pointsEarned) { this.pointsEarned = pointsEarned; }
+    @JsonProperty("registeredAt")
     public LocalDateTime getRegisteredAt() { return registeredAt; }
     public void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
     public Long getTournamentId() { return tournamentId; }

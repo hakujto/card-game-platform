@@ -3,6 +3,8 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "orders")
@@ -49,10 +51,13 @@ public class Order {
     public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
     public String getTrackingNumber() { return trackingNumber; }
     public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("paidAt")
     public LocalDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
+    @JsonProperty("shippedAt")
     public LocalDateTime getShippedAt() { return shippedAt; }
     public void setShippedAt(LocalDateTime shippedAt) { this.shippedAt = shippedAt; }
     public Long getPlayerId() { return playerId; }
@@ -119,5 +124,11 @@ public class Order {
         if (!allowed.contains(to)) {
             throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
         }
+    }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostUpdate
+    public void notifyStatusChange() {
+        // TODO: implement notify_status_change
     }
 }

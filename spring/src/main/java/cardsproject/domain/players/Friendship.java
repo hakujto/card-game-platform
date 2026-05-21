@@ -2,6 +2,8 @@ package cardsproject.domain.players;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "friendships")
@@ -24,6 +26,7 @@ public class Friendship {
     public void setId(Long id) { this.id = id; }
     public FriendshipStatusType getStatus() { return status; }
     public void setStatus(FriendshipStatusType status) { this.status = status; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Long getRequesterId() { return requesterId; }

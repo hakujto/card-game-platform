@@ -3,6 +3,8 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "trade_bids")
@@ -25,6 +27,7 @@ public class TradeBid {
     public void setId(Long id) { this.id = id; }
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+    @JsonProperty("placedAt")
     public LocalDateTime getPlacedAt() { return placedAt; }
     public void setPlacedAt(LocalDateTime placedAt) { this.placedAt = placedAt; }
     public Boolean getIsWinning() { return isWinning; }

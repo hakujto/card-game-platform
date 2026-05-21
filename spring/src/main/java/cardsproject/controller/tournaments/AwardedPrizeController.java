@@ -17,14 +17,10 @@ public class AwardedPrizeController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<AwardedPrize> list() {
         return service.findAll();
-    }
-
-    @PostMapping
-    public ResponseEntity<AwardedPrize> create(@Valid @RequestBody AwardedPrize entity) {
-        return ResponseEntity.status(201).body(service.save(entity));
     }
 
     @GetMapping("/{id}")
@@ -34,30 +30,16 @@ public class AwardedPrizeController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AwardedPrize> update(@PathVariable Long id, @Valid @RequestBody AwardedPrize entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<AwardedPrize> patch(@PathVariable Long id, @Valid @RequestBody AwardedPrize entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/claim")
     public ResponseEntity<Void> claim(@PathVariable Long id) {
-        service.claim(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.claim(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

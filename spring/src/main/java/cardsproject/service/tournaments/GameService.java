@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.tournaments.GameWinnerSideType;
+import cardsproject.domain.tournaments.GameEndedByType;
 
 @Service
 public class GameService {
@@ -31,6 +32,17 @@ public class GameService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Game entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("gameNumber") && patch.get("gameNumber") != null) entity.setGameNumber(Integer.valueOf(patch.get("gameNumber").toString()));
+        if (patch.containsKey("winnerSide")) entity.setWinnerSide(GameWinnerSideType.valueOf(patch.get("winnerSide").toString()));
+        if (patch.containsKey("turnsPlayed") && patch.get("turnsPlayed") != null) entity.setTurnsPlayed(Integer.valueOf(patch.get("turnsPlayed").toString()));
+        if (patch.containsKey("durationSeconds") && patch.get("durationSeconds") != null) entity.setDurationSeconds(Integer.valueOf(patch.get("durationSeconds").toString()));
+        if (patch.containsKey("endedBy")) entity.setEndedBy(GameEndedByType.valueOf(patch.get("endedBy").toString()));
+        if (patch.containsKey("replayUrl") && patch.get("replayUrl") != null) entity.setReplayUrl(patch.get("replayUrl").toString());
+        if (patch.containsKey("matchId") && patch.get("matchId") != null) entity.setMatchId(Long.valueOf(patch.get("matchId").toString()));
+        if (patch.containsKey("winnerId") && patch.get("winnerId") != null) entity.setWinnerId(Long.valueOf(patch.get("winnerId").toString()));
     }
     private void validate(Game entity) {
         if (entity.getTurnsPlayed() != null && !((entity.getTurnsPlayed() == null || entity.getTurnsPlayed() > 0))) throw new IllegalStateException("Turns played must be greater than zero");

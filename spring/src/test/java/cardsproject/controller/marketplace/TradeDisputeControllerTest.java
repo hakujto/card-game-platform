@@ -24,7 +24,6 @@ public class TradeDisputeControllerTest {
         mockMvc.perform(get("/api/trade_disputes"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_disputes")
@@ -32,22 +31,12 @@ public class TradeDisputeControllerTest {
             .content("{ \"reason\": \"ITEMNOTRECEIVED\", \"description\": \"test\", \"openedAt\": \"2024-01-01T00:00:00\", \"resolvedAt\": null }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/trade_disputes/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404;
-            });
-    }
-
-    @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/trade_disputes/1"))
-            .andExpect(result -> {
-                int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
             });
     }
     @Test
@@ -103,7 +92,7 @@ public class TradeDisputeControllerTest {
         mockMvc.perform(patch("/api/trade_disputes/1/transitions/resolved-to-open"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

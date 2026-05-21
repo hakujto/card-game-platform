@@ -2,6 +2,8 @@ package cardsproject.domain.content;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "draft_picks")
@@ -26,6 +28,7 @@ public class DraftPick {
     public void setPickNumber(Integer pickNumber) { this.pickNumber = pickNumber; }
     public Integer getPackNumber() { return packNumber; }
     public void setPackNumber(Integer packNumber) { this.packNumber = packNumber; }
+    @JsonProperty("pickedAt")
     public LocalDateTime getPickedAt() { return pickedAt; }
     public void setPickedAt(LocalDateTime pickedAt) { this.pickedAt = pickedAt; }
     public Long getParticipantId() { return participantId; }

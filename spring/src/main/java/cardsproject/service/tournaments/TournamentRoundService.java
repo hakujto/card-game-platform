@@ -32,6 +32,15 @@ public class TournamentRoundService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(TournamentRound entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("roundNumber") && patch.get("roundNumber") != null) entity.setRoundNumber(Integer.valueOf(patch.get("roundNumber").toString()));
+        if (patch.containsKey("status")) entity.setStatus(TournamentRoundStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("startedAt") && patch.get("startedAt") != null) entity.setStartedAt(java.time.LocalDateTime.parse(patch.get("startedAt").toString()));
+        if (patch.containsKey("endedAt") && patch.get("endedAt") != null) entity.setEndedAt(java.time.LocalDateTime.parse(patch.get("endedAt").toString()));
+        if (patch.containsKey("timeLimitMinutes") && patch.get("timeLimitMinutes") != null) entity.setTimeLimitMinutes(Integer.valueOf(patch.get("timeLimitMinutes").toString()));
+        if (patch.containsKey("tournamentId") && patch.get("tournamentId") != null) entity.setTournamentId(Long.valueOf(patch.get("tournamentId").toString()));
+    }
     private void validate(TournamentRound entity) {
         if (entity.getEndedAt() != null && !((entity.getEndedAt() == null || (entity.getStartedAt() != null && entity.getEndedAt().isAfter(entity.getStartedAt()))))) throw new IllegalStateException("Round end time must be after start time");
         if (TournamentRoundStatusType.COMPLETED.equals(entity.getStatus()) && entity.getStartedAt() == null) throw new IllegalStateException("Completed round must have a start time");

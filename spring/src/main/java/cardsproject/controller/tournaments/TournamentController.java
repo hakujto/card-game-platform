@@ -17,9 +17,10 @@ public class TournamentController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Tournament> list() {
-        return service.findAll();
+    public List<Tournament> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,57 +43,94 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Tournament> patch(@PathVariable Long id, @Valid @RequestBody Tournament entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Tournament> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/start")
     public ResponseEntity<Void> start(@PathVariable Long id) {
-        service.start(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.start(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
-        service.cancel(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.cancel(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/complete")
     public ResponseEntity<Void> complete(@PathVariable Long id) {
-        service.complete(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.complete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/rounds")
     public ResponseEntity<Void> generateRound(@PathVariable Long id) {
-        service.generateRound(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.generateRound(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/prizes")
     public ResponseEntity<java.math.BigDecimal> calculatePrizeDistribution(@PathVariable Long id) {
-        return ResponseEntity.ok(service.calculatePrizeDistribution(id));
+        try {
+            return ResponseEntity.ok(service.calculatePrizeDistribution(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/register")
     public ResponseEntity<Void> registerPlayer(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.registerPlayer(id, (Integer) body.get("player_id"), (Integer) body.get("deck_id"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.registerPlayer(id, (Integer) body.get("player_id"), (Integer) body.get("deck_id"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/full")
     public ResponseEntity<Boolean> isFull(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isFull(id));
+        try {
+            return ResponseEntity.ok(service.isFull(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
@@ -104,6 +142,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -116,6 +156,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -128,6 +170,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -140,6 +184,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -152,6 +198,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -164,6 +212,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -176,6 +226,8 @@ public class TournamentController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

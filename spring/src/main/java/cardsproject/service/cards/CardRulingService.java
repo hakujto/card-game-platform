@@ -31,6 +31,13 @@ public class CardRulingService {
         repository.deleteById(id);
     }
 
+    public void applyPatch(CardRuling entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("rulingText") && patch.get("rulingText") != null) entity.setRulingText(patch.get("rulingText").toString());
+        if (patch.containsKey("publishedAt") && patch.get("publishedAt") != null) entity.setPublishedAt(java.time.LocalDate.parse(patch.get("publishedAt").toString()));
+        if (patch.containsKey("source") && patch.get("source") != null) entity.setSource(patch.get("source").toString());
+        if (patch.containsKey("cardId") && patch.get("cardId") != null) entity.setCardId(Long.valueOf(patch.get("cardId").toString()));
+    }
+
     public Boolean isCurrent(Long id) {
         CardRuling entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("CardRuling not found: " + id));

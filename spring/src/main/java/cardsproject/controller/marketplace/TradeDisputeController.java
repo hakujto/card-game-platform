@@ -17,6 +17,7 @@ public class TradeDisputeController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<TradeDispute> list() {
         return service.findAll();
@@ -34,49 +35,53 @@ public class TradeDisputeController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TradeDispute> update(@PathVariable Long id, @Valid @RequestBody TradeDispute entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TradeDispute> patch(@PathVariable Long id, @Valid @RequestBody TradeDispute entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/escalate")
     public ResponseEntity<Void> escalate(@PathVariable Long id) {
-        service.escalate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.escalate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/resolve")
     public ResponseEntity<Void> resolve(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.resolve(id, (String) body.get("resolution_text"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.resolve(id, (String) body.get("resolution_text"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/close")
     public ResponseEntity<Void> closeResolved(@PathVariable Long id) {
-        service.closeResolved(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.closeResolved(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/review")
     public ResponseEntity<Void> review(@PathVariable Long id) {
-        service.review(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.review(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
@@ -88,6 +93,8 @@ public class TradeDisputeController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -100,6 +107,8 @@ public class TradeDisputeController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -112,6 +121,8 @@ public class TradeDisputeController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -124,6 +135,8 @@ public class TradeDisputeController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -136,6 +149,8 @@ public class TradeDisputeController {
             return ResponseEntity.status(409).body(java.util.Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().body(java.util.Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

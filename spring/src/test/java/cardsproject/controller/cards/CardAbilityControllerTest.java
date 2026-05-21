@@ -24,7 +24,11 @@ public class CardAbilityControllerTest {
         mockMvc.perform(get("/api/card_abilities"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/card_abilities?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_abilities")
@@ -32,7 +36,6 @@ public class CardAbilityControllerTest {
             .content("{ \"abilityText\": \"test\" }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/card_abilities/1"))
@@ -41,13 +44,32 @@ public class CardAbilityControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
+    @Test
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/card_abilities/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"abilityText\": \"test\" }"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/card_abilities/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
+            });
+    }
     @Test
     void delete_returns204or404() throws Exception {
         mockMvc.perform(delete("/api/card_abilities/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 204 || status == 404;
             });
     }
     @Test

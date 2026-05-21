@@ -17,9 +17,10 @@ public class CardAbilityController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<CardAbility> list() {
-        return service.findAll();
+    public List<CardAbility> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,10 +43,11 @@ public class CardAbilityController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CardAbility> patch(@PathVariable Long id, @Valid @RequestBody CardAbility entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<CardAbility> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,13 +57,26 @@ public class CardAbilityController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}/usable")
     public ResponseEntity<Boolean> isUsableAt(@PathVariable Long id, @RequestParam String timing) {
-        return ResponseEntity.ok(service.isUsableAt(id, timing));
+        try {
+            return ResponseEntity.ok(service.isUsableAt(id, timing));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/describe")
     public ResponseEntity<String> describe(@PathVariable Long id) {
-        return ResponseEntity.ok(service.describe(id));
+        try {
+            return ResponseEntity.ok(service.describe(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

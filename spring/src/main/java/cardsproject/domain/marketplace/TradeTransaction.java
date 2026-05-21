@@ -3,6 +3,8 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "trade_transactions")
@@ -33,6 +35,7 @@ public class TradeTransaction {
     public void setPlatformFee(BigDecimal platformFee) { this.platformFee = platformFee; }
     public TradeTransactionStatusType getStatus() { return status; }
     public void setStatus(TradeTransactionStatusType status) { this.status = status; }
+    @JsonProperty("completedAt")
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
     public Long getListingId() { return listingId; }

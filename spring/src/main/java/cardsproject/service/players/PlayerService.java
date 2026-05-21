@@ -5,6 +5,8 @@ import cardsproject.repository.players.PlayerRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.players.PlayerRankType;
+import cardsproject.domain.players.PlayerPreferredFormatType;
 
 @Service
 public class PlayerService {
@@ -19,6 +21,13 @@ public class PlayerService {
         return repository.findAll();
     }
 
+    public List<Player> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getDisplayName() != null && e.getDisplayName().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<Player> findById(Long id) {
         return repository.findById(id);
     }
@@ -29,6 +38,21 @@ public class PlayerService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Player entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("displayName") && patch.get("displayName") != null) entity.setDisplayName(patch.get("displayName").toString());
+        if (patch.containsKey("rank")) entity.setRank(PlayerRankType.valueOf(patch.get("rank").toString()));
+        if (patch.containsKey("rating") && patch.get("rating") != null) entity.setRating(Integer.valueOf(patch.get("rating").toString()));
+        if (patch.containsKey("peakRating") && patch.get("peakRating") != null) entity.setPeakRating(Integer.valueOf(patch.get("peakRating").toString()));
+        if (patch.containsKey("bio") && patch.get("bio") != null) entity.setBio(patch.get("bio").toString());
+        if (patch.containsKey("countryCode") && patch.get("countryCode") != null) entity.setCountryCode(patch.get("countryCode").toString());
+        if (patch.containsKey("avatarUrl") && patch.get("avatarUrl") != null) entity.setAvatarUrl(patch.get("avatarUrl").toString());
+        if (patch.containsKey("preferredFormat")) entity.setPreferredFormat(PlayerPreferredFormatType.valueOf(patch.get("preferredFormat").toString()));
+        if (patch.containsKey("isVerified") && patch.get("isVerified") != null) entity.setIsVerified(Boolean.valueOf(patch.get("isVerified").toString()));
+        if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
+        if (patch.containsKey("lastActiveAt") && patch.get("lastActiveAt") != null) entity.setLastActiveAt(java.time.LocalDateTime.parse(patch.get("lastActiveAt").toString()));
+        if (patch.containsKey("userId") && patch.get("userId") != null) entity.setUserId(Long.valueOf(patch.get("userId").toString()));
     }
 
     public Boolean promote(Long id) {

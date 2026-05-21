@@ -31,6 +31,15 @@ public class AwardedPrizeService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(AwardedPrize entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("finalPlacement") && patch.get("finalPlacement") != null) entity.setFinalPlacement(Integer.valueOf(patch.get("finalPlacement").toString()));
+        if (patch.containsKey("awardedAt") && patch.get("awardedAt") != null) entity.setAwardedAt(java.time.LocalDateTime.parse(patch.get("awardedAt").toString()));
+        if (patch.containsKey("claimed") && patch.get("claimed") != null) entity.setClaimed(Boolean.valueOf(patch.get("claimed").toString()));
+        if (patch.containsKey("claimedAt") && patch.get("claimedAt") != null) entity.setClaimedAt(java.time.LocalDateTime.parse(patch.get("claimedAt").toString()));
+        if (patch.containsKey("prizeId") && patch.get("prizeId") != null) entity.setPrizeId(Long.valueOf(patch.get("prizeId").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
+    }
     private void validate(AwardedPrize entity) {
         if (Boolean.TRUE.equals(entity.getClaimed()) && entity.getClaimedAt() == null) throw new IllegalStateException("Claimed prize must have a claimed_at timestamp");
     }

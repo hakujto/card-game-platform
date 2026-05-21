@@ -17,9 +17,10 @@ public class DeckController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Deck> list() {
-        return service.findAll();
+    public List<Deck> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,10 +43,11 @@ public class DeckController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Deck> patch(@PathVariable Long id, @Valid @RequestBody Deck entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Deck> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,47 +57,96 @@ public class DeckController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}/validate")
     public ResponseEntity<Boolean> validateSize(@PathVariable Long id) {
-        return ResponseEntity.ok(service.validateSize(id));
+        try {
+            return ResponseEntity.ok(service.validateSize(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/cards")
     public ResponseEntity<Void> addCard(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.addCard(id, (Integer) body.get("card_id"), (Integer) body.get("quantity"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.addCard(id, (Integer) body.get("card_id"), (Integer) body.get("quantity"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}/cards/{card_id}")
     public ResponseEntity<Void> removeCard(@PathVariable Long id, @PathVariable Long cardId) {
-        service.removeCard(id, cardId);
-        return ResponseEntity.noContent().build();
+        try {
+            service.removeCard(id, cardId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/win-rate")
     public ResponseEntity<java.math.BigDecimal> winRate(@PathVariable Long id) {
-        return ResponseEntity.ok(service.winRate(id));
+        try {
+            return ResponseEntity.ok(service.winRate(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/clone")
     public ResponseEntity<Deck> clone(@PathVariable Long id) {
-        return ResponseEntity.ok(service.clone(id));
+        try {
+            return ResponseEntity.ok(service.clone(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/publish")
     public ResponseEntity<Void> publish(@PathVariable Long id) {
-        service.publish(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.publish(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/unpublish")
     public ResponseEntity<Void> unpublish(@PathVariable Long id) {
-        service.unpublish(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.unpublish(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/certify")
     public ResponseEntity<Boolean> certifyTournamentLegal(@PathVariable Long id) {
-        return ResponseEntity.ok(service.certifyTournamentLegal(id));
+        try {
+            return ResponseEntity.ok(service.certifyTournamentLegal(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

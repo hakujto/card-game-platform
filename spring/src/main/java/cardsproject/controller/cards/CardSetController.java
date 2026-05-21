@@ -17,9 +17,10 @@ public class CardSetController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<CardSet> list() {
-        return service.findAll();
+    public List<CardSet> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,37 +43,56 @@ public class CardSetController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CardSet> patch(@PathVariable Long id, @Valid @RequestBody CardSet entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<CardSet> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/standard-legal")
     public ResponseEntity<Boolean> isLegalInStandard(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isLegalInStandard(id));
+        try {
+            return ResponseEntity.ok(service.isLegalInStandard(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/legal")
     public ResponseEntity<Boolean> isLegalInFormat(@PathVariable Long id, @RequestParam String format) {
-        return ResponseEntity.ok(service.isLegalInFormat(id, format));
+        try {
+            return ResponseEntity.ok(service.isLegalInFormat(id, format));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/rarity-count")
     public ResponseEntity<Integer> cardCountByRarity(@PathVariable Long id, @RequestParam String rarity) {
-        return ResponseEntity.ok(service.cardCountByRarity(id, rarity));
+        try {
+            return ResponseEntity.ok(service.cardCountByRarity(id, rarity));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/rotate")
     public ResponseEntity<Void> rotateOut(@PathVariable Long id) {
-        service.rotateOut(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.rotateOut(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

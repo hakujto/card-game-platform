@@ -2,6 +2,8 @@ package cardsproject.domain.tournaments;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "tournament_rounds")
@@ -27,8 +29,10 @@ public class TournamentRound {
     public void setRoundNumber(Integer roundNumber) { this.roundNumber = roundNumber; }
     public TournamentRoundStatusType getStatus() { return status; }
     public void setStatus(TournamentRoundStatusType status) { this.status = status; }
+    @JsonProperty("startedAt")
     public LocalDateTime getStartedAt() { return startedAt; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+    @JsonProperty("endedAt")
     public LocalDateTime getEndedAt() { return endedAt; }
     public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
     public Integer getTimeLimitMinutes() { return timeLimitMinutes; }

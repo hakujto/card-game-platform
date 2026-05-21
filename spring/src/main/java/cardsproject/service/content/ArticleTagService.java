@@ -19,6 +19,13 @@ public class ArticleTagService {
         return repository.findAll();
     }
 
+    public List<ArticleTag> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<ArticleTag> findById(Long id) {
         return repository.findById(id);
     }
@@ -29,6 +36,11 @@ public class ArticleTagService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(ArticleTag entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("slug") && patch.get("slug") != null) entity.setSlug(patch.get("slug").toString());
     }
 
     public void rename(Long id, String newName) {

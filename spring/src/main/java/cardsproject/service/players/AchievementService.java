@@ -5,6 +5,7 @@ import cardsproject.repository.players.AchievementRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.players.AchievementRarityType;
 
 @Service
 public class AchievementService {
@@ -19,6 +20,13 @@ public class AchievementService {
         return repository.findAll();
     }
 
+    public List<Achievement> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(q.toLowerCase())) || (e.getDescription() != null && e.getDescription().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<Achievement> findById(Long id) {
         return repository.findById(id);
     }
@@ -29,6 +37,15 @@ public class AchievementService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Achievement entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("description") && patch.get("description") != null) entity.setDescription(patch.get("description").toString());
+        if (patch.containsKey("iconUrl") && patch.get("iconUrl") != null) entity.setIconUrl(patch.get("iconUrl").toString());
+        if (patch.containsKey("points") && patch.get("points") != null) entity.setPoints(Integer.valueOf(patch.get("points").toString()));
+        if (patch.containsKey("rarity")) entity.setRarity(AchievementRarityType.valueOf(patch.get("rarity").toString()));
+        if (patch.containsKey("isHidden") && patch.get("isHidden") != null) entity.setIsHidden(Boolean.valueOf(patch.get("isHidden").toString()));
     }
 
     public Integer pointValue(Long id, Integer multiplier) {

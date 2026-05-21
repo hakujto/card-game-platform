@@ -2,6 +2,8 @@ package cardsproject.domain.content;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "draft_sessions")
@@ -33,8 +35,10 @@ public class DraftSession {
     public void setSeats(Integer seats) { this.seats = seats; }
     public Integer getTimePerPickSeconds() { return timePerPickSeconds; }
     public void setTimePerPickSeconds(Integer timePerPickSeconds) { this.timePerPickSeconds = timePerPickSeconds; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("completedAt")
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
     public Long getCardSetId() { return cardSetId; }

@@ -31,6 +31,14 @@ public class PlayerAchievementService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(PlayerAchievement entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("earnedAt") && patch.get("earnedAt") != null) entity.setEarnedAt(java.time.LocalDateTime.parse(patch.get("earnedAt").toString()));
+        if (patch.containsKey("progress") && patch.get("progress") != null) entity.setProgress(Integer.valueOf(patch.get("progress").toString()));
+        if (patch.containsKey("isCompleted") && patch.get("isCompleted") != null) entity.setIsCompleted(Boolean.valueOf(patch.get("isCompleted").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
+        if (patch.containsKey("achievementId") && patch.get("achievementId") != null) entity.setAchievementId(Long.valueOf(patch.get("achievementId").toString()));
+    }
     private void validate(PlayerAchievement entity) {
         if (Boolean.TRUE.equals(entity.getIsCompleted()) && !((entity.getProgress() == null || entity.getProgress() > 0))) throw new IllegalStateException("Completed achievement must have progress greater than zero");
     }

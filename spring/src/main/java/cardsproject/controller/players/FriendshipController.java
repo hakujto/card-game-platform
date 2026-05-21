@@ -17,6 +17,7 @@ public class FriendshipController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<Friendship> list() {
         return service.findAll();
@@ -34,20 +35,6 @@ public class FriendshipController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Friendship> update(@PathVariable Long id, @Valid @RequestBody Friendship entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Friendship> patch(@PathVariable Long id, @Valid @RequestBody Friendship entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
@@ -55,21 +42,40 @@ public class FriendshipController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PostMapping("/{id}/accept")
     public ResponseEntity<Void> accept(@PathVariable Long id) {
-        service.accept(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.accept(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/decline")
     public ResponseEntity<Void> decline(@PathVariable Long id) {
-        service.decline(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.decline(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/block")
     public ResponseEntity<Void> block(@PathVariable Long id) {
-        service.block(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.block(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

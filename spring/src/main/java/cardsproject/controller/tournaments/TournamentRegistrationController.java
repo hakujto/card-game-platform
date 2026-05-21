@@ -17,6 +17,7 @@ public class TournamentRegistrationController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<TournamentRegistration> list() {
         return service.findAll();
@@ -34,42 +35,40 @@ public class TournamentRegistrationController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TournamentRegistration> update(@PathVariable Long id, @Valid @RequestBody TournamentRegistration entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TournamentRegistration> patch(@PathVariable Long id, @Valid @RequestBody TournamentRegistration entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<Void> withdraw(@PathVariable Long id) {
-        service.withdraw(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.withdraw(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/disqualify")
     public ResponseEntity<Void> disqualify(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.disqualify(id, (String) body.get("reason"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.disqualify(id, (String) body.get("reason"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/promote")
     public ResponseEntity<Void> promoteFromWaitlist(@PathVariable Long id) {
-        service.promoteFromWaitlist(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.promoteFromWaitlist(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -39,4 +39,12 @@ public class GlobalExceptionHandler {
         body.put("error", ex.getMessage());
         return ResponseEntity.status(501).body(body);
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleUniqueViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", 422);
+        body.put("error", "Value must be unique");
+        return ResponseEntity.unprocessableEntity().body(body);
+    }
 }

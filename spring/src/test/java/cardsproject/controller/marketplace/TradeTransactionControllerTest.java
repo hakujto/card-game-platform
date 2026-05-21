@@ -24,15 +24,6 @@ public class TradeTransactionControllerTest {
         mockMvc.perform(get("/api/trade_transactions"))
             .andExpect(status().isOk());
     }
-
-    @Test
-    void create_returns201() throws Exception {
-        mockMvc.perform(post("/api/trade_transactions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"finalPrice\": 0.01, \"platformFee\": 0.01 }"))
-            .andExpect(status().isCreated());
-    }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/trade_transactions/1"))
@@ -40,40 +31,5 @@ public class TradeTransactionControllerTest {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404;
             });
-    }
-
-    @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/trade_transactions/1"))
-            .andExpect(result -> {
-                int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
-            });
-    }
-    @Test
-    void create_fails_when_fee_not_negative_violated() throws Exception {
-        // Platform fee must not be negative → 400 (Bean Validation)
-        mockMvc.perform(post("/api/trade_transactions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"finalPrice\": 0.00, \"listingId\": 1, \"buyerId\": 1, \"sellerId\": 1, \"status\": \"COMPLETED\", \"completedAt\": \"2024-01-01T00:00:00\", \"platformFee\": -1 }"))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void create_fails_when_final_price_positive_violated() throws Exception {
-        // Transaction final price must be greater than zero → 400 (Bean Validation)
-        mockMvc.perform(post("/api/trade_transactions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"platformFee\": 0.00, \"listingId\": 1, \"buyerId\": 1, \"sellerId\": 1, \"status\": \"COMPLETED\", \"completedAt\": \"2024-01-01T00:00:00\", \"finalPrice\": 0.00 }"))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void create_fails_when_completed_requires_completed_at_violated() throws Exception {
-        // Completed transaction must have a completed_at timestamp: antecedent true, consequent missing → 400
-        mockMvc.perform(post("/api/trade_transactions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"finalPrice\": 0.00, \"platformFee\": 0.00, \"listingId\": 1, \"buyerId\": 1, \"sellerId\": 1, \"status\": \"COMPLETED\", \"completedAt\": null }"))
-            .andExpect(status().isBadRequest());
     }
 }

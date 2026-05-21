@@ -30,4 +30,9 @@ public class DeckTagAssignmentService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(DeckTagAssignment entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("deckId") && patch.get("deckId") != null) entity.setDeckId(Long.valueOf(patch.get("deckId").toString()));
+        if (patch.containsKey("tagId") && patch.get("tagId") != null) entity.setTagId(Long.valueOf(patch.get("tagId").toString()));
+    }
 }

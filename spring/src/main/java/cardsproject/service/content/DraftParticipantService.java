@@ -31,6 +31,13 @@ public class DraftParticipantService {
         repository.deleteById(id);
     }
 
+    public void applyPatch(DraftParticipant entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("seatNumber") && patch.get("seatNumber") != null) entity.setSeatNumber(Integer.valueOf(patch.get("seatNumber").toString()));
+        if (patch.containsKey("joinedAt") && patch.get("joinedAt") != null) entity.setJoinedAt(java.time.LocalDateTime.parse(patch.get("joinedAt").toString()));
+        if (patch.containsKey("sessionId") && patch.get("sessionId") != null) entity.setSessionId(Long.valueOf(patch.get("sessionId").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
+    }
+
     public void pickCard(Long id, Integer cardId, Integer packNumber) {
         DraftParticipant entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("DraftParticipant not found: " + id));

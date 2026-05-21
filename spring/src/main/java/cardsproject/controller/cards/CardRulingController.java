@@ -17,6 +17,7 @@ public class CardRulingController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<CardRuling> list() {
         return service.findAll();
@@ -34,20 +35,6 @@ public class CardRulingController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CardRuling> update(@PathVariable Long id, @Valid @RequestBody CardRuling entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<CardRuling> patch(@PathVariable Long id, @Valid @RequestBody CardRuling entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
@@ -55,13 +42,26 @@ public class CardRulingController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}/current")
     public ResponseEntity<Boolean> isCurrent(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isCurrent(id));
+        try {
+            return ResponseEntity.ok(service.isCurrent(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/supersedes")
     public ResponseEntity<Boolean> supersedesPrevious(@PathVariable Long id) {
-        return ResponseEntity.ok(service.supersedesPrevious(id));
+        try {
+            return ResponseEntity.ok(service.supersedesPrevious(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -24,7 +24,11 @@ public class CouponControllerTest {
         mockMvc.perform(get("/api/coupons"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/coupons?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/coupons")
@@ -32,7 +36,6 @@ public class CouponControllerTest {
             .content("{ \"code\": \"test\", \"discountValue\": 0.01, \"validFrom\": \"2024-01-01T00:00:00\", \"validUntil\": \"2024-01-01T00:00:01\", \"maxUses\": null }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/coupons/1"))
@@ -41,13 +44,24 @@ public class CouponControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/coupons/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/coupons/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"code\": \"test\", \"discountValue\": 0.01, \"validFrom\": \"2024-01-01T00:00:00\", \"validUntil\": \"2024-01-01T00:00:01\", \"maxUses\": null }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/coupons/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test

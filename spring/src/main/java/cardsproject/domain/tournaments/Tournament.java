@@ -3,6 +3,8 @@ package cardsproject.domain.tournaments;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "tournaments")
@@ -55,8 +57,10 @@ public class Tournament {
     public void setEntryFee(BigDecimal entryFee) { this.entryFee = entryFee; }
     public BigDecimal getPrizePool() { return prizePool; }
     public void setPrizePool(BigDecimal prizePool) { this.prizePool = prizePool; }
+    @JsonProperty("startTime")
     public LocalDateTime getStartTime() { return startTime; }
     public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    @JsonProperty("endTime")
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
     public Boolean getIsOnline() { return isOnline; }
@@ -65,6 +69,7 @@ public class Tournament {
     public void setLocation(String location) { this.location = location; }
     public String getRulesText() { return rulesText; }
     public void setRulesText(String rulesText) { this.rulesText = rulesText; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Long getSeasonId() { return seasonId; }
@@ -133,5 +138,11 @@ public class Tournament {
         if (!allowed.contains(to)) {
             throw new IllegalStateException("Transition " + this.getStatus() + " -> " + to + " not allowed");
         }
+    }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostUpdate
+    public void syncSeasonStats() {
+        // TODO: implement sync_season_stats
     }
 }

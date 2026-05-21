@@ -19,6 +19,13 @@ public class DeckTagService {
         return repository.findAll();
     }
 
+    public List<DeckTag> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<DeckTag> findById(Long id) {
         return repository.findById(id);
     }
@@ -29,6 +36,11 @@ public class DeckTagService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(DeckTag entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("color") && patch.get("color") != null) entity.setColor(patch.get("color").toString());
     }
 
     public void rename(Long id, String newName) {

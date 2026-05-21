@@ -24,7 +24,11 @@ public class ProductControllerTest {
         mockMvc.perform(get("/api/products"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/products?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/products")
@@ -32,7 +36,6 @@ public class ProductControllerTest {
             .content("{ \"name\": \"test\", \"price\": 0.01 }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/products/1"))
@@ -41,13 +44,24 @@ public class ProductControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/products/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/products/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"name\": \"test\", \"price\": 0.01 }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/products/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test

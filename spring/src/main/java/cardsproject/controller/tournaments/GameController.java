@@ -17,6 +17,7 @@ public class GameController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<Game> list() {
         return service.findAll();
@@ -34,35 +35,27 @@ public class GameController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Game> update(@PathVariable Long id, @Valid @RequestBody Game entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Game> patch(@PathVariable Long id, @Valid @RequestBody Game entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @PostMapping("/{id}/winner")
     public ResponseEntity<Void> recordWinner(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.recordWinner(id, (String) body.get("winner_side"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.recordWinner(id, (String) body.get("winner_side"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/duration")
     public ResponseEntity<java.math.BigDecimal> durationMinutes(@PathVariable Long id) {
-        return ResponseEntity.ok(service.durationMinutes(id));
+        try {
+            return ResponseEntity.ok(service.durationMinutes(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -5,6 +5,7 @@ import cardsproject.repository.players.FriendshipRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.players.FriendshipStatusType;
 
 @Service
 public class FriendshipService {
@@ -29,6 +30,13 @@ public class FriendshipService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Friendship entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("status")) entity.setStatus(FriendshipStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
+        if (patch.containsKey("requesterId") && patch.get("requesterId") != null) entity.setRequesterId(Long.valueOf(patch.get("requesterId").toString()));
+        if (patch.containsKey("receiverId") && patch.get("receiverId") != null) entity.setReceiverId(Long.valueOf(patch.get("receiverId").toString()));
     }
 
     public void accept(Long id) {

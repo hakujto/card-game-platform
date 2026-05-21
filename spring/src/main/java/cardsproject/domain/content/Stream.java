@@ -2,6 +2,8 @@ package cardsproject.domain.content;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "streams")
@@ -47,10 +49,13 @@ public class Stream {
     public void setIsOfficial(Boolean isOfficial) { this.isOfficial = isOfficial; }
     public Integer getViewerCountPeak() { return viewerCountPeak; }
     public void setViewerCountPeak(Integer viewerCountPeak) { this.viewerCountPeak = viewerCountPeak; }
+    @JsonProperty("scheduledStart")
     public LocalDateTime getScheduledStart() { return scheduledStart; }
     public void setScheduledStart(LocalDateTime scheduledStart) { this.scheduledStart = scheduledStart; }
+    @JsonProperty("actualStart")
     public LocalDateTime getActualStart() { return actualStart; }
     public void setActualStart(LocalDateTime actualStart) { this.actualStart = actualStart; }
+    @JsonProperty("endedAt")
     public LocalDateTime getEndedAt() { return endedAt; }
     public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
     public String getVodUrl() { return vodUrl; }

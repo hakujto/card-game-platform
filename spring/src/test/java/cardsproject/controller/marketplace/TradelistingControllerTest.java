@@ -24,7 +24,11 @@ public class TradeListingControllerTest {
         mockMvc.perform(get("/api/trade_listings"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/trade_listings?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_listings")
@@ -32,7 +36,6 @@ public class TradeListingControllerTest {
             .content("{ \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/trade_listings/1"))
@@ -41,13 +44,14 @@ public class TradeListingControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/trade_listings/1"))
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/trade_listings/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
             });
     }
     @Test
@@ -119,7 +123,7 @@ public class TradeListingControllerTest {
         mockMvc.perform(patch("/api/trade_listings/1/transitions/sold-to-active"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 
@@ -128,7 +132,7 @@ public class TradeListingControllerTest {
         mockMvc.perform(patch("/api/trade_listings/1/transitions/expired-to-active"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

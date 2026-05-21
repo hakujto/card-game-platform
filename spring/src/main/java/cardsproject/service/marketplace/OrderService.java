@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.marketplace.OrderStatusType;
+import cardsproject.domain.marketplace.OrderPaymentMethodType;
 
 @Service
 public class OrderService {
@@ -31,6 +32,22 @@ public class OrderService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(Order entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("status")) entity.setStatus(OrderStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("total") && patch.get("total") != null) entity.setTotal(new java.math.BigDecimal(patch.get("total").toString()));
+        if (patch.containsKey("discountApplied") && patch.get("discountApplied") != null) entity.setDiscountApplied(new java.math.BigDecimal(patch.get("discountApplied").toString()));
+        if (patch.containsKey("currency") && patch.get("currency") != null) entity.setCurrency(patch.get("currency").toString());
+        if (patch.containsKey("paymentMethod")) entity.setPaymentMethod(OrderPaymentMethodType.valueOf(patch.get("paymentMethod").toString()));
+        if (patch.containsKey("paymentReference") && patch.get("paymentReference") != null) entity.setPaymentReference(patch.get("paymentReference").toString());
+        if (patch.containsKey("shippingAddress") && patch.get("shippingAddress") != null) entity.setShippingAddress(patch.get("shippingAddress").toString());
+        if (patch.containsKey("trackingNumber") && patch.get("trackingNumber") != null) entity.setTrackingNumber(patch.get("trackingNumber").toString());
+        if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
+        if (patch.containsKey("paidAt") && patch.get("paidAt") != null) entity.setPaidAt(java.time.LocalDateTime.parse(patch.get("paidAt").toString()));
+        if (patch.containsKey("shippedAt") && patch.get("shippedAt") != null) entity.setShippedAt(java.time.LocalDateTime.parse(patch.get("shippedAt").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
+        if (patch.containsKey("couponId") && patch.get("couponId") != null) entity.setCouponId(Long.valueOf(patch.get("couponId").toString()));
     }
     private void validate(Order entity) {
         if (OrderStatusType.PAID.equals(entity.getStatus()) && entity.getPaidAt() == null) throw new IllegalStateException("Paid order must have paid_at set");

@@ -17,6 +17,7 @@ public class PlayerCollectionController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<PlayerCollection> list() {
         return service.findAll();
@@ -34,18 +35,12 @@ public class PlayerCollectionController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PlayerCollection> update(@PathVariable Long id, @Valid @RequestBody PlayerCollection entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<PlayerCollection> patch(@PathVariable Long id, @Valid @RequestBody PlayerCollection entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<PlayerCollection> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,20 +50,39 @@ public class PlayerCollectionController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PostMapping("/{id}/add")
     public ResponseEntity<Void> add(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.add(id, (Integer) body.get("quantity"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.add(id, (Integer) body.get("quantity"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/remove")
     public ResponseEntity<Void> remove(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.remove(id, (Integer) body.get("quantity"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.remove(id, (Integer) body.get("quantity"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/value")
     public ResponseEntity<java.math.BigDecimal> estimatedValue(@PathVariable Long id) {
-        return ResponseEntity.ok(service.estimatedValue(id));
+        try {
+            return ResponseEntity.ok(service.estimatedValue(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -24,7 +24,6 @@ public class ArticleTagAssignmentControllerTest {
         mockMvc.perform(get("/api/article_tag_assignments"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/article_tag_assignments")
@@ -32,7 +31,6 @@ public class ArticleTagAssignmentControllerTest {
             .content("{}"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/article_tag_assignments/1"))
@@ -41,13 +39,12 @@ public class ArticleTagAssignmentControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
     void delete_returns204or404() throws Exception {
         mockMvc.perform(delete("/api/article_tag_assignments/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 204 || status == 404;
             });
     }
 }

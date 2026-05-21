@@ -119,4 +119,11 @@ public class Card {
     public boolean isNotBannedAndRestrictedValid() {
         return !((Boolean.TRUE.equals(getIsBanned()) && Boolean.TRUE.equals(getIsRestricted())));
     }
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PrePersist
+    @PreUpdate
+    public void validateLegality() {
+        // TODO: implement validate_legality
+    }
 }

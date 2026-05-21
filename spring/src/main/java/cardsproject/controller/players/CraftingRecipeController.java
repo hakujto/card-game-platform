@@ -17,6 +17,7 @@ public class CraftingRecipeController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<CraftingRecipe> list() {
         return service.findAll();
@@ -42,39 +43,58 @@ public class CraftingRecipeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CraftingRecipe> patch(@PathVariable Long id, @Valid @RequestBody CraftingRecipe entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<CraftingRecipe> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/can-craft")
     public ResponseEntity<Boolean> canCraft(@PathVariable Long id, @RequestParam Integer playerId) {
-        return ResponseEntity.ok(service.canCraft(id, playerId));
+        try {
+            return ResponseEntity.ok(service.canCraft(id, playerId));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/craft")
     public ResponseEntity<Void> executeCraft(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.executeCraft(id, (Integer) body.get("player_id"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.executeCraft(id, (Integer) body.get("player_id"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/disable")
     public ResponseEntity<Void> disable(@PathVariable Long id) {
-        service.disable(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.disable(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/enable")
     public ResponseEntity<Void> enable(@PathVariable Long id) {
-        service.enable(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.enable(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

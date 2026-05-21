@@ -3,6 +3,8 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "trade_listings")
@@ -45,6 +47,7 @@ public class TradeListing {
     public void setAuctionStartPrice(BigDecimal auctionStartPrice) { this.auctionStartPrice = auctionStartPrice; }
     public BigDecimal getAuctionCurrentBid() { return auctionCurrentBid; }
     public void setAuctionCurrentBid(BigDecimal auctionCurrentBid) { this.auctionCurrentBid = auctionCurrentBid; }
+    @JsonProperty("auctionEndTime")
     public LocalDateTime getAuctionEndTime() { return auctionEndTime; }
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }
     public Boolean getFoil() { return foil; }
@@ -55,8 +58,10 @@ public class TradeListing {
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    @JsonProperty("createdAt")
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    @JsonProperty("expiresAt")
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
     public Long getSellerId() { return sellerId; }

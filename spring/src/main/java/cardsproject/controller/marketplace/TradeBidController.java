@@ -17,6 +17,7 @@ public class TradeBidController {
         this.service = service;
     }
 
+
     @GetMapping
     public List<TradeBid> list() {
         return service.findAll();
@@ -34,29 +35,27 @@ public class TradeBidController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TradeBid> update(@PathVariable Long id, @Valid @RequestBody TradeBid entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TradeBid> patch(@PathVariable Long id, @Valid @RequestBody TradeBid entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
 
     @GetMapping("/{id}/outbid")
     public ResponseEntity<Boolean> outbidBy(@PathVariable Long id, @RequestParam java.math.BigDecimal newAmount) {
-        return ResponseEntity.ok(service.outbidBy(id, newAmount));
+        try {
+            return ResponseEntity.ok(service.outbidBy(id, newAmount));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> retract(@PathVariable Long id) {
-        service.retract(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.retract(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

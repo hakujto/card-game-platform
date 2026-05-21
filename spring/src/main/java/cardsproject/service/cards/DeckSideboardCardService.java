@@ -31,6 +31,12 @@ public class DeckSideboardCardService {
         repository.deleteById(id);
     }
 
+    public void applyPatch(DeckSideboardCard entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("quantity") && patch.get("quantity") != null) entity.setQuantity(Integer.valueOf(patch.get("quantity").toString()));
+        if (patch.containsKey("deckId") && patch.get("deckId") != null) entity.setDeckId(Long.valueOf(patch.get("deckId").toString()));
+        if (patch.containsKey("cardId") && patch.get("cardId") != null) entity.setCardId(Long.valueOf(patch.get("cardId").toString()));
+    }
+
     public void increment(Long id, Integer amount) {
         DeckSideboardCard entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("DeckSideboardCard not found: " + id));

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.cards.CardAbilityAbilityTypeType;
+import cardsproject.domain.cards.CardAbilityTimingType;
 
 @Service
 public class CardAbilityService {
@@ -20,6 +21,13 @@ public class CardAbilityService {
         return repository.findAll();
     }
 
+    public List<CardAbility> search(String q) {
+        if (q == null || q.isBlank()) return repository.findAll();
+        return repository.findAll().stream()
+            .filter(e -> (e.getKeyword() != null && e.getKeyword().toLowerCase().contains(q.toLowerCase())) || (e.getAbilityText() != null && e.getAbilityText().toLowerCase().contains(q.toLowerCase())))
+            .collect(java.util.stream.Collectors.toList());
+    }
+
     public Optional<CardAbility> findById(Long id) {
         return repository.findById(id);
     }
@@ -31,6 +39,14 @@ public class CardAbilityService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(CardAbility entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("abilityType")) entity.setAbilityType(CardAbilityAbilityTypeType.valueOf(patch.get("abilityType").toString()));
+        if (patch.containsKey("keyword") && patch.get("keyword") != null) entity.setKeyword(patch.get("keyword").toString());
+        if (patch.containsKey("abilityText") && patch.get("abilityText") != null) entity.setAbilityText(patch.get("abilityText").toString());
+        if (patch.containsKey("timing")) entity.setTiming(CardAbilityTimingType.valueOf(patch.get("timing").toString()));
+        if (patch.containsKey("cardId") && patch.get("cardId") != null) entity.setCardId(Long.valueOf(patch.get("cardId").toString()));
     }
     private void validate(CardAbility entity) {
         if (CardAbilityAbilityTypeType.KEYWORD.equals(entity.getAbilityType()) && entity.getKeyword() == null) throw new IllegalStateException("Keyword ability must have a keyword name");

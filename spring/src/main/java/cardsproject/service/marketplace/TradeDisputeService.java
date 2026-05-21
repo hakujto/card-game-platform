@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import cardsproject.domain.marketplace.TradeDisputeStatusType;
+import cardsproject.domain.marketplace.TradeDisputeReasonType;
 
 @Service
 public class TradeDisputeService {
@@ -31,6 +32,18 @@ public class TradeDisputeService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(TradeDispute entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("status")) entity.setStatus(TradeDisputeStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("reason")) entity.setReason(TradeDisputeReasonType.valueOf(patch.get("reason").toString()));
+        if (patch.containsKey("description") && patch.get("description") != null) entity.setDescription(patch.get("description").toString());
+        if (patch.containsKey("resolution") && patch.get("resolution") != null) entity.setResolution(patch.get("resolution").toString());
+        if (patch.containsKey("openedAt") && patch.get("openedAt") != null) entity.setOpenedAt(java.time.LocalDateTime.parse(patch.get("openedAt").toString()));
+        if (patch.containsKey("resolvedAt") && patch.get("resolvedAt") != null) entity.setResolvedAt(java.time.LocalDateTime.parse(patch.get("resolvedAt").toString()));
+        if (patch.containsKey("transactionId") && patch.get("transactionId") != null) entity.setTransactionId(Long.valueOf(patch.get("transactionId").toString()));
+        if (patch.containsKey("openedById") && patch.get("openedById") != null) entity.setOpenedById(Long.valueOf(patch.get("openedById").toString()));
+        if (patch.containsKey("resolvedById") && patch.get("resolvedById") != null) entity.setResolvedById(Long.valueOf(patch.get("resolvedById").toString()));
     }
     private void validate(TradeDispute entity) {
         if (entity.getResolvedAt() != null && !(TradeDisputeStatusType.RESOLVED.equals(entity.getStatus()))) throw new IllegalStateException("resolved_at_requires_terminal_status");

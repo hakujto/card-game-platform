@@ -17,9 +17,10 @@ public class CouponController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<Coupon> list() {
-        return service.findAll();
+    public List<Coupon> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -42,38 +43,57 @@ public class CouponController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Coupon> patch(@PathVariable Long id, @Valid @RequestBody Coupon entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<Coupon> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
 
     @GetMapping("/{id}/valid")
     public ResponseEntity<Boolean> isValid(@PathVariable Long id) {
-        return ResponseEntity.ok(service.isValid(id));
+        try {
+            return ResponseEntity.ok(service.isValid(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/applicable")
     public ResponseEntity<Boolean> isApplicableToOrder(@PathVariable Long id, @RequestParam java.math.BigDecimal orderTotal) {
-        return ResponseEntity.ok(service.isApplicableToOrder(id, orderTotal));
+        try {
+            return ResponseEntity.ok(service.isApplicableToOrder(id, orderTotal));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/redeem")
     public ResponseEntity<Void> redeem(@PathVariable Long id) {
-        service.redeem(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.redeem(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        service.deactivate(id);
-        return ResponseEntity.noContent().build();
+        try {
+            service.deactivate(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

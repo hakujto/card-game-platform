@@ -32,6 +32,19 @@ public class MatchService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
+    public void applyPatch(Match entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("tableNumber") && patch.get("tableNumber") != null) entity.setTableNumber(Integer.valueOf(patch.get("tableNumber").toString()));
+        if (patch.containsKey("status")) entity.setStatus(MatchStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("player1Wins") && patch.get("player1Wins") != null) entity.setPlayer1Wins(Integer.valueOf(patch.get("player1Wins").toString()));
+        if (patch.containsKey("player2Wins") && patch.get("player2Wins") != null) entity.setPlayer2Wins(Integer.valueOf(patch.get("player2Wins").toString()));
+        if (patch.containsKey("startedAt") && patch.get("startedAt") != null) entity.setStartedAt(java.time.LocalDateTime.parse(patch.get("startedAt").toString()));
+        if (patch.containsKey("endedAt") && patch.get("endedAt") != null) entity.setEndedAt(java.time.LocalDateTime.parse(patch.get("endedAt").toString()));
+        if (patch.containsKey("resultNotes") && patch.get("resultNotes") != null) entity.setResultNotes(patch.get("resultNotes").toString());
+        if (patch.containsKey("roundId") && patch.get("roundId") != null) entity.setRoundId(Long.valueOf(patch.get("roundId").toString()));
+        if (patch.containsKey("player1Id") && patch.get("player1Id") != null) entity.setPlayer1Id(Long.valueOf(patch.get("player1Id").toString()));
+        if (patch.containsKey("player2Id") && patch.get("player2Id") != null) entity.setPlayer2Id(Long.valueOf(patch.get("player2Id").toString()));
+    }
     private void validate(Match entity) {
         if (MatchStatusType.BYE.equals(entity.getStatus()) && entity.getPlayer2Id() != null) throw new IllegalStateException("BYE match must not have a second player");
         if (entity.getEndedAt() != null && !((entity.getEndedAt() == null || (entity.getStartedAt() != null && entity.getEndedAt().isAfter(entity.getStartedAt()))))) throw new IllegalStateException("Match end time must be after start time");

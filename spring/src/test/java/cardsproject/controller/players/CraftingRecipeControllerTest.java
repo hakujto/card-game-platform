@@ -24,7 +24,6 @@ public class CraftingRecipeControllerTest {
         mockMvc.perform(get("/api/crafting_recipes"))
             .andExpect(status().isOk());
     }
-
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/crafting_recipes")
@@ -32,7 +31,6 @@ public class CraftingRecipeControllerTest {
             .content("{ \"dustCost\": 1 }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/crafting_recipes/1"))
@@ -41,13 +39,24 @@ public class CraftingRecipeControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/crafting_recipes/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/crafting_recipes/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"dustCost\": 1 }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/crafting_recipes/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test

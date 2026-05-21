@@ -24,7 +24,11 @@ public class ArticleControllerTest {
         mockMvc.perform(get("/api/articles"))
             .andExpect(status().isOk());
     }
-
+    @Test
+    void search_returns200() throws Exception {
+        mockMvc.perform(get("/api/articles?q=test"))
+            .andExpect(status().isOk());
+    }
     @Test
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/articles")
@@ -32,7 +36,6 @@ public class ArticleControllerTest {
             .content("{ \"title\": \"test\", \"slug\": \"test\", \"body\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
-
     @Test
     void show_returns200or404() throws Exception {
         mockMvc.perform(get("/api/articles/1"))
@@ -41,13 +44,24 @@ public class ArticleControllerTest {
                 assert status == 200 || status == 404;
             });
     }
-
     @Test
-    void delete_returns204or404() throws Exception {
-        mockMvc.perform(delete("/api/articles/1"))
+    void update_returns200or404() throws Exception {
+        mockMvc.perform(put("/api/articles/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"title\": \"test\", \"slug\": \"test\", \"body\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"updatedAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404 || status == 500 || status == 501;
+                assert status == 200 || status == 404;
+            });
+    }
+    @Test
+    void patch_returns200or404() throws Exception {
+        mockMvc.perform(patch("/api/articles/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"))
+            .andExpect(result -> {
+                int status = result.getResponse().getStatus();
+                assert status == 200 || status == 404;
             });
     }
     @Test
@@ -111,7 +125,7 @@ public class ArticleControllerTest {
         mockMvc.perform(patch("/api/articles/1/transitions/published-to-draft"))
             .andExpect(result -> {
                 int s = result.getResponse().getStatus();
-                assert s == 409 || s == 404 || s == 500;
+                assert s == 409 || s == 404;
             });
     }
 }

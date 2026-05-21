@@ -17,9 +17,10 @@ public class ArticleTagController {
         this.service = service;
     }
 
+
     @GetMapping
-    public List<ArticleTag> list() {
-        return service.findAll();
+    public List<ArticleTag> list(@RequestParam(required = false) String q) {
+        return service.search(q);
     }
 
     @PostMapping
@@ -34,18 +35,12 @@ public class ArticleTagController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleTag> update(@PathVariable Long id, @Valid @RequestBody ArticleTag entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
-    public ResponseEntity<ArticleTag> patch(@PathVariable Long id, @Valid @RequestBody ArticleTag entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
+    public ResponseEntity<ArticleTag> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).map(entity -> {
+            service.applyPatch(entity, patch);
+            return ResponseEntity.ok(service.save(entity));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -55,14 +50,27 @@ public class ArticleTagController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PatchMapping("/{id}/rename")
     public ResponseEntity<Void> rename(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
-        service.rename(id, (String) body.get("new_name"));
-        return ResponseEntity.noContent().build();
+        try {
+            service.rename(id, (String) body.get("new_name"));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/article-count")
     public ResponseEntity<Integer> articleCount(@PathVariable Long id) {
-        return ResponseEntity.ok(service.articleCount(id));
+        try {
+            return ResponseEntity.ok(service.articleCount(id));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

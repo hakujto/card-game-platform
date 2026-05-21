@@ -5,6 +5,7 @@ import cardsproject.repository.tournaments.TournamentRegistrationRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import cardsproject.domain.tournaments.TournamentRegistrationStatusType;
 
 @Service
 public class TournamentRegistrationService {
@@ -30,6 +31,17 @@ public class TournamentRegistrationService {
 
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    public void applyPatch(TournamentRegistration entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("status")) entity.setStatus(TournamentRegistrationStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("seed") && patch.get("seed") != null) entity.setSeed(Integer.valueOf(patch.get("seed").toString()));
+        if (patch.containsKey("finalStanding") && patch.get("finalStanding") != null) entity.setFinalStanding(Integer.valueOf(patch.get("finalStanding").toString()));
+        if (patch.containsKey("pointsEarned") && patch.get("pointsEarned") != null) entity.setPointsEarned(Integer.valueOf(patch.get("pointsEarned").toString()));
+        if (patch.containsKey("registeredAt") && patch.get("registeredAt") != null) entity.setRegisteredAt(java.time.LocalDateTime.parse(patch.get("registeredAt").toString()));
+        if (patch.containsKey("tournamentId") && patch.get("tournamentId") != null) entity.setTournamentId(Long.valueOf(patch.get("tournamentId").toString()));
+        if (patch.containsKey("playerId") && patch.get("playerId") != null) entity.setPlayerId(Long.valueOf(patch.get("playerId").toString()));
+        if (patch.containsKey("deckId") && patch.get("deckId") != null) entity.setDeckId(Long.valueOf(patch.get("deckId").toString()));
     }
     private void validate(TournamentRegistration entity) {
         if (entity.getFinalStanding() != null && !((entity.getFinalStanding() == null || entity.getFinalStanding() > 0))) throw new IllegalStateException("Final standing must be greater than zero");
