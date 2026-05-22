@@ -1,6 +1,7 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -27,7 +28,9 @@ public class DraftSession : IValidatableObject
     public DraftSessionDraftTypeType DraftType { get; set; }
     public int Seats { get; set; } = 8;
     public int TimePerPickSeconds { get; set; } = 30;
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("completedAt")]
     public DateTime? CompletedAt { get; set; } = null;
 
     public int? CardSetId { get; set; }

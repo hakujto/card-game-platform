@@ -21,6 +21,12 @@ public class DeckTagService
     public async Task<List<DeckTag>> GetAllAsync()
         => await _db.DeckTags.AsNoTracking().ToListAsync();
 
+    public async Task<List<DeckTag>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.DeckTags.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q))).ToListAsync();
+    }
+
     public async Task<DeckTag?> GetByIdAsync(int id)
         => await _db.DeckTags.FindAsync(id);
 

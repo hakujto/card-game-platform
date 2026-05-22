@@ -32,6 +32,7 @@ public class MatchController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
@@ -41,30 +42,6 @@ public class MatchController : ControllerBase
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
-    }
-
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpPut("{id:int}")]
-    [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] MatchDto dto)
-    {
-        try
-        {
-            var entity = await _svc.UpdateAsync(id, dto);
-            if (entity is null) return NotFound();
-            return Ok(entity);
-        }
-        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
-        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-    }
-
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await _svc.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return NoContent();
     }
 
     [HttpPost("{id:int}/record")]
@@ -77,6 +54,7 @@ public class MatchController : ControllerBase
             await _svc.RecordResultAsync(id, p1Wins, p2Wins);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -88,6 +66,7 @@ public class MatchController : ControllerBase
             await _svc.FinalizeResultAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -99,6 +78,7 @@ public class MatchController : ControllerBase
             var result = await _svc.DetermineWinnerAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -111,6 +91,7 @@ public class MatchController : ControllerBase
             await _svc.ConcedeAsync(id, playerId);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -122,6 +103,7 @@ public class MatchController : ControllerBase
             await _svc.DrawAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 

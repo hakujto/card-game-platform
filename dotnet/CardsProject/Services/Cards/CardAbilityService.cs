@@ -21,6 +21,12 @@ public class CardAbilityService
     public async Task<List<CardAbility>> GetAllAsync()
         => await _db.CardAbilities.AsNoTracking().ToListAsync();
 
+    public async Task<List<CardAbility>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.CardAbilities.AsNoTracking().Where(e => (e.Keyword != null && e.Keyword.Contains(q)) || (e.AbilityText != null && e.AbilityText.Contains(q))).ToListAsync();
+    }
+
     public async Task<CardAbility?> GetByIdAsync(int id)
         => await _db.CardAbilities.FindAsync(id);
 

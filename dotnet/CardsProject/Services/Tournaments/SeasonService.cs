@@ -21,6 +21,12 @@ public class SeasonService
     public async Task<List<Season>> GetAllAsync()
         => await _db.Seasons.AsNoTracking().ToListAsync();
 
+    public async Task<List<Season>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Seasons.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q))).ToListAsync();
+    }
+
     public async Task<Season?> GetByIdAsync(int id)
         => await _db.Seasons.FindAsync(id);
 

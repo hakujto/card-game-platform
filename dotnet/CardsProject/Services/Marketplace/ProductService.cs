@@ -21,6 +21,12 @@ public class ProductService
     public async Task<List<Product>> GetAllAsync()
         => await _db.Products.AsNoTracking().ToListAsync();
 
+    public async Task<List<Product>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Products.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q)) || (e.Description != null && e.Description.Contains(q))).ToListAsync();
+    }
+
     public async Task<Product?> GetByIdAsync(int id)
         => await _db.Products.FindAsync(id);
 

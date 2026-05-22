@@ -21,6 +21,12 @@ public class ArticleService
     public async Task<List<Article>> GetAllAsync()
         => await _db.Articles.AsNoTracking().ToListAsync();
 
+    public async Task<List<Article>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Articles.AsNoTracking().Where(e => (e.Title != null && e.Title.Contains(q)) || (e.Excerpt != null && e.Excerpt.Contains(q))).ToListAsync();
+    }
+
     public async Task<Article?> GetByIdAsync(int id)
         => await _db.Articles.FindAsync(id);
 

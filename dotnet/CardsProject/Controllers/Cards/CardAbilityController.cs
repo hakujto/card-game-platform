@@ -14,9 +14,9 @@ public class CardAbilityController : ControllerBase
     public CardAbilityController(CardAbilityService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List([FromQuery] string? q = null)
     {
-        var items = await _svc.GetAllAsync();
+        var items = await _svc.SearchAsync(q);
         return Ok(items);
     }
 
@@ -31,6 +31,7 @@ public class CardAbilityController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -53,6 +54,7 @@ public class CardAbilityController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -71,6 +73,7 @@ public class CardAbilityController : ControllerBase
             var result = await _svc.IsUsableAtAsync(id, timing);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -82,6 +85,7 @@ public class CardAbilityController : ControllerBase
             var result = await _svc.DescribeAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

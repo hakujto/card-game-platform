@@ -14,9 +14,9 @@ public class ProductController : ControllerBase
     public ProductController(ProductService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List([FromQuery] string? q = null)
     {
-        var items = await _svc.GetAllAsync();
+        var items = await _svc.SearchAsync(q);
         return Ok(items);
     }
 
@@ -31,6 +31,7 @@ public class ProductController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -53,14 +54,7 @@ public class ProductController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await _svc.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return NoContent();
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpPost("{id:int}/activate")]
@@ -71,6 +65,7 @@ public class ProductController : ControllerBase
             await _svc.ActivateAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -82,6 +77,7 @@ public class ProductController : ControllerBase
             await _svc.DeactivateAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -94,6 +90,7 @@ public class ProductController : ControllerBase
             var result = await _svc.ApplyDiscountAsync(id, percent);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -106,6 +103,7 @@ public class ProductController : ControllerBase
             await _svc.RestockAsync(id, quantity);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -117,6 +115,7 @@ public class ProductController : ControllerBase
             var result = await _svc.EffectivePriceAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -128,6 +127,7 @@ public class ProductController : ControllerBase
             var result = await _svc.IsInStockAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

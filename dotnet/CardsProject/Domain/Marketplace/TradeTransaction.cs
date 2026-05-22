@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -19,6 +20,7 @@ public class TradeTransaction : IValidatableObject
     public decimal FinalPrice { get; set; } = 0.00m;
     public decimal PlatformFee { get; set; } = 0.00m;
     public TradeTransactionStatusType Status { get; set; }
+    [JsonPropertyName("completedAt")]
     public DateTime? CompletedAt { get; set; } = null;
 
     public int? ListingId { get; set; }

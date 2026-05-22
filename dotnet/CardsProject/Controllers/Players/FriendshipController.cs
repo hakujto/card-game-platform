@@ -31,6 +31,7 @@ public class FriendshipController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -39,20 +40,6 @@ public class FriendshipController : ControllerBase
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
-    }
-
-    [HttpPut("{id:int}")]
-    [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] FriendshipDto dto)
-    {
-        try
-        {
-            var entity = await _svc.UpdateAsync(id, dto);
-            if (entity is null) return NotFound();
-            return Ok(entity);
-        }
-        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
-        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -71,6 +58,7 @@ public class FriendshipController : ControllerBase
             await _svc.AcceptAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -82,6 +70,7 @@ public class FriendshipController : ControllerBase
             await _svc.DeclineAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -93,6 +82,7 @@ public class FriendshipController : ControllerBase
             await _svc.BlockAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

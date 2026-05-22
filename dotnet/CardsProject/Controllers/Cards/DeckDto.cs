@@ -11,7 +11,9 @@ public class DeckDto
     public int? Wins { get; set; }
     public int? Losses { get; set; }
     public int? Draws { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; }
     public int? PlayerId { get; set; }
 }

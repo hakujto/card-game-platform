@@ -21,6 +21,12 @@ public class TournamentService
     public async Task<List<Tournament>> GetAllAsync()
         => await _db.Tournaments.AsNoTracking().ToListAsync();
 
+    public async Task<List<Tournament>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Tournaments.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q)) || (e.Description != null && e.Description.Contains(q))).ToListAsync();
+    }
+
     public async Task<Tournament?> GetByIdAsync(int id)
         => await _db.Tournaments.FindAsync(id);
 

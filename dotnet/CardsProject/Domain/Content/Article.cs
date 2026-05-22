@@ -2,6 +2,7 @@ using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -48,8 +49,11 @@ public class Article : IValidatableObject
     public int ViewCount { get; set; } = 0;
     public int LikesCount { get; set; } = 0;
     public bool IsFeatured { get; set; } = false;
+    [JsonPropertyName("publishedAt")]
     public DateTime? PublishedAt { get; set; } = null;
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; } = null;
 
     public int? AuthorId { get; set; }
@@ -115,5 +119,11 @@ public class Article : IValidatableObject
             yield return new ValidationResult("Article view count must not be negative", new[] { nameof(Id) });
         if (!( LikesCount >= 0 ))
             yield return new ValidationResult("Article likes count must not be negative", new[] { nameof(Id) });
+    }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void UpdateSearchIndex()
+    {
+        // TODO: implement update_search_index
     }
 }

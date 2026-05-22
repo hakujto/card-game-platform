@@ -21,6 +21,12 @@ public class AchievementService
     public async Task<List<Achievement>> GetAllAsync()
         => await _db.Achievements.AsNoTracking().ToListAsync();
 
+    public async Task<List<Achievement>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Achievements.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q)) || (e.Description != null && e.Description.Contains(q))).ToListAsync();
+    }
+
     public async Task<Achievement?> GetByIdAsync(int id)
         => await _db.Achievements.FindAsync(id);
 

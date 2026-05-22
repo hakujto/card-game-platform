@@ -22,6 +22,12 @@ public class StreamService
     public async Task<List<Stream>> GetAllAsync()
         => await _db.Streams.AsNoTracking().ToListAsync();
 
+    public async Task<List<Stream>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Streams.AsNoTracking().Where(e => (e.Title != null && e.Title.Contains(q))).ToListAsync();
+    }
+
     public async Task<Stream?> GetByIdAsync(int id)
         => await _db.Streams.FindAsync(id);
 

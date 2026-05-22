@@ -10,11 +10,14 @@ public class TournamentDto
     public int? MaxPlayers { get; set; }
     public decimal? EntryFee { get; set; }
     public decimal? PrizePool { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("startTime")]
     public DateTime? StartTime { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("endTime")]
     public DateTime? EndTime { get; set; }
     public bool? IsOnline { get; set; }
     public string? Location { get; set; }
     public string? RulesText { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
     public int? SeasonId { get; set; }
     public int? OrganizerId { get; set; }

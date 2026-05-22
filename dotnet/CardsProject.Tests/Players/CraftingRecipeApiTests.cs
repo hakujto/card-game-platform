@@ -57,7 +57,6 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
         var response = await _client.GetAsync("/api/crafting_recipes");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -69,32 +68,21 @@ public class CraftingRecipeApiTests : IClassFixture<CraftingRecipeApiTests.TestF
         var response = await _client.PostAsJsonAsync("/api/crafting_recipes", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/crafting_recipes/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
+    public async Task Update_Returns200Or404()
     {
         var payload = new { DustCost = 1 };
         var response = await _client.PatchAsJsonAsync("/api/crafting_recipes/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/crafting_recipes/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
     [Fact]

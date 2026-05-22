@@ -6,7 +6,9 @@ public class TradeDisputeDto
     public string? Reason { get; set; }
     public string? Description { get; set; }
     public string? Resolution { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("openedAt")]
     public DateTime? OpenedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("resolvedAt")]
     public DateTime? ResolvedAt { get; set; }
     public int? TransactionId { get; set; }
     public int? OpenedById { get; set; }

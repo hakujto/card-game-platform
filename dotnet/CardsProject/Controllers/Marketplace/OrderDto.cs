@@ -10,8 +10,11 @@ public class OrderDto
     public string? PaymentReference { get; set; }
     public string? ShippingAddress { get; set; }
     public string? TrackingNumber { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("paidAt")]
     public DateTime? PaidAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("shippedAt")]
     public DateTime? ShippedAt { get; set; }
     public int? PlayerId { get; set; }
     public int? CouponId { get; set; }

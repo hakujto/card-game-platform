@@ -31,6 +31,7 @@ public class GameController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -39,28 +40,6 @@ public class GameController : ControllerBase
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
         return Ok(entity);
-    }
-
-    [HttpPut("{id:int}")]
-    [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] GameDto dto)
-    {
-        try
-        {
-            var entity = await _svc.UpdateAsync(id, dto);
-            if (entity is null) return NotFound();
-            return Ok(entity);
-        }
-        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
-        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await _svc.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return NoContent();
     }
 
     [HttpPost("{id:int}/winner")]
@@ -72,6 +51,7 @@ public class GameController : ControllerBase
             await _svc.RecordWinnerAsync(id, winnerSide);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -83,6 +63,7 @@ public class GameController : ControllerBase
             var result = await _svc.DurationMinutesAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

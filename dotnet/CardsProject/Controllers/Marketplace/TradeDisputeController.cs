@@ -32,6 +32,7 @@ public class TradeDisputeController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
@@ -43,30 +44,6 @@ public class TradeDisputeController : ControllerBase
         return Ok(entity);
     }
 
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpPut("{id:int}")]
-    [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] TradeDisputeDto dto)
-    {
-        try
-        {
-            var entity = await _svc.UpdateAsync(id, dto);
-            if (entity is null) return NotFound();
-            return Ok(entity);
-        }
-        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
-        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-    }
-
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await _svc.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return NoContent();
-    }
-
     [HttpPost("{id:int}/escalate")]
     public async System.Threading.Tasks.Task<IActionResult> Escalate(int id)
     {
@@ -75,6 +52,7 @@ public class TradeDisputeController : ControllerBase
             await _svc.EscalateAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -87,6 +65,7 @@ public class TradeDisputeController : ControllerBase
             await _svc.ResolveAsync(id, resolutionText);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -98,6 +77,7 @@ public class TradeDisputeController : ControllerBase
             await _svc.CloseResolvedAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -109,6 +89,7 @@ public class TradeDisputeController : ControllerBase
             await _svc.ReviewAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 

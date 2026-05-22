@@ -11,7 +11,9 @@ public class PlayerDto
     public string? AvatarUrl { get; set; }
     public string? PreferredFormat { get; set; }
     public bool? IsVerified { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("lastActiveAt")]
     public DateTime? LastActiveAt { get; set; }
     public string? UserId { get; set; }
 }

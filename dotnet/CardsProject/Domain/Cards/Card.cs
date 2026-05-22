@@ -117,4 +117,10 @@ public class Card : IValidatableObject
         if (!( !((IsBanned == true && IsRestricted == true)) ))
             yield return new ValidationResult("Card cannot be both banned and restricted at the same time", new[] { nameof(Id) });
     }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void ValidateLegality()
+    {
+        // TODO: implement validate_legality
+    }
 }

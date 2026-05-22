@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -9,6 +10,7 @@ public class ArticleComment
 
     public string Body { get; set; } = "";
     public bool IsHidden { get; set; } = false;
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
 
     public int? ArticleId { get; set; }

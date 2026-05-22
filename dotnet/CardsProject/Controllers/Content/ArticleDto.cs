@@ -13,8 +13,11 @@ public class ArticleDto
     public int? ViewCount { get; set; }
     public int? LikesCount { get; set; }
     public bool? IsFeatured { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("publishedAt")]
     public DateTime? PublishedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; }
     public int? AuthorId { get; set; }
     public int? FeaturedDeckId { get; set; }

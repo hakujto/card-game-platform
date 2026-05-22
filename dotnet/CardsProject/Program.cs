@@ -94,6 +94,15 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
+app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+    var msg = ex?.Message ?? "Internal server error";
+    await ctx.Response.WriteAsJsonAsync(new { error = msg });
+}));
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors();

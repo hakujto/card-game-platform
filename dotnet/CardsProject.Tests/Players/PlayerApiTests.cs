@@ -57,7 +57,6 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
         var response = await _client.GetAsync("/api/players");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -70,18 +69,16 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
         var response = await _client.PostAsJsonAsync("/api/players", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/players/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
+    public async Task Update_Returns200Or404()
     {
         var payload = new { DisplayName = "test" };
         var response = await _client.PatchAsJsonAsync("/api/players/1", payload);
@@ -89,14 +86,11 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Delete_Returns204OrNotFound()
+    public async Task Search_Returns200()
     {
-        var response = await _client.DeleteAsync("/api/players/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
+        var response = await _client.GetAsync("/api/players?q=test");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     [Fact]
     public async Task Create_Fails_When_RatingRange_Violated()

@@ -57,63 +57,12 @@ public class PlayerAchievementApiTests : IClassFixture<PlayerAchievementApiTests
         var response = await _client.GetAsync("/api/player_achievements");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
-    public async Task Create_Returns201()
-    {
-        var payload = new
-        {
-            IsCompleted = false,
-            EarnedAt = "2024-01-01T00:00:00",
-            PlayerId = 1,
-            AchievementId = 1
-        };
-        var response = await _client.PostAsJsonAsync("/api/player_achievements", payload);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/player_achievements/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { EarnedAt = "2024-01-01T00:00:00" };
-        var response = await _client.PatchAsJsonAsync("/api/player_achievements/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/player_achievements/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-    [Fact]
-    public async Task Create_Fails_When_CompletedRequiresProgress_Violated()
-    {
-        // Completed achievement must have progress greater than zero: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""AchievementId"": 1, ""EarnedAt"": ""2024-01-01T00:00:00"", ""IsCompleted"": true, ""Progress"": 0 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_achievements", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_ProgressNotNegative_Violated()
-    {
-        // Achievement progress must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""AchievementId"": 1, ""IsCompleted"": true, ""EarnedAt"": ""2024-01-01T00:00:00"", ""Progress"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_achievements", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

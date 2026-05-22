@@ -1,6 +1,7 @@
 using CardsProject.Infrastructure;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Players;
 
@@ -38,7 +39,9 @@ public class Player : IValidatableObject
     public string? AvatarUrl { get; set; }
     public PlayerPreferredFormatType? PreferredFormat { get; set; }
     public bool IsVerified { get; set; } = false;
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("lastActiveAt")]
     public DateTime? LastActiveAt { get; set; } = null;
 
     public string? UserId { get; set; }
@@ -97,5 +100,11 @@ public class Player : IValidatableObject
             yield return new ValidationResult("Peak rating must be greater than or equal to current rating", new[] { nameof(Id) });
         if (!( true ))
             yield return new ValidationResult("Display name must not be empty", new[] { nameof(Id) });
+    }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void UpdateRank()
+    {
+        // TODO: implement update_rank
     }
 }

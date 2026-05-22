@@ -21,6 +21,12 @@ public class ArticleTagService
     public async Task<List<ArticleTag>> GetAllAsync()
         => await _db.ArticleTags.AsNoTracking().ToListAsync();
 
+    public async Task<List<ArticleTag>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.ArticleTags.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q))).ToListAsync();
+    }
+
     public async Task<ArticleTag?> GetByIdAsync(int id)
         => await _db.ArticleTags.FindAsync(id);
 

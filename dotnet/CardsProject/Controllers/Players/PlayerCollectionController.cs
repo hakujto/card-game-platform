@@ -31,6 +31,7 @@ public class PlayerCollectionController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -41,7 +42,6 @@ public class PlayerCollectionController : ControllerBase
         return Ok(entity);
     }
 
-    [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] PlayerCollectionDto dto)
     {
@@ -53,6 +53,7 @@ public class PlayerCollectionController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -72,6 +73,7 @@ public class PlayerCollectionController : ControllerBase
             await _svc.AddAsync(id, quantity);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -84,6 +86,7 @@ public class PlayerCollectionController : ControllerBase
             await _svc.RemoveAsync(id, quantity);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -95,6 +98,7 @@ public class PlayerCollectionController : ControllerBase
             var result = await _svc.EstimatedValueAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

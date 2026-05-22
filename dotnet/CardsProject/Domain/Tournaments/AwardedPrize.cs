@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -9,8 +10,10 @@ public class AwardedPrize : IValidatableObject
     public int Id { get; set; }
 
     public int FinalPlacement { get; set; } = 0;
+    [JsonPropertyName("awardedAt")]
     public DateTime? AwardedAt { get; set; } = null;
     public bool Claimed { get; set; } = false;
+    [JsonPropertyName("claimedAt")]
     public DateTime? ClaimedAt { get; set; } = null;
 
     public int? PrizeId { get; set; }

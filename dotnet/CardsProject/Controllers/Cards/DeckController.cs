@@ -14,9 +14,9 @@ public class DeckController : ControllerBase
     public DeckController(DeckService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List([FromQuery] string? q = null)
     {
-        var items = await _svc.GetAllAsync();
+        var items = await _svc.SearchAsync(q);
         return Ok(items);
     }
 
@@ -31,6 +31,7 @@ public class DeckController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -53,6 +54,7 @@ public class DeckController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -71,6 +73,7 @@ public class DeckController : ControllerBase
             var result = await _svc.ValidateSizeAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -84,6 +87,7 @@ public class DeckController : ControllerBase
             await _svc.AddCardAsync(id, cardId, quantity);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -95,6 +99,7 @@ public class DeckController : ControllerBase
             await _svc.RemoveCardAsync(id, cardId);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -106,6 +111,7 @@ public class DeckController : ControllerBase
             var result = await _svc.WinRateAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -117,6 +123,7 @@ public class DeckController : ControllerBase
             var result = await _svc.CloneAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -128,6 +135,7 @@ public class DeckController : ControllerBase
             await _svc.PublishAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -139,6 +147,7 @@ public class DeckController : ControllerBase
             await _svc.UnpublishAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -150,6 +159,7 @@ public class DeckController : ControllerBase
             var result = await _svc.CertifyTournamentLegalAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

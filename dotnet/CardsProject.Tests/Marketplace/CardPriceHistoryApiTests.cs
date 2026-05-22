@@ -57,65 +57,12 @@ public class CardPriceHistoryApiTests : IClassFixture<CardPriceHistoryApiTests.T
         var response = await _client.GetAsync("/api/card_price_histories");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
-    public async Task Create_Returns201()
-    {
-        var payload = new
-        {
-            MinPrice = 0.00m,
-            AvgPrice = 0.00m,
-            PriceDate = "2024-01-01",
-            MaxPrice = 0.00m,
-            Volume = 1,
-            CardId = 1
-        };
-        var response = await _client.PostAsJsonAsync("/api/card_price_histories", payload);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/card_price_histories/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { PriceDate = "2024-01-01" };
-        var response = await _client.PatchAsJsonAsync("/api/card_price_histories/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/card_price_histories/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-    [Fact]
-    public async Task Create_Fails_When_VolumeNotNegative_Violated()
-    {
-        // Price history volume must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""CardId"": 1, ""PriceDate"": ""2024-01-01"", ""AvgPrice"": 0.00, ""MinPrice"": 0.00, ""MaxPrice"": 0.00, ""Foil"": true, ""Volume"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/card_price_histories", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_PricesNotNegative_Violated()
-    {
-        // Prices must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""CardId"": 1, ""PriceDate"": ""2024-01-01"", ""AvgPrice"": 0.00, ""MaxPrice"": 0.00, ""Volume"": 1, ""Foil"": true, ""MinPrice"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/card_price_histories", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

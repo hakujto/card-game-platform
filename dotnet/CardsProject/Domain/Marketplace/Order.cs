@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -35,8 +36,11 @@ public class Order : IValidatableObject
     public string? PaymentReference { get; set; }
     public string? ShippingAddress { get; set; }
     public string? TrackingNumber { get; set; }
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("paidAt")]
     public DateTime? PaidAt { get; set; } = null;
+    [JsonPropertyName("shippedAt")]
     public DateTime? ShippedAt { get; set; } = null;
 
     public int? PlayerId { get; set; }
@@ -110,5 +114,11 @@ public class Order : IValidatableObject
             yield return new ValidationResult("Order total must not be negative", new[] { nameof(Id) });
         if (!( DiscountApplied <= Total ))
             yield return new ValidationResult("Discount applied cannot exceed order total", new[] { nameof(Id) });
+    }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void NotifyStatusChange()
+    {
+        // TODO: implement notify_status_change
     }
 }

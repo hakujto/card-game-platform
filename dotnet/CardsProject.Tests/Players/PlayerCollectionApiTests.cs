@@ -57,7 +57,6 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
         var response = await _client.GetAsync("/api/player_collections");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -71,18 +70,16 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
         var response = await _client.PostAsJsonAsync("/api/player_collections", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/player_collections/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
+    public async Task Update_Returns200Or404()
     {
         var payload = new { Quantity = 1 };
         var response = await _client.PatchAsJsonAsync("/api/player_collections/1", payload);
@@ -90,9 +87,8 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Delete_Returns204OrNotFound()
+    public async Task Delete_Returns204Or404()
     {
         var response = await _client.DeleteAsync("/api/player_collections/1");
         Assert.True(

@@ -32,6 +32,7 @@ public class DraftSessionController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
@@ -43,30 +44,6 @@ public class DraftSessionController : ControllerBase
         return Ok(entity);
     }
 
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpPut("{id:int}")]
-    [HttpPatch("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] DraftSessionDto dto)
-    {
-        try
-        {
-            var entity = await _svc.UpdateAsync(id, dto);
-            if (entity is null) return NotFound();
-            return Ok(entity);
-        }
-        catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
-        catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
-    }
-
-    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await _svc.DeleteAsync(id);
-        if (!deleted) return NotFound();
-        return NoContent();
-    }
-
     [HttpPost("{id:int}/start")]
     public async System.Threading.Tasks.Task<IActionResult> Start(int id)
     {
@@ -75,6 +52,7 @@ public class DraftSessionController : ControllerBase
             await _svc.StartAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -86,6 +64,7 @@ public class DraftSessionController : ControllerBase
             await _svc.AbandonAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -97,6 +76,7 @@ public class DraftSessionController : ControllerBase
             await _svc.CompleteAsync(id);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -108,6 +88,7 @@ public class DraftSessionController : ControllerBase
             var result = await _svc.IsFullAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 

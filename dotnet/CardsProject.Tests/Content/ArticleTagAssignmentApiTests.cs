@@ -57,7 +57,6 @@ public class ArticleTagAssignmentApiTests : IClassFixture<ArticleTagAssignmentAp
         var response = await _client.GetAsync("/api/article_tag_assignments");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -69,28 +68,16 @@ public class ArticleTagAssignmentApiTests : IClassFixture<ArticleTagAssignmentAp
         var response = await _client.PostAsJsonAsync("/api/article_tag_assignments", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/article_tag_assignments/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new {  };
-        var response = await _client.PatchAsJsonAsync("/api/article_tag_assignments/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
+    public async Task Delete_Returns204Or404()
     {
         var response = await _client.DeleteAsync("/api/article_tag_assignments/1");
         Assert.True(

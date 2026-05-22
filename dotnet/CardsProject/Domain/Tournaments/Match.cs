@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -21,7 +22,9 @@ public class Match : IValidatableObject
     public MatchStatusType Status { get; set; }
     public int Player1Wins { get; set; } = 0;
     public int Player2Wins { get; set; } = 0;
+    [JsonPropertyName("startedAt")]
     public DateTime? StartedAt { get; set; } = null;
+    [JsonPropertyName("endedAt")]
     public DateTime? EndedAt { get; set; } = null;
     public string? ResultNotes { get; set; }
 

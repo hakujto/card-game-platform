@@ -21,6 +21,12 @@ public class TradeListingService
     public async Task<List<TradeListing>> GetAllAsync()
         => await _db.TradeListings.AsNoTracking().ToListAsync();
 
+    public async Task<List<TradeListing>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.TradeListings.AsNoTracking().Where(e => (e.Description != null && e.Description.Contains(q))).ToListAsync();
+    }
+
     public async Task<TradeListing?> GetByIdAsync(int id)
         => await _db.TradeListings.FindAsync(id);
 

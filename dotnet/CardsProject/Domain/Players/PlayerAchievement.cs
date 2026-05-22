@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Players;
 
@@ -7,6 +8,7 @@ public class PlayerAchievement : IValidatableObject
 {
     public int Id { get; set; }
 
+    [JsonPropertyName("earnedAt")]
     public DateTime? EarnedAt { get; set; } = null;
     public int Progress { get; set; } = 0;
     public bool IsCompleted { get; set; } = false;

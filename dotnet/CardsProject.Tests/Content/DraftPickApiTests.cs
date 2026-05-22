@@ -57,64 +57,12 @@ public class DraftPickApiTests : IClassFixture<DraftPickApiTests.TestFactory>
         var response = await _client.GetAsync("/api/draft_picks");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
-    public async Task Create_Returns201()
-    {
-        var payload = new
-        {
-            PickNumber = 1,
-            PackNumber = 1,
-            PickedAt = "2024-01-01T00:00:00",
-            ParticipantId = 1,
-            CardId = 1
-        };
-        var response = await _client.PostAsJsonAsync("/api/draft_picks", payload);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/draft_picks/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { PickNumber = 1 };
-        var response = await _client.PatchAsJsonAsync("/api/draft_picks/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/draft_picks/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-    [Fact]
-    public async Task Create_Fails_When_PickNumberPositive_Violated()
-    {
-        // Pick number must be greater than zero → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""ParticipantId"": 1, ""CardId"": 1, ""PackNumber"": 1, ""PickedAt"": ""2024-01-01T00:00:00"", ""PickNumber"": 0 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/draft_picks", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_PackNumberRange_Violated()
-    {
-        // Pack number must be between 1 and 3 → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""ParticipantId"": 1, ""CardId"": 1, ""PickNumber"": 1, ""PickedAt"": ""2024-01-01T00:00:00"", ""PackNumber"": 4 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/draft_picks", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

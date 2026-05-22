@@ -21,6 +21,12 @@ public class CouponService
     public async Task<List<Coupon>> GetAllAsync()
         => await _db.Coupons.AsNoTracking().ToListAsync();
 
+    public async Task<List<Coupon>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Coupons.AsNoTracking().Where(e => (e.Code != null && e.Code.Contains(q))).ToListAsync();
+    }
+
     public async Task<Coupon?> GetByIdAsync(int id)
         => await _db.Coupons.FindAsync(id);
 

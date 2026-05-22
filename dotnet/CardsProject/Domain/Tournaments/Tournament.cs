@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -43,11 +44,14 @@ public class Tournament : IValidatableObject
     public int MaxPlayers { get; set; } = 0;
     public decimal EntryFee { get; set; } = 0.00m;
     public decimal PrizePool { get; set; } = 0.00m;
+    [JsonPropertyName("startTime")]
     public DateTime? StartTime { get; set; } = null;
+    [JsonPropertyName("endTime")]
     public DateTime? EndTime { get; set; } = null;
     public bool IsOnline { get; set; } = true;
     public string? Location { get; set; }
     public string? RulesText { get; set; }
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
 
     public int? SeasonId { get; set; }
@@ -121,5 +125,11 @@ public class Tournament : IValidatableObject
             yield return new ValidationResult("Entry fee must not be negative", new[] { nameof(Id) });
         if (!( PrizePool >= 0m ))
             yield return new ValidationResult("Prize pool must not be negative", new[] { nameof(Id) });
+    }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void SyncSeasonStats()
+    {
+        // TODO: implement sync_season_stats
     }
 }

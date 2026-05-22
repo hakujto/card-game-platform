@@ -1,6 +1,7 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -10,6 +11,7 @@ public class DraftPick : IValidatableObject
 
     public int PickNumber { get; set; } = 0;
     public int PackNumber { get; set; } = 0;
+    [JsonPropertyName("pickedAt")]
     public DateTime? PickedAt { get; set; } = null;
 
     public int? ParticipantId { get; set; }

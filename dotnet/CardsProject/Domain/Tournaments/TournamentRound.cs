@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -16,7 +17,9 @@ public class TournamentRound : IValidatableObject
 
     public int RoundNumber { get; set; } = 0;
     public TournamentRoundStatusType Status { get; set; }
+    [JsonPropertyName("startedAt")]
     public DateTime? StartedAt { get; set; } = null;
+    [JsonPropertyName("endedAt")]
     public DateTime? EndedAt { get; set; } = null;
     public int TimeLimitMinutes { get; set; } = 50;
 

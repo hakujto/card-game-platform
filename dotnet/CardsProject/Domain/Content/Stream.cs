@@ -2,6 +2,7 @@ using CardsProject.Domain.Tournaments;
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -42,8 +43,11 @@ public class Stream : IValidatableObject
     public StreamLanguageType Language { get; set; }
     public bool IsOfficial { get; set; } = false;
     public int ViewerCountPeak { get; set; } = 0;
+    [JsonPropertyName("scheduledStart")]
     public DateTime? ScheduledStart { get; set; } = null;
+    [JsonPropertyName("actualStart")]
     public DateTime? ActualStart { get; set; } = null;
+    [JsonPropertyName("endedAt")]
     public DateTime? EndedAt { get; set; } = null;
     public string? VodUrl { get; set; }
 

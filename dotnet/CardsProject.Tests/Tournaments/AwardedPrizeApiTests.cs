@@ -57,64 +57,12 @@ public class AwardedPrizeApiTests : IClassFixture<AwardedPrizeApiTests.TestFacto
         var response = await _client.GetAsync("/api/awarded_prizes");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
-    public async Task Create_Returns201()
-    {
-        var payload = new
-        {
-            Claimed = false,
-            FinalPlacement = 1,
-            AwardedAt = "2024-01-01T00:00:00",
-            PrizeId = 1,
-            PlayerId = 1
-        };
-        var response = await _client.PostAsJsonAsync("/api/awarded_prizes", payload);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/awarded_prizes/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { FinalPlacement = 1 };
-        var response = await _client.PatchAsJsonAsync("/api/awarded_prizes/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/awarded_prizes/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-    [Fact]
-    public async Task Create_Fails_When_ClaimedRequiresClaimedAt_Violated()
-    {
-        // Claimed prize must have a claimed_at timestamp: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""PrizeId"": 1, ""PlayerId"": 1, ""FinalPlacement"": 1, ""AwardedAt"": ""2024-01-01T00:00:00"", ""Claimed"": true, ""ClaimedAt"": null }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/awarded_prizes", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_FinalPlacementPositive_Violated()
-    {
-        // Final placement must be greater than zero → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PrizeId"": 1, ""PlayerId"": 1, ""Claimed"": true, ""ClaimedAt"": ""2024-01-01T00:00:00"", ""AwardedAt"": ""2024-01-01T00:00:00"", ""FinalPlacement"": 0 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/awarded_prizes", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

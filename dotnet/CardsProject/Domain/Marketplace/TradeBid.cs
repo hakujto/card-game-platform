@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -9,6 +10,7 @@ public class TradeBid : IValidatableObject
     public int Id { get; set; }
 
     public decimal Amount { get; set; } = 0.00m;
+    [JsonPropertyName("placedAt")]
     public DateTime? PlacedAt { get; set; } = null;
     public bool IsWinning { get; set; } = false;
 

@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Cards;
 
@@ -37,7 +38,9 @@ public class Deck : IValidatableObject
     public int Wins { get; set; } = 0;
     public int Losses { get; set; } = 0;
     public int Draws { get; set; } = 0;
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; } = null;
 
     public int? PlayerId { get; set; }
@@ -103,5 +106,11 @@ public class Deck : IValidatableObject
             yield return new ValidationResult("Deck losses count must not be negative", new[] { nameof(Id) });
         if (!( Draws >= 0 ))
             yield return new ValidationResult("Deck draws count must not be negative", new[] { nameof(Id) });
+    }
+
+    // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void RecalculateTournamentLegal()
+    {
+        // TODO: implement recalculate_tournament_legal
     }
 }

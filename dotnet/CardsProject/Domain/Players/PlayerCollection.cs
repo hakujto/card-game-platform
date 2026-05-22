@@ -1,6 +1,7 @@
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Players;
 
@@ -29,6 +30,7 @@ public class PlayerCollection : IValidatableObject
     public int Quantity { get; set; } = 1;
     public bool Foil { get; set; } = false;
     public PlayerCollectionConditionType Condition { get; set; }
+    [JsonPropertyName("acquiredAt")]
     public DateTime? AcquiredAt { get; set; } = null;
     public PlayerCollectionAcquiredViaType AcquiredVia { get; set; }
 

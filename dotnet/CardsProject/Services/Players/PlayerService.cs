@@ -21,6 +21,12 @@ public class PlayerService
     public async Task<List<Player>> GetAllAsync()
         => await _db.Players.AsNoTracking().ToListAsync();
 
+    public async Task<List<Player>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Players.AsNoTracking().Where(e => (e.DisplayName != null && e.DisplayName.Contains(q))).ToListAsync();
+    }
+
     public async Task<Player?> GetByIdAsync(int id)
         => await _db.Players.FindAsync(id);
 

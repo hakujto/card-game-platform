@@ -57,7 +57,6 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
         var response = await _client.GetAsync("/api/cards");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -76,18 +75,16 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
         var response = await _client.PostAsJsonAsync("/api/cards", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/cards/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
+    public async Task Update_Returns200Or404()
     {
         var payload = new { Name = "test" };
         var response = await _client.PatchAsJsonAsync("/api/cards/1", payload);
@@ -95,14 +92,11 @@ public class CardApiTests : IClassFixture<CardApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Delete_Returns204OrNotFound()
+    public async Task Search_Returns200()
     {
-        var response = await _client.DeleteAsync("/api/cards/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
+        var response = await _client.GetAsync("/api/cards?q=test");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     [Fact]
     public async Task Create_Fails_When_CreatureRequiresStats_Violated()

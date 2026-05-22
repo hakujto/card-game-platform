@@ -1,5 +1,6 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -27,7 +28,9 @@ public class TradeDispute
     public TradeDisputeReasonType Reason { get; set; }
     public string Description { get; set; } = "";
     public string? Resolution { get; set; }
+    [JsonPropertyName("openedAt")]
     public DateTime? OpenedAt { get; set; } = null;
+    [JsonPropertyName("resolvedAt")]
     public DateTime? ResolvedAt { get; set; } = null;
 
     public int? TransactionId { get; set; }

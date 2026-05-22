@@ -5,6 +5,7 @@ public class PlayerCollectionDto
     public int? Quantity { get; set; }
     public bool? Foil { get; set; }
     public string? Condition { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("acquiredAt")]
     public DateTime? AcquiredAt { get; set; }
     public string? AcquiredVia { get; set; }
     public int? PlayerId { get; set; }

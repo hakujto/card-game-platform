@@ -4,6 +4,7 @@ public class ArticleCommentDto
 {
     public string? Body { get; set; }
     public bool? IsHidden { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
     public int? ArticleId { get; set; }
     public int? AuthorId { get; set; }

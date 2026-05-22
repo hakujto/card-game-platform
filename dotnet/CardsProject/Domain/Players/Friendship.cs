@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Players;
 
@@ -14,6 +15,7 @@ public class Friendship
     public int Id { get; set; }
 
     public FriendshipStatusType Status { get; set; }
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
 
     public int? RequesterId { get; set; }

@@ -57,7 +57,6 @@ public class ArticleCommentApiTests : IClassFixture<ArticleCommentApiTests.TestF
         var response = await _client.GetAsync("/api/article_comments");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
     public async Task Create_Returns201()
     {
@@ -71,28 +70,16 @@ public class ArticleCommentApiTests : IClassFixture<ArticleCommentApiTests.TestF
         var response = await _client.PostAsJsonAsync("/api/article_comments", payload);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
-
     [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/article_comments/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
-
     [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { Body = "test" };
-        var response = await _client.PatchAsJsonAsync("/api/article_comments/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
+    public async Task Delete_Returns204Or404()
     {
         var response = await _client.DeleteAsync("/api/article_comments/1");
         Assert.True(

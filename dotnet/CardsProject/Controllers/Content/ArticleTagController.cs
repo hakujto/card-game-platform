@@ -14,9 +14,9 @@ public class ArticleTagController : ControllerBase
     public ArticleTagController(ArticleTagService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List([FromQuery] string? q = null)
     {
-        var items = await _svc.GetAllAsync();
+        var items = await _svc.SearchAsync(q);
         return Ok(items);
     }
 
@@ -31,6 +31,7 @@ public class ArticleTagController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -41,7 +42,6 @@ public class ArticleTagController : ControllerBase
         return Ok(entity);
     }
 
-    [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] ArticleTagDto dto)
     {
@@ -53,6 +53,7 @@ public class ArticleTagController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -72,6 +73,7 @@ public class ArticleTagController : ControllerBase
             await _svc.RenameAsync(id, newName);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -83,6 +85,7 @@ public class ArticleTagController : ControllerBase
             var result = await _svc.ArticleCountAsync(id);
             return Ok(result);
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

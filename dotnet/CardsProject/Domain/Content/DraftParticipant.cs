@@ -1,6 +1,7 @@
 using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Content;
 
@@ -9,6 +10,7 @@ public class DraftParticipant : IValidatableObject
     public int Id { get; set; }
 
     public int SeatNumber { get; set; } = 0;
+    [JsonPropertyName("joinedAt")]
     public DateTime? JoinedAt { get; set; } = null;
 
     public int? SessionId { get; set; }

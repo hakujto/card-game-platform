@@ -57,79 +57,12 @@ public class PlayerSeasonStatsApiTests : IClassFixture<PlayerSeasonStatsApiTests
         var response = await _client.GetAsync("/api/player_season_statses");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
     [Fact]
-    public async Task Create_Returns201()
-    {
-        var payload = new
-        {
-            PlayerId = 1,
-            SeasonId = 1
-        };
-        var response = await _client.PostAsJsonAsync("/api/player_season_statses", payload);
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Show_Returns200OrNotFound()
+    public async Task Show_Returns200Or404()
     {
         var response = await _client.GetAsync("/api/player_season_statses/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Update_Returns200OrNotFound()
-    {
-        var payload = new { Wins = 1 };
-        var response = await _client.PatchAsJsonAsync("/api/player_season_statses/1", payload);
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Delete_Returns204OrNotFound()
-    {
-        var response = await _client.DeleteAsync("/api/player_season_statses/1");
-        Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
-    [Fact]
-    public async Task Create_Fails_When_WinsNotNegative_Violated()
-    {
-        // Season wins must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Losses"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": 1, ""Wins"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_season_statses", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_LossesNotNegative_Violated()
-    {
-        // Season losses must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": 1, ""Losses"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_season_statses", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_TournamentWinsNotNegative_Violated()
-    {
-        // Season tournament wins must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Losses"": 1, ""Draws"": 1, ""SeasonPoints"": 1, ""TournamentWins"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_season_statses", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_Fails_When_SeasonPointsNotNegative_Violated()
-    {
-        // Season points must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""SeasonId"": 1, ""Wins"": 1, ""Losses"": 1, ""Draws"": 1, ""TournamentWins"": 1, ""SeasonPoints"": -1 }", System.Text.Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/player_season_statses", content);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

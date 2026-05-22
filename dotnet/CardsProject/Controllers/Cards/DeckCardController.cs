@@ -31,6 +31,7 @@ public class DeckCardController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
@@ -41,7 +42,6 @@ public class DeckCardController : ControllerBase
         return Ok(entity);
     }
 
-    [HttpPut("{id:int}")]
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DeckCardDto dto)
     {
@@ -53,6 +53,7 @@ public class DeckCardController : ControllerBase
         }
         catch (ValidationException ex) { return BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { error = ex.Message }); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
     [HttpDelete("{id:int}")]
@@ -72,6 +73,7 @@ public class DeckCardController : ControllerBase
             await _svc.IncrementAsync(id, amount);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
@@ -84,6 +86,7 @@ public class DeckCardController : ControllerBase
             await _svc.DecrementAsync(id, amount);
             return NoContent();
         }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
 }

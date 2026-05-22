@@ -2,6 +2,7 @@ using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -39,12 +40,15 @@ public class TradeListing : IValidatableObject
     public decimal? AskingPrice { get; set; } = null;
     public decimal? AuctionStartPrice { get; set; } = null;
     public decimal? AuctionCurrentBid { get; set; } = null;
+    [JsonPropertyName("auctionEndTime")]
     public DateTime? AuctionEndTime { get; set; } = null;
     public bool Foil { get; set; } = false;
     public TradeListingConditionType Condition { get; set; }
     public int Quantity { get; set; } = 1;
     public string? Description { get; set; }
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;
+    [JsonPropertyName("expiresAt")]
     public DateTime? ExpiresAt { get; set; } = null;
 
     public int? SellerId { get; set; }

@@ -2,6 +2,7 @@ using CardsProject.Domain.Players;
 using CardsProject.Domain.Cards;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Tournaments;
 
@@ -21,6 +22,7 @@ public class TournamentRegistration : IValidatableObject
     public int? Seed { get; set; } = null;
     public int? FinalStanding { get; set; } = null;
     public int PointsEarned { get; set; } = 0;
+    [JsonPropertyName("registeredAt")]
     public DateTime? RegisteredAt { get; set; } = null;
 
     public int? TournamentId { get; set; }

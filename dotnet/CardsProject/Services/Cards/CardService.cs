@@ -21,6 +21,12 @@ public class CardService
     public async Task<List<Card>> GetAllAsync()
         => await _db.Cards.AsNoTracking().ToListAsync();
 
+    public async Task<List<Card>> SearchAsync(string? q)
+    {
+        if (string.IsNullOrEmpty(q)) return await GetAllAsync();
+        return await _db.Cards.AsNoTracking().Where(e => (e.Name != null && e.Name.Contains(q)) || (e.ArtistName != null && e.ArtistName.Contains(q))).ToListAsync();
+    }
+
     public async Task<Card?> GetByIdAsync(int id)
         => await _db.Cards.FindAsync(id);
 
