@@ -33,6 +33,13 @@ class ProductApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/products?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -58,12 +65,6 @@ class ProductApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/products/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenPricePositiveViolated(): void

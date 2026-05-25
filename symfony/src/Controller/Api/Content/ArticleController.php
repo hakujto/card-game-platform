@@ -133,13 +133,6 @@ class ArticleController extends AbstractController
         return $this->json($article, context: ['groups' => ['article:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Article $article): JsonResponse
-    {
-        $this->repository->remove($article, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/publish', name: 'publish', methods: ['POST'])]
     public function publish(Article $article): JsonResponse
     {

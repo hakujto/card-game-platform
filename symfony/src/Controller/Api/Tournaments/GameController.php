@@ -73,47 +73,6 @@ class GameController extends AbstractController
         return $this->json($game, context: ['groups' => ['game:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, Game $game): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['gameNumber'])) $game->setGameNumber($data['gameNumber']);
-        if (isset($data['winnerSide'])) $game->setWinnerSide($data['winnerSide']);
-        if (isset($data['turnsPlayed'])) $game->setTurnsPlayed($data['turnsPlayed']);
-        if (isset($data['durationSeconds'])) $game->setDurationSeconds($data['durationSeconds']);
-        if (isset($data['endedBy'])) $game->setEndedBy($data['endedBy']);
-        if (isset($data['replayUrl'])) $game->setReplayUrl($data['replayUrl']);
-        if (isset($data['match'])) {
-            $rel_match = $this->matchRecordRepository->find($data['match']);
-            if (!$rel_match) return $this->json(['error' => 'Match not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $game->setMatch($rel_match);
-        }
-        if (array_key_exists('winner', $data)) {
-            $game->setWinner($data['winner'] !== null ? $this->playerRepository->find($data['winner']) : null);
-        }
-
-        $errors = $this->validator->validate($game);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        try {
-            $game->validateImplies();
-        } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($game, flush: true);
-        return $this->json($game, context: ['groups' => ['game:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Game $game): JsonResponse
-    {
-        $this->repository->remove($game, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/winner', name: 'recordWinner', methods: ['POST'])]
     public function recordWinner(Game $game, Request $request): JsonResponse
     {

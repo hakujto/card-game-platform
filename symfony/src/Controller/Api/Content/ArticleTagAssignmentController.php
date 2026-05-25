@@ -63,31 +63,6 @@ class ArticleTagAssignmentController extends AbstractController
         return $this->json($articleTagAssignment, context: ['groups' => ['articleTagAssignment:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, ArticleTagAssignment $articleTagAssignment): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-
-        if (isset($data['article'])) {
-            $rel_article = $this->articleRepository->find($data['article']);
-            if (!$rel_article) return $this->json(['error' => 'Article not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $articleTagAssignment->setArticle($rel_article);
-        }
-        if (isset($data['tag'])) {
-            $rel_tag = $this->articleTagRepository->find($data['tag']);
-            if (!$rel_tag) return $this->json(['error' => 'ArticleTag not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $articleTagAssignment->setTag($rel_tag);
-        }
-
-        $errors = $this->validator->validate($articleTagAssignment);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($articleTagAssignment, flush: true);
-        return $this->json($articleTagAssignment, context: ['groups' => ['articleTagAssignment:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(ArticleTagAssignment $articleTagAssignment): JsonResponse
     {

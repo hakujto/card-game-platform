@@ -63,37 +63,6 @@ class DraftParticipantController extends AbstractController
         return $this->json($draftParticipant, context: ['groups' => ['draftParticipant:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, DraftParticipant $draftParticipant): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['seatNumber'])) $draftParticipant->setSeatNumber($data['seatNumber']);
-        if (isset($data['joinedAt'])) $draftParticipant->setJoinedAt(new \DateTime($data['joinedAt']));
-        if (array_key_exists('session', $data)) {
-            $draftParticipant->setSession($data['session'] !== null ? $this->draftSessionRepository->find($data['session']) : null);
-        }
-        if (isset($data['player'])) {
-            $rel_player = $this->playerRepository->find($data['player']);
-            if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $draftParticipant->setPlayer($rel_player);
-        }
-
-        $errors = $this->validator->validate($draftParticipant);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($draftParticipant, flush: true);
-        return $this->json($draftParticipant, context: ['groups' => ['draftParticipant:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(DraftParticipant $draftParticipant): JsonResponse
-    {
-        $this->repository->remove($draftParticipant, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/pick', name: 'pickCard', methods: ['POST'])]
     public function pickCard(DraftParticipant $draftParticipant, Request $request): JsonResponse
     {

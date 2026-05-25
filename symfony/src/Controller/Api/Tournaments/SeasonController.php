@@ -85,13 +85,6 @@ class SeasonController extends AbstractController
         return $this->json($season, context: ['groups' => ['season:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Season $season): JsonResponse
-    {
-        $this->repository->remove($season, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(Season $season): JsonResponse
     {

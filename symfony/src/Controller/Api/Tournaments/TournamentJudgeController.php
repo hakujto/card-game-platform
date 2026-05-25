@@ -63,31 +63,6 @@ class TournamentJudgeController extends AbstractController
         return $this->json($tournamentJudge, context: ['groups' => ['tournamentJudge:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, TournamentJudge $tournamentJudge): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['role'])) $tournamentJudge->setRole($data['role']);
-        if (isset($data['tournament'])) {
-            $rel_tournament = $this->tournamentRepository->find($data['tournament']);
-            if (!$rel_tournament) return $this->json(['error' => 'Tournament not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tournamentJudge->setTournament($rel_tournament);
-        }
-        if (isset($data['player'])) {
-            $rel_player = $this->playerRepository->find($data['player']);
-            if (!$rel_player) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tournamentJudge->setPlayer($rel_player);
-        }
-
-        $errors = $this->validator->validate($tournamentJudge);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($tournamentJudge, flush: true);
-        return $this->json($tournamentJudge, context: ['groups' => ['tournamentJudge:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(TournamentJudge $tournamentJudge): JsonResponse
     {

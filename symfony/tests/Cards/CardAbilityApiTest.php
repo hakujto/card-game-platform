@@ -43,6 +43,13 @@ class CardAbilityApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/card_abilities?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/card_abilities', [], [], ['CONTENT_TYPE' => 'application/json'],

@@ -60,7 +60,7 @@ class ArticleTagController extends AbstractController
         return $this->json($articleTag, context: ['groups' => ['articleTag:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, ArticleTag $articleTag): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];

@@ -60,7 +60,7 @@ class DeckTagController extends AbstractController
         return $this->json($deckTag, context: ['groups' => ['deckTag:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, DeckTag $deckTag): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];

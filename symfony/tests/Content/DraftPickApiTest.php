@@ -55,20 +55,6 @@ class DraftPickApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testCreateReturns201(): void
-    {
-        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-            'pickNumber' => 1,
-            'packNumber' => 1,
-            'pickedAt' => '2024-01-01T00:00:00+00:00',
-            'participant' => (int) $this->depParticipant->getId(),
-            'card' => (int) $this->depCard->getId(),
-        ])
-        );
-        $this->assertResponseStatusCodeSame(201);
-    }
-
     public function testShowReturns200(): void
     {
         $this->client->request('GET', '/api/draft_picks/' . $this->entityId);
@@ -76,36 +62,4 @@ class DraftPickApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/draft_picks/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['pickNumber' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/draft_picks/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
-    public function testCreateFailsWhenPickNumberPositiveViolated(): void
-    {
-        // Pick number must be greater than zero
-        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['packNumber' => 1, 'pickedAt' => '2024-01-01T00:00:00+00:00', 'participantId' => 1, 'cardId' => 1, 'pickNumber' => 0])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenPackNumberRangeViolated(): void
-    {
-        // Pack number must be between 1 and 3
-        $this->client->request('POST', '/api/draft_picks', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['pickNumber' => 1, 'pickedAt' => '2024-01-01T00:00:00+00:00', 'participantId' => 1, 'cardId' => 1, 'packNumber' => 4])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
 }

@@ -78,13 +78,6 @@ class CraftingRecipeController extends AbstractController
         return $this->json($craftingRecipe, context: ['groups' => ['craftingRecipe:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(CraftingRecipe $craftingRecipe): JsonResponse
-    {
-        $this->repository->remove($craftingRecipe, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/can-craft', name: 'canCraft', methods: ['GET'])]
     public function canCraft(CraftingRecipe $craftingRecipe): JsonResponse
     {

@@ -103,13 +103,6 @@ class CardSetController extends AbstractController
         return $this->json($cardSet, context: ['groups' => ['cardSet:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(CardSet $cardSet): JsonResponse
-    {
-        $this->repository->remove($cardSet, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/standard-legal', name: 'isLegalInStandard', methods: ['GET'])]
     public function isLegalInStandard(CardSet $cardSet): JsonResponse
     {

@@ -70,7 +70,7 @@ class DeckCardController extends AbstractController
         return $this->json($deckCard, context: ['groups' => ['deckCard:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, DeckCard $deckCard): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];

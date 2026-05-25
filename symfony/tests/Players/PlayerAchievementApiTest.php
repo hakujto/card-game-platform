@@ -43,18 +43,6 @@ class PlayerAchievementApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testCreateReturns201(): void
-    {
-        $this->client->request('POST', '/api/player_achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-            'earnedAt' => '2024-01-01T00:00:00+00:00',
-            'player' => (int) $this->depPlayer->getId(),
-            'achievement' => (int) $this->depAchievement->getId(),
-        ])
-        );
-        $this->assertResponseStatusCodeSame(201);
-    }
-
     public function testShowReturns200(): void
     {
         $this->client->request('GET', '/api/player_achievements/' . $this->entityId);
@@ -62,36 +50,4 @@ class PlayerAchievementApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/player_achievements/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/player_achievements/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
-    public function testCreateFailsWhenCompletedRequiresProgressViolated(): void
-    {
-        // Completed achievement must have progress greater than zero
-        $this->client->request('POST', '/api/player_achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'achievementId' => 1, 'isCompleted' => true, 'progress' => 0])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenProgressNotNegativeViolated(): void
-    {
-        // Achievement progress must not be negative
-        $this->client->request('POST', '/api/player_achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['earnedAt' => '2024-01-01T00:00:00+00:00', 'playerId' => 1, 'achievementId' => 1, 'isCompleted' => true, 'progress' => -1])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
 }

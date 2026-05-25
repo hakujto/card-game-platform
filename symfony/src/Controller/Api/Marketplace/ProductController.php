@@ -106,13 +106,6 @@ class ProductController extends AbstractController
         return $this->json($product, context: ['groups' => ['product:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Product $product): JsonResponse
-    {
-        $this->repository->remove($product, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(Product $product): JsonResponse
     {

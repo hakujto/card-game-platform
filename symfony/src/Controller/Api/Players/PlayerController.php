@@ -73,7 +73,7 @@ class PlayerController extends AbstractController
         return $this->json($player, context: ['groups' => ['player:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, Player $player): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -99,13 +99,6 @@ class PlayerController extends AbstractController
 
         $this->repository->save($player, flush: true);
         return $this->json($player, context: ['groups' => ['player:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Player $player): JsonResponse
-    {
-        $this->repository->remove($player, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/{id}/promote', name: 'promote', methods: ['POST'])]

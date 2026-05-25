@@ -70,15 +70,6 @@ class CraftingIngredientApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/crafting_ingredients/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['quantity' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
     public function testDeleteReturns204(): void
     {
         $this->client->request('DELETE', '/api/crafting_ingredients/' . $this->entityId);

@@ -33,6 +33,13 @@ class AchievementApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/achievements?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/achievements', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -58,12 +65,6 @@ class AchievementApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/achievements/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenPointsPositiveViolated(): void

@@ -61,21 +61,6 @@ class GameApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/games/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['gameNumber' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/games/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenGameNumberRangeViolated(): void
     {
         // Game number must be between 1 and 3 (best-of-3)

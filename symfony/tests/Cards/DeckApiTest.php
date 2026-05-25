@@ -40,6 +40,13 @@ class DeckApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/decks?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/decks', [], [], ['CONTENT_TYPE' => 'application/json'],

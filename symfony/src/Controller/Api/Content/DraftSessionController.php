@@ -69,44 +69,6 @@ class DraftSessionController extends AbstractController
         return $this->json($draftSession, context: ['groups' => ['draftSession:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, DraftSession $draftSession): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['status'])) $draftSession->setStatus($data['status']);
-        if (isset($data['draftType'])) $draftSession->setDraftType($data['draftType']);
-        if (isset($data['seats'])) $draftSession->setSeats($data['seats']);
-        if (isset($data['timePerPickSeconds'])) $draftSession->setTimePerPickSeconds($data['timePerPickSeconds']);
-        if (isset($data['createdAt'])) $draftSession->setCreatedAt(new \DateTime($data['createdAt']));
-        if (isset($data['completedAt'])) $draftSession->setCompletedAt(new \DateTime($data['completedAt']));
-        if (isset($data['cardSet'])) {
-            $rel_cardSet = $this->cardSetRepository->find($data['cardSet']);
-            if (!$rel_cardSet) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $draftSession->setCardSet($rel_cardSet);
-        }
-
-        $errors = $this->validator->validate($draftSession);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        try {
-            $draftSession->validateImplies();
-        } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($draftSession, flush: true);
-        return $this->json($draftSession, context: ['groups' => ['draftSession:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(DraftSession $draftSession): JsonResponse
-    {
-        $this->repository->remove($draftSession, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/start', name: 'start', methods: ['POST'])]
     public function start(DraftSession $draftSession): JsonResponse
     {

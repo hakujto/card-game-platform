@@ -66,43 +66,6 @@ class TournamentRoundController extends AbstractController
         return $this->json($tournamentRound, context: ['groups' => ['tournamentRound:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, TournamentRound $tournamentRound): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['roundNumber'])) $tournamentRound->setRoundNumber($data['roundNumber']);
-        if (isset($data['status'])) $tournamentRound->setStatus($data['status']);
-        if (isset($data['startedAt'])) $tournamentRound->setStartedAt(new \DateTime($data['startedAt']));
-        if (isset($data['endedAt'])) $tournamentRound->setEndedAt(new \DateTime($data['endedAt']));
-        if (isset($data['timeLimitMinutes'])) $tournamentRound->setTimeLimitMinutes($data['timeLimitMinutes']);
-        if (isset($data['tournament'])) {
-            $rel_tournament = $this->tournamentRepository->find($data['tournament']);
-            if (!$rel_tournament) return $this->json(['error' => 'Tournament not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tournamentRound->setTournament($rel_tournament);
-        }
-
-        $errors = $this->validator->validate($tournamentRound);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        try {
-            $tournamentRound->validateImplies();
-        } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($tournamentRound, flush: true);
-        return $this->json($tournamentRound, context: ['groups' => ['tournamentRound:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(TournamentRound $tournamentRound): JsonResponse
-    {
-        $this->repository->remove($tournamentRound, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/start', name: 'start', methods: ['POST'])]
     public function start(TournamentRound $tournamentRound): JsonResponse
     {

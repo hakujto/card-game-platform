@@ -90,7 +90,7 @@ class TradeListingController extends AbstractController
         return $this->json($tradeListing, context: ['groups' => ['tradeListing:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -130,13 +130,6 @@ class TradeListingController extends AbstractController
 
         $this->repository->save($tradeListing, flush: true);
         return $this->json($tradeListing, context: ['groups' => ['tradeListing:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(TradeListing $tradeListing): JsonResponse
-    {
-        $this->repository->remove($tradeListing, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/{id}/close', name: 'close', methods: ['POST'])]

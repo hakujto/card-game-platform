@@ -65,40 +65,6 @@ class TradeBidController extends AbstractController
         return $this->json($tradeBid, context: ['groups' => ['tradeBid:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, TradeBid $tradeBid): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['amount'])) $tradeBid->setAmount($data['amount']);
-        if (isset($data['placedAt'])) $tradeBid->setPlacedAt(new \DateTime($data['placedAt']));
-        if (isset($data['isWinning'])) $tradeBid->setIsWinning($data['isWinning']);
-        if (isset($data['listing'])) {
-            $rel_listing = $this->tradeListingRepository->find($data['listing']);
-            if (!$rel_listing) return $this->json(['error' => 'TradeListing not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tradeBid->setListing($rel_listing);
-        }
-        if (isset($data['bidder'])) {
-            $rel_bidder = $this->playerRepository->find($data['bidder']);
-            if (!$rel_bidder) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tradeBid->setBidder($rel_bidder);
-        }
-
-        $errors = $this->validator->validate($tradeBid);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($tradeBid, flush: true);
-        return $this->json($tradeBid, context: ['groups' => ['tradeBid:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(TradeBid $tradeBid): JsonResponse
-    {
-        $this->repository->remove($tradeBid, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/outbid', name: 'outbidBy', methods: ['GET'])]
     public function outbidBy(TradeBid $tradeBid): JsonResponse
     {

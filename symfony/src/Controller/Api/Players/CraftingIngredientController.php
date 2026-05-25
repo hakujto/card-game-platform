@@ -63,31 +63,6 @@ class CraftingIngredientController extends AbstractController
         return $this->json($craftingIngredient, context: ['groups' => ['craftingIngredient:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, CraftingIngredient $craftingIngredient): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['quantity'])) $craftingIngredient->setQuantity($data['quantity']);
-        if (isset($data['recipe'])) {
-            $rel_recipe = $this->craftingRecipeRepository->find($data['recipe']);
-            if (!$rel_recipe) return $this->json(['error' => 'CraftingRecipe not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $craftingIngredient->setRecipe($rel_recipe);
-        }
-        if (isset($data['card'])) {
-            $rel_card = $this->cardRepository->find($data['card']);
-            if (!$rel_card) return $this->json(['error' => 'Card not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $craftingIngredient->setCard($rel_card);
-        }
-
-        $errors = $this->validator->validate($craftingIngredient);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($craftingIngredient, flush: true);
-        return $this->json($craftingIngredient, context: ['groups' => ['craftingIngredient:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(CraftingIngredient $craftingIngredient): JsonResponse
     {

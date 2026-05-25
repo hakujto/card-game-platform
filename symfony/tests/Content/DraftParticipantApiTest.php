@@ -58,21 +58,6 @@ class DraftParticipantApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/draft_participants/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['seatNumber' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/draft_participants/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenSeatNumberPositiveViolated(): void
     {
         // Seat number must be greater than zero

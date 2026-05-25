@@ -61,32 +61,6 @@ class FriendshipController extends AbstractController
         return $this->json($friendship, context: ['groups' => ['friendship:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, Friendship $friendship): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['status'])) $friendship->setStatus($data['status']);
-        if (isset($data['createdAt'])) $friendship->setCreatedAt(new \DateTime($data['createdAt']));
-        if (isset($data['requester'])) {
-            $rel_requester = $this->playerRepository->find($data['requester']);
-            if (!$rel_requester) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $friendship->setRequester($rel_requester);
-        }
-        if (isset($data['receiver'])) {
-            $rel_receiver = $this->playerRepository->find($data['receiver']);
-            if (!$rel_receiver) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $friendship->setReceiver($rel_receiver);
-        }
-
-        $errors = $this->validator->validate($friendship);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($friendship, flush: true);
-        return $this->json($friendship, context: ['groups' => ['friendship:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(Friendship $friendship): JsonResponse
     {

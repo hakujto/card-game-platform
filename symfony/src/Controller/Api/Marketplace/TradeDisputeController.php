@@ -79,52 +79,6 @@ class TradeDisputeController extends AbstractController
         return $this->json($tradeDispute, context: ['groups' => ['tradeDispute:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, TradeDispute $tradeDispute): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['status'])) $tradeDispute->setStatus($data['status']);
-        if (isset($data['reason'])) $tradeDispute->setReason($data['reason']);
-        if (isset($data['description'])) $tradeDispute->setDescription($data['description']);
-        if (isset($data['resolution'])) $tradeDispute->setResolution($data['resolution']);
-        if (isset($data['openedAt'])) $tradeDispute->setOpenedAt(new \DateTime($data['openedAt']));
-        if (isset($data['resolvedAt'])) $tradeDispute->setResolvedAt(new \DateTime($data['resolvedAt']));
-        if (isset($data['transaction'])) {
-            $rel_transaction = $this->tradeTransactionRepository->find($data['transaction']);
-            if (!$rel_transaction) return $this->json(['error' => 'TradeTransaction not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tradeDispute->setTransaction($rel_transaction);
-        }
-        if (isset($data['openedBy'])) {
-            $rel_openedBy = $this->playerRepository->find($data['openedBy']);
-            if (!$rel_openedBy) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $tradeDispute->setOpenedBy($rel_openedBy);
-        }
-        if (array_key_exists('resolvedBy', $data)) {
-            $tradeDispute->setResolvedBy($data['resolvedBy'] !== null ? $this->playerRepository->find($data['resolvedBy']) : null);
-        }
-
-        $errors = $this->validator->validate($tradeDispute);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        try {
-            $tradeDispute->validateImplies();
-        } catch (\DomainException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($tradeDispute, flush: true);
-        return $this->json($tradeDispute, context: ['groups' => ['tradeDispute:read']]);
-    }
-
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(TradeDispute $tradeDispute): JsonResponse
-    {
-        $this->repository->remove($tradeDispute, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/escalate', name: 'escalate', methods: ['POST'])]
     public function escalate(TradeDispute $tradeDispute): JsonResponse
     {

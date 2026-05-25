@@ -46,6 +46,13 @@ class TournamentApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/tournaments?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/tournaments', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -75,12 +82,6 @@ class TournamentApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/tournaments/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenMaxPlayersPositiveViolated(): void
@@ -120,7 +121,6 @@ class TournamentApiTest extends WebTestCase
     }
     public function testTransitionDraftToRegistrationSucceeds(): void
     {
-        // Arrange: set entity to 'Draft' state
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Draft');
         $entity->setName('test'); // @on: name != null
@@ -135,7 +135,6 @@ class TournamentApiTest extends WebTestCase
 
     public function testTransitionRegistrationToOngoingSucceeds(): void
     {
-        // Arrange: set entity to 'Registration' state
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Registration');
         $this->em->flush();
@@ -148,7 +147,6 @@ class TournamentApiTest extends WebTestCase
 
     public function testTransitionRegistrationToCancelledSucceeds(): void
     {
-        // Arrange: set entity to 'Registration' state
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Registration');
         $this->em->flush();
@@ -161,7 +159,6 @@ class TournamentApiTest extends WebTestCase
 
     public function testTransitionOngoingToCompletedSucceeds(): void
     {
-        // Arrange: set entity to 'Ongoing' state
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Ongoing');
         $this->em->flush();
@@ -174,7 +171,6 @@ class TournamentApiTest extends WebTestCase
 
     public function testTransitionOngoingToCancelledSucceeds(): void
     {
-        // Arrange: set entity to 'Ongoing' state
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Ongoing');
         $this->em->flush();
@@ -187,14 +183,12 @@ class TournamentApiTest extends WebTestCase
 
     public function testTransitionCompletedToDraftIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/completed-to-draft');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionCancelledToDraftIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/cancelled-to-draft');
         $this->assertResponseStatusCodeSame(409);
     }

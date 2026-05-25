@@ -40,6 +40,13 @@ class StreamApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/streams?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/streams', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -67,12 +74,6 @@ class StreamApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/streams/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenActualStartRequiresLiveOrEndedViolated(): void
@@ -103,7 +104,6 @@ class StreamApiTest extends WebTestCase
     }
     public function testTransitionScheduledToLiveSucceeds(): void
     {
-        // Arrange: set entity to 'Scheduled' state
         $entity = $this->em->find(Stream::class, $this->entityId);
         $entity->setStatus('Scheduled');
         $entity->setStreamUrl('https://example.com'); // @on: stream_url != null
@@ -117,7 +117,6 @@ class StreamApiTest extends WebTestCase
 
     public function testTransitionLiveToEndedSucceeds(): void
     {
-        // Arrange: set entity to 'Live' state
         $entity = $this->em->find(Stream::class, $this->entityId);
         $entity->setStatus('Live');
         $this->em->flush();
@@ -130,7 +129,6 @@ class StreamApiTest extends WebTestCase
 
     public function testTransitionEndedToLiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/ended-to-live');
         $this->assertResponseStatusCodeSame(409);
     }

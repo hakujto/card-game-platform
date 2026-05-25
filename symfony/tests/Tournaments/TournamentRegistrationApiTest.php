@@ -78,21 +78,6 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/tournament_registrations/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'test'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/tournament_registrations/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenPointsEarnedNotNegativeViolated(): void
     {
         // Points earned must not be negative

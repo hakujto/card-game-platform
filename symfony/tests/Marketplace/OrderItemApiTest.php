@@ -58,15 +58,6 @@ class OrderItemApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/order_items/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['quantity' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
     public function testDeleteReturns204(): void
     {
         $this->client->request('DELETE', '/api/order_items/' . $this->entityId);

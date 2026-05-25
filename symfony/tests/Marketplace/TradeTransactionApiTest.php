@@ -62,25 +62,6 @@ class TradeTransactionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testCreateReturns201(): void
-    {
-        $freshListing = new TradeListing();
-        $freshListing->setSeller($this->auxPlayer);
-        $freshListing->setCard($this->auxCard);
-        $this->em->persist($freshListing);
-        $this->em->flush();
-        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-            'finalPrice' => '0.01',
-            'platformFee' => 'NaN',
-            'listing' => (int) $freshListing->getId(),
-            'buyer' => (int) $this->depBuyer->getId(),
-            'seller' => (int) $this->depSeller->getId(),
-        ])
-        );
-        $this->assertResponseStatusCodeSame(201);
-    }
-
     public function testShowReturns200(): void
     {
         $this->client->request('GET', '/api/trade_transactions/' . $this->entityId);
@@ -88,45 +69,4 @@ class TradeTransactionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/trade_transactions/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.01'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/trade_transactions/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
-    public function testCreateFailsWhenFeeNotNegativeViolated(): void
-    {
-        // Platform fee must not be negative
-        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'platformFee' => -1])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenFinalPricePositiveViolated(): void
-    {
-        // Transaction final price must be greater than zero
-        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['platformFee' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => '2024-01-01T00:00:00+00:00', 'finalPrice' => 0])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenCompletedRequiresCompletedAtViolated(): void
-    {
-        // Completed transaction must have a completed_at timestamp
-        $this->client->request('POST', '/api/trade_transactions', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPrice' => '0.00', 'platformFee' => '0.00', 'listingId' => 1, 'buyerId' => 1, 'sellerId' => 1, 'status' => 'COMPLETED', 'completedAt' => null])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
 }

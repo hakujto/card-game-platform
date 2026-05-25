@@ -42,6 +42,13 @@ class ArticleApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/articles?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -73,12 +80,6 @@ class ArticleApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/articles/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenPublishedRequiresPublishedAtViolated(): void
     {
         // Published article must have a published_at timestamp
@@ -107,7 +108,6 @@ class ArticleApiTest extends WebTestCase
     }
     public function testTransitionDraftToPublishedSucceeds(): void
     {
-        // Arrange: set entity to 'Draft' state
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Draft');
         $entity->setTitle('test'); // @on: title != null
@@ -122,7 +122,6 @@ class ArticleApiTest extends WebTestCase
 
     public function testTransitionPublishedToArchivedSucceeds(): void
     {
-        // Arrange: set entity to 'Published' state
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Published');
         $this->em->flush();
@@ -135,7 +134,6 @@ class ArticleApiTest extends WebTestCase
 
     public function testTransitionArchivedToDraftSucceeds(): void
     {
-        // Arrange: set entity to 'Archived' state
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Archived');
         $this->em->flush();
@@ -148,7 +146,6 @@ class ArticleApiTest extends WebTestCase
 
     public function testTransitionPublishedToDraftIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/published-to-draft');
         $this->assertResponseStatusCodeSame(409);
     }

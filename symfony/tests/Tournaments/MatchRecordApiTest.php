@@ -54,21 +54,6 @@ class MatchRecordApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/matches/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['tableNumber' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/matches/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenWinsNotNegativeViolated(): void
     {
         // Win counts must not be negative
@@ -115,7 +100,6 @@ class MatchRecordApiTest extends WebTestCase
     }
     public function testTransitionPendingToActiveSucceeds(): void
     {
-        // Arrange: set entity to 'Pending' state
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -128,7 +112,6 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testTransitionActiveToCompletedSucceeds(): void
     {
-        // Arrange: set entity to 'Active' state
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -141,7 +124,6 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testTransitionActiveToDrawSucceeds(): void
     {
-        // Arrange: set entity to 'Active' state
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -154,7 +136,6 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testTransitionPendingToBYESucceeds(): void
     {
-        // Arrange: set entity to 'Pending' state
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -167,21 +148,18 @@ class MatchRecordApiTest extends WebTestCase
 
     public function testTransitionCompletedToActiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/completed-to-active');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionDrawToActiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/draw-to-active');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionBYEToActiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/bye-to-active');
         $this->assertResponseStatusCodeSame(409);
     }

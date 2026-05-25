@@ -126,13 +126,6 @@ class CardController extends AbstractController
         return $this->json($card, context: ['groups' => ['card:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Card $card): JsonResponse
-    {
-        $this->repository->remove($card, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/ban', name: 'ban', methods: ['POST'])]
     public function ban(Card $card): JsonResponse
     {

@@ -56,21 +56,6 @@ class OrderApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/orders/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'test'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/orders/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenPaidRequiresPaidAtViolated(): void
     {
         // Paid order must have paid_at set
@@ -108,7 +93,6 @@ class OrderApiTest extends WebTestCase
     }
     public function testTransitionPendingToPaidSucceeds(): void
     {
-        // Arrange: set entity to 'Pending' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Pending');
         $entity->setPaymentMethod('test'); // @on: payment_method != null
@@ -122,7 +106,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPendingToPaidFailsWhenPaymentMethodMissing(): void
     {
-        // Arrange: entity in 'Pending' state without payment_method
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -133,7 +116,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPaidToProcessingSucceeds(): void
     {
-        // Arrange: set entity to 'Paid' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Paid');
         $this->em->flush();
@@ -146,7 +128,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionProcessingToShippedSucceeds(): void
     {
-        // Arrange: set entity to 'Processing' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Processing');
         $entity->setTrackingNumber('test'); // @on: tracking_number != null
@@ -160,7 +141,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionProcessingToShippedFailsWhenTrackingNumberMissing(): void
     {
-        // Arrange: entity in 'Processing' state without tracking_number
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Processing');
         $this->em->flush();
@@ -171,7 +151,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionShippedToCompletedSucceeds(): void
     {
-        // Arrange: set entity to 'Shipped' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Shipped');
         $this->em->flush();
@@ -184,7 +163,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPendingToCancelledSucceeds(): void
     {
-        // Arrange: set entity to 'Pending' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -197,7 +175,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPaidToCancelledSucceeds(): void
     {
-        // Arrange: set entity to 'Paid' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Paid');
         $this->em->flush();
@@ -210,7 +187,6 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionCompletedToRefundedSucceeds(): void
     {
-        // Arrange: set entity to 'Completed' state
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Completed');
         $this->em->flush();
@@ -223,14 +199,12 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionRefundedToCompletedIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/refunded-to-completed');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionCompletedToCancelledIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/completed-to-cancelled');
         $this->assertResponseStatusCodeSame(409);
     }

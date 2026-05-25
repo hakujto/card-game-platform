@@ -34,6 +34,13 @@ class SeasonApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/seasons?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/seasons', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -60,12 +67,6 @@ class SeasonApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/seasons/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenEndDateAfterStartDateViolated(): void

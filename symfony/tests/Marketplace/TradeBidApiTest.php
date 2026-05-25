@@ -78,21 +78,6 @@ class TradeBidApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/trade_bids/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['amount' => '0.01'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/trade_bids/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenAmountPositiveViolated(): void
     {
         // Bid amount must be greater than zero

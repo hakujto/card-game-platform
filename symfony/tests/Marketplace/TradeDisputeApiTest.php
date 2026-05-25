@@ -96,21 +96,6 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'test'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/trade_disputes/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenResolvedAtRequiresTerminalStatusViolated(): void
     {
         // resolved_at_requires_terminal_status
@@ -121,7 +106,6 @@ class TradeDisputeApiTest extends WebTestCase
     }
     public function testTransitionOpenToUnderReviewSucceeds(): void
     {
-        // Arrange: set entity to 'Open' state
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Open');
         $this->em->flush();
@@ -134,7 +118,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionUnderReviewToResolvedSucceeds(): void
     {
-        // Arrange: set entity to 'UnderReview' state
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $entity->setResolution('test'); // @on: resolution != null
@@ -148,7 +131,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionUnderReviewToResolvedFailsWhenResolutionMissing(): void
     {
-        // Arrange: entity in 'UnderReview' state without resolution
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $this->em->flush();
@@ -159,7 +141,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionUnderReviewToEscalatedSucceeds(): void
     {
-        // Arrange: set entity to 'UnderReview' state
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $this->em->flush();
@@ -172,7 +153,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionEscalatedToResolvedSucceeds(): void
     {
-        // Arrange: set entity to 'Escalated' state
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Escalated');
         $entity->setResolution('test'); // @on: resolution != null
@@ -186,7 +166,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionEscalatedToResolvedFailsWhenResolutionMissing(): void
     {
-        // Arrange: entity in 'Escalated' state without resolution
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Escalated');
         $this->em->flush();
@@ -197,7 +176,6 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionResolvedToOpenIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId . '/transitions/resolved-to-open');
         $this->assertResponseStatusCodeSame(409);
     }

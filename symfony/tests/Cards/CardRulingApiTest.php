@@ -65,15 +65,6 @@ class CardRulingApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/card_rulings/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['rulingText' => 'test'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
     public function testDeleteReturns204(): void
     {
         $this->client->request('DELETE', '/api/card_rulings/' . $this->entityId);

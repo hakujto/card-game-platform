@@ -67,7 +67,7 @@ class PlayerCollectionController extends AbstractController
         return $this->json($playerCollection, context: ['groups' => ['playerCollection:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];

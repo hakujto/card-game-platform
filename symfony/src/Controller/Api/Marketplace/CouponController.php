@@ -103,13 +103,6 @@ class CouponController extends AbstractController
         return $this->json($coupon, context: ['groups' => ['coupon:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Coupon $coupon): JsonResponse
-    {
-        $this->repository->remove($coupon, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/valid', name: 'isValid', methods: ['GET'])]
     public function isValid(Coupon $coupon): JsonResponse
     {

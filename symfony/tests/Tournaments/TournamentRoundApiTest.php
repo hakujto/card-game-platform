@@ -66,21 +66,6 @@ class TournamentRoundApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/tournament_rounds/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['roundNumber' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/tournament_rounds/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenEndedAfterStartedViolated(): void
     {
         // Round end time must be after start time

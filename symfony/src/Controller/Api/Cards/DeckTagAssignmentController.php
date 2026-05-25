@@ -63,31 +63,6 @@ class DeckTagAssignmentController extends AbstractController
         return $this->json($deckTagAssignment, context: ['groups' => ['deckTagAssignment:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, DeckTagAssignment $deckTagAssignment): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-
-        if (isset($data['deck'])) {
-            $rel_deck = $this->deckRepository->find($data['deck']);
-            if (!$rel_deck) return $this->json(['error' => 'Deck not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $deckTagAssignment->setDeck($rel_deck);
-        }
-        if (isset($data['tag'])) {
-            $rel_tag = $this->deckTagRepository->find($data['tag']);
-            if (!$rel_tag) return $this->json(['error' => 'DeckTag not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $deckTagAssignment->setTag($rel_tag);
-        }
-
-        $errors = $this->validator->validate($deckTagAssignment);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($deckTagAssignment, flush: true);
-        return $this->json($deckTagAssignment, context: ['groups' => ['deckTagAssignment:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(DeckTagAssignment $deckTagAssignment): JsonResponse
     {

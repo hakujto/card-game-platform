@@ -48,6 +48,13 @@ class TradeListingApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
+    public function testSearchReturns200(): void
+    {
+        $this->client->request('GET', '/api/trade_listings?q=test');
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(200);
+    }
+
     public function testCreateReturns201(): void
     {
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
@@ -74,12 +81,6 @@ class TradeListingApiTest extends WebTestCase
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/trade_listings/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
     }
 
     public function testCreateFailsWhenFixedPriceRequiresAskingPriceViolated(): void
@@ -110,7 +111,6 @@ class TradeListingApiTest extends WebTestCase
     }
     public function testTransitionPendingToActiveSucceeds(): void
     {
-        // Arrange: set entity to 'Pending' state
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Pending');
         $entity->setQuantity(1); // @on: quantity != null
@@ -124,7 +124,6 @@ class TradeListingApiTest extends WebTestCase
 
     public function testTransitionActiveToSoldSucceeds(): void
     {
-        // Arrange: set entity to 'Active' state
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -137,7 +136,6 @@ class TradeListingApiTest extends WebTestCase
 
     public function testTransitionActiveToExpiredSucceeds(): void
     {
-        // Arrange: set entity to 'Active' state
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -150,7 +148,6 @@ class TradeListingApiTest extends WebTestCase
 
     public function testTransitionActiveToCancelledSucceeds(): void
     {
-        // Arrange: set entity to 'Active' state
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -163,14 +160,12 @@ class TradeListingApiTest extends WebTestCase
 
     public function testTransitionSoldToActiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/sold-to-active');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionExpiredToActiveIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/expired-to-active');
         $this->assertResponseStatusCodeSame(409);
     }

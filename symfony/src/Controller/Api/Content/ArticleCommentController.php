@@ -68,34 +68,6 @@ class ArticleCommentController extends AbstractController
         return $this->json($articleComment, context: ['groups' => ['articleComment:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, ArticleComment $articleComment): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['body'])) $articleComment->setBody($data['body']);
-        if (isset($data['isHidden'])) $articleComment->setIsHidden($data['isHidden']);
-        if (isset($data['createdAt'])) $articleComment->setCreatedAt(new \DateTime($data['createdAt']));
-        if (array_key_exists('article', $data)) {
-            $articleComment->setArticle($data['article'] !== null ? $this->articleRepository->find($data['article']) : null);
-        }
-        if (isset($data['author'])) {
-            $rel_author = $this->playerRepository->find($data['author']);
-            if (!$rel_author) return $this->json(['error' => 'Player not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $articleComment->setAuthor($rel_author);
-        }
-        if (array_key_exists('parentComment', $data)) {
-            $articleComment->setParentComment($data['parentComment'] !== null ? $this->articleCommentRepository->find($data['parentComment']) : null);
-        }
-
-        $errors = $this->validator->validate($articleComment);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($articleComment, flush: true);
-        return $this->json($articleComment, context: ['groups' => ['articleComment:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(ArticleComment $articleComment): JsonResponse
     {

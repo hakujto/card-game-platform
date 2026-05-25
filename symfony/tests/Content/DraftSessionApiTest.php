@@ -56,21 +56,6 @@ class DraftSessionApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/draft_sessions/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'test'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/draft_sessions/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenSeatsRangeViolated(): void
     {
         // Draft session must have between 2 and 16 seats
@@ -99,7 +84,6 @@ class DraftSessionApiTest extends WebTestCase
     }
     public function testTransitionWaitingForPlayersToDraftingSucceeds(): void
     {
-        // Arrange: set entity to 'WaitingForPlayers' state
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('WaitingForPlayers');
         $this->em->flush();
@@ -112,7 +96,6 @@ class DraftSessionApiTest extends WebTestCase
 
     public function testTransitionDraftingToCompletedSucceeds(): void
     {
-        // Arrange: set entity to 'Drafting' state
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('Drafting');
         $this->em->flush();
@@ -125,7 +108,6 @@ class DraftSessionApiTest extends WebTestCase
 
     public function testTransitionDraftingToAbandonedSucceeds(): void
     {
-        // Arrange: set entity to 'Drafting' state
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('Drafting');
         $this->em->flush();
@@ -138,7 +120,6 @@ class DraftSessionApiTest extends WebTestCase
 
     public function testTransitionWaitingForPlayersToAbandonedSucceeds(): void
     {
-        // Arrange: set entity to 'WaitingForPlayers' state
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('WaitingForPlayers');
         $this->em->flush();
@@ -151,14 +132,12 @@ class DraftSessionApiTest extends WebTestCase
 
     public function testTransitionCompletedToDraftingIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/draft_sessions/' . $this->entityId . '/transitions/completed-to-drafting');
         $this->assertResponseStatusCodeSame(409);
     }
 
     public function testTransitionAbandonedToDraftingIsDenied(): void
     {
-        // Arrange: entity exists (any state)
         $this->client->request('PATCH', '/api/draft_sessions/' . $this->entityId . '/transitions/abandoned-to-drafting');
         $this->assertResponseStatusCodeSame(409);
     }

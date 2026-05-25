@@ -85,13 +85,6 @@ class AchievementController extends AbstractController
         return $this->json($achievement, context: ['groups' => ['achievement:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Achievement $achievement): JsonResponse
-    {
-        $this->repository->remove($achievement, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/point-value', name: 'pointValue', methods: ['GET'])]
     public function pointValue(Achievement $achievement): JsonResponse
     {

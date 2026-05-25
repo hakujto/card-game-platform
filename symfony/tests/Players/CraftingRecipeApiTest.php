@@ -70,12 +70,6 @@ class CraftingRecipeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/crafting_recipes/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
     public function testCreateFailsWhenDustCostPositiveViolated(): void
     {
         // Crafting recipe must have a dust cost greater than zero

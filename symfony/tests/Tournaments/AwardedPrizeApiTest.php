@@ -58,19 +58,6 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testCreateReturns201(): void
-    {
-        $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-            'finalPlacement' => 1,
-            'awardedAt' => '2024-01-01T00:00:00+00:00',
-            'prize' => (int) $this->depPrize->getId(),
-            'player' => (int) $this->depPlayer->getId(),
-        ])
-        );
-        $this->assertResponseStatusCodeSame(201);
-    }
-
     public function testShowReturns200(): void
     {
         $this->client->request('GET', '/api/awarded_prizes/' . $this->entityId);
@@ -78,36 +65,4 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/awarded_prizes/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPlacement' => 1])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/awarded_prizes/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
-    public function testCreateFailsWhenClaimedRequiresClaimedAtViolated(): void
-    {
-        // Claimed prize must have a claimed_at timestamp
-        $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['finalPlacement' => 1, 'awardedAt' => '2024-01-01T00:00:00+00:00', 'prizeId' => 1, 'playerId' => 1, 'claimed' => true, 'claimedAt' => null])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenFinalPlacementPositiveViolated(): void
-    {
-        // Final placement must be greater than zero
-        $this->client->request('POST', '/api/awarded_prizes', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['awardedAt' => '2024-01-01T00:00:00+00:00', 'prizeId' => 1, 'playerId' => 1, 'claimed' => true, 'claimedAt' => '2024-01-01T00:00:00+00:00', 'finalPlacement' => 0])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
 }

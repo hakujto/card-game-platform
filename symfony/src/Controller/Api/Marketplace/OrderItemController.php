@@ -64,31 +64,6 @@ class OrderItemController extends AbstractController
         return $this->json($orderItem, context: ['groups' => ['orderItem:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, OrderItem $orderItem): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['quantity'])) $orderItem->setQuantity($data['quantity']);
-        if (isset($data['priceAtPurchase'])) $orderItem->setPriceAtPurchase($data['priceAtPurchase']);
-        if (isset($data['foil'])) $orderItem->setFoil($data['foil']);
-        if (array_key_exists('order', $data)) {
-            $orderItem->setOrder($data['order'] !== null ? $this->orderRepository->find($data['order']) : null);
-        }
-        if (isset($data['product'])) {
-            $rel_product = $this->productRepository->find($data['product']);
-            if (!$rel_product) return $this->json(['error' => 'Product not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $orderItem->setProduct($rel_product);
-        }
-
-        $errors = $this->validator->validate($orderItem);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($orderItem, flush: true);
-        return $this->json($orderItem, context: ['groups' => ['orderItem:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(OrderItem $orderItem): JsonResponse
     {

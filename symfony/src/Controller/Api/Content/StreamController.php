@@ -127,13 +127,6 @@ class StreamController extends AbstractController
         return $this->json($stream, context: ['groups' => ['stream:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Stream $stream): JsonResponse
-    {
-        $this->repository->remove($stream, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/live', name: 'goLive', methods: ['POST'])]
     public function goLive(Stream $stream): JsonResponse
     {

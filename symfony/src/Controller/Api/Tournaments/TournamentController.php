@@ -136,13 +136,6 @@ class TournamentController extends AbstractController
         return $this->json($tournament, context: ['groups' => ['tournament:read']]);
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(Tournament $tournament): JsonResponse
-    {
-        $this->repository->remove($tournament, flush: true);
-        return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
     #[Route('/{id}/start', name: 'start', methods: ['POST'])]
     public function start(Tournament $tournament): JsonResponse
     {

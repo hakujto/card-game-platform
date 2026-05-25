@@ -65,15 +65,6 @@ class DeckTagAssignmentApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/deck_tag_assignments/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
     public function testDeleteReturns204(): void
     {
         $this->client->request('DELETE', '/api/deck_tag_assignments/' . $this->entityId);

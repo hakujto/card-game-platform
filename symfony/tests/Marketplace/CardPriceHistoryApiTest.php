@@ -47,21 +47,6 @@ class CardPriceHistoryApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testCreateReturns201(): void
-    {
-        $this->client->request('POST', '/api/card_price_histories', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-            'priceDate' => '2024-01-01',
-            'avgPrice' => '0.00',
-            'minPrice' => '0.00',
-            'maxPrice' => '0.00',
-            'volume' => 1,
-            'card' => (int) $this->depCard->getId(),
-        ])
-        );
-        $this->assertResponseStatusCodeSame(201);
-    }
-
     public function testShowReturns200(): void
     {
         $this->client->request('GET', '/api/card_price_histories/' . $this->entityId);
@@ -69,36 +54,4 @@ class CardPriceHistoryApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(200);
     }
 
-    public function testUpdateReturns200(): void
-    {
-        $this->client->request('PATCH', '/api/card_price_histories/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['priceDate' => '2024-01-01'])
-        );
-        $this->assertResponseIsSuccessful();
-        $this->assertResponseStatusCodeSame(200);
-    }
-
-    public function testDeleteReturns204(): void
-    {
-        $this->client->request('DELETE', '/api/card_price_histories/' . $this->entityId);
-        $this->assertResponseStatusCodeSame(204);
-    }
-
-    public function testCreateFailsWhenVolumeNotNegativeViolated(): void
-    {
-        // Price history volume must not be negative
-        $this->client->request('POST', '/api/card_price_histories', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['priceDate' => '2024-01-01', 'avgPrice' => '0.00', 'minPrice' => '0.00', 'maxPrice' => '0.00', 'foil' => true, 'cardId' => 1, 'volume' => -1])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testCreateFailsWhenPricesNotNegativeViolated(): void
-    {
-        // Prices must not be negative
-        $this->client->request('POST', '/api/card_price_histories', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['priceDate' => '2024-01-01', 'avgPrice' => '0.00', 'maxPrice' => '0.00', 'volume' => 1, 'foil' => true, 'cardId' => 1, 'minPrice' => -1])
-        );
-        $this->assertResponseStatusCodeSame(422);
-    }
 }

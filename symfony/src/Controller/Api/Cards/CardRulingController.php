@@ -58,28 +58,6 @@ class CardRulingController extends AbstractController
         return $this->json($cardRuling, context: ['groups' => ['cardRuling:read']]);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
-    public function update(Request $request, CardRuling $cardRuling): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['rulingText'])) $cardRuling->setRulingText($data['rulingText']);
-        if (isset($data['publishedAt'])) $cardRuling->setPublishedAt(new \DateTime($data['publishedAt']));
-        if (isset($data['source'])) $cardRuling->setSource($data['source']);
-        if (isset($data['card'])) {
-            $rel_card = $this->cardRepository->find($data['card']);
-            if (!$rel_card) return $this->json(['error' => 'Card not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
-            $cardRuling->setCard($rel_card);
-        }
-
-        $errors = $this->validator->validate($cardRuling);
-        if (count($errors) > 0) {
-            return $this->json(['errors' => (string) $errors], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $this->repository->save($cardRuling, flush: true);
-        return $this->json($cardRuling, context: ['groups' => ['cardRuling:read']]);
-    }
-
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(CardRuling $cardRuling): JsonResponse
     {
