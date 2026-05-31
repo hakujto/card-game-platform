@@ -8,8 +8,9 @@ from .serializers import CardSerializer, CardSetSerializer, CardRulingSerializer
 class CardViewSet(viewsets.ModelViewSet):
     queryset = Card.objects.select_related().all()
     serializer_class = CardSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "card_type", "rarity"]
+    search_fields = ["name", "artist_name"]
     filterset_fields = ["card_type", "rarity", "mana_colors", "legal_formats", "set"]
     ordering_fields = "__all__"
 
@@ -88,8 +89,9 @@ class CardViewSet(viewsets.ModelViewSet):
 class CardSetViewSet(viewsets.ModelViewSet):
     queryset = CardSet.objects.select_related().all()
     serializer_class = CardSetSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "code", "set_type"]
+    search_fields = ["name", "code"]
     filterset_fields = ["set_type"]
     ordering_fields = "__all__"
 
@@ -146,6 +148,7 @@ class CardSetViewSet(viewsets.ModelViewSet):
 class CardRulingViewSet(viewsets.ModelViewSet):
     queryset = CardRuling.objects.select_related().all()
     serializer_class = CardRulingSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["ruling_text", "source"]
     filterset_fields = ["card"]
@@ -170,7 +173,7 @@ class CardAbilityViewSet(viewsets.ModelViewSet):
     queryset = CardAbility.objects.select_related().all()
     serializer_class = CardAbilitySerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["ability_type", "keyword", "ability_text"]
+    search_fields = ["keyword", "ability_text"]
     filterset_fields = ["ability_type", "timing", "card"]
     ordering_fields = "__all__"
 
@@ -214,7 +217,7 @@ class DeckViewSet(viewsets.ModelViewSet):
     queryset = Deck.objects.select_related().all()
     serializer_class = DeckSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "description", "format"]
+    search_fields = ["name", "description"]
     filterset_fields = ["format", "archetype", "player"]
     ordering_fields = "__all__"
 
@@ -301,6 +304,7 @@ class DeckViewSet(viewsets.ModelViewSet):
 class DeckCardViewSet(viewsets.ModelViewSet):
     queryset = DeckCard.objects.select_related().all()
     serializer_class = DeckCardSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["deck", "card"]
     ordering_fields = "__all__"
@@ -346,6 +350,7 @@ class DeckCardViewSet(viewsets.ModelViewSet):
 class DeckSideboardCardViewSet(viewsets.ModelViewSet):
     queryset = DeckSideboardCard.objects.select_related().all()
     serializer_class = DeckSideboardCardSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["deck", "card"]
     ordering_fields = "__all__"
@@ -390,8 +395,9 @@ class DeckSideboardCardViewSet(viewsets.ModelViewSet):
 class DeckTagViewSet(viewsets.ModelViewSet):
     queryset = DeckTag.objects.select_related().all()
     serializer_class = DeckTagSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "color"]
+    search_fields = ["name"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["patch"], url_path="rename")
@@ -414,6 +420,7 @@ class DeckTagViewSet(viewsets.ModelViewSet):
 class DeckTagAssignmentViewSet(viewsets.ModelViewSet):
     queryset = DeckTagAssignment.objects.select_related().all()
     serializer_class = DeckTagAssignmentSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["deck", "tag"]
     ordering_fields = "__all__"

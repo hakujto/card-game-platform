@@ -3,6 +3,8 @@ from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleT
 
 
 class DraftSessionSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    completedAt = serializers.DateTimeField(source="completed_at", required=False, allow_null=True)
     class Meta:
         model = DraftSession
         fields = [
@@ -11,20 +13,21 @@ class DraftSessionSerializer(serializers.ModelSerializer):
             "draft_type",
             "seats",
             "time_per_pick_seconds",
-            "created_at",
-            "completed_at",
+            "createdAt",
+            "completedAt",
             "card_set",
         ]
         read_only_fields = ["id"]
 
 
 class DraftParticipantSerializer(serializers.ModelSerializer):
+    joinedAt = serializers.DateTimeField(source="joined_at")
     class Meta:
         model = DraftParticipant
         fields = [
             "id",
             "seat_number",
-            "joined_at",
+            "joinedAt",
             "session",
             "player",
         ]
@@ -32,13 +35,14 @@ class DraftParticipantSerializer(serializers.ModelSerializer):
 
 
 class DraftPickSerializer(serializers.ModelSerializer):
+    pickedAt = serializers.DateTimeField(source="picked_at")
     class Meta:
         model = DraftPick
         fields = [
             "id",
             "pick_number",
             "pack_number",
-            "picked_at",
+            "pickedAt",
             "participant",
             "card",
         ]
@@ -46,6 +50,9 @@ class DraftPickSerializer(serializers.ModelSerializer):
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    updatedAt = serializers.DateTimeField(source="updated_at")
+    publishedAt = serializers.DateTimeField(source="published_at", required=False, allow_null=True)
     class Meta:
         model = Article
         fields = [
@@ -61,9 +68,9 @@ class ArticleSerializer(serializers.ModelSerializer):
             "view_count",
             "likes_count",
             "is_featured",
-            "published_at",
-            "created_at",
-            "updated_at",
+            "publishedAt",
+            "createdAt",
+            "updatedAt",
             "author",
             "featured_deck",
             "tags",
@@ -94,13 +101,14 @@ class ArticleTagAssignmentSerializer(serializers.ModelSerializer):
 
 
 class ArticleCommentSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
     class Meta:
         model = ArticleComment
         fields = [
             "id",
             "body",
             "is_hidden",
-            "created_at",
+            "createdAt",
             "article",
             "author",
             "parent_comment",
@@ -109,6 +117,9 @@ class ArticleCommentSerializer(serializers.ModelSerializer):
 
 
 class StreamSerializer(serializers.ModelSerializer):
+    scheduledStart = serializers.DateTimeField(source="scheduled_start")
+    actualStart = serializers.DateTimeField(source="actual_start", required=False, allow_null=True)
+    endedAt = serializers.DateTimeField(source="ended_at", required=False, allow_null=True)
     class Meta:
         model = Stream
         fields = [
@@ -120,9 +131,9 @@ class StreamSerializer(serializers.ModelSerializer):
             "language",
             "is_official",
             "viewer_count_peak",
-            "scheduled_start",
-            "actual_start",
-            "ended_at",
+            "scheduledStart",
+            "actualStart",
+            "endedAt",
             "vod_url",
             "tournament",
             "streamer",

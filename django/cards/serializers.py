@@ -74,6 +74,8 @@ class CardAbilitySerializer(serializers.ModelSerializer):
 
 
 class DeckSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    updatedAt = serializers.DateTimeField(source="updated_at")
     class Meta:
         model = Deck
         fields = [
@@ -87,8 +89,8 @@ class DeckSerializer(serializers.ModelSerializer):
             "wins",
             "losses",
             "draws",
-            "created_at",
-            "updated_at",
+            "createdAt",
+            "updatedAt",
             "player",
             "cards",
             "sideboard_cards",

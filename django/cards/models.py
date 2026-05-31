@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
 
 
 class CardCardTypeChoices(models.TextChoices):
@@ -118,6 +120,12 @@ class Card(models.Model):
             raise ValidationError({"spell_or_artifact_no_loyalty": "Only Planeswalker cards can have loyalty"})
         if (self.is_banned is True) and (not (self.legal_formats == "message")):
             raise ValidationError({"banned_card_not_in_legal_formats": "banned_card_not_in_legal_formats"})
+
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_validate_legality(self, **kwargs):
+        # TODO: implement validate_legality
+        pass
 
 
 class CardSetSetTypeChoices(models.TextChoices):
@@ -345,6 +353,12 @@ class Deck(models.Model):
         if (self.is_tournament_legal is True) and (not (self.is_public is True)):
             raise ValidationError({"tournament_legal_deck_must_be_validated": "Tournament-legal deck must be made public"})
 
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_recalculate_tournament_legal(self, **kwargs):
+        # TODO: implement recalculate_tournament_legal
+        pass
+
 
 class DeckCard(models.Model):
     quantity = models.IntegerField(default=1)
@@ -450,3 +464,15 @@ class DeckTagAssignment(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+
+# ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(pre_save, sender=Card)
+def _card_validate_legality(sender, instance, **kwargs):
+    instance._hook_validate_legality(**kwargs)
+
+@receiver(post_save, sender=Deck)
+def _deck_recalculate_tournament_legal(sender, instance, **kwargs):
+    instance._hook_recalculate_tournament_legal(**kwargs)

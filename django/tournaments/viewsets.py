@@ -8,8 +8,9 @@ from .serializers import SeasonSerializer, TournamentSerializer, TournamentJudge
 class SeasonViewSet(viewsets.ModelViewSet):
     queryset = Season.objects.select_related().all()
     serializer_class = SeasonSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "format", "reward_description"]
+    search_fields = ["name"]
     filterset_fields = ["format"]
     ordering_fields = "__all__"
 
@@ -65,8 +66,9 @@ class SeasonViewSet(viewsets.ModelViewSet):
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.select_related().all()
     serializer_class = TournamentSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "description", "status"]
+    search_fields = ["name", "description"]
     filterset_fields = ["status", "format", "tournament_type", "season", "organizer"]
     ordering_fields = "__all__"
 
@@ -256,6 +258,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
 class TournamentJudgeViewSet(viewsets.ModelViewSet):
     queryset = TournamentJudge.objects.select_related().all()
     serializer_class = TournamentJudgeSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["role"]
     filterset_fields = ["role", "tournament", "player"]
@@ -279,6 +282,7 @@ class TournamentJudgeViewSet(viewsets.ModelViewSet):
 class TournamentRegistrationViewSet(viewsets.ModelViewSet):
     queryset = TournamentRegistration.objects.select_related().all()
     serializer_class = TournamentRegistrationSerializer
+    http_method_names = ['options', 'head', 'get', 'post']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     filterset_fields = ["status", "tournament", "player", "deck"]
@@ -331,6 +335,7 @@ class TournamentRegistrationViewSet(viewsets.ModelViewSet):
 class TournamentRoundViewSet(viewsets.ModelViewSet):
     queryset = TournamentRound.objects.select_related().all()
     serializer_class = TournamentRoundSerializer
+    http_method_names = ['options', 'head', 'get', 'post']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     filterset_fields = ["status", "tournament"]
@@ -389,6 +394,7 @@ class TournamentRoundViewSet(viewsets.ModelViewSet):
 class MatchViewSet(viewsets.ModelViewSet):
     queryset = Match.objects.select_related().all()
     serializer_class = MatchSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status", "result_notes"]
     filterset_fields = ["status", "round", "player1", "player2"]
@@ -551,6 +557,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.select_related().all()
     serializer_class = GameSerializer
+    http_method_names = ['options', 'head', 'get', 'post']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["winner_side", "ended_by"]
     filterset_fields = ["winner_side", "ended_by", "match", "winner"]
@@ -640,6 +647,7 @@ class TournamentPrizeViewSet(viewsets.ModelViewSet):
 class AwardedPrizeViewSet(viewsets.ModelViewSet):
     queryset = AwardedPrize.objects.select_related().all()
     serializer_class = AwardedPrizeSerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["prize", "player"]
     ordering_fields = "__all__"

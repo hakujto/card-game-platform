@@ -18,6 +18,9 @@ class SeasonSerializer(serializers.ModelSerializer):
 
 
 class TournamentSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    startTime = serializers.DateTimeField(source="start_time")
+    endTime = serializers.DateTimeField(source="end_time", required=False, allow_null=True)
     class Meta:
         model = Tournament
         fields = [
@@ -30,12 +33,12 @@ class TournamentSerializer(serializers.ModelSerializer):
             "max_players",
             "entry_fee",
             "prize_pool",
-            "start_time",
-            "end_time",
+            "startTime",
+            "endTime",
             "is_online",
             "location",
             "rules_text",
-            "created_at",
+            "createdAt",
             "season",
             "organizer",
             "judges",
@@ -56,6 +59,7 @@ class TournamentJudgeSerializer(serializers.ModelSerializer):
 
 
 class TournamentRegistrationSerializer(serializers.ModelSerializer):
+    registeredAt = serializers.DateTimeField(source="registered_at")
     class Meta:
         model = TournamentRegistration
         fields = [
@@ -64,7 +68,7 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
             "seed",
             "final_standing",
             "points_earned",
-            "registered_at",
+            "registeredAt",
             "tournament",
             "player",
             "deck",
@@ -73,14 +77,16 @@ class TournamentRegistrationSerializer(serializers.ModelSerializer):
 
 
 class TournamentRoundSerializer(serializers.ModelSerializer):
+    startedAt = serializers.DateTimeField(source="started_at", required=False, allow_null=True)
+    endedAt = serializers.DateTimeField(source="ended_at", required=False, allow_null=True)
     class Meta:
         model = TournamentRound
         fields = [
             "id",
             "round_number",
             "status",
-            "started_at",
-            "ended_at",
+            "startedAt",
+            "endedAt",
             "time_limit_minutes",
             "tournament",
         ]
@@ -88,6 +94,8 @@ class TournamentRoundSerializer(serializers.ModelSerializer):
 
 
 class MatchSerializer(serializers.ModelSerializer):
+    startedAt = serializers.DateTimeField(source="started_at", required=False, allow_null=True)
+    endedAt = serializers.DateTimeField(source="ended_at", required=False, allow_null=True)
     class Meta:
         model = Match
         fields = [
@@ -96,8 +104,8 @@ class MatchSerializer(serializers.ModelSerializer):
             "status",
             "player1_wins",
             "player2_wins",
-            "started_at",
-            "ended_at",
+            "startedAt",
+            "endedAt",
             "result_notes",
             "round",
             "player1",
@@ -141,14 +149,16 @@ class TournamentPrizeSerializer(serializers.ModelSerializer):
 
 
 class AwardedPrizeSerializer(serializers.ModelSerializer):
+    awardedAt = serializers.DateTimeField(source="awarded_at")
+    claimedAt = serializers.DateTimeField(source="claimed_at", required=False, allow_null=True)
     class Meta:
         model = AwardedPrize
         fields = [
             "id",
             "final_placement",
-            "awarded_at",
+            "awardedAt",
             "claimed",
-            "claimed_at",
+            "claimedAt",
             "prize",
             "player",
         ]

@@ -8,8 +8,9 @@ from .serializers import ProductSerializer, OrderSerializer, OrderItemSerializer
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related().all()
     serializer_class = ProductSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "product_type", "description"]
+    search_fields = ["name", "description"]
     filterset_fields = ["product_type", "card", "card_set"]
     ordering_fields = "__all__"
 
@@ -81,6 +82,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.select_related().all()
     serializer_class = OrderSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status", "currency", "payment_method"]
     filterset_fields = ["status", "payment_method", "player", "coupon"]
@@ -299,6 +301,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.select_related().all()
     serializer_class = OrderItemSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["order", "product"]
     ordering_fields = "__all__"
@@ -334,8 +337,9 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 class CouponViewSet(viewsets.ModelViewSet):
     queryset = Coupon.objects.select_related().all()
     serializer_class = CouponSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["code", "discount_type"]
+    search_fields = ["code"]
     filterset_fields = ["discount_type"]
     ordering_fields = "__all__"
 
@@ -392,8 +396,9 @@ class CouponViewSet(viewsets.ModelViewSet):
 class TradeListingViewSet(viewsets.ModelViewSet):
     queryset = TradeListing.objects.select_related().all()
     serializer_class = TradeListingSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["status", "listing_type", "condition"]
+    search_fields = ["description"]
     filterset_fields = ["status", "listing_type", "condition", "seller", "card"]
     ordering_fields = "__all__"
 
@@ -547,6 +552,7 @@ class TradeListingViewSet(viewsets.ModelViewSet):
 class TradeBidViewSet(viewsets.ModelViewSet):
     queryset = TradeBid.objects.select_related().all()
     serializer_class = TradeBidSerializer
+    http_method_names = ['options', 'head', 'get', 'post']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["listing", "bidder"]
     ordering_fields = "__all__"
@@ -589,6 +595,7 @@ class TradeBidViewSet(viewsets.ModelViewSet):
 class TradeTransactionViewSet(viewsets.ModelViewSet):
     queryset = TradeTransaction.objects.select_related().all()
     serializer_class = TradeTransactionSerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     filterset_fields = ["status", "listing", "buyer", "seller"]
@@ -648,6 +655,7 @@ class TradeTransactionViewSet(viewsets.ModelViewSet):
 class CardPriceHistoryViewSet(viewsets.ModelViewSet):
     queryset = CardPriceHistory.objects.select_related().all()
     serializer_class = CardPriceHistorySerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["card"]
     ordering_fields = "__all__"
@@ -690,6 +698,7 @@ class CardPriceHistoryViewSet(viewsets.ModelViewSet):
 class TradeDisputeViewSet(viewsets.ModelViewSet):
     queryset = TradeDispute.objects.select_related().all()
     serializer_class = TradeDisputeSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status", "reason", "description"]
     filterset_fields = ["status", "reason", "transaction", "opened_by", "resolved_by"]

@@ -21,7 +21,7 @@ class DraftSessionAPITest(APITestCase):
         data = {
             "seats": 2,
             "time_per_pick_seconds": 1,
-            "created_at": "2024-01-01T00:00:00Z",
+            "createdAt": "2024-01-01T00:00:00Z",
             "card_set": self.cardset.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -31,29 +31,21 @@ class DraftSessionAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"seats": 2}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_seats_range_violated(self):
         # Simple rule violated → 400
-        data = {"created_at": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completed_at": "2024-01-01T00:00:00Z", "status": "Completed", "seats": 17}
+        data = {"createdAt": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completedAt": "2024-01-01T00:00:00Z", "status": "Completed", "seats": 17}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_completed_at_requires_completed_status_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"created_at": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completed_at": "2024-01-01T00:00:00Z"}
+        data = {"createdAt": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completedAt": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_time_per_pick_positive_violated(self):
         # Simple rule violated → 400
-        data = {"created_at": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completed_at": "2024-01-01T00:00:00Z", "status": "Completed", "time_per_pick_seconds": 0}
+        data = {"createdAt": "2024-01-01T00:00:00Z", "card_set": self.cardset.pk, "completedAt": "2024-01-01T00:00:00Z", "status": "Completed", "time_per_pick_seconds": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -120,7 +112,7 @@ class DraftParticipantAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "seat_number": 1,
-            "joined_at": "2024-01-01T00:00:00Z",
+            "joinedAt": "2024-01-01T00:00:00Z",
             "player": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -130,17 +122,9 @@ class DraftParticipantAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"seat_number": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_seat_number_positive_violated(self):
         # Simple rule violated → 400
-        data = {"seat_number": 0, "joined_at": "2024-01-01T00:00:00Z", "player": self.player.pk}
+        data = {"seat_number": 0, "joinedAt": "2024-01-01T00:00:00Z", "player": self.player.pk}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -166,40 +150,9 @@ class DraftPickAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_create_returns_201(self):
-        data = {
-            "pick_number": 1,
-            "pack_number": 1,
-            "picked_at": "2024-01-01T00:00:00Z",
-            "participant": self.draftparticipant.pk,
-            "card": self.card.pk
-        }
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"pick_number": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_create_fails_when_pick_number_positive_violated(self):
-        # Simple rule violated → 400
-        data = {"pick_number": 0, "pack_number": 0, "picked_at": "2024-01-01T00:00:00Z", "participant": self.draftparticipant.pk, "card": self.card.pk}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_pack_number_range_violated(self):
-        # Simple rule violated → 400
-        data = {"pick_number": 0, "pack_number": 4, "picked_at": "2024-01-01T00:00:00Z", "participant": self.draftparticipant.pk, "card": self.card.pk}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleAPITest(APITestCase):
@@ -215,6 +168,10 @@ class ArticleAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "title": "test",
@@ -222,9 +179,9 @@ class ArticleAPITest(APITestCase):
             "body": "test",
             "view_count": 0,
             "likes_count": 0,
-            "published_at": "2024-01-01T00:00:00Z",
-            "created_at": "2024-01-01T00:00:00Z",
-            "updated_at": "2024-01-01T00:00:00Z",
+            "publishedAt": "2024-01-01T00:00:00Z",
+            "createdAt": "2024-01-01T00:00:00Z",
+            "updatedAt": "2024-01-01T00:00:00Z",
             "author": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -238,25 +195,21 @@ class ArticleAPITest(APITestCase):
         res = self.client.patch(self.detail_url, {"title": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_published_requires_published_at_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "published_at": None}
+        data = {"title": "test", "slug": "test", "body": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "publishedAt": None}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_view_count_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "published_at": "2024-01-01T00:00:00Z", "view_count": -1}
+        data = {"title": "test", "slug": "test", "body": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "publishedAt": "2024-01-01T00:00:00Z", "view_count": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_likes_count_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"title": "test", "slug": "test", "body": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "published_at": "2024-01-01T00:00:00Z", "likes_count": -1}
+        data = {"title": "test", "slug": "test", "body": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "author": self.player.pk, "status": "Published", "publishedAt": "2024-01-01T00:00:00Z", "likes_count": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -303,6 +256,10 @@ class ArticleTagAPITest(APITestCase):
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
@@ -355,10 +312,6 @@ class ArticleTagAssignmentAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -380,7 +333,7 @@ class ArticleCommentAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "body": "test",
-            "created_at": "2024-01-01T00:00:00Z",
+            "createdAt": "2024-01-01T00:00:00Z",
             "author": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -388,10 +341,6 @@ class ArticleCommentAPITest(APITestCase):
 
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"body": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
@@ -412,12 +361,16 @@ class StreamAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "title": "test",
             "stream_url": "https://example.com",
             "viewer_count_peak": 0,
-            "scheduled_start": "2024-01-01T00:00:00Z",
+            "scheduledStart": "2024-01-01T00:00:00Z",
             "streamer": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -431,25 +384,21 @@ class StreamAPITest(APITestCase):
         res = self.client.patch(self.detail_url, {"title": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_actual_start_requires_live_or_ended_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"title": "test", "stream_url": "https://example.com", "scheduled_start": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "actual_start": "2024-01-01T00:00:00Z"}
+        data = {"title": "test", "stream_url": "https://example.com", "scheduledStart": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "actualStart": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_ended_at_requires_ended_status_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"title": "test", "stream_url": "https://example.com", "scheduled_start": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "ended_at": "2024-01-01T00:00:00Z"}
+        data = {"title": "test", "stream_url": "https://example.com", "scheduledStart": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "endedAt": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_viewer_count_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"title": "test", "stream_url": "https://example.com", "scheduled_start": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "actual_start": "2024-01-01T00:00:00Z", "status": "Ended", "ended_at": "2024-01-01T00:00:00Z", "viewer_count_peak": -1}
+        data = {"title": "test", "stream_url": "https://example.com", "scheduledStart": "2024-01-01T00:00:00Z", "streamer": self.player.pk, "actualStart": "2024-01-01T00:00:00Z", "status": "Ended", "endedAt": "2024-01-01T00:00:00Z", "viewer_count_peak": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 

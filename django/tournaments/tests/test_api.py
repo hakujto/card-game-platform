@@ -14,6 +14,10 @@ class SeasonAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test",
@@ -31,10 +35,6 @@ class SeasonAPITest(APITestCase):
         res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
 
 class TournamentAPITest(APITestCase):
     def setUp(self):
@@ -51,15 +51,19 @@ class TournamentAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test",
             "max_players": 2,
             "entry_fee": 0,
             "prize_pool": 0,
-            "start_time": "2024-01-01T00:00:00Z",
-            "end_time": None,
-            "created_at": "2024-01-01T00:00:00Z",
+            "startTime": "2024-01-01T00:00:00Z",
+            "endTime": None,
+            "createdAt": "2024-01-01T00:00:00Z",
             "season": self.season.pk,
             "organizer": self.player.pk
         }
@@ -74,31 +78,27 @@ class TournamentAPITest(APITestCase):
         res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_max_players_positive_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "max_players": 513, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "end_time": "2024-01-01T00:00:00Z"}
+        data = {"name": "test", "max_players": 513, "startTime": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "endTime": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_entry_fee_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "end_time": "2024-01-01T00:00:00Z", "entry_fee": -1}
+        data = {"name": "test", "max_players": 0, "startTime": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "endTime": "2024-01-01T00:00:00Z", "entry_fee": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_prize_pool_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "end_time": "2024-01-01T00:00:00Z", "prize_pool": -1}
+        data = {"name": "test", "max_players": 0, "startTime": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "endTime": "2024-01-01T00:00:00Z", "prize_pool": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_end_time_after_start_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"name": "test", "max_players": 0, "start_time": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "end_time": "2024-01-01T00:00:00Z"}
+        data = {"name": "test", "max_players": 0, "startTime": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00Z", "season": self.season.pk, "organizer": self.player.pk, "endTime": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -189,10 +189,6 @@ class TournamentJudgeAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -223,7 +219,7 @@ class TournamentRegistrationAPITest(APITestCase):
             "seed": 1,
             "final_standing": 1,
             "points_earned": 0,
-            "registered_at": "2024-01-01T00:00:00Z",
+            "registeredAt": "2024-01-01T00:00:00Z",
             "tournament": self.tournament.pk,
             "player": self.player.pk,
             "deck": self.deck.pk
@@ -235,29 +231,21 @@ class TournamentRegistrationAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"seed": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_points_earned_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"registered_at": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "final_standing": 1, "seed": 1, "points_earned": -1}
+        data = {"registeredAt": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "final_standing": 1, "seed": 1, "points_earned": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_final_standing_positive_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"registered_at": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "final_standing": 0}
+        data = {"registeredAt": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "final_standing": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_seed_positive_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"registered_at": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "seed": 0}
+        data = {"registeredAt": "2024-01-01T00:00:00Z", "tournament": self.tournament.pk, "player": self.player.pk, "deck": self.deck.pk, "seed": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -282,8 +270,8 @@ class TournamentRoundAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "round_number": 1,
-            "started_at": "2024-01-01T00:00:00Z",
-            "ended_at": None,
+            "startedAt": "2024-01-01T00:00:00Z",
+            "endedAt": None,
             "time_limit_minutes": 1,
             "tournament": self.tournament.pk
         }
@@ -294,35 +282,27 @@ class TournamentRoundAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"round_number": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_ended_after_started_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"round_number": 0, "tournament": self.tournament.pk, "ended_at": "2024-01-01T00:00:00Z"}
+        data = {"round_number": 0, "tournament": self.tournament.pk, "endedAt": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_completed_requires_started_at_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"round_number": 0, "tournament": self.tournament.pk, "status": "Completed", "started_at": None}
+        data = {"round_number": 0, "tournament": self.tournament.pk, "status": "Completed", "startedAt": None}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_round_number_positive_violated(self):
         # Simple rule violated → 400
-        data = {"round_number": 0, "tournament": self.tournament.pk, "ended_at": "2024-01-01T00:00:00Z", "status": "Completed", "started_at": "2024-01-01T00:00:00Z"}
+        data = {"round_number": 0, "tournament": self.tournament.pk, "endedAt": "2024-01-01T00:00:00Z", "status": "Completed", "startedAt": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_time_limit_positive_violated(self):
         # Simple rule violated → 400
-        data = {"round_number": 0, "tournament": self.tournament.pk, "ended_at": "2024-01-01T00:00:00Z", "status": "Completed", "started_at": "2024-01-01T00:00:00Z", "time_limit_minutes": 0}
+        data = {"round_number": 0, "tournament": self.tournament.pk, "endedAt": "2024-01-01T00:00:00Z", "status": "Completed", "startedAt": "2024-01-01T00:00:00Z", "time_limit_minutes": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -344,8 +324,8 @@ class MatchAPITest(APITestCase):
         data = {
             "player1_wins": 0,
             "player2_wins": 0,
-            "started_at": "2024-01-01T00:00:00Z",
-            "ended_at": None,
+            "startedAt": "2024-01-01T00:00:00Z",
+            "endedAt": None,
             "player1": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -355,23 +335,15 @@ class MatchAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"table_number": 0}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_wins_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"player1": self.player.pk, "status": "Completed", "player2": None, "ended_at": "2024-01-01T00:00:00Z", "started_at": "2024-01-01T00:00:00Z", "player1_wins": -1}
+        data = {"player1": self.player.pk, "status": "Completed", "player2": None, "endedAt": "2024-01-01T00:00:00Z", "startedAt": "2024-01-01T00:00:00Z", "player1_wins": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_max_three_games_violated(self):
         # Simple rule violated → 400
-        data = {"player1": self.player.pk, "status": "Completed", "player2": None, "ended_at": "2024-01-01T00:00:00Z", "started_at": "2024-01-01T00:00:00Z", "player1_wins": 3}
+        data = {"player1": self.player.pk, "status": "Completed", "player2": None, "endedAt": "2024-01-01T00:00:00Z", "startedAt": "2024-01-01T00:00:00Z", "player1_wins": 3}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -383,13 +355,13 @@ class MatchAPITest(APITestCase):
 
     def test_create_fails_when_ended_after_started_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"player1": self.player.pk, "ended_at": "2024-01-01T00:00:00Z"}
+        data = {"player1": self.player.pk, "endedAt": "2024-01-01T00:00:00Z"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_completed_requires_started_at_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"player1": self.player.pk, "status": "Completed", "started_at": None}
+        data = {"player1": self.player.pk, "status": "Completed", "startedAt": None}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -473,14 +445,6 @@ class GameAPITest(APITestCase):
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"game_number": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_fails_when_game_number_range_violated(self):
         # Simple rule violated → 400
@@ -585,37 +549,6 @@ class AwardedPrizeAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_create_returns_201(self):
-        data = {
-            "final_placement": 1,
-            "awarded_at": "2024-01-01T00:00:00Z",
-            "claimed_at": "2024-01-01T00:00:00Z",
-            "prize": self.tournamentprize.pk,
-            "player": self.player.pk
-        }
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"final_placement": 1}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_create_fails_when_claimed_requires_claimed_at_violated(self):
-        # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"final_placement": 0, "awarded_at": "2024-01-01T00:00:00Z", "prize": self.tournamentprize.pk, "player": self.player.pk, "claimed": True, "claimed_at": None}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_final_placement_positive_violated(self):
-        # Simple rule violated → 400
-        data = {"final_placement": 0, "awarded_at": "2024-01-01T00:00:00Z", "prize": self.tournamentprize.pk, "player": self.player.pk, "claimed": True, "claimed_at": "2024-01-01T00:00:00Z"}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

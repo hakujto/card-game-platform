@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
 
 
 class PlayerRankChoices(models.TextChoices):
@@ -86,6 +88,12 @@ class Player(models.Model):
             errors["display_name_not_empty"] = "Display name must not be empty"
         if errors:
             raise ValidationError(errors)
+
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_update_rank(self, **kwargs):
+        # TODO: implement update_rank
+        pass
 
 
 class PlayerSeasonStatsHighestRankChoices(models.TextChoices):
@@ -371,3 +379,12 @@ class CraftingIngredient(models.Model):
 
     def __str__(self):
         return str(self.quantity)
+
+
+
+# ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Player)
+def _player_update_rank(sender, instance, **kwargs):
+    if not kwargs.get("created"):
+        instance._hook_update_rank(**kwargs)

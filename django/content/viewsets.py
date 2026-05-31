@@ -8,6 +8,7 @@ from .serializers import DraftSessionSerializer, DraftParticipantSerializer, Dra
 class DraftSessionViewSet(viewsets.ModelViewSet):
     queryset = DraftSession.objects.select_related().all()
     serializer_class = DraftSessionSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status", "draft_type"]
     filterset_fields = ["status", "draft_type", "card_set"]
@@ -154,6 +155,7 @@ class DraftSessionViewSet(viewsets.ModelViewSet):
 class DraftParticipantViewSet(viewsets.ModelViewSet):
     queryset = DraftParticipant.objects.select_related().all()
     serializer_class = DraftParticipantSerializer
+    http_method_names = ['options', 'head', 'get', 'post']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["session", "player"]
     ordering_fields = "__all__"
@@ -198,6 +200,7 @@ class DraftParticipantViewSet(viewsets.ModelViewSet):
 class DraftPickViewSet(viewsets.ModelViewSet):
     queryset = DraftPick.objects.select_related().all()
     serializer_class = DraftPickSerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["participant", "card"]
     ordering_fields = "__all__"
@@ -233,8 +236,9 @@ class DraftPickViewSet(viewsets.ModelViewSet):
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.select_related().all()
     serializer_class = ArticleSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["title", "slug", "body"]
+    search_fields = ["title", "excerpt"]
     filterset_fields = ["status", "article_type", "language", "author", "featured_deck"]
     ordering_fields = "__all__"
 
@@ -370,8 +374,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
 class ArticleTagViewSet(viewsets.ModelViewSet):
     queryset = ArticleTag.objects.select_related().all()
     serializer_class = ArticleTagSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "slug"]
+    search_fields = ["name"]
     ordering_fields = "__all__"
 
     @action(detail=True, methods=["patch"], url_path="rename")
@@ -393,6 +398,7 @@ class ArticleTagViewSet(viewsets.ModelViewSet):
 class ArticleTagAssignmentViewSet(viewsets.ModelViewSet):
     queryset = ArticleTagAssignment.objects.select_related().all()
     serializer_class = ArticleTagAssignmentSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["article", "tag"]
     ordering_fields = "__all__"
@@ -401,6 +407,7 @@ class ArticleTagAssignmentViewSet(viewsets.ModelViewSet):
 class ArticleCommentViewSet(viewsets.ModelViewSet):
     queryset = ArticleComment.objects.select_related().all()
     serializer_class = ArticleCommentSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["body"]
     filterset_fields = ["article", "author", "parent_comment"]
@@ -431,8 +438,9 @@ class ArticleCommentViewSet(viewsets.ModelViewSet):
 class StreamViewSet(viewsets.ModelViewSet):
     queryset = Stream.objects.select_related().all()
     serializer_class = StreamSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["title", "status", "platform"]
+    search_fields = ["title"]
     filterset_fields = ["status", "platform", "language", "tournament", "streamer"]
     ordering_fields = "__all__"
 

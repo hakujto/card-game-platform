@@ -14,11 +14,15 @@ class PlayerAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "display_name": "test",
             "peak_rating": 1000,
-            "created_at": "2024-01-01T00:00:00Z"
+            "createdAt": "2024-01-01T00:00:00Z"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -31,13 +35,9 @@ class PlayerAPITest(APITestCase):
         res = self.client.patch(self.detail_url, {"display_name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
     def test_create_fails_when_rating_range_violated(self):
         # Simple rule violated → 400
-        data = {"display_name": "test", "created_at": "2024-01-01T00:00:00Z", "rating": 10000}
+        data = {"display_name": "test", "createdAt": "2024-01-01T00:00:00Z", "rating": 10000}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -55,52 +55,9 @@ class PlayerSeasonStatsAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_create_returns_201(self):
-        data = {
-            "wins": 0,
-            "losses": 0,
-            "tournament_wins": 0,
-            "season_points": 0,
-            "season": self.season.pk
-        }
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"wins": 0}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_create_fails_when_wins_not_negative_violated(self):
-        # Simple rule violated → 400
-        data = {"season": self.season.pk, "wins": -1}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_losses_not_negative_violated(self):
-        # Simple rule violated → 400
-        data = {"season": self.season.pk, "losses": -1}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_tournament_wins_not_negative_violated(self):
-        # Simple rule violated → 400
-        data = {"season": self.season.pk, "tournament_wins": -1}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_season_points_not_negative_violated(self):
-        # Simple rule violated → 400
-        data = {"season": self.season.pk, "season_points": -1}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class PlayerCollectionAPITest(APITestCase):
@@ -124,7 +81,7 @@ class PlayerCollectionAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "quantity": 1,
-            "acquired_at": "2024-01-01T00:00:00Z",
+            "acquiredAt": "2024-01-01T00:00:00Z",
             "player": self.player.pk,
             "card": self.card.pk
         }
@@ -145,7 +102,7 @@ class PlayerCollectionAPITest(APITestCase):
 
     def test_create_fails_when_quantity_positive_violated(self):
         # Simple rule violated → 400
-        data = {"acquired_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "card": self.card.pk, "quantity": 0}
+        data = {"acquiredAt": "2024-01-01T00:00:00Z", "player": self.player.pk, "card": self.card.pk, "quantity": 0}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -164,7 +121,7 @@ class FriendshipAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "created_at": "2024-01-01T00:00:00Z",
+            "createdAt": "2024-01-01T00:00:00Z",
             "requester": self.player.pk,
             "receiver": self.player.pk
         }
@@ -173,10 +130,6 @@ class FriendshipAPITest(APITestCase):
 
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"created_at": "2024-01-01T00:00:00Z"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):
@@ -192,6 +145,10 @@ class AchievementAPITest(APITestCase):
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
@@ -210,10 +167,6 @@ class AchievementAPITest(APITestCase):
     def test_update_returns_200(self):
         res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_fails_when_points_positive_violated(self):
         # Simple rule violated → 400
@@ -236,39 +189,9 @@ class PlayerAchievementAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_create_returns_201(self):
-        data = {
-            "earned_at": "2024-01-01T00:00:00Z",
-            "progress": 0,
-            "player": self.player.pk,
-            "achievement": self.achievement.pk
-        }
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"earned_at": "2024-01-01T00:00:00Z"}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_create_fails_when_completed_requires_progress_violated(self):
-        # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"earned_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "achievement": self.achievement.pk, "is_completed": True, "progress": 0}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_fails_when_progress_not_negative_violated(self):
-        # Simple rule violated → 400
-        data = {"earned_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "achievement": self.achievement.pk, "is_completed": True, "progress": -1}
-        res = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class CraftingRecipeAPITest(APITestCase):
@@ -302,10 +225,6 @@ class CraftingRecipeAPITest(APITestCase):
     def test_update_returns_200(self):
         res = self.client.patch(self.detail_url, {"dust_cost": 1}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_fails_when_dust_cost_positive_violated(self):
         # Simple rule violated → 400
@@ -342,10 +261,6 @@ class CraftingIngredientAPITest(APITestCase):
 
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"quantity": 0}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):

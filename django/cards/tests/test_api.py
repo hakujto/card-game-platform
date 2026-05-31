@@ -16,6 +16,10 @@ class CardAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test",
@@ -41,10 +45,6 @@ class CardAPITest(APITestCase):
     def test_update_returns_200(self):
         res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_fails_when_creature_requires_stats_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
@@ -105,6 +105,10 @@ class CardSetAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test",
@@ -123,10 +127,6 @@ class CardSetAPITest(APITestCase):
     def test_update_returns_200(self):
         res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_delete_returns_204(self):
-        res = self.client.delete(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_fails_when_total_cards_positive_violated(self):
         # Simple rule violated → 400
@@ -175,10 +175,6 @@ class CardRulingAPITest(APITestCase):
         res = self.client.get(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"ruling_text": "test"}, format="json")
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
     def test_delete_returns_204(self):
         res = self.client.delete(self.detail_url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
@@ -196,6 +192,10 @@ class CardAbilityAPITest(APITestCase):
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
@@ -239,6 +239,10 @@ class DeckAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test",
@@ -246,8 +250,8 @@ class DeckAPITest(APITestCase):
             "wins": 0,
             "losses": 0,
             "draws": 0,
-            "created_at": "2024-01-01T00:00:00Z",
-            "updated_at": "2024-01-01T00:00:00Z",
+            "createdAt": "2024-01-01T00:00:00Z",
+            "updatedAt": "2024-01-01T00:00:00Z",
             "player": self.player.pk
         }
         res = self.client.post(self.list_url, data, format="json")
@@ -267,25 +271,25 @@ class DeckAPITest(APITestCase):
 
     def test_create_fails_when_wins_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "wins": -1}
+        data = {"name": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "wins": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_losses_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "losses": -1}
+        data = {"name": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "losses": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_draws_not_negative_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "draws": -1}
+        data = {"name": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": True, "draws": -1}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_tournament_legal_deck_must_be_validated_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"name": "test", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": False}
+        data = {"name": "test", "createdAt": "2024-01-01T00:00:00Z", "updatedAt": "2024-01-01T00:00:00Z", "player": self.player.pk, "is_tournament_legal": True, "is_public": False}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -400,6 +404,10 @@ class DeckTagAPITest(APITestCase):
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
+    def test_search_returns_200(self):
+        res = self.client.get(self.list_url + "?q=test")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_create_returns_201(self):
         data = {
             "name": "test"
@@ -447,10 +455,6 @@ class DeckTagAssignmentAPITest(APITestCase):
 
     def test_retrieve_returns_200(self):
         res = self.client.get(self.detail_url)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-    def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_delete_returns_204(self):

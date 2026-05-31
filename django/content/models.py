@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
 
 
 class DraftSessionStatusChoices(models.TextChoices):
@@ -249,6 +251,12 @@ class Article(models.Model):
         if to_state not in allowed:
             raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
 
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_update_search_index(self, **kwargs):
+        # TODO: implement update_search_index
+        pass
+
 
 class ArticleTag(models.Model):
     name = models.CharField(max_length=100)
@@ -407,3 +415,11 @@ class Stream(models.Model):
         allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
         if to_state not in allowed:
             raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
+
+
+
+# ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Article)
+def _article_update_search_index(sender, instance, **kwargs):
+    instance._hook_update_search_index(**kwargs)

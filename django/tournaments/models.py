@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
 
 
 class SeasonFormatChoices(models.TextChoices):
@@ -164,6 +166,12 @@ class Tournament(models.Model):
         allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
         if to_state not in allowed:
             raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
+
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_sync_season_stats(self, **kwargs):
+        # TODO: implement sync_season_stats
+        pass
 
 
 class TournamentJudgeRoleChoices(models.TextChoices):
@@ -536,3 +544,12 @@ class AwardedPrize(models.Model):
         from django.core.exceptions import ValidationError
         if (self.claimed is True) and (self.claimed_at is None):
             raise ValidationError({"claimed_requires_claimed_at": "Claimed prize must have a claimed_at timestamp"})
+
+
+
+# ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Tournament)
+def _tournament_sync_season_stats(sender, instance, **kwargs):
+    if not kwargs.get("created"):
+        instance._hook_sync_season_stats(**kwargs)

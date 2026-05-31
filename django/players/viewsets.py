@@ -8,8 +8,9 @@ from .serializers import PlayerSerializer, PlayerSeasonStatsSerializer, PlayerCo
 class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.select_related().all()
     serializer_class = PlayerSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["display_name", "rank", "bio"]
+    search_fields = ["display_name"]
     filterset_fields = ["rank", "preferred_format", "user"]
     ordering_fields = "__all__"
 
@@ -87,6 +88,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
 class PlayerSeasonStatsViewSet(viewsets.ModelViewSet):
     queryset = PlayerSeasonStats.objects.select_related().all()
     serializer_class = PlayerSeasonStatsSerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["highest_rank"]
     filterset_fields = ["highest_rank", "player", "season"]
@@ -138,6 +140,7 @@ class PlayerSeasonStatsViewSet(viewsets.ModelViewSet):
 class PlayerCollectionViewSet(viewsets.ModelViewSet):
     queryset = PlayerCollection.objects.select_related().all()
     serializer_class = PlayerCollectionSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'patch', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["condition", "acquired_via"]
     filterset_fields = ["condition", "acquired_via", "player", "card"]
@@ -190,6 +193,7 @@ class PlayerCollectionViewSet(viewsets.ModelViewSet):
 class FriendshipViewSet(viewsets.ModelViewSet):
     queryset = Friendship.objects.select_related().all()
     serializer_class = FriendshipSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     filterset_fields = ["status", "requester", "receiver"]
@@ -220,8 +224,9 @@ class FriendshipViewSet(viewsets.ModelViewSet):
 class AchievementViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.select_related().all()
     serializer_class = AchievementSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["name", "description", "rarity"]
+    search_fields = ["name", "description"]
     filterset_fields = ["rarity"]
     ordering_fields = "__all__"
 
@@ -263,6 +268,7 @@ class AchievementViewSet(viewsets.ModelViewSet):
 class PlayerAchievementViewSet(viewsets.ModelViewSet):
     queryset = PlayerAchievement.objects.select_related().all()
     serializer_class = PlayerAchievementSerializer
+    http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["player", "achievement"]
     ordering_fields = "__all__"
@@ -307,6 +313,7 @@ class PlayerAchievementViewSet(viewsets.ModelViewSet):
 class CraftingRecipeViewSet(viewsets.ModelViewSet):
     queryset = CraftingRecipe.objects.select_related().all()
     serializer_class = CraftingRecipeSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'put', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["result_card"]
     ordering_fields = "__all__"
@@ -364,6 +371,7 @@ class CraftingRecipeViewSet(viewsets.ModelViewSet):
 class CraftingIngredientViewSet(viewsets.ModelViewSet):
     queryset = CraftingIngredient.objects.select_related().all()
     serializer_class = CraftingIngredientSerializer
+    http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["recipe", "card"]
     ordering_fields = "__all__"

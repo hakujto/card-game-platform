@@ -3,6 +3,8 @@ from .models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Ach
 
 
 class PlayerSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    lastActiveAt = serializers.DateTimeField(source="last_active_at", required=False, allow_null=True)
     class Meta:
         model = Player
         fields = [
@@ -16,8 +18,8 @@ class PlayerSerializer(serializers.ModelSerializer):
             "avatar_url",
             "preferred_format",
             "is_verified",
-            "created_at",
-            "last_active_at",
+            "createdAt",
+            "lastActiveAt",
             "user",
             "achievements",
             "friends",
@@ -43,6 +45,7 @@ class PlayerSeasonStatsSerializer(serializers.ModelSerializer):
 
 
 class PlayerCollectionSerializer(serializers.ModelSerializer):
+    acquiredAt = serializers.DateTimeField(source="acquired_at")
     class Meta:
         model = PlayerCollection
         fields = [
@@ -50,7 +53,7 @@ class PlayerCollectionSerializer(serializers.ModelSerializer):
             "quantity",
             "foil",
             "condition",
-            "acquired_at",
+            "acquiredAt",
             "acquired_via",
             "player",
             "card",
@@ -59,12 +62,13 @@ class PlayerCollectionSerializer(serializers.ModelSerializer):
 
 
 class FriendshipSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
     class Meta:
         model = Friendship
         fields = [
             "id",
             "status",
-            "created_at",
+            "createdAt",
             "requester",
             "receiver",
         ]
@@ -87,11 +91,12 @@ class AchievementSerializer(serializers.ModelSerializer):
 
 
 class PlayerAchievementSerializer(serializers.ModelSerializer):
+    earnedAt = serializers.DateTimeField(source="earned_at")
     class Meta:
         model = PlayerAchievement
         fields = [
             "id",
-            "earned_at",
+            "earnedAt",
             "progress",
             "is_completed",
             "player",

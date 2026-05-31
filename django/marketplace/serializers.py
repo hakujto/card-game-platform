@@ -23,6 +23,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    paidAt = serializers.DateTimeField(source="paid_at", required=False, allow_null=True)
+    shippedAt = serializers.DateTimeField(source="shipped_at", required=False, allow_null=True)
     class Meta:
         model = Order
         fields = [
@@ -35,9 +38,9 @@ class OrderSerializer(serializers.ModelSerializer):
             "payment_reference",
             "shipping_address",
             "tracking_number",
-            "created_at",
-            "paid_at",
-            "shipped_at",
+            "createdAt",
+            "paidAt",
+            "shippedAt",
             "player",
             "coupon",
         ]
@@ -77,6 +80,9 @@ class CouponSerializer(serializers.ModelSerializer):
 
 
 class TradeListingSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source="created_at")
+    expiresAt = serializers.DateTimeField(source="expires_at", required=False, allow_null=True)
+    auctionEndTime = serializers.DateTimeField(source="auction_end_time", required=False, allow_null=True)
     class Meta:
         model = TradeListing
         fields = [
@@ -86,13 +92,13 @@ class TradeListingSerializer(serializers.ModelSerializer):
             "asking_price",
             "auction_start_price",
             "auction_current_bid",
-            "auction_end_time",
+            "auctionEndTime",
             "foil",
             "condition",
             "quantity",
             "description",
-            "created_at",
-            "expires_at",
+            "createdAt",
+            "expiresAt",
             "seller",
             "card",
         ]
@@ -100,12 +106,13 @@ class TradeListingSerializer(serializers.ModelSerializer):
 
 
 class TradeBidSerializer(serializers.ModelSerializer):
+    placedAt = serializers.DateTimeField(source="placed_at")
     class Meta:
         model = TradeBid
         fields = [
             "id",
             "amount",
-            "placed_at",
+            "placedAt",
             "is_winning",
             "listing",
             "bidder",
@@ -114,6 +121,7 @@ class TradeBidSerializer(serializers.ModelSerializer):
 
 
 class TradeTransactionSerializer(serializers.ModelSerializer):
+    completedAt = serializers.DateTimeField(source="completed_at", required=False, allow_null=True)
     class Meta:
         model = TradeTransaction
         fields = [
@@ -121,7 +129,7 @@ class TradeTransactionSerializer(serializers.ModelSerializer):
             "final_price",
             "platform_fee",
             "status",
-            "completed_at",
+            "completedAt",
             "listing",
             "buyer",
             "seller",
@@ -146,6 +154,8 @@ class CardPriceHistorySerializer(serializers.ModelSerializer):
 
 
 class TradeDisputeSerializer(serializers.ModelSerializer):
+    openedAt = serializers.DateTimeField(source="opened_at")
+    resolvedAt = serializers.DateTimeField(source="resolved_at", required=False, allow_null=True)
     class Meta:
         model = TradeDispute
         fields = [
@@ -154,8 +164,8 @@ class TradeDisputeSerializer(serializers.ModelSerializer):
             "reason",
             "description",
             "resolution",
-            "opened_at",
-            "resolved_at",
+            "openedAt",
+            "resolvedAt",
             "transaction",
             "opened_by",
             "resolved_by",

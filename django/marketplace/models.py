@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
 
 
 class ProductProductTypeChoices(models.TextChoices):
@@ -173,6 +175,12 @@ class Order(models.Model):
         allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
         if to_state not in allowed:
             raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
+
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_notify_status_change(self, **kwargs):
+        # TODO: implement notify_status_change
+        pass
 
 
 class OrderItem(models.Model):
@@ -565,3 +573,12 @@ class TradeDispute(models.Model):
         allowed = self.ALLOWED_TRANSITIONS.get(self.status, [])
         if to_state not in allowed:
             raise ValidationError(f"Transition {self.status} -> {to_state} not allowed")
+
+
+
+# ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Order)
+def _order_notify_status_change(sender, instance, **kwargs):
+    if not kwargs.get("created"):
+        instance._hook_notify_status_change(**kwargs)
