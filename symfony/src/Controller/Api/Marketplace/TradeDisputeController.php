@@ -68,7 +68,6 @@ class TradeDisputeController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tradeDispute, flush: true);
         return $this->json($tradeDispute, Response::HTTP_CREATED, context: ['groups' => ['tradeDispute:read']]);
     }

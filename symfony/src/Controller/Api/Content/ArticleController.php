@@ -80,7 +80,6 @@ class ArticleController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($article, flush: true);
         return $this->json($article, Response::HTTP_CREATED, context: ['groups' => ['article:read']]);
     }
@@ -128,7 +127,6 @@ class ArticleController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($article, flush: true);
         return $this->json($article, context: ['groups' => ['article:read']]);
     }

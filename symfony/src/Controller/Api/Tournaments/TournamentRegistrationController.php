@@ -69,7 +69,6 @@ class TournamentRegistrationController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tournamentRegistration, flush: true);
         return $this->json($tournamentRegistration, Response::HTTP_CREATED, context: ['groups' => ['tournamentRegistration:read']]);
     }

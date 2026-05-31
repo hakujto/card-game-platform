@@ -74,7 +74,6 @@ class CardController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($card, flush: true);
         return $this->json($card, Response::HTTP_CREATED, context: ['groups' => ['card:read']]);
     }
@@ -121,7 +120,6 @@ class CardController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($card, flush: true);
         return $this->json($card, context: ['groups' => ['card:read']]);
     }

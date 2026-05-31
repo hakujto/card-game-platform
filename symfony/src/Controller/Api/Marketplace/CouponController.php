@@ -62,7 +62,6 @@ class CouponController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($coupon, flush: true);
         return $this->json($coupon, Response::HTTP_CREATED, context: ['groups' => ['coupon:read']]);
     }
@@ -98,7 +97,6 @@ class CouponController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($coupon, flush: true);
         return $this->json($coupon, context: ['groups' => ['coupon:read']]);
     }

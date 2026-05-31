@@ -69,7 +69,6 @@ class DeckController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($deck, flush: true);
         return $this->json($deck, Response::HTTP_CREATED, context: ['groups' => ['deck:read']]);
     }
@@ -111,7 +110,6 @@ class DeckController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($deck, flush: true);
         return $this->json($deck, context: ['groups' => ['deck:read']]);
     }

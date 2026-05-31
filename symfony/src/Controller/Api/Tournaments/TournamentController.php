@@ -81,7 +81,6 @@ class TournamentController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tournament, flush: true);
         return $this->json($tournament, Response::HTTP_CREATED, context: ['groups' => ['tournament:read']]);
     }
@@ -131,7 +130,6 @@ class TournamentController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tournament, flush: true);
         return $this->json($tournament, context: ['groups' => ['tournament:read']]);
     }

@@ -77,7 +77,6 @@ class StreamController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($stream, flush: true);
         return $this->json($stream, Response::HTTP_CREATED, context: ['groups' => ['stream:read']]);
     }
@@ -122,7 +121,6 @@ class StreamController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($stream, flush: true);
         return $this->json($stream, context: ['groups' => ['stream:read']]);
     }

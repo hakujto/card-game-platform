@@ -62,7 +62,6 @@ class GameController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($game, flush: true);
         return $this->json($game, Response::HTTP_CREATED, context: ['groups' => ['game:read']]);
     }

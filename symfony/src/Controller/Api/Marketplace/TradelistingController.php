@@ -79,7 +79,6 @@ class TradeListingController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tradeListing, flush: true);
         return $this->json($tradeListing, Response::HTTP_CREATED, context: ['groups' => ['tradeListing:read']]);
     }
@@ -127,7 +126,6 @@ class TradeListingController extends AbstractController
         } catch (\DomainException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-
         $this->repository->save($tradeListing, flush: true);
         return $this->json($tradeListing, context: ['groups' => ['tradeListing:read']]);
     }

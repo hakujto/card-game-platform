@@ -248,10 +248,9 @@ echo "Match id=$ID_Match"
 ID_AwardedPrize=1
 echo "AwardedPrize id=$ID_AwardedPrize"
 
-ID_TradeDispute=$(curl -s -X POST "$BASE/trade_disputes" \
-  -H "Content-Type: application/json" \
-  -d "{\"status\": \"Open\", \"reason\": \"ItemNotReceived\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": null, \"openedBy\": ${ID_Player:-null}, \"resolvedBy\": ${ID_Player:-null}}" | extract_id)
-echo "TradeDispute id=$ID_TradeDispute"
+# TradeDispute: skipped — cannot be created via API
+ID_TradeDispute=""
+echo "TradeDispute id=skipped"
 
 ID_Game=$(curl -s -X POST "$BASE/games" \
   -H "Content-Type: application/json" \
