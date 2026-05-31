@@ -23,7 +23,6 @@ func (h *AchievementHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/point-value", h.PointValue)
 	g.POST("/:id/reveal", h.Reveal)
 }
@@ -31,7 +30,13 @@ func (h *AchievementHandler) RegisterRoutes(r gin.IRouter) {
 func (h *AchievementHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.Achievement
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("name LIKE ?", "%"+q+"%")
+		db = db.Or("description LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.AchievementResponse, len(rows))
@@ -55,6 +60,7 @@ func (h *AchievementHandler) Create(c *gin.Context) {
 	row.Rarity = req.Rarity
 	row.IsHidden = req.IsHidden
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -87,21 +93,13 @@ func (h *AchievementHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *AchievementHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *AchievementHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Achievement{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Achievement"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
-}
 
 func (h *AchievementHandler) PointValue(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

@@ -47,6 +47,14 @@ func TestSeason_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestSeason_Search(t *testing.T) {
+	_, r := setupSeasonDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/seasons?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestSeason_Create(t *testing.T) {
 	db, r := setupSeasonDB(t)
 	_ = db
@@ -78,15 +86,4 @@ func TestSeason_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestSeason_Delete(t *testing.T) {
-	db, r := setupSeasonDB(t)
-	_ = db
-	created := postSeason(t, r, db, map[string]interface{}{"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": true})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/seasons/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }

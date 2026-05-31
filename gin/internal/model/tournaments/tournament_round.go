@@ -41,8 +41,8 @@ type TournamentRoundResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	RoundNumber int `json:"round_number"`
 	Status TournamentRoundStatusType `json:"status"`
-	StartedAt *string `json:"started_at"`
-	EndedAt *string `json:"ended_at"`
+	StartedAt *string `json:"startedAt"`
+	EndedAt *string `json:"endedAt"`
 	TimeLimitMinutes int `json:"time_limit_minutes"`
 	TournamentID uint `json:"tournament_id"`
 }

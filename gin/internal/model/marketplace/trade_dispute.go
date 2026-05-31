@@ -58,8 +58,8 @@ type TradeDisputeResponse struct {
 	Reason TradeDisputeReasonType `json:"reason"`
 	Description string `json:"description"`
 	Resolution *string `json:"resolution"`
-	OpenedAt string `json:"opened_at"`
-	ResolvedAt *string `json:"resolved_at"`
+	OpenedAt string `json:"openedAt"`
+	ResolvedAt *string `json:"resolvedAt"`
 	TransactionID uint `json:"transaction_id"`
 	OpenedByID uint `json:"opened_by_id"`
 	ResolvedByID *uint `json:"resolved_by_id"`

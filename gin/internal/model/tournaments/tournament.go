@@ -86,8 +86,8 @@ type TournamentResponse struct {
 	MaxPlayers int `json:"max_players"`
 	EntryFee types.Decimal `json:"entry_fee"`
 	PrizePool types.Decimal `json:"prize_pool"`
-	StartTime string `json:"start_time"`
-	EndTime *string `json:"end_time"`
+	StartTime string `json:"startTime"`
+	EndTime *string `json:"endTime"`
 	IsOnline bool `json:"is_online"`
 	Location *string `json:"location"`
 	RulesText *string `json:"rules_text"`

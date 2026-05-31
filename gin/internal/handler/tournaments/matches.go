@@ -21,9 +21,6 @@ func (h *MatchHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/record", h.RecordResult)
 	g.POST("/:id/finalize", h.FinalizeResult)
 	g.GET("/:id/winner", h.DetermineWinner)
@@ -69,6 +66,7 @@ func (h *MatchHandler) Create(c *gin.Context) {
 	row.Player1ID = req.Player1ID
 	row.Player2ID = req.Player2ID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -82,39 +80,6 @@ func (h *MatchHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *MatchHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Match
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.MatchUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestMatch(&row)
-	if msgs := validateMatch(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *MatchHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *MatchHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Match{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *MatchHandler) RecordResult(c *gin.Context) {

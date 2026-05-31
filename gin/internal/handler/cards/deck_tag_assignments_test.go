@@ -80,26 +80,6 @@ func TestDeckTagAssignment_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestDeckTagAssignment_Update(t *testing.T) {
-	db, r := setupDeckTagAssignmentDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depDeck3ID := createDepDeck(t, r, db)
-	_ = depDeck3ID
-	depDeckTag3ID := createDepDeckTag(t, r, db)
-	_ = depDeckTag3ID
-	created := postDeckTagAssignment(t, r, db, map[string]interface{}{"deck_id": depDeck3ID, "tag_id": depDeckTag3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "updated"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/deck_tag_assignments/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestDeckTagAssignment_Delete(t *testing.T) {
 	db, r := setupDeckTagAssignmentDB(t)
 	_ = db

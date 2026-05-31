@@ -57,6 +57,7 @@ func (h *TournamentPrizeHandler) Create(c *gin.Context) {
 	row.SeasonPoints = req.SeasonPoints
 	row.TournamentID = req.TournamentID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -89,6 +90,7 @@ func (h *TournamentPrizeHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())

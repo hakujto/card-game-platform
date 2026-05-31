@@ -79,43 +79,6 @@ func TestDraftParticipant_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestDraftParticipant_Update(t *testing.T) {
-	db, r := setupDraftParticipantDB(t)
-	_ = db
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	depDraftSession3ID := createDepDraftSession(t, r, db)
-	_ = depDraftSession3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	created := postDraftParticipant(t, r, db, map[string]interface{}{"seat_number": 1, "joined_at": "2024-01-01T00:00:00Z", "session_id": depDraftSession3ID, "player_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"seat_number": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/draft_participants/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestDraftParticipant_Delete(t *testing.T) {
-	db, r := setupDraftParticipantDB(t)
-	_ = db
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	depDraftSession4ID := createDepDraftSession(t, r, db)
-	_ = depDraftSession4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	created := postDraftParticipant(t, r, db, map[string]interface{}{"seat_number": 1, "joined_at": "2024-01-01T00:00:00Z", "session_id": depDraftSession4ID, "player_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/draft_participants/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestDraftParticipant_Rule_SeatNumberPositive_Violated(t *testing.T) {
 	db, r := setupDraftParticipantDB(t)
 	_ = db

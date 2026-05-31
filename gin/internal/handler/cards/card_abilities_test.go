@@ -49,6 +49,14 @@ func TestCardAbility_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestCardAbility_Search(t *testing.T) {
+	_, r := setupCardAbilityDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/card_abilities?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestCardAbility_Create(t *testing.T) {
 	db, r := setupCardAbilityDB(t)
 	_ = db

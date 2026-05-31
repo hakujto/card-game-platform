@@ -53,8 +53,8 @@ type MatchResponse struct {
 	Status MatchStatusType `json:"status"`
 	Player1Wins int `json:"player1_wins"`
 	Player2Wins int `json:"player2_wins"`
-	StartedAt *string `json:"started_at"`
-	EndedAt *string `json:"ended_at"`
+	StartedAt *string `json:"startedAt"`
+	EndedAt *string `json:"endedAt"`
 	ResultNotes *string `json:"result_notes"`
 	RoundID uint `json:"round_id"`
 	Player1ID uint `json:"player1_id"`

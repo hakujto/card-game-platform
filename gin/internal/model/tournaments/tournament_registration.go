@@ -48,7 +48,7 @@ type TournamentRegistrationResponse struct {
 	Seed *int `json:"seed"`
 	FinalStanding *int `json:"final_standing"`
 	PointsEarned int `json:"points_earned"`
-	RegisteredAt string `json:"registered_at"`
+	RegisteredAt string `json:"registeredAt"`
 	TournamentID uint `json:"tournament_id"`
 	PlayerID uint `json:"player_id"`
 	DeckID uint `json:"deck_id"`

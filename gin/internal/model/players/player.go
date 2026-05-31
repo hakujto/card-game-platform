@@ -72,7 +72,7 @@ type PlayerResponse struct {
 	AvatarUrl *string `json:"avatar_url"`
 	PreferredFormat *PlayerPreferredFormatType `json:"preferred_format"`
 	IsVerified bool `json:"is_verified"`
-	LastActiveAt *string `json:"last_active_at"`
+	LastActiveAt *string `json:"lastActiveAt"`
 	UserID uint `json:"user_id"`
 }
 

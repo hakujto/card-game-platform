@@ -33,9 +33,9 @@ type AwardedPrizeResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	FinalPlacement int `json:"final_placement"`
-	AwardedAt string `json:"awarded_at"`
+	AwardedAt string `json:"awardedAt"`
 	Claimed bool `json:"claimed"`
-	ClaimedAt *string `json:"claimed_at"`
+	ClaimedAt *string `json:"claimedAt"`
 	PrizeID uint `json:"prize_id"`
 	PlayerID uint `json:"player_id"`
 }

@@ -80,26 +80,6 @@ func TestOrderItem_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestOrderItem_Update(t *testing.T) {
-	db, r := setupOrderItemDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depOrder3ID := createDepOrder(t, r, db)
-	_ = depOrder3ID
-	depProduct3ID := createDepProduct(t, r, db)
-	_ = depProduct3ID
-	created := postOrderItem(t, r, db, map[string]interface{}{"quantity": 1, "price_at_purchase": 0, "foil": true, "order_id": depOrder3ID, "product_id": depProduct3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"quantity": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/order_items/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestOrderItem_Delete(t *testing.T) {
 	db, r := setupOrderItemDB(t)
 	_ = db

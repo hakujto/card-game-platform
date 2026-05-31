@@ -83,47 +83,6 @@ func TestTradeBid_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestTradeBid_Update(t *testing.T) {
-	db, r := setupTradeBidDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	depCard3ID := createDepCard(t, r, db)
-	_ = depCard3ID
-	depTradeListing3ID := createDepTradeListing(t, r, db)
-	_ = depTradeListing3ID
-	created := postTradeBid(t, r, db, map[string]interface{}{"amount": 1, "placed_at": "2024-01-01T00:00:00Z", "is_winning": true, "listing_id": depTradeListing3ID, "bidder_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"amount": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/trade_bids/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTradeBid_Delete(t *testing.T) {
-	db, r := setupTradeBidDB(t)
-	_ = db
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	depCard4ID := createDepCard(t, r, db)
-	_ = depCard4ID
-	depTradeListing4ID := createDepTradeListing(t, r, db)
-	_ = depTradeListing4ID
-	created := postTradeBid(t, r, db, map[string]interface{}{"amount": 1, "placed_at": "2024-01-01T00:00:00Z", "is_winning": true, "listing_id": depTradeListing4ID, "bidder_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/trade_bids/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestTradeBid_Rule_AmountPositive_Violated(t *testing.T) {
 	db, r := setupTradeBidDB(t)
 	_ = db

@@ -21,9 +21,6 @@ func (h *OrderHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.DELETE("/:id/cancel", h.Cancel)
 	g.POST("/:id/pay", h.Pay)
 	g.POST("/:id/process-payment", h.ProcessPayment)
@@ -74,6 +71,7 @@ func (h *OrderHandler) Create(c *gin.Context) {
 	row.PlayerID = req.PlayerID
 	row.CouponID = req.CouponID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -87,39 +85,6 @@ func (h *OrderHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *OrderHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.Order
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.OrderUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestOrder(&row)
-	if msgs := validateOrder(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *OrderHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *OrderHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Order{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *OrderHandler) Cancel(c *gin.Context) {
@@ -383,6 +348,11 @@ func (h *OrderHandler) TransitionCompletedToCancelled(c *gin.Context) {
 	}
 	handler.ConflictError(c, "transition Completed -> Cancelled is not allowed")
 	return
+}
+
+// ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *OrderHandler) hookNotifyStatusChange(row *model.Order) {
+	// TODO: implement notify_status_change
 }
 
 // ── Validation rules ─────────────────────────────────────────────

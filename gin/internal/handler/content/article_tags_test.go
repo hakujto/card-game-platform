@@ -47,6 +47,14 @@ func TestArticleTag_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestArticleTag_Search(t *testing.T) {
+	_, r := setupArticleTagDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/article_tags?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestArticleTag_Create(t *testing.T) {
 	db, r := setupArticleTagDB(t)
 	_ = db
@@ -74,7 +82,7 @@ func TestArticleTag_Update(t *testing.T) {
 	upBody := map[string]interface{}{"name": "test"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/article_tags/"+id, bytes.NewBuffer(b))
+	req, _ := http.NewRequest("PATCH", "/api/article_tags/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)

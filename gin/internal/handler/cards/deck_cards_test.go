@@ -101,7 +101,7 @@ func TestDeckCard_Update(t *testing.T) {
 	upBody := map[string]interface{}{"quantity": 1}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/deck_cards/"+id, bytes.NewBuffer(b))
+	req, _ := http.NewRequest("PATCH", "/api/deck_cards/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)

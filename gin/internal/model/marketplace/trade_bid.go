@@ -32,7 +32,7 @@ type TradeBidResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Amount types.Decimal `json:"amount"`
-	PlacedAt string `json:"placed_at"`
+	PlacedAt string `json:"placedAt"`
 	IsWinning bool `json:"is_winning"`
 	ListingID uint `json:"listing_id"`
 	BidderID uint `json:"bidder_id"`

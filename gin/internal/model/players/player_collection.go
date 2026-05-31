@@ -55,7 +55,7 @@ type PlayerCollectionResponse struct {
 	Quantity int `json:"quantity"`
 	Foil bool `json:"foil"`
 	Condition PlayerCollectionConditionType `json:"condition"`
-	AcquiredAt string `json:"acquired_at"`
+	AcquiredAt string `json:"acquiredAt"`
 	AcquiredVia PlayerCollectionAcquiredViaType `json:"acquired_via"`
 	PlayerID uint `json:"player_id"`
 	CardID uint `json:"card_id"`

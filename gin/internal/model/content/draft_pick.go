@@ -32,7 +32,7 @@ type DraftPickResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	PickNumber int `json:"pick_number"`
 	PackNumber int `json:"pack_number"`
-	PickedAt string `json:"picked_at"`
+	PickedAt string `json:"pickedAt"`
 	ParticipantID uint `json:"participant_id"`
 	CardID uint `json:"card_id"`
 }

@@ -19,11 +19,7 @@ func NewTradeTransactionHandler(db *gorm.DB) *TradeTransactionHandler {
 func (h *TradeTransactionHandler) RegisterRoutes(r gin.IRouter) {
 	g := r.Group("/api/trade_transactions")
 	g.GET("", h.List)
-	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/transactions/{id}/complete", h.Complete)
 	g.POST("/:id/api/transactions/{id}/refund", h.Refund)
 	g.POST("/:id/api/transactions/{id}/dispute", h.OpenDispute)
@@ -41,28 +37,6 @@ func (h *TradeTransactionHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
-func (h *TradeTransactionHandler) Create(c *gin.Context) {
-	var req model.TradeTransactionCreateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	if msgs := validateTradeTransaction(&req); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	row := model.TradeTransaction{}
-	row.FinalPrice = req.FinalPrice
-	row.PlatformFee = req.PlatformFee
-	row.Status = req.Status
-	row.CompletedAt = req.CompletedAt
-	row.ListingID = req.ListingID
-	row.BuyerID = req.BuyerID
-	row.SellerID = req.SellerID
-	if err := h.db.Create(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusCreated, row.ToResponse())
-}
-
 func (h *TradeTransactionHandler) Get(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.TradeTransaction
@@ -71,39 +45,6 @@ func (h *TradeTransactionHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TradeTransactionHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.TradeTransaction
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeTransaction"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.TradeTransactionUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestTradeTransaction(&row)
-	if msgs := validateTradeTransaction(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TradeTransactionHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *TradeTransactionHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.TradeTransaction{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeTransaction"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *TradeTransactionHandler) Complete(c *gin.Context) {

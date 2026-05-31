@@ -47,6 +47,14 @@ func TestArticle_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestArticle_Search(t *testing.T) {
+	_, r := setupArticleDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/articles?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestArticle_Create(t *testing.T) {
 	db, r := setupArticleDB(t)
 	_ = db
@@ -84,19 +92,6 @@ func TestArticle_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestArticle_Delete(t *testing.T) {
-	db, r := setupArticleDB(t)
-	_ = db
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	created := postArticle(t, r, db, map[string]interface{}{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": true, "published_at": "2024-01-01T00:00:00Z", "created_at": "2024-01-01T00:00:00Z", "updated_at": "2024-01-01T00:00:00Z", "author_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/articles/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestArticle_Transition_Draft_To_Published(t *testing.T) {

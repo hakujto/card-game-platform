@@ -51,7 +51,7 @@ type DraftSessionResponse struct {
 	DraftType DraftSessionDraftTypeType `json:"draft_type"`
 	Seats int `json:"seats"`
 	TimePerPickSeconds int `json:"time_per_pick_seconds"`
-	CompletedAt *string `json:"completed_at"`
+	CompletedAt *string `json:"completedAt"`
 	CardSetID uint `json:"card_set_id"`
 }
 

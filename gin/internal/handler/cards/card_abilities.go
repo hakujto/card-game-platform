@@ -31,7 +31,13 @@ func (h *CardAbilityHandler) RegisterRoutes(r gin.IRouter) {
 func (h *CardAbilityHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.CardAbility
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("keyword LIKE ?", "%"+q+"%")
+		db = db.Or("ability_text LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.CardAbilityResponse, len(rows))
@@ -54,6 +60,7 @@ func (h *CardAbilityHandler) Create(c *gin.Context) {
 	row.Timing = req.Timing
 	row.CardID = req.CardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -86,6 +93,7 @@ func (h *CardAbilityHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())

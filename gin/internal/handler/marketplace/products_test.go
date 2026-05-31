@@ -47,6 +47,14 @@ func TestProduct_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestProduct_Search(t *testing.T) {
+	_, r := setupProductDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/products?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestProduct_Create(t *testing.T) {
 	db, r := setupProductDB(t)
 	_ = db
@@ -78,17 +86,6 @@ func TestProduct_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestProduct_Delete(t *testing.T) {
-	db, r := setupProductDB(t)
-	_ = db
-	created := postProduct(t, r, db, map[string]interface{}{"name": "test", "product_type": "SingleCard", "price": 1, "stock": 0, "active": true, "discount_percent": 1, "featured": true})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/products/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestProduct_Rule_PricePositive_Violated(t *testing.T) {

@@ -47,6 +47,14 @@ func TestDeck_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestDeck_Search(t *testing.T) {
+	_, r := setupDeckDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/decks?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestDeck_Create(t *testing.T) {
 	db, r := setupDeckDB(t)
 	_ = db

@@ -21,7 +21,6 @@ func (h *DeckTagHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.PATCH("/:id/api/deck-tags/{id}/rename", h.Rename)
@@ -31,7 +30,12 @@ func (h *DeckTagHandler) RegisterRoutes(r gin.IRouter) {
 func (h *DeckTagHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.DeckTag
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("name LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.DeckTagResponse, len(rows))
@@ -48,6 +52,7 @@ func (h *DeckTagHandler) Create(c *gin.Context) {
 	row.Name = req.Name
 	row.Color = req.Color
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -63,7 +68,7 @@ func (h *DeckTagHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *DeckTagHandler) Update(c *gin.Context) {
+func (h *DeckTagHandler) Patch(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.DeckTag
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -76,12 +81,11 @@ func (h *DeckTagHandler) Update(c *gin.Context) {
 	}
 	row.ApplyUpdate(req)
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *DeckTagHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *DeckTagHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

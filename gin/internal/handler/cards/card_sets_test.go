@@ -47,6 +47,14 @@ func TestCardSet_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestCardSet_Search(t *testing.T) {
+	_, r := setupCardSetDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/card_sets?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestCardSet_Create(t *testing.T) {
 	db, r := setupCardSetDB(t)
 	_ = db
@@ -78,17 +86,6 @@ func TestCardSet_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestCardSet_Delete(t *testing.T) {
-	db, r := setupCardSetDB(t)
-	_ = db
-	created := postCardSet(t, r, db, map[string]interface{}{"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": "2024-01-02", "set_type": "Core", "total_cards": 1, "is_rotated": true})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/card_sets/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestCardSet_Rule_TotalCardsPositive_Violated(t *testing.T) {

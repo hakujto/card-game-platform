@@ -76,24 +76,6 @@ func TestCardRuling_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestCardRuling_Update(t *testing.T) {
-	db, r := setupCardRulingDB(t)
-	_ = db
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	depCard3ID := createDepCard(t, r, db)
-	_ = depCard3ID
-	created := postCardRuling(t, r, db, map[string]interface{}{"ruling_text": "test", "published_at": "2024-01-01", "source": "test", "card_id": depCard3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"ruling_text": "test"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/card_rulings/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestCardRuling_Delete(t *testing.T) {
 	db, r := setupCardRulingDB(t)
 	_ = db

@@ -21,9 +21,6 @@ func (h *TournamentRoundHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/rounds/{id}/start", h.Start)
 	g.POST("/:id/api/rounds/{id}/complete", h.Complete)
 	g.POST("/:id/api/rounds/{id}/pairings", h.GeneratePairings)
@@ -57,6 +54,7 @@ func (h *TournamentRoundHandler) Create(c *gin.Context) {
 	row.TimeLimitMinutes = req.TimeLimitMinutes
 	row.TournamentID = req.TournamentID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -70,39 +68,6 @@ func (h *TournamentRoundHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TournamentRoundHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.TournamentRound
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRound"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.TournamentRoundUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestTournamentRound(&row)
-	if msgs := validateTournamentRound(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TournamentRoundHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *TournamentRoundHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.TournamentRound{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRound"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *TournamentRoundHandler) Start(c *gin.Context) {

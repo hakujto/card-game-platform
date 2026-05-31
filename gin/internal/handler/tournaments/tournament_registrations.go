@@ -21,9 +21,6 @@ func (h *TournamentRegistrationHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/registrations/{id}/withdraw", h.Withdraw)
 	g.POST("/:id/api/registrations/{id}/disqualify", h.Disqualify)
 	g.POST("/:id/api/registrations/{id}/promote", h.PromoteFromWaitlist)
@@ -58,6 +55,7 @@ func (h *TournamentRegistrationHandler) Create(c *gin.Context) {
 	row.PlayerID = req.PlayerID
 	row.DeckID = req.DeckID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -71,39 +69,6 @@ func (h *TournamentRegistrationHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TournamentRegistrationHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.TournamentRegistration
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRegistration"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.TournamentRegistrationUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestTournamentRegistration(&row)
-	if msgs := validateTournamentRegistration(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TournamentRegistrationHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *TournamentRegistrationHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.TournamentRegistration{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRegistration"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *TournamentRegistrationHandler) Withdraw(c *gin.Context) {

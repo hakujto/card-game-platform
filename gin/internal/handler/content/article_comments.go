@@ -21,8 +21,6 @@ func (h *ArticleCommentHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/comments/{id}/hide", h.Hide)
 	g.POST("/:id/api/comments/{id}/unhide", h.Unhide)
@@ -52,6 +50,7 @@ func (h *ArticleCommentHandler) Create(c *gin.Context) {
 	row.AuthorID = req.AuthorID
 	row.ParentCommentID = req.ParentCommentID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -66,26 +65,6 @@ func (h *ArticleCommentHandler) Get(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *ArticleCommentHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.ArticleComment
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "ArticleComment"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.ArticleCommentUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *ArticleCommentHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *ArticleCommentHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

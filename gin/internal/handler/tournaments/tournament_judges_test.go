@@ -80,26 +80,6 @@ func TestTournamentJudge_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestTournamentJudge_Update(t *testing.T) {
-	db, r := setupTournamentJudgeDB(t)
-	_ = db
-	depSeason3ID := createDepSeason(t, r, db)
-	_ = depSeason3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depTournament3ID := createDepTournament(t, r, db)
-	_ = depTournament3ID
-	created := postTournamentJudge(t, r, db, map[string]interface{}{"role": "HeadJudge", "tournament_id": depTournament3ID, "player_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "updated"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/tournament_judges/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestTournamentJudge_Delete(t *testing.T) {
 	db, r := setupTournamentJudgeDB(t)
 	_ = db

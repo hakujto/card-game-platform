@@ -70,35 +70,6 @@ func TestDraftSession_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestDraftSession_Update(t *testing.T) {
-	db, r := setupDraftSessionDB(t)
-	_ = db
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	created := postDraftSession(t, r, db, map[string]interface{}{"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00Z", "card_set_id": depCardSet3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"seats": 2}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/draft_sessions/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestDraftSession_Delete(t *testing.T) {
-	db, r := setupDraftSessionDB(t)
-	_ = db
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	created := postDraftSession(t, r, db, map[string]interface{}{"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00Z", "card_set_id": depCardSet4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/draft_sessions/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestDraftSession_Transition_WaitingForPlayers_To_Drafting(t *testing.T) {
 	db, r := setupDraftSessionDB(t)
 	_ = db

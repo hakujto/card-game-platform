@@ -30,7 +30,7 @@ type PlayerAchievementResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	EarnedAt string `json:"earned_at"`
+	EarnedAt string `json:"earnedAt"`
 	Progress int `json:"progress"`
 	IsCompleted bool `json:"is_completed"`
 	PlayerID uint `json:"player_id"`

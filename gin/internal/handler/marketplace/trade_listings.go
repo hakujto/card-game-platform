@@ -21,9 +21,7 @@ func (h *TradeListingHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/trade-listings/{id}/close", h.Close)
 	g.PATCH("/:id/api/trade-listings/{id}/extend", h.Extend)
 	g.DELETE("/:id/api/trade-listings/{id}/cancel", h.Cancel)
@@ -40,7 +38,12 @@ func (h *TradeListingHandler) RegisterRoutes(r gin.IRouter) {
 func (h *TradeListingHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.TradeListing
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("description LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.TradeListingResponse, len(rows))
@@ -71,6 +74,7 @@ func (h *TradeListingHandler) Create(c *gin.Context) {
 	row.SellerID = req.SellerID
 	row.CardID = req.CardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -86,7 +90,7 @@ func (h *TradeListingHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *TradeListingHandler) Update(c *gin.Context) {
+func (h *TradeListingHandler) Patch(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -98,25 +102,11 @@ func (h *TradeListingHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
-	createReq := toCreateRequestTradeListing(&row)
-	if msgs := validateTradeListing(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TradeListingHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *TradeListingHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.TradeListing{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *TradeListingHandler) Close(c *gin.Context) {

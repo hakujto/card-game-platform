@@ -47,6 +47,14 @@ func TestTradeListing_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestTradeListing_Search(t *testing.T) {
+	_, r := setupTradeListingDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/trade_listings?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestTradeListing_Create(t *testing.T) {
 	db, r := setupTradeListingDB(t)
 	_ = db
@@ -92,27 +100,10 @@ func TestTradeListing_Update(t *testing.T) {
 	upBody := map[string]interface{}{"foil": true}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/trade_listings/"+id, bytes.NewBuffer(b))
+	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTradeListing_Delete(t *testing.T) {
-	db, r := setupTradeListingDB(t)
-	_ = db
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	depCard4ID := createDepCard(t, r, db)
-	_ = depCard4ID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer4ID, "card_id": depCard4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/trade_listings/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestTradeListing_Transition_Pending_To_Active(t *testing.T) {

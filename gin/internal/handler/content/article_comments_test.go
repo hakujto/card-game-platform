@@ -75,24 +75,6 @@ func TestArticleComment_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestArticleComment_Update(t *testing.T) {
-	db, r := setupArticleCommentDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depArticle3ID := createDepArticle(t, r, db)
-	_ = depArticle3ID
-	created := postArticleComment(t, r, db, map[string]interface{}{"body": "test", "is_hidden": true, "created_at": "2024-01-01T00:00:00Z", "article_id": depArticle3ID, "author_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"body": "test"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/article_comments/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestArticleComment_Delete(t *testing.T) {
 	db, r := setupArticleCommentDB(t)
 	_ = db

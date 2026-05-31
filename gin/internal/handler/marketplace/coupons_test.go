@@ -47,6 +47,14 @@ func TestCoupon_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestCoupon_Search(t *testing.T) {
+	_, r := setupCouponDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/coupons?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestCoupon_Create(t *testing.T) {
 	db, r := setupCouponDB(t)
 	_ = db
@@ -78,17 +86,6 @@ func TestCoupon_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestCoupon_Delete(t *testing.T) {
-	db, r := setupCouponDB(t)
-	_ = db
-	created := postCoupon(t, r, db, map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "uses_count": 1, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/coupons/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestCoupon_Rule_DiscountValuePositive_Violated(t *testing.T) {

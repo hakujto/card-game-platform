@@ -21,7 +21,6 @@ func (h *PlayerCollectionHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/api/collection/{id}/add", h.Add)
@@ -57,6 +56,7 @@ func (h *PlayerCollectionHandler) Create(c *gin.Context) {
 	row.PlayerID = req.PlayerID
 	row.CardID = req.CardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -72,7 +72,7 @@ func (h *PlayerCollectionHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *PlayerCollectionHandler) Update(c *gin.Context) {
+func (h *PlayerCollectionHandler) Patch(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.PlayerCollection
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -84,17 +84,12 @@ func (h *PlayerCollectionHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
-	createReq := toCreateRequestPlayerCollection(&row)
-	if msgs := validatePlayerCollection(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *PlayerCollectionHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *PlayerCollectionHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

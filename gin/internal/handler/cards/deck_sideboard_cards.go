@@ -21,7 +21,6 @@ func (h *DeckSideboardCardHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.PATCH("/:id/api/sideboard-cards/{id}/increment", h.Increment)
@@ -52,6 +51,7 @@ func (h *DeckSideboardCardHandler) Create(c *gin.Context) {
 	row.DeckID = req.DeckID
 	row.CardID = req.CardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -67,7 +67,7 @@ func (h *DeckSideboardCardHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *DeckSideboardCardHandler) Update(c *gin.Context) {
+func (h *DeckSideboardCardHandler) Patch(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.DeckSideboardCard
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -79,17 +79,12 @@ func (h *DeckSideboardCardHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
-	createReq := toCreateRequestDeckSideboardCard(&row)
-	if msgs := validateDeckSideboardCard(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *DeckSideboardCardHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *DeckSideboardCardHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

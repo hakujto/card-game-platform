@@ -85,47 +85,6 @@ func TestMatch_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestMatch_Update(t *testing.T) {
-	db, r := setupMatchDB(t)
-	_ = db
-	depSeason3ID := createDepSeason(t, r, db)
-	_ = depSeason3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depTournament3ID := createDepTournament(t, r, db)
-	_ = depTournament3ID
-	depTournamentRound3ID := createDepTournamentRound(t, r, db)
-	_ = depTournamentRound3ID
-	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound3ID, "player1_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"player1_wins": 0}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/matches/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestMatch_Delete(t *testing.T) {
-	db, r := setupMatchDB(t)
-	_ = db
-	depSeason4ID := createDepSeason(t, r, db)
-	_ = depSeason4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depTournament4ID := createDepTournament(t, r, db)
-	_ = depTournament4ID
-	depTournamentRound4ID := createDepTournamentRound(t, r, db)
-	_ = depTournamentRound4ID
-	created := postMatch(t, r, db, map[string]interface{}{"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "round_id": depTournamentRound4ID, "player1_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/matches/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestMatch_Transition_Pending_To_Active(t *testing.T) {
 	db, r := setupMatchDB(t)
 	_ = db

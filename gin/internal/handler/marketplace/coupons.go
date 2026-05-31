@@ -23,7 +23,6 @@ func (h *CouponHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/valid", h.IsValid)
 	g.GET("/:id/applicable", h.IsApplicableToOrder)
 	g.POST("/:id/redeem", h.Redeem)
@@ -33,7 +32,12 @@ func (h *CouponHandler) RegisterRoutes(r gin.IRouter) {
 func (h *CouponHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.Coupon
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("code LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.CouponResponse, len(rows))
@@ -60,6 +64,7 @@ func (h *CouponHandler) Create(c *gin.Context) {
 	row.ValidUntil = req.ValidUntil
 	row.IsActive = req.IsActive
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -92,21 +97,13 @@ func (h *CouponHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *CouponHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *CouponHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Coupon{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Coupon"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
-}
 
 func (h *CouponHandler) IsValid(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

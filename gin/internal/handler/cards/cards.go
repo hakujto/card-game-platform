@@ -23,7 +23,6 @@ func (h *CardHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/ban", h.Ban)
 	g.POST("/:id/unban", h.Unban)
 	g.POST("/:id/restrict", h.Restrict)
@@ -36,7 +35,13 @@ func (h *CardHandler) RegisterRoutes(r gin.IRouter) {
 func (h *CardHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.Card
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("name LIKE ?", "%"+q+"%")
+		db = db.Or("artist_name LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.CardResponse, len(rows))
@@ -71,6 +76,7 @@ func (h *CardHandler) Create(c *gin.Context) {
 	row.PowerLevel = req.PowerLevel
 	row.SetID = req.SetID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -103,21 +109,13 @@ func (h *CardHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *CardHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *CardHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Card{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Card"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
-}
 
 func (h *CardHandler) Ban(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
@@ -222,6 +220,11 @@ func (h *CardHandler) IsLegalInFormat(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+// ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *CardHandler) hookValidateLegality(row *model.Card) {
+	// TODO: implement validate_legality
 }
 
 // ── Validation rules ─────────────────────────────────────────────

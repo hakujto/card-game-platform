@@ -88,51 +88,6 @@ func TestTradeDispute_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestTradeDispute_Update(t *testing.T) {
-	db, r := setupTradeDisputeDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	depCard3ID := createDepCard(t, r, db)
-	_ = depCard3ID
-	depTradeListing3ID := createDepTradeListing(t, r, db)
-	_ = depTradeListing3ID
-	depTradeTransaction3ID := createDepTradeTransaction(t, r, db)
-	_ = depTradeTransaction3ID
-	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction3ID, "opened_by_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"description": "test"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/trade_disputes/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTradeDispute_Delete(t *testing.T) {
-	db, r := setupTradeDisputeDB(t)
-	_ = db
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	depCard4ID := createDepCard(t, r, db)
-	_ = depCard4ID
-	depTradeListing4ID := createDepTradeListing(t, r, db)
-	_ = depTradeListing4ID
-	depTradeTransaction4ID := createDepTradeTransaction(t, r, db)
-	_ = depTradeTransaction4ID
-	created := postTradeDispute(t, r, db, map[string]interface{}{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00Z", "transaction_id": depTradeTransaction4ID, "opened_by_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/trade_disputes/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestTradeDispute_Transition_Open_To_UnderReview(t *testing.T) {
 	db, r := setupTradeDisputeDB(t)
 	_ = db

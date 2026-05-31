@@ -21,8 +21,6 @@ func (h *OrderItemHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/api/order-items/{id}/total", h.LineTotal)
 }
@@ -53,6 +51,7 @@ func (h *OrderItemHandler) Create(c *gin.Context) {
 	row.OrderID = req.OrderID
 	row.ProductID = req.ProductID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -67,30 +66,6 @@ func (h *OrderItemHandler) Get(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *OrderItemHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.OrderItem
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "OrderItem"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.OrderItemUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestOrderItem(&row)
-	if msgs := validateOrderItem(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *OrderItemHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *OrderItemHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

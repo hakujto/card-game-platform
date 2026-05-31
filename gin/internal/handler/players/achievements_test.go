@@ -47,6 +47,14 @@ func TestAchievement_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestAchievement_Search(t *testing.T) {
+	_, r := setupAchievementDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/achievements?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestAchievement_Create(t *testing.T) {
 	db, r := setupAchievementDB(t)
 	_ = db
@@ -78,17 +86,6 @@ func TestAchievement_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestAchievement_Delete(t *testing.T) {
-	db, r := setupAchievementDB(t)
-	_ = db
-	created := postAchievement(t, r, db, map[string]interface{}{"name": "test", "description": "test", "points": 1, "rarity": "Common", "is_hidden": true})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/achievements/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestAchievement_Rule_PointsPositive_Violated(t *testing.T) {

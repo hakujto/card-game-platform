@@ -21,9 +21,6 @@ func (h *TradeBidHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/api/bids/{id}/outbid", h.OutbidBy)
 	g.DELETE("/:id/api/bids/{id}", h.Retract)
 }
@@ -54,6 +51,7 @@ func (h *TradeBidHandler) Create(c *gin.Context) {
 	row.ListingID = req.ListingID
 	row.BidderID = req.BidderID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -67,39 +65,6 @@ func (h *TradeBidHandler) Get(c *gin.Context) {
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TradeBidHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.TradeBid
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeBid"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.TradeBidUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	createReq := toCreateRequestTradeBid(&row)
-	if msgs := validateTradeBid(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *TradeBidHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *TradeBidHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.TradeBid{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeBid"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *TradeBidHandler) OutbidBy(c *gin.Context) {

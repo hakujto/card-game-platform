@@ -21,8 +21,6 @@ func (h *CardRulingHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
-	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/api/card-rulings/{id}/current", h.IsCurrent)
 	g.GET("/:id/api/card-rulings/{id}/supersedes", h.SupersedesPrevious)
@@ -50,6 +48,7 @@ func (h *CardRulingHandler) Create(c *gin.Context) {
 	row.Source = req.Source
 	row.CardID = req.CardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -64,26 +63,6 @@ func (h *CardRulingHandler) Get(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
-
-func (h *CardRulingHandler) Update(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	var row model.CardRuling
-	if err := h.db.First(&row, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardRuling"); return }
-		handler.DbError(c, err); return
-	}
-	var req model.CardRulingUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handler.ValidationError(c, err.Error()); return
-	}
-	row.ApplyUpdate(req)
-	if err := h.db.Save(&row).Error; err != nil {
-		handler.DbError(c, err); return
-	}
-	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *CardRulingHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *CardRulingHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

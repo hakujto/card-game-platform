@@ -47,6 +47,14 @@ func TestDeckTag_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestDeckTag_Search(t *testing.T) {
+	_, r := setupDeckTagDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/deck_tags?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestDeckTag_Create(t *testing.T) {
 	db, r := setupDeckTagDB(t)
 	_ = db
@@ -74,7 +82,7 @@ func TestDeckTag_Update(t *testing.T) {
 	upBody := map[string]interface{}{"name": "test"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/deck_tags/"+id, bytes.NewBuffer(b))
+	req, _ := http.NewRequest("PATCH", "/api/deck_tags/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)

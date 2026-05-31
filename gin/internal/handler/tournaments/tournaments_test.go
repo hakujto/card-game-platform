@@ -48,6 +48,14 @@ func TestTournament_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestTournament_Search(t *testing.T) {
+	_, r := setupTournamentDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/tournaments?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestTournament_Create(t *testing.T) {
 	db, r := setupTournamentDB(t)
 	_ = db
@@ -91,21 +99,6 @@ func TestTournament_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTournament_Delete(t *testing.T) {
-	db, r := setupTournamentDB(t)
-	_ = db
-	depSeason4ID := createDepSeason(t, r, db)
-	_ = depSeason4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason4ID, "organizer_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/tournaments/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestTournament_Transition_Draft_To_Registration(t *testing.T) {

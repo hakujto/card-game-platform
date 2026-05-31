@@ -48,6 +48,14 @@ func TestCard_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestCard_Search(t *testing.T) {
+	_, r := setupCardDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/cards?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestCard_Create(t *testing.T) {
 	db, r := setupCardDB(t)
 	_ = db
@@ -85,19 +93,6 @@ func TestCard_Update(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestCard_Delete(t *testing.T) {
-	db, r := setupCardDB(t)
-	_ = db
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	created := postCard(t, r, db, map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "set_id": depCardSet4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/cards/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestCard_Rule_CreatureRequiresStats_Violated(t *testing.T) {

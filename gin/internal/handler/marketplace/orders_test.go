@@ -70,35 +70,6 @@ func TestOrder_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestOrder_Update(t *testing.T) {
-	db, r := setupOrderDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"total": 0}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/orders/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestOrder_Delete(t *testing.T) {
-	db, r := setupOrderDB(t)
-	_ = db
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/orders/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestOrder_Transition_Pending_To_Paid(t *testing.T) {
 	db, r := setupOrderDB(t)
 	_ = db

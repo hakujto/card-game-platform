@@ -72,8 +72,8 @@ type OrderResponse struct {
 	PaymentReference *string `json:"payment_reference"`
 	ShippingAddress *string `json:"shipping_address"`
 	TrackingNumber *string `json:"tracking_number"`
-	PaidAt *string `json:"paid_at"`
-	ShippedAt *string `json:"shipped_at"`
+	PaidAt *string `json:"paidAt"`
+	ShippedAt *string `json:"shippedAt"`
 	PlayerID uint `json:"player_id"`
 	CouponID *uint `json:"coupon_id"`
 }

@@ -80,26 +80,6 @@ func TestArticleTagAssignment_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestArticleTagAssignment_Update(t *testing.T) {
-	db, r := setupArticleTagAssignmentDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depArticle3ID := createDepArticle(t, r, db)
-	_ = depArticle3ID
-	depArticleTag3ID := createDepArticleTag(t, r, db)
-	_ = depArticleTag3ID
-	created := postArticleTagAssignment(t, r, db, map[string]interface{}{"article_id": depArticle3ID, "tag_id": depArticleTag3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "updated"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/article_tag_assignments/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestArticleTagAssignment_Delete(t *testing.T) {
 	db, r := setupArticleTagAssignmentDB(t)
 	_ = db

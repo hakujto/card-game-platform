@@ -47,6 +47,14 @@ func TestPlayer_List(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestPlayer_Search(t *testing.T) {
+	_, r := setupPlayerDB(t)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/players?q=test", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestPlayer_Create(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
@@ -74,21 +82,10 @@ func TestPlayer_Update(t *testing.T) {
 	upBody := map[string]interface{}{"display_name": "test"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/players/"+id, bytes.NewBuffer(b))
+	req, _ := http.NewRequest("PATCH", "/api/players/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestPlayer_Delete(t *testing.T) {
-	db, r := setupPlayerDB(t)
-	_ = db
-	created := postPlayer(t, r, db, map[string]interface{}{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/players/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestPlayer_Rule_RatingRange_Violated(t *testing.T) {

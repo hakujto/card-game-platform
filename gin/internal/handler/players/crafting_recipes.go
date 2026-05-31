@@ -23,7 +23,6 @@ func (h *CraftingRecipeHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/api/crafting-recipes/{id}/can-craft", h.CanCraft)
 	g.POST("/:id/api/crafting-recipes/{id}/craft", h.ExecuteCraft)
 	g.POST("/:id/api/crafting-recipes/{id}/disable", h.Disable)
@@ -54,6 +53,7 @@ func (h *CraftingRecipeHandler) Create(c *gin.Context) {
 	row.IsAvailable = req.IsAvailable
 	row.ResultCardID = req.ResultCardID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -86,21 +86,13 @@ func (h *CraftingRecipeHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *CraftingRecipeHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *CraftingRecipeHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.CraftingRecipe{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CraftingRecipe"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
-}
 
 func (h *CraftingRecipeHandler) CanCraft(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

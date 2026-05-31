@@ -84,47 +84,6 @@ func TestTournamentRegistration_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestTournamentRegistration_Update(t *testing.T) {
-	db, r := setupTournamentRegistrationDB(t)
-	_ = db
-	depSeason3ID := createDepSeason(t, r, db)
-	_ = depSeason3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depTournament3ID := createDepTournament(t, r, db)
-	_ = depTournament3ID
-	depDeck3ID := createDepDeck(t, r, db)
-	_ = depDeck3ID
-	created := postTournamentRegistration(t, r, db, map[string]interface{}{"status": "Registered", "seed": 1, "final_standing": 1, "points_earned": 0, "registered_at": "2024-01-01T00:00:00Z", "tournament_id": depTournament3ID, "player_id": depPlayer3ID, "deck_id": depDeck3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"points_earned": 0}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/tournament_registrations/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTournamentRegistration_Delete(t *testing.T) {
-	db, r := setupTournamentRegistrationDB(t)
-	_ = db
-	depSeason4ID := createDepSeason(t, r, db)
-	_ = depSeason4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depTournament4ID := createDepTournament(t, r, db)
-	_ = depTournament4ID
-	depDeck4ID := createDepDeck(t, r, db)
-	_ = depDeck4ID
-	created := postTournamentRegistration(t, r, db, map[string]interface{}{"status": "Registered", "seed": 1, "final_standing": 1, "points_earned": 0, "registered_at": "2024-01-01T00:00:00Z", "tournament_id": depTournament4ID, "player_id": depPlayer4ID, "deck_id": depDeck4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/tournament_registrations/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestTournamentRegistration_Rule_PointsEarnedNotNegative_Violated(t *testing.T) {
 	db, r := setupTournamentRegistrationDB(t)
 	_ = db

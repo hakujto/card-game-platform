@@ -23,7 +23,6 @@ func (h *CardSetHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.GET("/:id/api/card-sets/{id}/standard-legal", h.IsLegalInStandard)
 	g.GET("/:id/api/card-sets/{id}/legal", h.IsLegalInFormat)
 	g.GET("/:id/api/card-sets/{id}/rarity-count", h.CardCountByRarity)
@@ -33,7 +32,13 @@ func (h *CardSetHandler) RegisterRoutes(r gin.IRouter) {
 func (h *CardSetHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.CardSet
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("name LIKE ?", "%"+q+"%")
+		db = db.Or("code LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.CardSetResponse, len(rows))
@@ -60,6 +65,7 @@ func (h *CardSetHandler) Create(c *gin.Context) {
 	row.Description = req.Description
 	row.LogoUrl = req.LogoUrl
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -92,21 +98,13 @@ func (h *CardSetHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *CardSetHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *CardSetHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.CardSet{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "CardSet"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
-}
 
 func (h *CardSetHandler) IsLegalInStandard(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }

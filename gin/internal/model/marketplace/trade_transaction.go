@@ -46,7 +46,7 @@ type TradeTransactionResponse struct {
 	FinalPrice types.Decimal `json:"final_price"`
 	PlatformFee types.Decimal `json:"platform_fee"`
 	Status TradeTransactionStatusType `json:"status"`
-	CompletedAt *string `json:"completed_at"`
+	CompletedAt *string `json:"completedAt"`
 	ListingID uint `json:"listing_id"`
 	BuyerID uint `json:"buyer_id"`
 	SellerID uint `json:"seller_id"`

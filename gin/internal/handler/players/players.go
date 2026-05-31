@@ -21,9 +21,7 @@ func (h *PlayerHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.DELETE("/:id", h.Delete)
 	g.POST("/:id/promote", h.Promote)
 	g.POST("/:id/demote", h.Demote)
 	g.POST("/:id/win", h.RecordWin)
@@ -36,7 +34,12 @@ func (h *PlayerHandler) RegisterRoutes(r gin.IRouter) {
 func (h *PlayerHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.Player
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("display_name LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.PlayerResponse, len(rows))
@@ -65,6 +68,7 @@ func (h *PlayerHandler) Create(c *gin.Context) {
 	row.LastActiveAt = req.LastActiveAt
 	row.UserID = req.UserID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -80,7 +84,7 @@ func (h *PlayerHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
-func (h *PlayerHandler) Update(c *gin.Context) {
+func (h *PlayerHandler) Patch(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Player
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -92,25 +96,11 @@ func (h *PlayerHandler) Update(c *gin.Context) {
 		handler.ValidationError(c, err.Error()); return
 	}
 	row.ApplyUpdate(req)
-	createReq := toCreateRequestPlayer(&row)
-	if msgs := validatePlayer(&createReq); len(msgs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
-	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
-}
-
-func (h *PlayerHandler) Patch(c *gin.Context) { h.Update(c) }
-
-func (h *PlayerHandler) Delete(c *gin.Context) {
-	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Player{}, id).Error; err != nil {
-		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Player"); return }
-		handler.DbError(c, err); return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func (h *PlayerHandler) Promote(c *gin.Context) {
@@ -209,6 +199,11 @@ func (h *PlayerHandler) UpdateRating(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+// ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *PlayerHandler) hookUpdateRank(row *model.Player) {
+	// TODO: implement update_rank
 }
 
 // ── Validation rules ─────────────────────────────────────────────

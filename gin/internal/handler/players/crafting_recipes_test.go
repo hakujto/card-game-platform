@@ -92,21 +92,6 @@ func TestCraftingRecipe_Update(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestCraftingRecipe_Delete(t *testing.T) {
-	db, r := setupCraftingRecipeDB(t)
-	_ = db
-	depCardSet4ID := createDepCardSet(t, r, db)
-	_ = depCardSet4ID
-	depCard4ID := createDepCard(t, r, db)
-	_ = depCard4ID
-	created := postCraftingRecipe(t, r, db, map[string]interface{}{"dust_cost": 1, "is_available": true, "result_card_id": depCard4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/crafting_recipes/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestCraftingRecipe_Rule_DustCostPositive_Violated(t *testing.T) {
 	db, r := setupCraftingRecipeDB(t)
 	_ = db

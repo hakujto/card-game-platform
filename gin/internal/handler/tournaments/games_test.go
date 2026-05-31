@@ -90,51 +90,6 @@ func TestGame_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestGame_Update(t *testing.T) {
-	db, r := setupGameDB(t)
-	_ = db
-	depSeason3ID := createDepSeason(t, r, db)
-	_ = depSeason3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depTournament3ID := createDepTournament(t, r, db)
-	_ = depTournament3ID
-	depTournamentRound3ID := createDepTournamentRound(t, r, db)
-	_ = depTournamentRound3ID
-	depMatch3ID := createDepMatch(t, r, db)
-	_ = depMatch3ID
-	created := postGame(t, r, db, map[string]interface{}{"game_number": 1, "turns_played": 1, "duration_seconds": 1, "match_id": depMatch3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"game_number": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/games/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestGame_Delete(t *testing.T) {
-	db, r := setupGameDB(t)
-	_ = db
-	depSeason4ID := createDepSeason(t, r, db)
-	_ = depSeason4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depTournament4ID := createDepTournament(t, r, db)
-	_ = depTournament4ID
-	depTournamentRound4ID := createDepTournamentRound(t, r, db)
-	_ = depTournamentRound4ID
-	depMatch4ID := createDepMatch(t, r, db)
-	_ = depMatch4ID
-	created := postGame(t, r, db, map[string]interface{}{"game_number": 1, "turns_played": 1, "duration_seconds": 1, "match_id": depMatch4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/games/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestGame_Rule_GameNumberRange_Violated(t *testing.T) {
 	db, r := setupGameDB(t)
 	_ = db

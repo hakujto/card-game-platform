@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -54,4 +55,9 @@ func Paginate(c *gin.Context) (int, int) {
 // IsRecordNotFound checks if the GORM error means "no row".
 func IsRecordNotFound(err error) bool {
 	return err != nil && err == gorm.ErrRecordNotFound
+}
+
+// IsUniqueViolation checks if the error is a SQLite unique constraint violation.
+func IsUniqueViolation(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed")
 }

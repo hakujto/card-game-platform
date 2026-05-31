@@ -79,9 +79,9 @@ type StreamResponse struct {
 	Language StreamLanguageType `json:"language"`
 	IsOfficial bool `json:"is_official"`
 	ViewerCountPeak int `json:"viewer_count_peak"`
-	ScheduledStart string `json:"scheduled_start"`
-	ActualStart *string `json:"actual_start"`
-	EndedAt *string `json:"ended_at"`
+	ScheduledStart string `json:"scheduledStart"`
+	ActualStart *string `json:"actualStart"`
+	EndedAt *string `json:"endedAt"`
 	VodUrl *string `json:"vod_url"`
 	TournamentID *uint `json:"tournament_id"`
 	StreamerID uint `json:"streamer_id"`

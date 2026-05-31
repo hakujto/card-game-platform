@@ -87,7 +87,7 @@ type ArticleResponse struct {
 	ViewCount int `json:"view_count"`
 	LikesCount int `json:"likes_count"`
 	IsFeatured bool `json:"is_featured"`
-	PublishedAt *string `json:"published_at"`
+	PublishedAt *string `json:"publishedAt"`
 	AuthorID uint `json:"author_id"`
 	FeaturedDeckID *uint `json:"featured_deck_id"`
 }

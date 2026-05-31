@@ -37,7 +37,13 @@ func (h *DeckHandler) RegisterRoutes(r gin.IRouter) {
 func (h *DeckHandler) List(c *gin.Context) {
 	skip, limit := handler.Paginate(c)
 	var rows []model.Deck
-	if err := h.db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
+	q := c.Query("q")
+	db := h.db
+	if q != "" {
+		db = db.Or("name LIKE ?", "%"+q+"%")
+		db = db.Or("description LIKE ?", "%"+q+"%")
+	}
+	if err := db.Offset(skip).Limit(limit).Find(&rows).Error; err != nil {
 		handler.DbError(c, err); return
 	}
 	out := make([]model.DeckResponse, len(rows))
@@ -65,6 +71,7 @@ func (h *DeckHandler) Create(c *gin.Context) {
 	row.Draws = req.Draws
 	row.PlayerID = req.PlayerID
 	if err := h.db.Create(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusCreated, row.ToResponse())
@@ -97,6 +104,7 @@ func (h *DeckHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	if err := h.db.Save(&row).Error; err != nil {
+		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
 		handler.DbError(c, err); return
 	}
 	c.JSON(http.StatusOK, row.ToResponse())
@@ -234,6 +242,11 @@ func (h *DeckHandler) CertifyTournamentLegal(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+// ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *DeckHandler) hookRecalculateTournamentLegal(row *model.Deck) {
+	// TODO: implement recalculate_tournament_legal
 }
 
 // ── Validation rules ─────────────────────────────────────────────

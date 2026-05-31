@@ -71,22 +71,6 @@ func TestFriendship_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestFriendship_Update(t *testing.T) {
-	db, r := setupFriendshipDB(t)
-	_ = db
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	created := postFriendship(t, r, db, map[string]interface{}{"status": "Pending", "created_at": "2024-01-01T00:00:00Z", "requester_id": depPlayer3ID, "receiver_id": depPlayer3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"created_at": "2024-01-01T00:00:00Z"}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/friendships/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestFriendship_Delete(t *testing.T) {
 	db, r := setupFriendshipDB(t)
 	_ = db

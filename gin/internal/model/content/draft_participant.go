@@ -29,7 +29,7 @@ type DraftParticipantResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	SeatNumber int `json:"seat_number"`
-	JoinedAt string `json:"joined_at"`
+	JoinedAt string `json:"joinedAt"`
 	SessionID uint `json:"session_id"`
 	PlayerID uint `json:"player_id"`
 }

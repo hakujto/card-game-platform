@@ -77,12 +77,12 @@ type TradeListingResponse struct {
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
 	AuctionCurrentBid *types.Decimal `json:"auction_current_bid"`
-	AuctionEndTime *string `json:"auction_end_time"`
+	AuctionEndTime *string `json:"auctionEndTime"`
 	Foil bool `json:"foil"`
 	Condition TradeListingConditionType `json:"condition"`
 	Quantity int `json:"quantity"`
 	Description *string `json:"description"`
-	ExpiresAt *string `json:"expires_at"`
+	ExpiresAt *string `json:"expiresAt"`
 	SellerID uint `json:"seller_id"`
 	CardID uint `json:"card_id"`
 }

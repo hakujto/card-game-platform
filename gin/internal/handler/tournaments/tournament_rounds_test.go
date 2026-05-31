@@ -80,43 +80,6 @@ func TestTournamentRound_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestTournamentRound_Update(t *testing.T) {
-	db, r := setupTournamentRoundDB(t)
-	_ = db
-	depSeason3ID := createDepSeason(t, r, db)
-	_ = depSeason3ID
-	depPlayer3ID := createDepPlayer(t, r, db)
-	_ = depPlayer3ID
-	depTournament3ID := createDepTournament(t, r, db)
-	_ = depTournament3ID
-	created := postTournamentRound(t, r, db, map[string]interface{}{"round_number": 1, "status": "Pending", "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "time_limit_minutes": 1, "tournament_id": depTournament3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"round_number": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/tournament_rounds/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestTournamentRound_Delete(t *testing.T) {
-	db, r := setupTournamentRoundDB(t)
-	_ = db
-	depSeason4ID := createDepSeason(t, r, db)
-	_ = depSeason4ID
-	depPlayer4ID := createDepPlayer(t, r, db)
-	_ = depPlayer4ID
-	depTournament4ID := createDepTournament(t, r, db)
-	_ = depTournament4ID
-	created := postTournamentRound(t, r, db, map[string]interface{}{"round_number": 1, "status": "Pending", "started_at": "2024-01-01T00:00:00Z", "ended_at": "2024-01-01T00:00:01Z", "time_limit_minutes": 1, "tournament_id": depTournament4ID})
-	id := fmt.Sprintf("%v", created["id"])
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/tournament_rounds/"+id, nil)
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-}
-
 func TestTournamentRound_Rule_CompletedRequiresStartedAt_Violated(t *testing.T) {
 	db, r := setupTournamentRoundDB(t)
 	_ = db

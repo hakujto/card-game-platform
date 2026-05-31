@@ -79,26 +79,6 @@ func TestCraftingIngredient_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestCraftingIngredient_Update(t *testing.T) {
-	db, r := setupCraftingIngredientDB(t)
-	_ = db
-	depCardSet3ID := createDepCardSet(t, r, db)
-	_ = depCardSet3ID
-	depCard3ID := createDepCard(t, r, db)
-	_ = depCard3ID
-	depCraftingRecipe3ID := createDepCraftingRecipe(t, r, db)
-	_ = depCraftingRecipe3ID
-	created := postCraftingIngredient(t, r, db, map[string]interface{}{"quantity": 1, "recipe_id": depCraftingRecipe3ID, "card_id": depCard3ID})
-	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"quantity": 1}
-	b, _ := json.Marshal(upBody)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/crafting_ingredients/"+id, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
 func TestCraftingIngredient_Delete(t *testing.T) {
 	db, r := setupCraftingIngredientDB(t)
 	_ = db
