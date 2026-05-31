@@ -61,4 +61,12 @@ class Stream < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['scheduledStart'] = hash.delete('scheduled_start') if hash.key?('scheduled_start')
+    hash['actualStart'] = hash.delete('actual_start') if hash.key?('actual_start')
+    hash['endedAt'] = hash.delete('ended_at') if hash.key?('ended_at')
+    hash
+  end
 end

@@ -1,7 +1,7 @@
 module Api
   module Players
     class CraftingIngredientsController < ApplicationController
-      before_action :set_craftingIngredient, only: [:show, :update, :destroy]
+      before_action :set_craftingIngredient, only: [:show, :destroy]
 
       # GET /api/crafting_ingredients
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/crafting_ingredients/:id
       def show
         render json: @craftingIngredient
-      end
-
-      # PATCH/PUT /api/crafting_ingredients/:id
-      def update
-        if @craftingIngredient.update(crafting_ingredient_update_params)
-          render json: @craftingIngredient
-        else
-          render json: { errors: @craftingIngredient.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/crafting_ingredients/:id

@@ -22,4 +22,10 @@ class DraftPick < ApplicationRecord
     # TODO: implement is_first_pick
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['pickedAt'] = hash.delete('picked_at') if hash.key?('picked_at')
+    hash
+  end
 end

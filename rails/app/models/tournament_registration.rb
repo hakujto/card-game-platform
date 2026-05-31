@@ -39,4 +39,10 @@ class TournamentRegistration < ApplicationRecord
   def promote_from_waitlist
     # TODO: implement promote_from_waitlist
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['registeredAt'] = hash.delete('registered_at') if hash.key?('registered_at')
+    hash
+  end
 end

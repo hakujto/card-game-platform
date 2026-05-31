@@ -56,4 +56,11 @@ class DraftSession < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['completedAt'] = hash.delete('completed_at') if hash.key?('completed_at')
+    hash
+  end
 end

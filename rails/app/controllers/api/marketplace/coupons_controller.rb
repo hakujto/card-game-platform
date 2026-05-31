@@ -1,11 +1,12 @@
 module Api
   module Marketplace
     class CouponsController < ApplicationController
-      before_action :set_coupon, only: [:show, :update, :destroy]
+      before_action :set_coupon, only: [:show, :update]
 
-      # GET /api/coupons
+      # GET /api/coupons?q=...
       def index
-        @coupons = Coupon.all
+        q = params[:q]
+        @coupons = q.present? ? Coupon.where(Coupon.arel_table[:code].matches("%#{q}%")) : Coupon.all
         render json: @coupons
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @coupon.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/coupons/:id
-      def destroy
-        @coupon.destroy
-        head :no_content
       end
 
       # GET /api/coupons/:id/valid

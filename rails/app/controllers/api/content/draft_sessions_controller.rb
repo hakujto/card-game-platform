@@ -1,7 +1,7 @@
 module Api
   module Content
     class DraftSessionsController < ApplicationController
-      before_action :set_draftSession, only: [:show, :update, :destroy]
+      before_action :set_draftSession, only: [:show]
 
       # GET /api/draft_sessions
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/draft_sessions/:id
       def show
         render json: @draftSession
-      end
-
-      # PATCH/PUT /api/draft_sessions/:id
-      def update
-        if @draftSession.update(draft_session_update_params)
-          render json: @draftSession
-        else
-          render json: { errors: @draftSession.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/draft_sessions/:id
-      def destroy
-        @draftSession.destroy
-        head :no_content
       end
 
       # POST /api/draft_sessions/:id/start

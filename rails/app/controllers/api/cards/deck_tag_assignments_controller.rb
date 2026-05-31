@@ -1,7 +1,7 @@
 module Api
   module Cards
     class DeckTagAssignmentsController < ApplicationController
-      before_action :set_deckTagAssignment, only: [:show, :update, :destroy]
+      before_action :set_deckTagAssignment, only: [:show, :destroy]
 
       # GET /api/deck_tag_assignments
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/deck_tag_assignments/:id
       def show
         render json: @deckTagAssignment
-      end
-
-      # PATCH/PUT /api/deck_tag_assignments/:id
-      def update
-        if @deckTagAssignment.update(deck_tag_assignment_update_params)
-          render json: @deckTagAssignment
-        else
-          render json: { errors: @deckTagAssignment.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/deck_tag_assignments/:id

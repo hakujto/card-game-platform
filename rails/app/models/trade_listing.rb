@@ -62,4 +62,12 @@ class TradeListing < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['expiresAt'] = hash.delete('expires_at') if hash.key?('expires_at')
+    hash['auctionEndTime'] = hash.delete('auction_end_time') if hash.key?('auction_end_time')
+    hash
+  end
 end

@@ -1,11 +1,12 @@
 module Api
   module Cards
     class CardSetsController < ApplicationController
-      before_action :set_cardSet, only: [:show, :update, :destroy]
+      before_action :set_cardSet, only: [:show, :update]
 
-      # GET /api/card_sets
+      # GET /api/card_sets?q=...
       def index
-        @card_sets = CardSet.all
+        q = params[:q]
+        @card_sets = q.present? ? CardSet.where(CardSet.arel_table[:name].matches("%#{q}%").or(CardSet.arel_table[:code].matches("%#{q}%"))) : CardSet.all
         render json: @card_sets
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @cardSet.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/card_sets/:id
-      def destroy
-        @cardSet.destroy
-        head :no_content
       end
 
       # GET /api/card_sets/:id/standard-legal

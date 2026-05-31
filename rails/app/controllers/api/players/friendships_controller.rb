@@ -1,7 +1,7 @@
 module Api
   module Players
     class FriendshipsController < ApplicationController
-      before_action :set_friendship, only: [:show, :update, :destroy]
+      before_action :set_friendship, only: [:show, :destroy]
 
       # GET /api/friendships
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/friendships/:id
       def show
         render json: @friendship
-      end
-
-      # PATCH/PUT /api/friendships/:id
-      def update
-        if @friendship.update(friendship_update_params)
-          render json: @friendship
-        else
-          render json: { errors: @friendship.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/friendships/:id

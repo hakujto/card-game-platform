@@ -25,4 +25,10 @@ class DraftParticipant < ApplicationRecord
     # TODO: implement drafted_card_count
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['joinedAt'] = hash.delete('joined_at') if hash.key?('joined_at')
+    hash
+  end
 end

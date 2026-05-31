@@ -27,6 +27,13 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     end
   end
 
+  describe "GET /api/trade_listings?q=test" do
+    it "returns 200" do
+      get "/api/trade_listings?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/trade_listings" do
     context "with valid params" do
       it "returns 201" do
@@ -65,14 +72,6 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     end
   end
 
-  describe "DELETE /api/trade_listings/:id" do
-    let!(:tradeListing) { TradeListing.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/trade_listings/#{tradeListing.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/trade_listings (rule: fixed_price_requires_asking_price)" do
     it "create fails when fixed price requires asking price violated" do

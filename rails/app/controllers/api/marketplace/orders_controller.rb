@@ -1,7 +1,7 @@
 module Api
   module Marketplace
     class OrdersController < ApplicationController
-      before_action :set_order, only: [:show, :update, :destroy]
+      before_action :set_order, only: [:show]
 
       # GET /api/orders
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/orders/:id
       def show
         render json: @order
-      end
-
-      # PATCH/PUT /api/orders/:id
-      def update
-        if @order.update(order_update_params)
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/orders/:id
-      def destroy
-        @order.destroy
-        head :no_content
       end
 
       # DELETE /api/orders/:id/cancel

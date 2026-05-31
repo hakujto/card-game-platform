@@ -43,4 +43,11 @@ class TournamentRound < ApplicationRecord
     # TODO: implement is_time_expired
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['startedAt'] = hash.delete('started_at') if hash.key?('started_at')
+    hash['endedAt'] = hash.delete('ended_at') if hash.key?('ended_at')
+    hash
+  end
 end

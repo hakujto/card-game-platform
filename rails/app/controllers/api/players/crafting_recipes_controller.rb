@@ -1,7 +1,7 @@
 module Api
   module Players
     class CraftingRecipesController < ApplicationController
-      before_action :set_craftingRecipe, only: [:show, :update, :destroy]
+      before_action :set_craftingRecipe, only: [:show, :update]
 
       # GET /api/crafting_recipes
       def index
@@ -31,12 +31,6 @@ module Api
         else
           render json: { errors: @craftingRecipe.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/crafting_recipes/:id
-      def destroy
-        @craftingRecipe.destroy
-        head :no_content
       end
 
       # GET /api/crafting_recipes/:id/can-craft

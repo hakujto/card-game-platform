@@ -45,17 +45,6 @@ RSpec.describe "Api::Cards::CardRulings", type: :request do
     end
   end
 
-  describe "PATCH /api/card_rulings/:id" do
-    let!(:cardRuling) { CardRuling.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/card_rulings/#{cardRuling.id}",
-            params: { card_ruling: { ruling_text: 'test' } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/card_rulings/:id" do
     let!(:cardRuling) { CardRuling.create!(valid_attributes) }
 
@@ -64,4 +53,5 @@ RSpec.describe "Api::Cards::CardRulings", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

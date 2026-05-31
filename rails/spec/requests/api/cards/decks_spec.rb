@@ -27,6 +27,13 @@ RSpec.describe "Api::Cards::Decks", type: :request do
     end
   end
 
+  describe "GET /api/decks?q=test" do
+    it "returns 200" do
+      get "/api/decks?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/decks" do
     context "with valid params" do
       it "returns 201" do
@@ -75,6 +82,7 @@ RSpec.describe "Api::Cards::Decks", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 
   describe "POST /api/decks (rule: wins_not_negative)" do
     it "create fails when wins not negative violated" do

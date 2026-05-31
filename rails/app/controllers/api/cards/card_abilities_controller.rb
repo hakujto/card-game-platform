@@ -3,9 +3,10 @@ module Api
     class CardAbilitiesController < ApplicationController
       before_action :set_cardAbility, only: [:show, :update, :destroy]
 
-      # GET /api/card_abilities
+      # GET /api/card_abilities?q=...
       def index
-        @card_abilities = CardAbility.all
+        q = params[:q]
+        @card_abilities = q.present? ? CardAbility.where(CardAbility.arel_table[:keyword].matches("%#{q}%").or(CardAbility.arel_table[:ability_text].matches("%#{q}%"))) : CardAbility.all
         render json: @card_abilities
       end
 

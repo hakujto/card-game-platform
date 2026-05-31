@@ -1,11 +1,12 @@
 module Api
   module Players
     class AchievementsController < ApplicationController
-      before_action :set_achievement, only: [:show, :update, :destroy]
+      before_action :set_achievement, only: [:show, :update]
 
-      # GET /api/achievements
+      # GET /api/achievements?q=...
       def index
-        @achievements = Achievement.all
+        q = params[:q]
+        @achievements = q.present? ? Achievement.where(Achievement.arel_table[:name].matches("%#{q}%").or(Achievement.arel_table[:description].matches("%#{q}%"))) : Achievement.all
         render json: @achievements
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @achievement.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/achievements/:id
-      def destroy
-        @achievement.destroy
-        head :no_content
       end
 
       # GET /api/achievements/:id/point-value

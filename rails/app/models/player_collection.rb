@@ -32,4 +32,10 @@ class PlayerCollection < ApplicationRecord
     # TODO: implement estimated_value
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['acquiredAt'] = hash.delete('acquired_at') if hash.key?('acquired_at')
+    hash
+  end
 end

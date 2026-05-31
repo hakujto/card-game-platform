@@ -1,7 +1,7 @@
 module Api
   module Marketplace
     class TradeTransactionsController < ApplicationController
-      before_action :set_tradeTransaction, only: [:show, :update, :destroy]
+      before_action :set_tradeTransaction, only: [:show]
 
       # GET /api/trade_transactions
       def index
@@ -9,34 +9,9 @@ module Api
         render json: @trade_transactions
       end
 
-      # POST /api/trade_transactions
-      def create
-        @tradeTransaction = TradeTransaction.new(trade_transaction_params)
-        if @tradeTransaction.save
-          render json: @tradeTransaction, status: :created
-        else
-          render json: { errors: @tradeTransaction.errors }, status: :unprocessable_content
-        end
-      end
-
       # GET /api/trade_transactions/:id
       def show
         render json: @tradeTransaction
-      end
-
-      # PATCH/PUT /api/trade_transactions/:id
-      def update
-        if @tradeTransaction.update(trade_transaction_update_params)
-          render json: @tradeTransaction
-        else
-          render json: { errors: @tradeTransaction.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/trade_transactions/:id
-      def destroy
-        @tradeTransaction.destroy
-        head :no_content
       end
 
       # POST /api/trade_transactions/:id/complete

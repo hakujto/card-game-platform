@@ -21,6 +21,13 @@ RSpec.describe "Api::Cards::CardAbilities", type: :request do
     end
   end
 
+  describe "GET /api/card_abilities?q=test" do
+    it "returns 200" do
+      get "/api/card_abilities?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/card_abilities" do
     context "with valid params" do
       it "returns 201" do
@@ -62,6 +69,7 @@ RSpec.describe "Api::Cards::CardAbilities", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 
   describe "POST /api/card_abilities (rule: keyword_ability_requires_keyword)" do
     it "create fails when keyword ability requires keyword violated" do

@@ -24,7 +24,7 @@ module Api
         render json: @playerCollection
       end
 
-      # PATCH/PUT /api/player_collections/:id
+      # PATCH /api/player_collections/:id
       def update
         if @playerCollection.update(player_collection_update_params)
           render json: @playerCollection

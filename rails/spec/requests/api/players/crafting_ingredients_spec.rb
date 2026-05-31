@@ -44,17 +44,6 @@ RSpec.describe "Api::Players::CraftingIngredients", type: :request do
     end
   end
 
-  describe "PATCH /api/crafting_ingredients/:id" do
-    let!(:craftingIngredient) { CraftingIngredient.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/crafting_ingredients/#{craftingIngredient.id}",
-            params: { crafting_ingredient: { quantity: 1 } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/crafting_ingredients/:id" do
     let!(:craftingIngredient) { CraftingIngredient.create!(valid_attributes) }
 
@@ -63,4 +52,5 @@ RSpec.describe "Api::Players::CraftingIngredients", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

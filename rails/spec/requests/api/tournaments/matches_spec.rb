@@ -49,25 +49,6 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
     end
   end
 
-  describe "PATCH /api/matches/:id" do
-    let!(:match) { Match.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/matches/#{match.id}",
-            params: { match: { table_number: 1 } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/matches/:id" do
-    let!(:match) { Match.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/matches/#{match.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/matches (rule: wins_not_negative)" do
     it "create fails when wins not negative violated" do

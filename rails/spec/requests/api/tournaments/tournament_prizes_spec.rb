@@ -70,6 +70,7 @@ RSpec.describe "Api::Tournaments::TournamentPrizes", type: :request do
     end
   end
 
+
   describe "POST /api/tournament_prizes (rule: placement_from_positive)" do
     it "create fails when placement from positive violated" do
       # placement_from must be greater than zero

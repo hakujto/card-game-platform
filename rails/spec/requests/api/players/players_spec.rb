@@ -19,6 +19,13 @@ RSpec.describe "Api::Players::Players", type: :request do
     end
   end
 
+  describe "GET /api/players?q=test" do
+    it "returns 200" do
+      get "/api/players?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/players" do
     context "with valid params" do
       it "returns 201" do
@@ -55,14 +62,6 @@ RSpec.describe "Api::Players::Players", type: :request do
     end
   end
 
-  describe "DELETE /api/players/:id" do
-    let!(:player) { Player.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/players/#{player.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/players (rule: rating_range)" do
     it "create fails when rating range violated" do

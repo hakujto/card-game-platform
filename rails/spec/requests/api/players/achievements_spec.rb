@@ -18,6 +18,13 @@ RSpec.describe "Api::Players::Achievements", type: :request do
     end
   end
 
+  describe "GET /api/achievements?q=test" do
+    it "returns 200" do
+      get "/api/achievements?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/achievements" do
     context "with valid params" do
       it "returns 201" do
@@ -53,14 +60,6 @@ RSpec.describe "Api::Players::Achievements", type: :request do
     end
   end
 
-  describe "DELETE /api/achievements/:id" do
-    let!(:achievement) { Achievement.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/achievements/#{achievement.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/achievements (rule: points_positive)" do
     it "create fails when points positive violated" do

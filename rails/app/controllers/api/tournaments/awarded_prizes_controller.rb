@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class AwardedPrizesController < ApplicationController
-      before_action :set_awardedPrize, only: [:show, :update, :destroy]
+      before_action :set_awardedPrize, only: [:show]
 
       # GET /api/awarded_prizes
       def index
@@ -9,34 +9,9 @@ module Api
         render json: @awarded_prizes
       end
 
-      # POST /api/awarded_prizes
-      def create
-        @awardedPrize = AwardedPrize.new(awarded_prize_params)
-        if @awardedPrize.save
-          render json: @awardedPrize, status: :created
-        else
-          render json: { errors: @awardedPrize.errors }, status: :unprocessable_content
-        end
-      end
-
       # GET /api/awarded_prizes/:id
       def show
         render json: @awardedPrize
-      end
-
-      # PATCH/PUT /api/awarded_prizes/:id
-      def update
-        if @awardedPrize.update(awarded_prize_update_params)
-          render json: @awardedPrize
-        else
-          render json: { errors: @awardedPrize.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/awarded_prizes/:id
-      def destroy
-        @awardedPrize.destroy
-        head :no_content
       end
 
       # POST /api/awarded_prizes/:id/claim

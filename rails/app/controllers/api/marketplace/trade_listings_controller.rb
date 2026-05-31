@@ -1,11 +1,12 @@
 module Api
   module Marketplace
     class TradeListingsController < ApplicationController
-      before_action :set_tradeListing, only: [:show, :update, :destroy]
+      before_action :set_tradeListing, only: [:show, :update]
 
-      # GET /api/trade_listings
+      # GET /api/trade_listings?q=...
       def index
-        @trade_listings = TradeListing.all
+        q = params[:q]
+        @trade_listings = q.present? ? TradeListing.where(TradeListing.arel_table[:description].matches("%#{q}%")) : TradeListing.all
         render json: @trade_listings
       end
 
@@ -24,19 +25,13 @@ module Api
         render json: @tradeListing
       end
 
-      # PATCH/PUT /api/trade_listings/:id
+      # PATCH /api/trade_listings/:id
       def update
         if @tradeListing.update(trade_listing_update_params)
           render json: @tradeListing
         else
           render json: { errors: @tradeListing.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/trade_listings/:id
-      def destroy
-        @tradeListing.destroy
-        head :no_content
       end
 
       # POST /api/trade_listings/:id/close

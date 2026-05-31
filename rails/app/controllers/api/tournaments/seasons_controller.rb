@@ -1,11 +1,12 @@
 module Api
   module Tournaments
     class SeasonsController < ApplicationController
-      before_action :set_season, only: [:show, :update, :destroy]
+      before_action :set_season, only: [:show, :update]
 
-      # GET /api/seasons
+      # GET /api/seasons?q=...
       def index
-        @seasons = Season.all
+        q = params[:q]
+        @seasons = q.present? ? Season.where(Season.arel_table[:name].matches("%#{q}%")) : Season.all
         render json: @seasons
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @season.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/seasons/:id
-      def destroy
-        @season.destroy
-        head :no_content
       end
 
       # POST /api/seasons/:id/activate

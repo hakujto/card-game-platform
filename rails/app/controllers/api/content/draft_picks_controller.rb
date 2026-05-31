@@ -1,7 +1,7 @@
 module Api
   module Content
     class DraftPicksController < ApplicationController
-      before_action :set_draftPick, only: [:show, :update, :destroy]
+      before_action :set_draftPick, only: [:show]
 
       # GET /api/draft_picks
       def index
@@ -9,34 +9,9 @@ module Api
         render json: @draft_picks
       end
 
-      # POST /api/draft_picks
-      def create
-        @draftPick = DraftPick.new(draft_pick_params)
-        if @draftPick.save
-          render json: @draftPick, status: :created
-        else
-          render json: { errors: @draftPick.errors }, status: :unprocessable_content
-        end
-      end
-
       # GET /api/draft_picks/:id
       def show
         render json: @draftPick
-      end
-
-      # PATCH/PUT /api/draft_picks/:id
-      def update
-        if @draftPick.update(draft_pick_update_params)
-          render json: @draftPick
-        else
-          render json: { errors: @draftPick.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/draft_picks/:id
-      def destroy
-        @draftPick.destroy
-        head :no_content
       end
 
       # GET /api/draft_picks/:id/first-pick

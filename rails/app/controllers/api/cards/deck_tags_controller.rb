@@ -3,9 +3,10 @@ module Api
     class DeckTagsController < ApplicationController
       before_action :set_deckTag, only: [:show, :update, :destroy]
 
-      # GET /api/deck_tags
+      # GET /api/deck_tags?q=...
       def index
-        @deck_tags = DeckTag.all
+        q = params[:q]
+        @deck_tags = q.present? ? DeckTag.where(DeckTag.arel_table[:name].matches("%#{q}%")) : DeckTag.all
         render json: @deck_tags
       end
 
@@ -24,7 +25,7 @@ module Api
         render json: @deckTag
       end
 
-      # PATCH/PUT /api/deck_tags/:id
+      # PATCH /api/deck_tags/:id
       def update
         if @deckTag.update(deck_tag_update_params)
           render json: @deckTag

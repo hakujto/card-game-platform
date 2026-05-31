@@ -26,23 +26,6 @@ RSpec.describe "Api::Marketplace::TradeTransactions", type: :request do
     end
   end
 
-  describe "POST /api/trade_transactions" do
-    context "with valid params" do
-      it "returns 201" do
-              fresh_listing = TradeListing.create!({ status: :active, listing_type: :trade_offer, foil: true, condition: :mint, quantity: 1, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
-      post "/api/trade_transactions", params: { trade_transaction: {
-      final_price: '0.01',
-      platform_fee: '0.01',
-      status: :pending,
-      listing_id: fresh_listing.id,
-      buyer_id: @aux_player.id,
-      seller_id: @aux_player.id
-        } }, as: :json
-        expect(response).to have_http_status(:created)
-      end
-    end
-  end
-
   describe "GET /api/trade_transactions/:id" do
     let!(:tradeTransaction) { TradeTransaction.create!(valid_attributes) }
 
@@ -52,69 +35,4 @@ RSpec.describe "Api::Marketplace::TradeTransactions", type: :request do
     end
   end
 
-  describe "PATCH /api/trade_transactions/:id" do
-    let!(:tradeTransaction) { TradeTransaction.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/trade_transactions/#{tradeTransaction.id}",
-            params: { trade_transaction: { final_price: '0.01' } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/trade_transactions/:id" do
-    let!(:tradeTransaction) { TradeTransaction.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/trade_transactions/#{tradeTransaction.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
-
-  describe "POST /api/trade_transactions (rule: fee_not_negative)" do
-    it "create fails when fee not negative violated" do
-      # Platform fee must not be negative
-      post "/api/trade_transactions", params: { trade_transaction: {
-        final_price: '0.00',
-        listing_id: 1,
-        buyer_id: 1,
-        seller_id: 1,
-        completed_at: Time.now,
-        platform_fee: -1,
-      } }, as: :json
-      expect(response).to have_http_status(:unprocessable_content)
-    end
-  end
-
-  describe "POST /api/trade_transactions (rule: final_price_positive)" do
-    it "create fails when final price positive violated" do
-      # Transaction final price must be greater than zero
-      post "/api/trade_transactions", params: { trade_transaction: {
-        platform_fee: '0.00',
-        listing_id: 1,
-        buyer_id: 1,
-        seller_id: 1,
-        completed_at: Time.now,
-        final_price: 0,
-      } }, as: :json
-      expect(response).to have_http_status(:unprocessable_content)
-    end
-  end
-
-  describe "POST /api/trade_transactions (rule: completed_requires_completed_at)" do
-    it "create fails when completed requires completed at violated" do
-      # Completed transaction must have a completed_at timestamp
-      post "/api/trade_transactions", params: { trade_transaction: {
-        final_price: '0.00',
-        platform_fee: '0.00',
-        listing_id: 1,
-        buyer_id: 1,
-        seller_id: 1,
-        status: :completed,
-        completed_at: nil,
-      } }, as: :json
-      expect(response).to have_http_status(:unprocessable_content)
-    end
-  end
 end

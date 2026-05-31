@@ -1,11 +1,12 @@
 module Api
   module Tournaments
     class TournamentsController < ApplicationController
-      before_action :set_tournament, only: [:show, :update, :destroy]
+      before_action :set_tournament, only: [:show, :update]
 
-      # GET /api/tournaments
+      # GET /api/tournaments?q=...
       def index
-        @tournaments = Tournament.all
+        q = params[:q]
+        @tournaments = q.present? ? Tournament.where(Tournament.arel_table[:name].matches("%#{q}%").or(Tournament.arel_table[:description].matches("%#{q}%"))) : Tournament.all
         render json: @tournaments
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @tournament.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/tournaments/:id
-      def destroy
-        @tournament.destroy
-        head :no_content
       end
 
       # POST /api/tournaments/:id/start

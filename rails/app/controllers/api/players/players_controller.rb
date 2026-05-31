@@ -1,11 +1,12 @@
 module Api
   module Players
     class PlayersController < ApplicationController
-      before_action :set_player, only: [:show, :update, :destroy]
+      before_action :set_player, only: [:show, :update]
 
-      # GET /api/players
+      # GET /api/players?q=...
       def index
-        @players = Player.all
+        q = params[:q]
+        @players = q.present? ? Player.where(Player.arel_table[:display_name].matches("%#{q}%")) : Player.all
         render json: @players
       end
 
@@ -24,19 +25,13 @@ module Api
         render json: @player
       end
 
-      # PATCH/PUT /api/players/:id
+      # PATCH /api/players/:id
       def update
         if @player.update(player_update_params)
           render json: @player
         else
           render json: { errors: @player.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/players/:id
-      def destroy
-        @player.destroy
-        head :no_content
       end
 
       # POST /api/players/:id/promote

@@ -253,7 +253,7 @@ curl -s -X PUT "$BASE/awarded_prizes/$ID_AwardedPrize" \
 echo && echo "=== PUT trade_disputes/$ID_TradeDispute ==="
 curl -s -X PUT "$BASE/trade_disputes/$ID_TradeDispute" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"open\", \"reason\": \"item_not_received\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"opened_at\": \"2024-01-01T00:00:00Z\", \"resolved_at\": null, \"transaction_id\": ${ID_TradeTransaction:-null}, \"opened_by_id\": ${ID_Player:-null}, \"resolved_by_id\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"status\": \"open\", \"reason\": \"item_not_received\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"opened_at\": \"2024-01-01T00:00:00Z\", \"resolved_at\": null, \"opened_by_id\": ${ID_Player:-null}, \"resolved_by_id\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT games/$ID_Game ==="
 curl -s -X PUT "$BASE/games/$ID_Game" \

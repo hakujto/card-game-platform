@@ -55,4 +55,18 @@ class Player < ApplicationRecord
   def update_rating(delta)
     # TODO: implement update_rating
   end
+
+  # Lifecycle hooks
+  after_update :update_rank
+
+  def update_rank
+    # TODO: implement update_rank
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['lastActiveAt'] = hash.delete('last_active_at') if hash.key?('last_active_at')
+    hash
+  end
 end

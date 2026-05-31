@@ -27,4 +27,11 @@ class AwardedPrize < ApplicationRecord
   def claim
     # TODO: implement claim
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['awardedAt'] = hash.delete('awarded_at') if hash.key?('awarded_at')
+    hash['claimedAt'] = hash.delete('claimed_at') if hash.key?('claimed_at')
+    hash
+  end
 end

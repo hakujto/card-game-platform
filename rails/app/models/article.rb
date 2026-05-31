@@ -71,4 +71,19 @@ class Article < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  # Lifecycle hooks
+  after_save :update_search_index
+
+  def update_search_index
+    # TODO: implement update_search_index
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['updatedAt'] = hash.delete('updated_at') if hash.key?('updated_at')
+    hash['publishedAt'] = hash.delete('published_at') if hash.key?('published_at')
+    hash
+  end
 end

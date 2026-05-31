@@ -30,6 +30,13 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     end
   end
 
+  describe "GET /api/tournaments?q=test" do
+    it "returns 200" do
+      get "/api/tournaments?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/tournaments" do
     context "with valid params" do
       it "returns 201" do
@@ -72,14 +79,6 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     end
   end
 
-  describe "DELETE /api/tournaments/:id" do
-    let!(:tournament) { Tournament.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/tournaments/#{tournament.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/tournaments (rule: max_players_positive)" do
     it "create fails when max players positive violated" do

@@ -3,9 +3,10 @@ module Api
     class DecksController < ApplicationController
       before_action :set_deck, only: [:show, :update, :destroy]
 
-      # GET /api/decks
+      # GET /api/decks?q=...
       def index
-        @decks = Deck.all
+        q = params[:q]
+        @decks = q.present? ? Deck.where(Deck.arel_table[:name].matches("%#{q}%").or(Deck.arel_table[:description].matches("%#{q}%"))) : Deck.all
         render json: @decks
       end
 

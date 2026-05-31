@@ -3,9 +3,10 @@ module Api
     class ArticleTagsController < ApplicationController
       before_action :set_articleTag, only: [:show, :update, :destroy]
 
-      # GET /api/article_tags
+      # GET /api/article_tags?q=...
       def index
-        @article_tags = ArticleTag.all
+        q = params[:q]
+        @article_tags = q.present? ? ArticleTag.where(ArticleTag.arel_table[:name].matches("%#{q}%")) : ArticleTag.all
         render json: @article_tags
       end
 
@@ -24,7 +25,7 @@ module Api
         render json: @articleTag
       end
 
-      # PATCH/PUT /api/article_tags/:id
+      # PATCH /api/article_tags/:id
       def update
         if @articleTag.update(article_tag_update_params)
           render json: @articleTag

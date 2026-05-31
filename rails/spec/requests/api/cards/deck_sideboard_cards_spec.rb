@@ -65,6 +65,7 @@ RSpec.describe "Api::Cards::DeckSideboardCards", type: :request do
     end
   end
 
+
   describe "POST /api/deck_sideboard_cards (rule: quantity_range)" do
     it "create fails when quantity range violated" do
       # Sideboard card quantity must be between 1 and 4 copies

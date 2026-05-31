@@ -1,11 +1,12 @@
 module Api
   module Content
     class StreamsController < ApplicationController
-      before_action :set_stream, only: [:show, :update, :destroy]
+      before_action :set_stream, only: [:show, :update]
 
-      # GET /api/streams
+      # GET /api/streams?q=...
       def index
-        @streams = Stream.all
+        q = params[:q]
+        @streams = q.present? ? Stream.where(Stream.arel_table[:title].matches("%#{q}%")) : Stream.all
         render json: @streams
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @stream.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/streams/:id
-      def destroy
-        @stream.destroy
-        head :no_content
       end
 
       # POST /api/streams/:id/live

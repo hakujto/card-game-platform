@@ -1,7 +1,7 @@
 module Api
   module Marketplace
     class TradeDisputesController < ApplicationController
-      before_action :set_tradeDispute, only: [:show, :update, :destroy]
+      before_action :set_tradeDispute, only: [:show]
 
       # GET /api/trade_disputes
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/trade_disputes/:id
       def show
         render json: @tradeDispute
-      end
-
-      # PATCH/PUT /api/trade_disputes/:id
-      def update
-        if @tradeDispute.update(trade_dispute_update_params)
-          render json: @tradeDispute
-        else
-          render json: { errors: @tradeDispute.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/trade_disputes/:id
-      def destroy
-        @tradeDispute.destroy
-        head :no_content
       end
 
       # POST /api/trade_disputes/:id/escalate

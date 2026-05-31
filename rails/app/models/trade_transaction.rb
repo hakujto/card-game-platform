@@ -45,4 +45,10 @@ class TradeTransaction < ApplicationRecord
     # TODO: implement seller_net
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['completedAt'] = hash.delete('completed_at') if hash.key?('completed_at')
+    hash
+  end
 end

@@ -79,4 +79,19 @@ class Order < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  # Lifecycle hooks
+  after_update :notify_status_change
+
+  def notify_status_change
+    # TODO: implement notify_status_change
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['paidAt'] = hash.delete('paid_at') if hash.key?('paid_at')
+    hash['shippedAt'] = hash.delete('shipped_at') if hash.key?('shipped_at')
+    hash
+  end
 end

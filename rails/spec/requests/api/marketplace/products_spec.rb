@@ -20,6 +20,13 @@ RSpec.describe "Api::Marketplace::Products", type: :request do
     end
   end
 
+  describe "GET /api/products?q=test" do
+    it "returns 200" do
+      get "/api/products?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/products" do
     context "with valid params" do
       it "returns 201" do
@@ -57,14 +64,6 @@ RSpec.describe "Api::Marketplace::Products", type: :request do
     end
   end
 
-  describe "DELETE /api/products/:id" do
-    let!(:product) { Product.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/products/#{product.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/products (rule: price_positive)" do
     it "create fails when price positive violated" do

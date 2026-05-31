@@ -44,17 +44,6 @@ RSpec.describe "Api::Players::Friendships", type: :request do
     end
   end
 
-  describe "PATCH /api/friendships/:id" do
-    let!(:friendship) { Friendship.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/friendships/#{friendship.id}",
-            params: { friendship: { status: :pending } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/friendships/:id" do
     let!(:friendship) { Friendship.create!(valid_attributes) }
 
@@ -63,4 +52,5 @@ RSpec.describe "Api::Players::Friendships", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

@@ -23,4 +23,10 @@ class ArticleComment < ApplicationRecord
     # TODO: implement is_reply
     nil
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash
+  end
 end

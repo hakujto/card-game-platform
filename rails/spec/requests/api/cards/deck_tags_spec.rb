@@ -14,6 +14,13 @@ RSpec.describe "Api::Cards::DeckTags", type: :request do
     end
   end
 
+  describe "GET /api/deck_tags?q=test" do
+    it "returns 200" do
+      get "/api/deck_tags?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/deck_tags" do
     context "with valid params" do
       it "returns 201" do
@@ -53,4 +60,5 @@ RSpec.describe "Api::Cards::DeckTags", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

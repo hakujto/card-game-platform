@@ -1,7 +1,7 @@
 module Api
   module Content
     class ArticleCommentsController < ApplicationController
-      before_action :set_articleComment, only: [:show, :update, :destroy]
+      before_action :set_articleComment, only: [:show, :destroy]
 
       # GET /api/article_comments
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/article_comments/:id
       def show
         render json: @articleComment
-      end
-
-      # PATCH/PUT /api/article_comments/:id
-      def update
-        if @articleComment.update(article_comment_update_params)
-          render json: @articleComment
-        else
-          render json: { errors: @articleComment.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/article_comments/:id

@@ -63,4 +63,11 @@ class Match < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['startedAt'] = hash.delete('started_at') if hash.key?('started_at')
+    hash['endedAt'] = hash.delete('ended_at') if hash.key?('ended_at')
+    hash
+  end
 end

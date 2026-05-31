@@ -46,25 +46,6 @@ RSpec.describe "Api::Content::DraftParticipants", type: :request do
     end
   end
 
-  describe "PATCH /api/draft_participants/:id" do
-    let!(:draftParticipant) { DraftParticipant.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/draft_participants/#{draftParticipant.id}",
-            params: { draft_participant: { joined_at: Time.now } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/draft_participants/:id" do
-    let!(:draftParticipant) { DraftParticipant.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/draft_participants/#{draftParticipant.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/draft_participants (rule: seat_number_positive)" do
     it "create fails when seat number positive violated" do

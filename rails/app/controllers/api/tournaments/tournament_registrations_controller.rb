@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class TournamentRegistrationsController < ApplicationController
-      before_action :set_tournamentRegistration, only: [:show, :update, :destroy]
+      before_action :set_tournamentRegistration, only: [:show]
 
       # GET /api/tournament_registrations
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/tournament_registrations/:id
       def show
         render json: @tournamentRegistration
-      end
-
-      # PATCH/PUT /api/tournament_registrations/:id
-      def update
-        if @tournamentRegistration.update(tournament_registration_update_params)
-          render json: @tournamentRegistration
-        else
-          render json: { errors: @tournamentRegistration.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/tournament_registrations/:id
-      def destroy
-        @tournamentRegistration.destroy
-        head :no_content
       end
 
       # POST /api/tournament_registrations/:id/withdraw

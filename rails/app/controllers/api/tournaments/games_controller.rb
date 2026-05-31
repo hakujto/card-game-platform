@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class GamesController < ApplicationController
-      before_action :set_game, only: [:show, :update, :destroy]
+      before_action :set_game, only: [:show]
 
       # GET /api/games
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/games/:id
       def show
         render json: @game
-      end
-
-      # PATCH/PUT /api/games/:id
-      def update
-        if @game.update(game_update_params)
-          render json: @game
-        else
-          render json: { errors: @game.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/games/:id
-      def destroy
-        @game.destroy
-        head :no_content
       end
 
       # POST /api/games/:id/winner

@@ -25,4 +25,10 @@ class TradeBid < ApplicationRecord
   def retract
     # TODO: implement retract
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['placedAt'] = hash.delete('placed_at') if hash.key?('placed_at')
+    hash
+  end
 end

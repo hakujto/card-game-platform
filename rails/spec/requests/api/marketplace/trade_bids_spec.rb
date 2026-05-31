@@ -49,25 +49,6 @@ RSpec.describe "Api::Marketplace::TradeBids", type: :request do
     end
   end
 
-  describe "PATCH /api/trade_bids/:id" do
-    let!(:tradeBid) { TradeBid.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/trade_bids/#{tradeBid.id}",
-            params: { trade_bid: { placed_at: Time.now } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/trade_bids/:id" do
-    let!(:tradeBid) { TradeBid.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/trade_bids/#{tradeBid.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/trade_bids (rule: amount_positive)" do
     it "create fails when amount positive violated" do

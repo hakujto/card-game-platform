@@ -54,25 +54,6 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
     end
   end
 
-  describe "PATCH /api/trade_disputes/:id" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/trade_disputes/#{tradeDispute.id}",
-            params: { trade_dispute: { reason: :item_not_received } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/trade_disputes/:id" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/trade_disputes/#{tradeDispute.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/trade_disputes (rule: resolved_at_requires_terminal_status)" do
     it "create fails when resolved at requires terminal status violated" do

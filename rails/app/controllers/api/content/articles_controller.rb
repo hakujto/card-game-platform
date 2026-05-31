@@ -1,11 +1,12 @@
 module Api
   module Content
     class ArticlesController < ApplicationController
-      before_action :set_article, only: [:show, :update, :destroy]
+      before_action :set_article, only: [:show, :update]
 
-      # GET /api/articles
+      # GET /api/articles?q=...
       def index
-        @articles = Article.all
+        q = params[:q]
+        @articles = q.present? ? Article.where(Article.arel_table[:title].matches("%#{q}%").or(Article.arel_table[:excerpt].matches("%#{q}%"))) : Article.all
         render json: @articles
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @article.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/articles/:id
-      def destroy
-        @article.destroy
-        head :no_content
       end
 
       # POST /api/articles/:id/publish

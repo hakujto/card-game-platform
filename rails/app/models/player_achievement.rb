@@ -31,4 +31,10 @@ class PlayerAchievement < ApplicationRecord
   def complete
     # TODO: implement complete
   end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['earnedAt'] = hash.delete('earned_at') if hash.key?('earned_at')
+    hash
+  end
 end

@@ -4,7 +4,7 @@ class TradeDispute < ApplicationRecord
   enum :status, { open: 0, under_review: 1, resolved: 2, escalated: 3 }, prefix: :status
   enum :reason, { item_not_received: 0, item_not_as_described: 1, fraud_suspected: 2, other: 3 }, prefix: :reason
 
-  belongs_to :transaction_record, class_name: 'TradeTransaction', foreign_key: :transaction_id
+  belongs_to :transaction_record, class_name: 'TradeTransaction', foreign_key: :transaction_id, optional: true
   belongs_to :opened_by, class_name: 'Player'
   belongs_to :resolved_by, class_name: 'Player', optional: true
 
@@ -49,5 +49,12 @@ class TradeDispute < ApplicationRecord
     unless allowed.include?(to_state.to_s)
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['openedAt'] = hash.delete('opened_at') if hash.key?('opened_at')
+    hash['resolvedAt'] = hash.delete('resolved_at') if hash.key?('resolved_at')
+    hash
   end
 end

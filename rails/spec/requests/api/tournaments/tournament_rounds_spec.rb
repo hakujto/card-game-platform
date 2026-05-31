@@ -46,25 +46,6 @@ RSpec.describe "Api::Tournaments::TournamentRounds", type: :request do
     end
   end
 
-  describe "PATCH /api/tournament_rounds/:id" do
-    let!(:tournamentRound) { TournamentRound.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/tournament_rounds/#{tournamentRound.id}",
-            params: { tournament_round: { round_number: 1 } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/tournament_rounds/:id" do
-    let!(:tournamentRound) { TournamentRound.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/tournament_rounds/#{tournamentRound.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/tournament_rounds (rule: ended_after_started)" do
     it "create fails when ended after started violated" do

@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class TournamentJudgesController < ApplicationController
-      before_action :set_tournamentJudge, only: [:show, :update, :destroy]
+      before_action :set_tournamentJudge, only: [:show, :destroy]
 
       # GET /api/tournament_judges
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/tournament_judges/:id
       def show
         render json: @tournamentJudge
-      end
-
-      # PATCH/PUT /api/tournament_judges/:id
-      def update
-        if @tournamentJudge.update(tournament_judge_update_params)
-          render json: @tournamentJudge
-        else
-          render json: { errors: @tournamentJudge.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/tournament_judges/:id

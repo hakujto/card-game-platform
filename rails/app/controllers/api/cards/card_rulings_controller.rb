@@ -1,7 +1,7 @@
 module Api
   module Cards
     class CardRulingsController < ApplicationController
-      before_action :set_cardRuling, only: [:show, :update, :destroy]
+      before_action :set_cardRuling, only: [:show, :destroy]
 
       # GET /api/card_rulings
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/card_rulings/:id
       def show
         render json: @cardRuling
-      end
-
-      # PATCH/PUT /api/card_rulings/:id
-      def update
-        if @cardRuling.update(card_ruling_update_params)
-          render json: @cardRuling
-        else
-          render json: { errors: @cardRuling.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/card_rulings/:id

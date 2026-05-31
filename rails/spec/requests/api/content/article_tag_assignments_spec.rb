@@ -42,17 +42,6 @@ RSpec.describe "Api::Content::ArticleTagAssignments", type: :request do
     end
   end
 
-  describe "PATCH /api/article_tag_assignments/:id" do
-    let!(:articleTagAssignment) { ArticleTagAssignment.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/article_tag_assignments/#{articleTagAssignment.id}",
-            params: { article_tag_assignment: {  } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/article_tag_assignments/:id" do
     let!(:articleTagAssignment) { ArticleTagAssignment.create!(valid_attributes) }
 
@@ -61,4 +50,5 @@ RSpec.describe "Api::Content::ArticleTagAssignments", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

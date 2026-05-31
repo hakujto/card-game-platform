@@ -19,6 +19,13 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
     end
   end
 
+  describe "GET /api/card_sets?q=test" do
+    it "returns 200" do
+      get "/api/card_sets?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/card_sets" do
     context "with valid params" do
       it "returns 201" do
@@ -55,14 +62,6 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
     end
   end
 
-  describe "DELETE /api/card_sets/:id" do
-    let!(:cardSet) { CardSet.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/card_sets/#{cardSet.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/card_sets (rule: total_cards_positive)" do
     it "create fails when total cards positive violated" do

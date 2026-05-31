@@ -72,6 +72,7 @@ RSpec.describe "Api::Players::PlayerCollections", type: :request do
     end
   end
 
+
   describe "POST /api/player_collections (rule: quantity_positive)" do
     it "create fails when quantity positive violated" do
       # Collection quantity must be greater than zero

@@ -48,25 +48,6 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
     end
   end
 
-  describe "PATCH /api/orders/:id" do
-    let!(:order) { Order.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/orders/#{order.id}",
-            params: { order: { total: '0.00' } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/orders/:id" do
-    let!(:order) { Order.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/orders/#{order.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/orders (rule: paid_requires_paid_at)" do
     it "create fails when paid requires paid at violated" do

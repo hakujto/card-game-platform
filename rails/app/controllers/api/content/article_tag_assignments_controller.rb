@@ -1,7 +1,7 @@
 module Api
   module Content
     class ArticleTagAssignmentsController < ApplicationController
-      before_action :set_articleTagAssignment, only: [:show, :update, :destroy]
+      before_action :set_articleTagAssignment, only: [:show, :destroy]
 
       # GET /api/article_tag_assignments
       def index
@@ -22,15 +22,6 @@ module Api
       # GET /api/article_tag_assignments/:id
       def show
         render json: @articleTagAssignment
-      end
-
-      # PATCH/PUT /api/article_tag_assignments/:id
-      def update
-        if @articleTagAssignment.update(article_tag_assignment_update_params)
-          render json: @articleTagAssignment
-        else
-          render json: { errors: @articleTagAssignment.errors }, status: :unprocessable_content
-        end
       end
 
       # DELETE /api/article_tag_assignments/:id

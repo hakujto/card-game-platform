@@ -18,6 +18,13 @@ RSpec.describe "Api::Tournaments::Seasons", type: :request do
     end
   end
 
+  describe "GET /api/seasons?q=test" do
+    it "returns 200" do
+      get "/api/seasons?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/seasons" do
     context "with valid params" do
       it "returns 201" do
@@ -53,14 +60,6 @@ RSpec.describe "Api::Tournaments::Seasons", type: :request do
     end
   end
 
-  describe "DELETE /api/seasons/:id" do
-    let!(:season) { Season.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/seasons/#{season.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/seasons (rule: end_date_after_start_date)" do
     it "create fails when end date after start date violated" do

@@ -66,4 +66,11 @@ class Card < ApplicationRecord
     # TODO: implement is_legal_in_format
     nil
   end
+
+  # Lifecycle hooks
+  before_save :validate_legality
+
+  def validate_legality
+    # TODO: implement validate_legality
+  end
 end

@@ -68,4 +68,18 @@ class Deck < ApplicationRecord
     # TODO: implement certify_tournament_legal
     nil
   end
+
+  # Lifecycle hooks
+  after_save :recalculate_tournament_legal
+
+  def recalculate_tournament_legal
+    # TODO: implement recalculate_tournament_legal
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['updatedAt'] = hash.delete('updated_at') if hash.key?('updated_at')
+    hash
+  end
 end

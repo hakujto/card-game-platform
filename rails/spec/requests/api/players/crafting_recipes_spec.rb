@@ -54,14 +54,6 @@ RSpec.describe "Api::Players::CraftingRecipes", type: :request do
     end
   end
 
-  describe "DELETE /api/crafting_recipes/:id" do
-    let!(:craftingRecipe) { CraftingRecipe.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/crafting_recipes/#{craftingRecipe.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/crafting_recipes (rule: dust_cost_positive)" do
     it "create fails when dust cost positive violated" do

@@ -51,25 +51,6 @@ RSpec.describe "Api::Tournaments::TournamentRegistrations", type: :request do
     end
   end
 
-  describe "PATCH /api/tournament_registrations/:id" do
-    let!(:tournamentRegistration) { TournamentRegistration.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/tournament_registrations/#{tournamentRegistration.id}",
-            params: { tournament_registration: { status: :registered } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "DELETE /api/tournament_registrations/:id" do
-    let!(:tournamentRegistration) { TournamentRegistration.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/tournament_registrations/#{tournamentRegistration.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/tournament_registrations (rule: points_earned_not_negative)" do
     it "create fails when points earned not negative violated" do

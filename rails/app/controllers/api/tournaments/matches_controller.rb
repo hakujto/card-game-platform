@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class MatchesController < ApplicationController
-      before_action :set_match, only: [:show, :update, :destroy]
+      before_action :set_match, only: [:show]
 
       # GET /api/matches
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/matches/:id
       def show
         render json: @match
-      end
-
-      # PATCH/PUT /api/matches/:id
-      def update
-        if @match.update(match_update_params)
-          render json: @match
-        else
-          render json: { errors: @match.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/matches/:id
-      def destroy
-        @match.destroy
-        head :no_content
       end
 
       # POST /api/matches/:id/record

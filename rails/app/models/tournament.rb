@@ -76,4 +76,19 @@ class Tournament < ApplicationRecord
       raise ArgumentError, "Transition #{status} -> #{to_state} not allowed"
     end
   end
+
+  # Lifecycle hooks
+  after_update :sync_season_stats
+
+  def sync_season_stats
+    # TODO: implement sync_season_stats
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
+    hash['startTime'] = hash.delete('start_time') if hash.key?('start_time')
+    hash['endTime'] = hash.delete('end_time') if hash.key?('end_time')
+    hash
+  end
 end

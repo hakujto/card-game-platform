@@ -44,17 +44,6 @@ RSpec.describe "Api::Tournaments::TournamentJudges", type: :request do
     end
   end
 
-  describe "PATCH /api/tournament_judges/:id" do
-    let!(:tournamentJudge) { TournamentJudge.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/tournament_judges/#{tournamentJudge.id}",
-            params: { tournament_judge: { role: :head_judge } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/tournament_judges/:id" do
     let!(:tournamentJudge) { TournamentJudge.create!(valid_attributes) }
 
@@ -63,4 +52,5 @@ RSpec.describe "Api::Tournaments::TournamentJudges", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

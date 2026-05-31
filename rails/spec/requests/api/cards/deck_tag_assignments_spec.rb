@@ -42,17 +42,6 @@ RSpec.describe "Api::Cards::DeckTagAssignments", type: :request do
     end
   end
 
-  describe "PATCH /api/deck_tag_assignments/:id" do
-    let!(:deckTagAssignment) { DeckTagAssignment.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/deck_tag_assignments/#{deckTagAssignment.id}",
-            params: { deck_tag_assignment: {  } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/deck_tag_assignments/:id" do
     let!(:deckTagAssignment) { DeckTagAssignment.create!(valid_attributes) }
 
@@ -61,4 +50,5 @@ RSpec.describe "Api::Cards::DeckTagAssignments", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

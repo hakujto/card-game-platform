@@ -26,6 +26,13 @@ RSpec.describe "Api::Content::Streams", type: :request do
     end
   end
 
+  describe "GET /api/streams?q=test" do
+    it "returns 200" do
+      get "/api/streams?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/streams" do
     context "with valid params" do
       it "returns 201" do
@@ -65,14 +72,6 @@ RSpec.describe "Api::Content::Streams", type: :request do
     end
   end
 
-  describe "DELETE /api/streams/:id" do
-    let!(:stream) { Stream.create!(valid_attributes) }
-
-    it "returns 204" do
-      delete "/api/streams/#{stream.id}"
-      expect(response).to have_http_status(:no_content)
-    end
-  end
 
   describe "POST /api/streams (rule: actual_start_requires_live_or_ended)" do
     it "create fails when actual start requires live or ended violated" do

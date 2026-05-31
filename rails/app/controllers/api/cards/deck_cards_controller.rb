@@ -24,7 +24,7 @@ module Api
         render json: @deckCard
       end
 
-      # PATCH/PUT /api/deck_cards/:id
+      # PATCH /api/deck_cards/:id
       def update
         if @deckCard.update(deck_card_update_params)
           render json: @deckCard

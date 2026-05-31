@@ -15,6 +15,13 @@ RSpec.describe "Api::Content::ArticleTags", type: :request do
     end
   end
 
+  describe "GET /api/article_tags?q=test" do
+    it "returns 200" do
+      get "/api/article_tags?q=test"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "POST /api/article_tags" do
     context "with valid params" do
       it "returns 201" do
@@ -55,4 +62,5 @@ RSpec.describe "Api::Content::ArticleTags", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 end

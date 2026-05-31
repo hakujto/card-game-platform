@@ -1,11 +1,12 @@
 module Api
   module Marketplace
     class ProductsController < ApplicationController
-      before_action :set_product, only: [:show, :update, :destroy]
+      before_action :set_product, only: [:show, :update]
 
-      # GET /api/products
+      # GET /api/products?q=...
       def index
-        @products = Product.all
+        q = params[:q]
+        @products = q.present? ? Product.where(Product.arel_table[:name].matches("%#{q}%").or(Product.arel_table[:description].matches("%#{q}%"))) : Product.all
         render json: @products
       end
 
@@ -31,12 +32,6 @@ module Api
         else
           render json: { errors: @product.errors }, status: :unprocessable_content
         end
-      end
-
-      # DELETE /api/products/:id
-      def destroy
-        @product.destroy
-        head :no_content
       end
 
       # POST /api/products/:id/activate

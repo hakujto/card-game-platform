@@ -1,7 +1,7 @@
 module Api
   module Content
     class DraftParticipantsController < ApplicationController
-      before_action :set_draftParticipant, only: [:show, :update, :destroy]
+      before_action :set_draftParticipant, only: [:show]
 
       # GET /api/draft_participants
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/draft_participants/:id
       def show
         render json: @draftParticipant
-      end
-
-      # PATCH/PUT /api/draft_participants/:id
-      def update
-        if @draftParticipant.update(draft_participant_update_params)
-          render json: @draftParticipant
-        else
-          render json: { errors: @draftParticipant.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/draft_participants/:id
-      def destroy
-        @draftParticipant.destroy
-        head :no_content
       end
 
       # POST /api/draft_participants/:id/pick

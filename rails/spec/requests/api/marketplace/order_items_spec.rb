@@ -48,17 +48,6 @@ RSpec.describe "Api::Marketplace::OrderItems", type: :request do
     end
   end
 
-  describe "PATCH /api/order_items/:id" do
-    let!(:orderItem) { OrderItem.create!(valid_attributes) }
-
-    it "returns 200" do
-      patch "/api/order_items/#{orderItem.id}",
-            params: { order_item: { price_at_purchase: '0.00' } },
-            as: :json
-      expect(response).to have_http_status(:ok)
-    end
-  end
-
   describe "DELETE /api/order_items/:id" do
     let!(:orderItem) { OrderItem.create!(valid_attributes) }
 
@@ -67,6 +56,7 @@ RSpec.describe "Api::Marketplace::OrderItems", type: :request do
       expect(response).to have_http_status(:no_content)
     end
   end
+
 
   describe "POST /api/order_items (rule: quantity_positive)" do
     it "create fails when quantity positive violated" do

@@ -1,7 +1,7 @@
 module Api
   module Marketplace
     class TradeBidsController < ApplicationController
-      before_action :set_tradeBid, only: [:show, :update, :destroy]
+      before_action :set_tradeBid, only: [:show]
 
       # GET /api/trade_bids
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/trade_bids/:id
       def show
         render json: @tradeBid
-      end
-
-      # PATCH/PUT /api/trade_bids/:id
-      def update
-        if @tradeBid.update(trade_bid_update_params)
-          render json: @tradeBid
-        else
-          render json: { errors: @tradeBid.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/trade_bids/:id
-      def destroy
-        @tradeBid.destroy
-        head :no_content
       end
 
       # GET /api/trade_bids/:id/outbid

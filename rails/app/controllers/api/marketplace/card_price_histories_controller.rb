@@ -1,7 +1,7 @@
 module Api
   module Marketplace
     class CardPriceHistoriesController < ApplicationController
-      before_action :set_cardPriceHistory, only: [:show, :update, :destroy]
+      before_action :set_cardPriceHistory, only: [:show]
 
       # GET /api/card_price_histories
       def index
@@ -9,34 +9,9 @@ module Api
         render json: @card_price_histories
       end
 
-      # POST /api/card_price_histories
-      def create
-        @cardPriceHistory = CardPriceHistory.new(card_price_history_params)
-        if @cardPriceHistory.save
-          render json: @cardPriceHistory, status: :created
-        else
-          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_content
-        end
-      end
-
       # GET /api/card_price_histories/:id
       def show
         render json: @cardPriceHistory
-      end
-
-      # PATCH/PUT /api/card_price_histories/:id
-      def update
-        if @cardPriceHistory.update(card_price_history_update_params)
-          render json: @cardPriceHistory
-        else
-          render json: { errors: @cardPriceHistory.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/card_price_histories/:id
-      def destroy
-        @cardPriceHistory.destroy
-        head :no_content
       end
 
       # GET /api/card_price_histories/:id/change

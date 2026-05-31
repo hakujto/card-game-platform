@@ -1,7 +1,7 @@
 module Api
   module Tournaments
     class TournamentRoundsController < ApplicationController
-      before_action :set_tournamentRound, only: [:show, :update, :destroy]
+      before_action :set_tournamentRound, only: [:show]
 
       # GET /api/tournament_rounds
       def index
@@ -22,21 +22,6 @@ module Api
       # GET /api/tournament_rounds/:id
       def show
         render json: @tournamentRound
-      end
-
-      # PATCH/PUT /api/tournament_rounds/:id
-      def update
-        if @tournamentRound.update(tournament_round_update_params)
-          render json: @tournamentRound
-        else
-          render json: { errors: @tournamentRound.errors }, status: :unprocessable_content
-        end
-      end
-
-      # DELETE /api/tournament_rounds/:id
-      def destroy
-        @tournamentRound.destroy
-        head :no_content
       end
 
       # POST /api/tournament_rounds/:id/start

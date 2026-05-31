@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   namespace :api do
-    resources :cards, module: 'cards' do
+    resources :cards, module: 'cards', only: [:index, :show, :create, :update] do
       member do
         post :ban, action: :ban
         post :unban, action: :unban
@@ -11,7 +11,7 @@ Rails.application.routes.draw do
         get :legal, action: :is_legal_in_format
       end
     end
-    resources :card_sets, module: 'cards' do
+    resources :card_sets, module: 'cards', only: [:index, :show, :create, :update] do
       member do
         get :standard_legal, action: :is_legal_in_standard
         get :legal, action: :is_legal_in_format
@@ -19,7 +19,7 @@ Rails.application.routes.draw do
         post :rotate, action: :rotate_out
       end
     end
-    resources :card_rulings, module: 'cards' do
+    resources :card_rulings, module: 'cards', only: [:index, :show, :create, :destroy] do
       member do
         get :current, action: :is_current
         get :supersedes, action: :supersedes_previous
@@ -61,8 +61,8 @@ Rails.application.routes.draw do
         post :merge, action: :merge_into
       end
     end
-    resources :deck_tag_assignments, module: 'cards'
-    resources :players, module: 'players' do
+    resources :deck_tag_assignments, module: 'cards', only: [:index, :show, :create, :destroy]
+    resources :players, module: 'players', only: [:index, :show, :create, :update] do
       member do
         post :promote, action: :promote
         post :demote, action: :demote
@@ -73,7 +73,7 @@ Rails.application.routes.draw do
         patch :rating, action: :update_rating
       end
     end
-    resources :player_season_statses, module: 'players' do
+    resources :player_season_statses, module: 'players', only: [:index, :show] do
       member do
         get :win_rate, action: :win_rate
         patch :points, action: :add_points
@@ -87,26 +87,26 @@ Rails.application.routes.draw do
         get :value, action: :estimated_value
       end
     end
-    resources :friendships, module: 'players' do
+    resources :friendships, module: 'players', only: [:index, :show, :create, :destroy] do
       member do
         post :accept, action: :accept
         post :decline, action: :decline
         post :block, action: :block
       end
     end
-    resources :achievements, module: 'players' do
+    resources :achievements, module: 'players', only: [:index, :show, :create, :update] do
       member do
         get :point_value, action: :point_value
         post :reveal, action: :reveal
       end
     end
-    resources :player_achievements, module: 'players' do
+    resources :player_achievements, module: 'players', only: [:index, :show] do
       member do
         patch :progress, action: :increment_progress
         post :complete, action: :complete
       end
     end
-    resources :crafting_recipes, module: 'players' do
+    resources :crafting_recipes, module: 'players', only: [:index, :show, :create, :update] do
       member do
         get :can_craft, action: :can_craft
         post :craft, action: :execute_craft
@@ -114,8 +114,8 @@ Rails.application.routes.draw do
         post :enable, action: :enable
       end
     end
-    resources :crafting_ingredients, module: 'players'
-    resources :seasons, module: 'tournaments' do
+    resources :crafting_ingredients, module: 'players', only: [:index, :show, :create, :destroy]
+    resources :seasons, module: 'tournaments', only: [:index, :show, :create, :update] do
       member do
         post :activate, action: :activate
         post :deactivate, action: :deactivate
@@ -123,7 +123,7 @@ Rails.application.routes.draw do
         get :ongoing, action: :is_ongoing
       end
     end
-    resources :tournaments, module: 'tournaments' do
+    resources :tournaments, module: 'tournaments', only: [:index, :show, :create, :update] do
       member do
         post :start, action: :start
         post :cancel, action: :cancel
@@ -141,20 +141,20 @@ Rails.application.routes.draw do
         patch 'transitions/cancelled-to-draft', action: :transition_cancelled_to_draft
       end
     end
-    resources :tournament_judges, module: 'tournaments' do
+    resources :tournament_judges, module: 'tournaments', only: [:index, :show, :create, :destroy] do
       member do
         post :promote, action: :promote_to_head
         delete :remove, action: :remove
       end
     end
-    resources :tournament_registrations, module: 'tournaments' do
+    resources :tournament_registrations, module: 'tournaments', only: [:index, :show, :create] do
       member do
         post :withdraw, action: :withdraw
         post :disqualify, action: :disqualify
         post :promote, action: :promote_from_waitlist
       end
     end
-    resources :tournament_rounds, module: 'tournaments' do
+    resources :tournament_rounds, module: 'tournaments', only: [:index, :show, :create] do
       member do
         post :start, action: :start
         post :complete, action: :complete
@@ -162,7 +162,7 @@ Rails.application.routes.draw do
         get :time_expired, action: :is_time_expired
       end
     end
-    resources :matches, module: 'tournaments' do
+    resources :matches, module: 'tournaments', only: [:index, :show, :create] do
       member do
         post :record, action: :record_result
         post :finalize, action: :finalize_result
@@ -178,7 +178,7 @@ Rails.application.routes.draw do
         patch 'transitions/bye-to-active', action: :transition_bye_to_active
       end
     end
-    resources :games, module: 'tournaments' do
+    resources :games, module: 'tournaments', only: [:index, :show, :create] do
       member do
         post :winner, action: :record_winner
         get :duration, action: :duration_minutes
@@ -190,12 +190,12 @@ Rails.application.routes.draw do
         post :award, action: :award_to_player
       end
     end
-    resources :awarded_prizes, module: 'tournaments' do
+    resources :awarded_prizes, module: 'tournaments', only: [:index, :show] do
       member do
         post :claim, action: :claim
       end
     end
-    resources :products, module: 'marketplace' do
+    resources :products, module: 'marketplace', only: [:index, :show, :create, :update] do
       member do
         post :activate, action: :activate
         post :deactivate, action: :deactivate
@@ -205,7 +205,7 @@ Rails.application.routes.draw do
         get :in_stock, action: :is_in_stock
       end
     end
-    resources :orders, module: 'marketplace' do
+    resources :orders, module: 'marketplace', only: [:index, :show, :create] do
       member do
         delete :cancel, action: :cancel
         post :pay, action: :pay
@@ -224,12 +224,12 @@ Rails.application.routes.draw do
         patch 'transitions/completed-to-cancelled', action: :transition_completed_to_cancelled
       end
     end
-    resources :order_items, module: 'marketplace' do
+    resources :order_items, module: 'marketplace', only: [:index, :show, :create, :destroy] do
       member do
         get :total, action: :line_total
       end
     end
-    resources :coupons, module: 'marketplace' do
+    resources :coupons, module: 'marketplace', only: [:index, :show, :create, :update] do
       member do
         get :valid, action: :is_valid
         get :applicable, action: :is_applicable_to_order
@@ -237,7 +237,7 @@ Rails.application.routes.draw do
         post :deactivate, action: :deactivate
       end
     end
-    resources :trade_listings, module: 'marketplace' do
+    resources :trade_listings, module: 'marketplace', only: [:index, :show, :create, :update] do
       member do
         post :close, action: :close
         patch :extend, action: :extend
@@ -252,13 +252,13 @@ Rails.application.routes.draw do
         patch 'transitions/expired-to-active', action: :transition_expired_to_active
       end
     end
-    resources :trade_bids, module: 'marketplace' do
+    resources :trade_bids, module: 'marketplace', only: [:index, :show, :create] do
       member do
         get :outbid, action: :outbid_by
         delete :retract, action: :retract
       end
     end
-    resources :trade_transactions, module: 'marketplace' do
+    resources :trade_transactions, module: 'marketplace', only: [:index, :show] do
       member do
         post :complete, action: :complete
         post :refund, action: :refund
@@ -266,13 +266,13 @@ Rails.application.routes.draw do
         get :seller_net, action: :seller_net
       end
     end
-    resources :card_price_histories, module: 'marketplace' do
+    resources :card_price_histories, module: 'marketplace', only: [:index, :show] do
       member do
         get :change, action: :price_change_percent
         get :spike, action: :is_price_spike
       end
     end
-    resources :trade_disputes, module: 'marketplace' do
+    resources :trade_disputes, module: 'marketplace', only: [:index, :show, :create] do
       member do
         post :escalate, action: :escalate
         post :resolve, action: :resolve
@@ -285,7 +285,7 @@ Rails.application.routes.draw do
         patch 'transitions/resolved-to-open', action: :transition_resolved_to_open
       end
     end
-    resources :draft_sessions, module: 'content' do
+    resources :draft_sessions, module: 'content', only: [:index, :show, :create] do
       member do
         post :start, action: :start
         post :abandon, action: :abandon
@@ -299,18 +299,18 @@ Rails.application.routes.draw do
         patch 'transitions/abandoned-to-drafting', action: :transition_abandoned_to_drafting
       end
     end
-    resources :draft_participants, module: 'content' do
+    resources :draft_participants, module: 'content', only: [:index, :show, :create] do
       member do
         post :pick, action: :pick_card
         get :card_count, action: :drafted_card_count
       end
     end
-    resources :draft_picks, module: 'content' do
+    resources :draft_picks, module: 'content', only: [:index, :show] do
       member do
         get :first_pick, action: :is_first_pick
       end
     end
-    resources :articles, module: 'content' do
+    resources :articles, module: 'content', only: [:index, :show, :create, :update] do
       member do
         post :publish, action: :publish
         post :archive, action: :archive
@@ -330,15 +330,15 @@ Rails.application.routes.draw do
         get :article_count, action: :article_count
       end
     end
-    resources :article_tag_assignments, module: 'content'
-    resources :article_comments, module: 'content' do
+    resources :article_tag_assignments, module: 'content', only: [:index, :show, :create, :destroy]
+    resources :article_comments, module: 'content', only: [:index, :show, :create, :destroy] do
       member do
         post :hide, action: :hide
         post :unhide, action: :unhide
         get :is_reply, action: :is_reply
       end
     end
-    resources :streams, module: 'content' do
+    resources :streams, module: 'content', only: [:index, :show, :create, :update] do
       member do
         post :live, action: :go_live
         post :end, action: :end
