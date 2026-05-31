@@ -30,14 +30,6 @@ defmodule CardsProjectWeb.Content.ArticleCommentControllerTest do
     end
   end
 
-  describe "PUT /api/article_comments/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_article_comment(@valid_params)
-      conn = put(conn, "/api/article_comments/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/article_comments/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article_comment(@valid_params)
@@ -45,4 +37,5 @@ defmodule CardsProjectWeb.Content.ArticleCommentControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

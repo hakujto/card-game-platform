@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Players.FriendshipController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    friendship = Players.get_friendship!(id)
-    case Players.update_friendship(friendship, params) do
-      {:ok, friendship} ->
-        json(conn, serialize_friendship(friendship))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     friendship = Players.get_friendship!(id)
     Players.delete_friendship(friendship)
@@ -67,7 +54,9 @@ defmodule CardsProjectWeb.Players.FriendshipController do
   end
 
   defp serialize_friendship(%Friendship{} = record) do
-    Map.take(record, [:id, :status, :created_at, :requester_id, :receiver_id])
+    record
+    |> Map.take([:id, :status, :created_at, :requester_id, :receiver_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
   end
 
   defp format_errors(changeset) do

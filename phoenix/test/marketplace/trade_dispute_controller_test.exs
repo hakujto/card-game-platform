@@ -31,21 +31,6 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeControllerTest do
     end
   end
 
-  describe "PUT /api/trade_disputes/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
-      conn = put(conn, "/api/trade_disputes/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/trade_disputes/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_trade_dispute(@valid_params)
-      conn = delete(conn, "/api/trade_disputes/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/trade_disputes/:id/transitions/open-to-underreview" do
     test "transitions Open -> UnderReview", %{conn: conn} do

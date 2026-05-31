@@ -30,21 +30,6 @@ defmodule CardsProjectWeb.Tournaments.MatchControllerTest do
     end
   end
 
-  describe "PUT /api/matches/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
-      conn = put(conn, "/api/matches/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/matches/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
-      conn = delete(conn, "/api/matches/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/matches/:id/transitions/pending-to-active" do
     test "transitions Pending -> Active", %{conn: conn} do

@@ -18,6 +18,14 @@ defmodule CardsProject.Tournaments.AwardedPrize do
     record
     |> cast(attrs, [:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id])
     |> validate_required([:final_placement, :awarded_at, :claimed])
+    |> validate_number(:final_placement, greater_than: 0, message: "Final placement must be greater than zero")
+    |> then(fn cs ->
+      if get_field(cs, :claimed) == "true" and (is_nil(get_field(cs, :claimed_at))) do
+        Ecto.Changeset.add_error(cs, :claimed_at, "Claimed prize must have a claimed_at timestamp")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

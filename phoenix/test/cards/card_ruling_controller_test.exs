@@ -30,14 +30,6 @@ defmodule CardsProjectWeb.Cards.CardRulingControllerTest do
     end
   end
 
-  describe "PUT /api/card_rulings/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Cards.create_card_ruling(@valid_params)
-      conn = put(conn, "/api/card_rulings/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/card_rulings/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Cards.create_card_ruling(@valid_params)
@@ -45,4 +37,5 @@ defmodule CardsProjectWeb.Cards.CardRulingControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

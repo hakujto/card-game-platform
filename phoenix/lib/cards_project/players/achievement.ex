@@ -19,6 +19,7 @@ defmodule CardsProject.Players.Achievement do
     |> cast(attrs, [:name, :description, :points, :is_hidden, :icon_url, :rarity])
     |> validate_required([:name, :description, :points, :is_hidden])
     |> validate_inclusion(:rarity, ["Common", "Uncommon", "Rare", "Epic", "Legendary"])
+    |> validate_number(:points, greater_than: 0, message: "Achievement must award at least one point")
   end
 
   # ── Business operations ────────────────────────────────────────────

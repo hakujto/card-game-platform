@@ -5,7 +5,7 @@ defmodule CardsProjectWeb.Players.AchievementControllerTest do
   @valid_params %{
     "name" => "test",
     "description" => "test",
-    "points" => 0,
+    "points" => 1,
     "is_hidden" => true,
     "rarity" => "Common"
   }
@@ -17,10 +17,22 @@ defmodule CardsProjectWeb.Players.AchievementControllerTest do
     end
   end
 
+  describe "GET /api/achievements?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/achievements?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/achievements" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/achievements", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when points_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "points", 0)
+      conn = post(conn, "/api/achievements", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -40,11 +52,4 @@ defmodule CardsProjectWeb.Players.AchievementControllerTest do
     end
   end
 
-  describe "DELETE /api/achievements/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Players.create_achievement(@valid_params)
-      conn = delete(conn, "/api/achievements/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

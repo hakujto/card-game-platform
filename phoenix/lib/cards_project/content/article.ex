@@ -32,6 +32,15 @@ defmodule CardsProject.Content.Article do
     |> validate_inclusion(:status, ["Draft", "Published", "Archived"])
     |> validate_inclusion(:article_type, ["Guide", "Tierlist", "Matchup", "News", "Spotlight", "Decklist"])
     |> validate_inclusion(:language, ["EN", "DE", "FR", "IT", "ES", "JP", "PT"])
+    |> validate_number(:view_count, greater_than_or_equal_to: 0, message: "Article view count must not be negative")
+    |> validate_number(:likes_count, greater_than_or_equal_to: 0, message: "Article likes count must not be negative")
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Published" and (is_nil(get_field(cs, :published_at))) do
+        Ecto.Changeset.add_error(cs, :published_at, "Published article must have a published_at timestamp")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

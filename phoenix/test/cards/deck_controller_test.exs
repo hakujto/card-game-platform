@@ -21,10 +21,32 @@ defmodule CardsProjectWeb.Cards.DeckControllerTest do
     end
   end
 
+  describe "GET /api/decks?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/decks?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/decks" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/decks", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when wins_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "wins", -1)
+      conn = post(conn, "/api/decks", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when losses_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "losses", -1)
+      conn = post(conn, "/api/decks", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when draws_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "draws", -1)
+      conn = post(conn, "/api/decks", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -51,4 +73,5 @@ defmodule CardsProjectWeb.Cards.DeckControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

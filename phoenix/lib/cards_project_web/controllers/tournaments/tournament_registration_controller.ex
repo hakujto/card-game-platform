@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    tournament_registration = Tournaments.get_tournament_registration!(id)
-    case Tournaments.update_tournament_registration(tournament_registration, params) do
-      {:ok, tournament_registration} ->
-        json(conn, serialize_tournament_registration(tournament_registration))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    tournament_registration = Tournaments.get_tournament_registration!(id)
-    Tournaments.delete_tournament_registration(tournament_registration)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/registrations/{id}/withdraw
   def withdraw(conn, %{"id" => id}) do
     Tournaments.tournament_registration_withdraw_behavior(id)
@@ -68,7 +49,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationController do
   end
 
   defp serialize_tournament_registration(%TournamentRegistration{} = record) do
-    Map.take(record, [:id, :status, :seed, :final_standing, :points_earned, :registered_at, :tournament_id, :player_id, :deck_id])
+    record
+    |> Map.take([:id, :status, :seed, :final_standing, :points_earned, :registered_at, :tournament_id, :player_id, :deck_id])
+    |> (fn m -> Map.put(Map.delete(m, :registered_at), :registered_at, Map.get(m, :registered_at)) end).()
   end
 
   defp format_errors(changeset) do

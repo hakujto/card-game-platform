@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Players.PlayerCollectionControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "quantity" => 0,
+    "quantity" => 1,
     "foil" => true,
     "acquired_at" => ~N[2024-01-01 00:00:00],
     "condition" => "Mint",
@@ -21,6 +21,11 @@ defmodule CardsProjectWeb.Players.PlayerCollectionControllerTest do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/player_collections", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when quantity_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "quantity", 0)
+      conn = post(conn, "/api/player_collections", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -47,4 +52,5 @@ defmodule CardsProjectWeb.Players.PlayerCollectionControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

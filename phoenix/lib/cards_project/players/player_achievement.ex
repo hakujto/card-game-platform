@@ -17,6 +17,14 @@ defmodule CardsProject.Players.PlayerAchievement do
     record
     |> cast(attrs, [:earned_at, :progress, :is_completed, :player_id, :achievement_id])
     |> validate_required([:earned_at, :progress, :is_completed])
+    |> validate_number(:progress, greater_than_or_equal_to: 0, message: "Achievement progress must not be negative")
+    |> then(fn cs ->
+      if get_field(cs, :is_completed) == "true" and (not ((get_field(cs, :progress) || 0) > 0)) do
+        Ecto.Changeset.add_error(cs, :progress, "Completed achievement must have progress greater than zero")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

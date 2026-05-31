@@ -14,6 +14,13 @@ defmodule CardsProjectWeb.Content.ArticleTagControllerTest do
     end
   end
 
+  describe "GET /api/article_tags?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/article_tags?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/article_tags" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/article_tags", @valid_params)
@@ -44,4 +51,5 @@ defmodule CardsProjectWeb.Content.ArticleTagControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

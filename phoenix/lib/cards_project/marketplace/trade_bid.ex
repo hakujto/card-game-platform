@@ -17,6 +17,7 @@ defmodule CardsProject.Marketplace.TradeBid do
     record
     |> cast(attrs, [:amount, :placed_at, :is_winning, :listing_id, :bidder_id])
     |> validate_required([:amount, :placed_at, :is_winning])
+    |> validate_number(:amount, greater_than: 0, message: "Bid amount must be greater than zero")
   end
 
   # ── Business operations ────────────────────────────────────────────

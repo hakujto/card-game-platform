@@ -17,6 +17,8 @@ defmodule CardsProject.Marketplace.OrderItem do
     record
     |> cast(attrs, [:quantity, :price_at_purchase, :foil, :order_id, :product_id])
     |> validate_required([:quantity, :price_at_purchase, :foil])
+    |> validate_number(:quantity, greater_than: 0, message: "Order item quantity must be greater than zero")
+    |> validate_number(:price_at_purchase, greater_than_or_equal_to: 0, message: "Price at purchase must not be negative")
   end
 
   # ── Business operations ────────────────────────────────────────────

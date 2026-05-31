@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Marketplace.OrderItemController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    order_item = Marketplace.get_order_item!(id)
-    case Marketplace.update_order_item(order_item, params) do
-      {:ok, order_item} ->
-        json(conn, serialize_order_item(order_item))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     order_item = Marketplace.get_order_item!(id)
     Marketplace.delete_order_item(order_item)

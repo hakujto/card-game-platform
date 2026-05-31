@@ -15,6 +15,7 @@ defmodule CardsProject.Cards.DeckSideboardCard do
     record
     |> cast(attrs, [:quantity, :deck_id, :card_id])
     |> validate_required([:quantity])
+    |> validate_number(:quantity, greater_than_or_equal_to: 1, less_than_or_equal_to: 4, message: "Sideboard card quantity must be between 1 and 4 copies")
   end
 
   # ── Business operations ────────────────────────────────────────────

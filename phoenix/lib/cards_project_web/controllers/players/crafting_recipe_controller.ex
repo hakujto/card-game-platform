@@ -42,12 +42,6 @@ defmodule CardsProjectWeb.Players.CraftingRecipeController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    crafting_recipe = Players.get_crafting_recipe!(id)
-    Players.delete_crafting_recipe(crafting_recipe)
-    send_resp(conn, :no_content, "")
-  end
-
   # GET /api/crafting-recipes/{id}/can-craft
   def can_craft(conn, %{"id" => id} = params) do
     player_id = Map.get(params, "player_id")

@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Tournaments.SeasonController do
   alias CardsProject.Tournaments
   alias CardsProject.Tournaments.Season
 
-  def index(conn, _params) do
-    seasons = Tournaments.list_seasons()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    seasons = Tournaments.list_seasons(q)
     json(conn, Enum.map(seasons, &serialize_season/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Tournaments.SeasonController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    season = Tournaments.get_season!(id)
-    Tournaments.delete_season(season)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/seasons/{id}/activate

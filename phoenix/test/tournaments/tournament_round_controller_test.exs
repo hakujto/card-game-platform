@@ -3,8 +3,8 @@ defmodule CardsProjectWeb.Tournaments.TournamentRoundControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "round_number" => 0,
-    "time_limit_minutes" => 0,
+    "round_number" => 1,
+    "time_limit_minutes" => 1,
     "status" => "Pending"
   }
 
@@ -20,6 +20,16 @@ defmodule CardsProjectWeb.Tournaments.TournamentRoundControllerTest do
       conn = post(conn, "/api/tournament_rounds", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when round_number_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "round_number", 0)
+      conn = post(conn, "/api/tournament_rounds", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when time_limit_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "time_limit_minutes", 0)
+      conn = post(conn, "/api/tournament_rounds", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/tournament_rounds/:id" do
@@ -30,19 +40,4 @@ defmodule CardsProjectWeb.Tournaments.TournamentRoundControllerTest do
     end
   end
 
-  describe "PUT /api/tournament_rounds/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament_round(@valid_params)
-      conn = put(conn, "/api/tournament_rounds/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/tournament_rounds/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament_round(@valid_params)
-      conn = delete(conn, "/api/tournament_rounds/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

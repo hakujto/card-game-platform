@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Players.AchievementController do
   alias CardsProject.Players
   alias CardsProject.Players.Achievement
 
-  def index(conn, _params) do
-    achievements = Players.list_achievements()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    achievements = Players.list_achievements(q)
     json(conn, Enum.map(achievements, &serialize_achievement/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Players.AchievementController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    achievement = Players.get_achievement!(id)
-    Players.delete_achievement(achievement)
-    send_resp(conn, :no_content, "")
   end
 
   # GET /api/achievements/{id}/point-value

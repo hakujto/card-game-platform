@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
   alias CardsProject.Marketplace
   alias CardsProject.Marketplace.Coupon
 
-  def index(conn, _params) do
-    coupons = Marketplace.list_coupons()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    coupons = Marketplace.list_coupons(q)
     json(conn, Enum.map(coupons, &serialize_coupon/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    coupon = Marketplace.get_coupon!(id)
-    Marketplace.delete_coupon(coupon)
-    send_resp(conn, :no_content, "")
   end
 
   # GET /api/coupons/{id}/valid

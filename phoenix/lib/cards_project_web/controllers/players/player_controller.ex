@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Players.PlayerController do
   alias CardsProject.Players
   alias CardsProject.Players.Player
 
-  def index(conn, _params) do
-    players = Players.list_players()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    players = Players.list_players(q)
     json(conn, Enum.map(players, &serialize_player/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Players.PlayerController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    player = Players.get_player!(id)
-    Players.delete_player(player)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/players/{id}/promote
@@ -92,7 +87,10 @@ defmodule CardsProjectWeb.Players.PlayerController do
   end
 
   defp serialize_player(%Player{} = record) do
-    Map.take(record, [:id, :display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :is_verified, :created_at, :last_active_at, :user_id, :season_stats_id])
+    record
+    |> Map.take([:id, :display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :is_verified, :created_at, :last_active_at, :user_id, :season_stats_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :last_active_at), :last_active_at, Map.get(m, :last_active_at)) end).()
   end
 
   defp format_errors(changeset) do

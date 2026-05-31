@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Content.DraftParticipantControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "seat_number" => 0,
+    "seat_number" => 1,
     "joined_at" => ~N[2024-01-01 00:00:00]
   }
 
@@ -19,6 +19,11 @@ defmodule CardsProjectWeb.Content.DraftParticipantControllerTest do
       conn = post(conn, "/api/draft_participants", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when seat_number_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "seat_number", 0)
+      conn = post(conn, "/api/draft_participants", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/draft_participants/:id" do
@@ -29,19 +34,4 @@ defmodule CardsProjectWeb.Content.DraftParticipantControllerTest do
     end
   end
 
-  describe "PUT /api/draft_participants/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_draft_participant(@valid_params)
-      conn = put(conn, "/api/draft_participants/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/draft_participants/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_draft_participant(@valid_params)
-      conn = delete(conn, "/api/draft_participants/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

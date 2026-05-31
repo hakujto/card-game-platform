@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    draft_session = Content.get_draft_session!(id)
-    case Content.update_draft_session(draft_session, params) do
-      {:ok, draft_session} ->
-        json(conn, serialize_draft_session(draft_session))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    draft_session = Content.get_draft_session!(id)
-    Content.delete_draft_session(draft_session)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/draft-sessions/{id}/start
   def start(conn, %{"id" => id}) do
     Content.draft_session_start_behavior(id)
@@ -159,7 +140,10 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
   end
 
   defp serialize_draft_session(%DraftSession{} = record) do
-    Map.take(record, [:id, :status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id, :participants_id])
+    record
+    |> Map.take([:id, :status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id, :participants_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :completed_at), :completed_at, Map.get(m, :completed_at)) end).()
   end
 
   defp format_errors(changeset) do

@@ -8,11 +8,13 @@ defmodule CardsProjectWeb.Cards.CardControllerTest do
     "description" => "test",
     "is_banned" => true,
     "is_restricted" => true,
-    "power_level" => 0,
+    "power_level" => 1,
     "card_type" => "Creature",
     "rarity" => "Common",
     "mana_colors" => "White",
-    "legal_formats" => "Standard"
+    "legal_formats" => "Standard",
+    "attack" => 0,
+    "defense" => 0
   }
 
   describe "GET /api/cards" do
@@ -22,10 +24,27 @@ defmodule CardsProjectWeb.Cards.CardControllerTest do
     end
   end
 
+  describe "GET /api/cards?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/cards?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/cards" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/cards", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when mana_cost_range violated", %{conn: conn} do
+      params = Map.put(@valid_params, "mana_cost", 201)
+      conn = post(conn, "/api/cards", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when power_level_range violated", %{conn: conn} do
+      params = Map.put(@valid_params, "power_level", 101)
+      conn = post(conn, "/api/cards", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -45,11 +64,4 @@ defmodule CardsProjectWeb.Cards.CardControllerTest do
     end
   end
 
-  describe "DELETE /api/cards/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Cards.create_card(@valid_params)
-      conn = delete(conn, "/api/cards/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

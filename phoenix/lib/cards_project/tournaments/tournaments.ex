@@ -18,7 +18,10 @@ defmodule CardsProject.Tournaments do
 
   # ── Season ─────────────────────────────────────────────────────
 
-  def list_seasons, do: Repo.all(Season)
+  def list_seasons(nil), do: Repo.all(Season)
+  def list_seasons(term) do
+    Repo.all(from q in Season, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_season!(id), do: Repo.get!(Season, id)
 
@@ -67,7 +70,10 @@ defmodule CardsProject.Tournaments do
 
   # ── Tournament ─────────────────────────────────────────────────────
 
-  def list_tournaments, do: Repo.all(Tournament)
+  def list_tournaments(nil), do: Repo.all(Tournament)
+  def list_tournaments(term) do
+    Repo.all(from q in Tournament, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.description), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_tournament!(id), do: Repo.get!(Tournament, id)
 
@@ -78,9 +84,12 @@ defmodule CardsProject.Tournaments do
   end
 
   def update_tournament(%Tournament{} = tournament, attrs) do
-    tournament
-    |> Tournament.changeset(attrs)
-    |> Repo.update()
+    case tournament |> Tournament.changeset(attrs) |> Repo.update() do
+      {:ok, tournament} ->
+        tournament_hook_sync_season_stats(tournament)
+        {:ok, tournament}
+      err -> err
+    end
   end
 
   def delete_tournament(%Tournament{} = tournament), do: Repo.delete(tournament)
@@ -194,6 +203,13 @@ defmodule CardsProject.Tournaments do
           # @after: Tournament.cancel(tournament)
           |> Repo.update()
     end
+  end
+
+  # ── Tournament lifecycle hooks ─────────────────────────────────────
+
+  defp tournament_hook_sync_season_stats(%Tournament{} = tournament) do
+    # TODO: implement sync_season_stats
+    tournament
   end
 
   # ── TournamentJudge ─────────────────────────────────────────────────────

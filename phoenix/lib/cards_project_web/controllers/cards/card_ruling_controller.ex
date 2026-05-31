@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Cards.CardRulingController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    card_ruling = Cards.get_card_ruling!(id)
-    case Cards.update_card_ruling(card_ruling, params) do
-      {:ok, card_ruling} ->
-        json(conn, serialize_card_ruling(card_ruling))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     card_ruling = Cards.get_card_ruling!(id)
     Cards.delete_card_ruling(card_ruling)

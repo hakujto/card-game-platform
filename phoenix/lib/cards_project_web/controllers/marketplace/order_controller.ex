@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    order = Marketplace.get_order!(id)
-    case Marketplace.update_order(order, params) do
-      {:ok, order} ->
-        json(conn, serialize_order(order))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    order = Marketplace.get_order!(id)
-    Marketplace.delete_order(order)
-    send_resp(conn, :no_content, "")
-  end
-
   # DELETE /api/orders/{id}/cancel
   def cancel(conn, %{"id" => id}) do
     Marketplace.order_cancel_behavior(id)
@@ -227,7 +208,11 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
   end
 
   defp serialize_order(%Order{} = record) do
-    Map.take(record, [:id, :status, :total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :created_at, :paid_at, :shipped_at, :player_id, :items_id, :coupon_id])
+    record
+    |> Map.take([:id, :status, :total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :created_at, :paid_at, :shipped_at, :player_id, :items_id, :coupon_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :paid_at), :paid_at, Map.get(m, :paid_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :shipped_at), :shipped_at, Map.get(m, :shipped_at)) end).()
   end
 
   defp format_errors(changeset) do

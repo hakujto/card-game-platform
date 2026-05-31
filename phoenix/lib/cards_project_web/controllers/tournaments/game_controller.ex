@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Tournaments.GameController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    game = Tournaments.get_game!(id)
-    case Tournaments.update_game(game, params) do
-      {:ok, game} ->
-        json(conn, serialize_game(game))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    game = Tournaments.get_game!(id)
-    Tournaments.delete_game(game)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/games/{id}/winner
   def record_winner(conn, %{"id" => id} = params) do
     winner_side = Map.get(params, "winner_side")

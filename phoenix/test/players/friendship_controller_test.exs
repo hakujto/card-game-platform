@@ -29,14 +29,6 @@ defmodule CardsProjectWeb.Players.FriendshipControllerTest do
     end
   end
 
-  describe "PUT /api/friendships/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Players.create_friendship(@valid_params)
-      conn = put(conn, "/api/friendships/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/friendships/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Players.create_friendship(@valid_params)
@@ -44,4 +36,5 @@ defmodule CardsProjectWeb.Players.FriendshipControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

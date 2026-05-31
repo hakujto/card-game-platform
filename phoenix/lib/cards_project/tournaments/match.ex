@@ -24,6 +24,27 @@ defmodule CardsProject.Tournaments.Match do
     |> cast(attrs, [:player1_wins, :player2_wins, :table_number, :status, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id])
     |> validate_required([:player1_wins, :player2_wins])
     |> validate_inclusion(:status, ["Pending", "Active", "Completed", "BYE", "Draw"])
+    |> then(fn cs ->
+      if get_field(cs, :status) == "BYE" and (not is_nil(get_field(cs, :player2_id))) do
+        Ecto.Changeset.add_error(cs, :player2_id, "BYE match must not have a second player")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :ended_at)) and (not ((get_field(cs, :ended_at) || 0) > get_field(cs, :started_at))) do
+        Ecto.Changeset.add_error(cs, :ended_at, "Match end time must be after start time")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Completed" and (is_nil(get_field(cs, :started_at))) do
+        Ecto.Changeset.add_error(cs, :started_at, "Completed match must have a start time")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

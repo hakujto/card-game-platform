@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Cards.DeckCardControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "quantity" => 0,
+    "quantity" => 1,
     "is_commander" => true
   }
 
@@ -18,6 +18,11 @@ defmodule CardsProjectWeb.Cards.DeckCardControllerTest do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/deck_cards", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when quantity_range violated", %{conn: conn} do
+      params = Map.put(@valid_params, "quantity", 41)
+      conn = post(conn, "/api/deck_cards", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -44,4 +49,5 @@ defmodule CardsProjectWeb.Cards.DeckCardControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

@@ -22,6 +22,15 @@ defmodule CardsProject.Content.DraftSession do
     |> validate_required([:seats, :time_per_pick_seconds, :created_at])
     |> validate_inclusion(:status, ["WaitingForPlayers", "Drafting", "Completed", "Abandoned"])
     |> validate_inclusion(:draft_type, ["Booster", "Cube", "Rochester"])
+    |> validate_number(:seats, greater_than_or_equal_to: 2, less_than_or_equal_to: 16, message: "Draft session must have between 2 and 16 seats")
+    |> validate_number(:time_per_pick_seconds, greater_than: 0, message: "Time per pick must be greater than zero")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :completed_at)) and (get_field(cs, :status) != "Completed") do
+        Ecto.Changeset.add_error(cs, :status, "completed_at can only be set when draft status is Completed")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

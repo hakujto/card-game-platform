@@ -6,7 +6,7 @@ defmodule CardsProjectWeb.Cards.CardSetControllerTest do
     "name" => "test",
     "code" => "test",
     "release_date" => ~D[2024-01-01],
-    "total_cards" => 0,
+    "total_cards" => 1,
     "is_rotated" => true,
     "set_type" => "Core"
   }
@@ -18,10 +18,22 @@ defmodule CardsProjectWeb.Cards.CardSetControllerTest do
     end
   end
 
+  describe "GET /api/card_sets?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/card_sets?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/card_sets" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/card_sets", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when total_cards_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "total_cards", 0)
+      conn = post(conn, "/api/card_sets", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -41,11 +53,4 @@ defmodule CardsProjectWeb.Cards.CardSetControllerTest do
     end
   end
 
-  describe "DELETE /api/card_sets/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Cards.create_card_set(@valid_params)
-      conn = delete(conn, "/api/card_sets/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

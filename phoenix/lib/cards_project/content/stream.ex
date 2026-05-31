@@ -28,6 +28,21 @@ defmodule CardsProject.Content.Stream do
     |> validate_inclusion(:status, ["Scheduled", "Live", "Ended"])
     |> validate_inclusion(:platform, ["Twitch", "YouTube", "KickStream", "Platform"])
     |> validate_inclusion(:language, ["EN", "DE", "FR", "IT", "ES", "JP", "PT"])
+    |> validate_number(:viewer_count_peak, greater_than_or_equal_to: 0, message: "Peak viewer count must not be negative")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :actual_start)) and (get_field(cs, :status) != "Live") do
+        Ecto.Changeset.add_error(cs, :status, "actual_start_requires_live_or_ended validation failed")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :ended_at)) and (get_field(cs, :status) != "Ended") do
+        Ecto.Changeset.add_error(cs, :status, "ended_at can only be set when stream status is Ended")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

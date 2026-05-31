@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Marketplace.ProductController do
   alias CardsProject.Marketplace
   alias CardsProject.Marketplace.Product
 
-  def index(conn, _params) do
-    products = Marketplace.list_products()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    products = Marketplace.list_products(q)
     json(conn, Enum.map(products, &serialize_product/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Marketplace.ProductController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    product = Marketplace.get_product!(id)
-    Marketplace.delete_product(product)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/products/{id}/activate

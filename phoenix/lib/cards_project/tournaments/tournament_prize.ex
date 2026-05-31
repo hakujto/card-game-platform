@@ -21,6 +21,17 @@ defmodule CardsProject.Tournaments.TournamentPrize do
     |> cast(attrs, [:placement_from, :placement_to, :amount, :season_points, :prize_type, :description, :packs_count, :tournament_id])
     |> validate_required([:placement_from, :placement_to, :amount, :season_points])
     |> validate_inclusion(:prize_type, ["Currency", "Cards", "BoosterPacks", "Trophy", "SeasonPoints", "Mixed"])
+    |> then(fn cs ->
+      lv = get_field(cs, :placement_from)
+      fv = get_field(cs, :placement_to)
+      if not is_nil(lv) and not is_nil(fv) and not (fv >= lv) do
+        Ecto.Changeset.add_error(cs, :placement_to, "placement_to must be greater than or equal to placement_from")
+      else
+        cs
+      end
+    end)
+    |> validate_number(:placement_from, greater_than: 0, message: "placement_from must be greater than zero")
+    |> validate_number(:amount, greater_than_or_equal_to: 0, message: "Prize amount must not be negative")
   end
 
   # ── Business operations ────────────────────────────────────────────

@@ -21,6 +21,10 @@ defmodule CardsProject.Players.PlayerSeasonStats do
     |> cast(attrs, [:wins, :losses, :draws, :tournament_wins, :season_points, :highest_rank, :player_id, :season_id])
     |> validate_required([:wins, :losses, :draws, :tournament_wins, :season_points])
     |> validate_inclusion(:highest_rank, ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"])
+    |> validate_number(:wins, greater_than_or_equal_to: 0, message: "Season wins must not be negative")
+    |> validate_number(:losses, greater_than_or_equal_to: 0, message: "Season losses must not be negative")
+    |> validate_number(:tournament_wins, greater_than_or_equal_to: 0, message: "Season tournament wins must not be negative")
+    |> validate_number(:season_points, greater_than_or_equal_to: 0, message: "Season points must not be negative")
   end
 
   # ── Business operations ────────────────────────────────────────────

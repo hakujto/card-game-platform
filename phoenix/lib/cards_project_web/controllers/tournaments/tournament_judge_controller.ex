@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Tournaments.TournamentJudgeController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    tournament_judge = Tournaments.get_tournament_judge!(id)
-    case Tournaments.update_tournament_judge(tournament_judge, params) do
-      {:ok, tournament_judge} ->
-        json(conn, serialize_tournament_judge(tournament_judge))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     tournament_judge = Tournaments.get_tournament_judge!(id)
     Tournaments.delete_tournament_judge(tournament_judge)

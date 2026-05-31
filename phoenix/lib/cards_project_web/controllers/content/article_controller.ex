@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Content.ArticleController do
   alias CardsProject.Content
   alias CardsProject.Content.Article
 
-  def index(conn, _params) do
-    articles = Content.list_articles()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    articles = Content.list_articles(q)
     json(conn, Enum.map(articles, &serialize_article/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Content.ArticleController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    article = Content.get_article!(id)
-    Content.delete_article(article)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/articles/{id}/publish
@@ -146,7 +141,11 @@ defmodule CardsProjectWeb.Content.ArticleController do
   end
 
   defp serialize_article(%Article{} = record) do
-    Map.take(record, [:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
+    record
+    |> Map.take([:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :updated_at), :updated_at, Map.get(m, :updated_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :published_at), :published_at, Map.get(m, :published_at)) end).()
   end
 
   defp format_errors(changeset) do

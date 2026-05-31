@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Cards.DeckTagController do
   alias CardsProject.Cards
   alias CardsProject.Cards.DeckTag
 
-  def index(conn, _params) do
-    deck_tags = Cards.list_deck_tags()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    deck_tags = Cards.list_deck_tags(q)
     json(conn, Enum.map(deck_tags, &serialize_deck_tag/1))
   end
 

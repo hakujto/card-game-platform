@@ -22,6 +22,30 @@ defmodule CardsProject.Marketplace.Coupon do
     |> cast(attrs, [:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active, :discount_type, :max_uses])
     |> validate_required([:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active])
     |> validate_inclusion(:discount_type, ["Percent", "Fixed"])
+    |> then(fn cs ->
+      lv = get_field(cs, :valid_from)
+      fv = get_field(cs, :valid_until)
+      if not is_nil(lv) and not is_nil(fv) and not (fv > lv) do
+        Ecto.Changeset.add_error(cs, :valid_until, "Coupon expiry must be after its start date")
+      else
+        cs
+      end
+    end)
+    |> validate_number(:discount_value, greater_than: 0, message: "Discount value must be greater than zero")
+    |> then(fn cs ->
+      if get_field(cs, :discount_type) == "Percent" do
+        cs |> validate_number(:discount_value, greater_than_or_equal_to: 1, less_than_or_equal_to: 100, message: "Percent discount must be between 1 and 100")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :max_uses)) and (not ((get_field(cs, :uses_count) || 0) <= get_field(cs, :max_uses))) do
+        Ecto.Changeset.add_error(cs, :uses_count, "Coupon uses count cannot exceed max_uses")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

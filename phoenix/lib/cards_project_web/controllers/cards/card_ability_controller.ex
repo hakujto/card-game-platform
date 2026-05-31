@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Cards.CardAbilityController do
   alias CardsProject.Cards
   alias CardsProject.Cards.CardAbility
 
-  def index(conn, _params) do
-    card_abilities = Cards.list_card_abilities()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    card_abilities = Cards.list_card_abilities(q)
     json(conn, Enum.map(card_abilities, &serialize_card_ability/1))
   end
 

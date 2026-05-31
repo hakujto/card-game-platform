@@ -26,14 +26,6 @@ defmodule CardsProjectWeb.Content.ArticleTagAssignmentControllerTest do
     end
   end
 
-  describe "PUT /api/article_tag_assignments/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_article_tag_assignment(@valid_params)
-      conn = put(conn, "/api/article_tag_assignments/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/article_tag_assignments/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article_tag_assignment(@valid_params)
@@ -41,4 +33,5 @@ defmodule CardsProjectWeb.Content.ArticleTagAssignmentControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

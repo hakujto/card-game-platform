@@ -69,7 +69,9 @@ defmodule CardsProjectWeb.Players.PlayerCollectionController do
   end
 
   defp serialize_player_collection(%PlayerCollection{} = record) do
-    Map.take(record, [:id, :quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id])
+    record
+    |> Map.take([:id, :quantity, :foil, :condition, :acquired_at, :acquired_via, :player_id, :card_id])
+    |> (fn m -> Map.put(Map.delete(m, :acquired_at), :acquired_at, Map.get(m, :acquired_at)) end).()
   end
 
   defp format_errors(changeset) do

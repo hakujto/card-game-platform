@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Content.DraftParticipantController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    draft_participant = Content.get_draft_participant!(id)
-    case Content.update_draft_participant(draft_participant, params) do
-      {:ok, draft_participant} ->
-        json(conn, serialize_draft_participant(draft_participant))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    draft_participant = Content.get_draft_participant!(id)
-    Content.delete_draft_participant(draft_participant)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/draft-participants/{id}/pick
   def pick_card(conn, %{"id" => id} = params) do
     card_id = Map.get(params, "card_id")
@@ -63,7 +44,9 @@ defmodule CardsProjectWeb.Content.DraftParticipantController do
   end
 
   defp serialize_draft_participant(%DraftParticipant{} = record) do
-    Map.take(record, [:id, :seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id])
+    record
+    |> Map.take([:id, :seat_number, :joined_at, :session_id, :player_id, :drafted_cards_id])
+    |> (fn m -> Map.put(Map.delete(m, :joined_at), :joined_at, Map.get(m, :joined_at)) end).()
   end
 
   defp format_errors(changeset) do

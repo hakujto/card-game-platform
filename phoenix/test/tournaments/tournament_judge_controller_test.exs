@@ -28,14 +28,6 @@ defmodule CardsProjectWeb.Tournaments.TournamentJudgeControllerTest do
     end
   end
 
-  describe "PUT /api/tournament_judges/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament_judge(@valid_params)
-      conn = put(conn, "/api/tournament_judges/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/tournament_judges/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament_judge(@valid_params)
@@ -43,4 +35,5 @@ defmodule CardsProjectWeb.Tournaments.TournamentJudgeControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

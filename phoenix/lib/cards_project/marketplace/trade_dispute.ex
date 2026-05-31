@@ -23,6 +23,13 @@ defmodule CardsProject.Marketplace.TradeDispute do
     |> validate_required([:description, :opened_at])
     |> validate_inclusion(:status, ["Open", "UnderReview", "Resolved", "Escalated"])
     |> validate_inclusion(:reason, ["ItemNotReceived", "ItemNotAsDescribed", "FraudSuspected", "Other"])
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :resolved_at)) and (get_field(cs, :status) != "Resolved") do
+        Ecto.Changeset.add_error(cs, :status, "resolved_at_requires_terminal_status validation failed")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

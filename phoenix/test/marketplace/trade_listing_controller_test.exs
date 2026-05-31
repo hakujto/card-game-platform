@@ -4,11 +4,12 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
 
   @valid_params %{
     "foil" => true,
-    "quantity" => 0,
+    "quantity" => 1,
     "created_at" => ~N[2024-01-01 00:00:00],
     "status" => "Active",
     "listing_type" => "FixedPrice",
-    "condition" => "Mint"
+    "condition" => "Mint",
+    "asking_price" => "0.00"
   }
 
   describe "GET /api/trade_listings" do
@@ -18,10 +19,22 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
     end
   end
 
+  describe "GET /api/trade_listings?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/trade_listings?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/trade_listings" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/trade_listings", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when quantity_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "quantity", 99991)
+      conn = post(conn, "/api/trade_listings", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -41,13 +54,6 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
     end
   end
 
-  describe "DELETE /api/trade_listings/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
-      conn = delete(conn, "/api/trade_listings/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
     test "transitions Pending -> Active", %{conn: conn} do

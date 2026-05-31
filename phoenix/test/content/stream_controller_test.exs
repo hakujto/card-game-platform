@@ -20,10 +20,22 @@ defmodule CardsProjectWeb.Content.StreamControllerTest do
     end
   end
 
+  describe "GET /api/streams?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/streams?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/streams" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/streams", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when viewer_count_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "viewer_count_peak", -1)
+      conn = post(conn, "/api/streams", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -43,13 +55,6 @@ defmodule CardsProjectWeb.Content.StreamControllerTest do
     end
   end
 
-  describe "DELETE /api/streams/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_stream(@valid_params)
-      conn = delete(conn, "/api/streams/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/streams/:id/transitions/scheduled-to-live" do
     test "transitions Scheduled -> Live", %{conn: conn} do

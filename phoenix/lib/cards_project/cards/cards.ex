@@ -18,17 +18,22 @@ defmodule CardsProject.Cards do
 
   # ── Card ─────────────────────────────────────────────────────
 
-  def list_cards, do: Repo.all(Card)
+  def list_cards(nil), do: Repo.all(Card)
+  def list_cards(term) do
+    Repo.all(from q in Card, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.artist_name), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_card!(id), do: Repo.get!(Card, id)
 
   def create_card(attrs \\ %{}) do
+    attrs = card_hook_validate_legality(attrs)
     %Card{}
     |> Card.changeset(attrs)
     |> Repo.insert()
   end
 
   def update_card(%Card{} = card, attrs) do
+    attrs = card_hook_validate_legality(attrs)
     card
     |> Card.changeset(attrs)
     |> Repo.update()
@@ -85,9 +90,19 @@ defmodule CardsProject.Cards do
     result
   end
 
+  # ── Card lifecycle hooks ─────────────────────────────────────
+
+  defp card_hook_validate_legality(attrs) do
+    # TODO: implement validate_legality
+    attrs
+  end
+
   # ── CardSet ─────────────────────────────────────────────────────
 
-  def list_card_sets, do: Repo.all(CardSet)
+  def list_card_sets(nil), do: Repo.all(CardSet)
+  def list_card_sets(term) do
+    Repo.all(from q in CardSet, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.code), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_card_set!(id), do: Repo.get!(CardSet, id)
 
@@ -176,7 +191,10 @@ defmodule CardsProject.Cards do
 
   # ── CardAbility ─────────────────────────────────────────────────────
 
-  def list_card_abilities, do: Repo.all(CardAbility)
+  def list_card_abilities(nil), do: Repo.all(CardAbility)
+  def list_card_abilities(term) do
+    Repo.all(from q in CardAbility, where: like(fragment("lower(?)", q.keyword), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.ability_text), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_card_ability!(id), do: Repo.get!(CardAbility, id)
 
@@ -214,20 +232,29 @@ defmodule CardsProject.Cards do
 
   # ── Deck ─────────────────────────────────────────────────────
 
-  def list_decks, do: Repo.all(Deck)
+  def list_decks(nil), do: Repo.all(Deck)
+  def list_decks(term) do
+    Repo.all(from q in Deck, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.description), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_deck!(id), do: Repo.get!(Deck, id)
 
   def create_deck(attrs \\ %{}) do
-    %Deck{}
-    |> Deck.changeset(attrs)
-    |> Repo.insert()
+    case %Deck{} |> Deck.changeset(attrs) |> Repo.insert() do
+      {:ok, deck} ->
+        deck_hook_recalculate_tournament_legal(deck)
+        {:ok, deck}
+      err -> err
+    end
   end
 
   def update_deck(%Deck{} = deck, attrs) do
-    deck
-    |> Deck.changeset(attrs)
-    |> Repo.update()
+    case deck |> Deck.changeset(attrs) |> Repo.update() do
+      {:ok, deck} ->
+        deck_hook_recalculate_tournament_legal(deck)
+        {:ok, deck}
+      err -> err
+    end
   end
 
   def delete_deck(%Deck{} = deck), do: Repo.delete(deck)
@@ -286,6 +313,13 @@ defmodule CardsProject.Cards do
     result = Deck.certify_tournament_legal(deck)
     Repo.update!(Deck.changeset(deck, %{}))
     result
+  end
+
+  # ── Deck lifecycle hooks ─────────────────────────────────────
+
+  defp deck_hook_recalculate_tournament_legal(%Deck{} = deck) do
+    # TODO: implement recalculate_tournament_legal
+    deck
   end
 
   # ── DeckCard ─────────────────────────────────────────────────────
@@ -362,7 +396,10 @@ defmodule CardsProject.Cards do
 
   # ── DeckTag ─────────────────────────────────────────────────────
 
-  def list_deck_tags, do: Repo.all(DeckTag)
+  def list_deck_tags(nil), do: Repo.all(DeckTag)
+  def list_deck_tags(term) do
+    Repo.all(from q in DeckTag, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_deck_tag!(id), do: Repo.get!(DeckTag, id)
 

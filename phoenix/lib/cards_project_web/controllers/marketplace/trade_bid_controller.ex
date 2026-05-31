@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Marketplace.TradeBidController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    trade_bid = Marketplace.get_trade_bid!(id)
-    case Marketplace.update_trade_bid(trade_bid, params) do
-      {:ok, trade_bid} ->
-        json(conn, serialize_trade_bid(trade_bid))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    trade_bid = Marketplace.get_trade_bid!(id)
-    Marketplace.delete_trade_bid(trade_bid)
-    send_resp(conn, :no_content, "")
-  end
-
   # GET /api/bids/{id}/outbid
   def outbid_by(conn, %{"id" => id} = params) do
     new_amount = Map.get(params, "new_amount")
@@ -62,7 +43,9 @@ defmodule CardsProjectWeb.Marketplace.TradeBidController do
   end
 
   defp serialize_trade_bid(%TradeBid{} = record) do
-    Map.take(record, [:id, :amount, :placed_at, :is_winning, :listing_id, :bidder_id])
+    record
+    |> Map.take([:id, :amount, :placed_at, :is_winning, :listing_id, :bidder_id])
+    |> (fn m -> Map.put(Map.delete(m, :placed_at), :placed_at, Map.get(m, :placed_at)) end).()
   end
 
   defp format_errors(changeset) do

@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Players.CraftingRecipeControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "dust_cost" => 0,
+    "dust_cost" => 1,
     "is_available" => true
   }
 
@@ -18,6 +18,11 @@ defmodule CardsProjectWeb.Players.CraftingRecipeControllerTest do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/crafting_recipes", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when dust_cost_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "dust_cost", 0)
+      conn = post(conn, "/api/crafting_recipes", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -37,11 +42,4 @@ defmodule CardsProjectWeb.Players.CraftingRecipeControllerTest do
     end
   end
 
-  describe "DELETE /api/crafting_recipes/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Players.create_crafting_recipe(@valid_params)
-      conn = delete(conn, "/api/crafting_recipes/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

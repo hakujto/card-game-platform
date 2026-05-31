@@ -19,6 +19,13 @@ defmodule CardsProject.Cards.CardAbility do
     |> validate_required([:ability_text])
     |> validate_inclusion(:ability_type, ["Keyword", "Activated", "Triggered", "Static"])
     |> validate_inclusion(:timing, ["Any", "Sorcery", "Instant", "Combat"])
+    |> then(fn cs ->
+      if get_field(cs, :ability_type) == "Keyword" and (is_nil(get_field(cs, :keyword))) do
+        Ecto.Changeset.add_error(cs, :keyword, "Keyword ability must have a keyword name")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

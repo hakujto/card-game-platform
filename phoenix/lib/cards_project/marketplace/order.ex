@@ -28,6 +28,37 @@ defmodule CardsProject.Marketplace.Order do
     |> validate_required([:total, :discount_applied, :currency, :created_at])
     |> validate_inclusion(:status, ["Pending", "Paid", "Processing", "Shipped", "Completed", "Cancelled", "Refunded"])
     |> validate_inclusion(:payment_method, ["Card", "PayPal", "Crypto", "PlatformCredits"])
+    |> validate_number(:total, greater_than_or_equal_to: 0, message: "Order total must not be negative")
+    |> then(fn cs ->
+      lv = get_field(cs, :total)
+      fv = get_field(cs, :discount_applied)
+      if not is_nil(lv) and not is_nil(fv) and not (fv <= lv) do
+        Ecto.Changeset.add_error(cs, :discount_applied, "Discount applied cannot exceed order total")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Paid" and (is_nil(get_field(cs, :paid_at))) do
+        Ecto.Changeset.add_error(cs, :paid_at, "Paid order must have paid_at set")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Shipped" and (is_nil(get_field(cs, :tracking_number))) do
+        Ecto.Changeset.add_error(cs, :tracking_number, "Shipped order must have a tracking number")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :shipped_at)) and (get_field(cs, :status) != "Shipped") do
+        Ecto.Changeset.add_error(cs, :status, "shipped_at_requires_shipped_status validation failed")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

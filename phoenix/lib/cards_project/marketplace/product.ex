@@ -24,6 +24,9 @@ defmodule CardsProject.Marketplace.Product do
     |> cast(attrs, [:name, :price, :stock, :active, :discount_percent, :featured, :product_type, :description, :image_url, :card_id, :card_set_id])
     |> validate_required([:name, :price, :stock, :active, :discount_percent, :featured])
     |> validate_inclusion(:product_type, ["SingleCard", "BoosterPack", "Bundle", "PreconstructedDeck", "Accessory"])
+    |> validate_number(:price, greater_than: 0, message: "Product price must be greater than zero")
+    |> validate_number(:stock, greater_than_or_equal_to: 0, message: "Product stock must not be negative")
+    |> validate_number(:discount_percent, greater_than_or_equal_to: 0, less_than_or_equal_to: 100, message: "Product discount percent must be between 0 and 100")
   end
 
   # ── Business operations ────────────────────────────────────────────

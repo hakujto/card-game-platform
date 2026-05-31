@@ -28,6 +28,16 @@ defmodule CardsProject.Cards.Deck do
     |> validate_required([:name, :is_public, :is_tournament_legal, :wins, :losses, :draws, :created_at])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:archetype, ["Aggro", "Control", "Midrange", "Combo", "Prison", "Tempo"])
+    |> validate_number(:wins, greater_than_or_equal_to: 0, message: "Deck wins count must not be negative")
+    |> validate_number(:losses, greater_than_or_equal_to: 0, message: "Deck losses count must not be negative")
+    |> validate_number(:draws, greater_than_or_equal_to: 0, message: "Deck draws count must not be negative")
+    |> then(fn cs ->
+      if get_field(cs, :is_tournament_legal) == "true" and (get_field(cs, :is_public) != "true") do
+        Ecto.Changeset.add_error(cs, :is_public, "Tournament-legal deck must be made public")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

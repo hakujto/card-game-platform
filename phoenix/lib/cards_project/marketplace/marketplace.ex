@@ -18,7 +18,10 @@ defmodule CardsProject.Marketplace do
 
   # ── Product ─────────────────────────────────────────────────────
 
-  def list_products, do: Repo.all(Product)
+  def list_products(nil), do: Repo.all(Product)
+  def list_products(term) do
+    Repo.all(from q in Product, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.description), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_product!(id), do: Repo.get!(Product, id)
 
@@ -92,9 +95,12 @@ defmodule CardsProject.Marketplace do
   end
 
   def update_order(%Order{} = order, attrs) do
-    order
-    |> Order.changeset(attrs)
-    |> Repo.update()
+    case order |> Order.changeset(attrs) |> Repo.update() do
+      {:ok, order} ->
+        order_hook_notify_status_change(order)
+        {:ok, order}
+      err -> err
+    end
   end
 
   def delete_order(%Order{} = order), do: Repo.delete(order)
@@ -238,6 +244,13 @@ defmodule CardsProject.Marketplace do
     end
   end
 
+  # ── Order lifecycle hooks ─────────────────────────────────────
+
+  defp order_hook_notify_status_change(%Order{} = order) do
+    # TODO: implement notify_status_change
+    order
+  end
+
   # ── OrderItem ─────────────────────────────────────────────────────
 
   def list_order_items, do: Repo.all(OrderItem)
@@ -271,7 +284,10 @@ defmodule CardsProject.Marketplace do
 
   # ── Coupon ─────────────────────────────────────────────────────
 
-  def list_coupons, do: Repo.all(Coupon)
+  def list_coupons(nil), do: Repo.all(Coupon)
+  def list_coupons(term) do
+    Repo.all(from q in Coupon, where: like(fragment("lower(?)", q.code), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_coupon!(id), do: Repo.get!(Coupon, id)
 
@@ -321,7 +337,10 @@ defmodule CardsProject.Marketplace do
 
   # ── TradeListing ─────────────────────────────────────────────────────
 
-  def list_trade_listings, do: Repo.all(TradeListing)
+  def list_trade_listings(nil), do: Repo.all(TradeListing)
+  def list_trade_listings(term) do
+    Repo.all(from q in TradeListing, where: like(fragment("lower(?)", q.description), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_trade_listing!(id), do: Repo.get!(TradeListing, id)
 

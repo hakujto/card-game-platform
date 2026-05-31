@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Players.CraftingIngredientController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    crafting_ingredient = Players.get_crafting_ingredient!(id)
-    case Players.update_crafting_ingredient(crafting_ingredient, params) do
-      {:ok, crafting_ingredient} ->
-        json(conn, serialize_crafting_ingredient(crafting_ingredient))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     crafting_ingredient = Players.get_crafting_ingredient!(id)
     Players.delete_crafting_ingredient(crafting_ingredient)

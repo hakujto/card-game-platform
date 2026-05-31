@@ -29,6 +29,16 @@ defmodule CardsProject.Players.Player do
     |> validate_required([:display_name, :rating, :peak_rating, :is_verified, :created_at])
     |> validate_inclusion(:rank, ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"])
     |> validate_inclusion(:preferred_format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> validate_number(:rating, greater_than_or_equal_to: 0, less_than_or_equal_to: 9999, message: "Rating must be between 0 and 9999")
+    |> then(fn cs ->
+      lv = get_field(cs, :rating)
+      fv = get_field(cs, :peak_rating)
+      if not is_nil(lv) and not is_nil(fv) and not (fv >= lv) do
+        Ecto.Changeset.add_error(cs, :peak_rating, "Peak rating must be greater than or equal to current rating")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

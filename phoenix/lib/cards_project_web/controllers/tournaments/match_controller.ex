@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    match = Tournaments.get_match!(id)
-    case Tournaments.update_match(match, params) do
-      {:ok, match} ->
-        json(conn, serialize_match(match))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    match = Tournaments.get_match!(id)
-    Tournaments.delete_match(match)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/matches/{id}/record
   def record_result(conn, %{"id" => id} = params) do
     p1_wins = Map.get(params, "p1_wins")
@@ -175,7 +156,10 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
   end
 
   defp serialize_match(%Match{} = record) do
-    Map.take(record, [:id, :table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id, :games_id])
+    record
+    |> Map.take([:id, :table_number, :status, :player1_wins, :player2_wins, :started_at, :ended_at, :result_notes, :round_id, :player1_id, :player2_id, :games_id])
+    |> (fn m -> Map.put(Map.delete(m, :started_at), :started_at, Map.get(m, :started_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :ended_at), :ended_at, Map.get(m, :ended_at)) end).()
   end
 
   defp format_errors(changeset) do

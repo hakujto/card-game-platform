@@ -20,6 +20,11 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationControllerTest do
       conn = post(conn, "/api/tournament_registrations", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when points_earned_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "points_earned", -1)
+      conn = post(conn, "/api/tournament_registrations", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/tournament_registrations/:id" do
@@ -30,19 +35,4 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationControllerTest do
     end
   end
 
-  describe "PUT /api/tournament_registrations/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament_registration(@valid_params)
-      conn = put(conn, "/api/tournament_registrations/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/tournament_registrations/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament_registration(@valid_params)
-      conn = delete(conn, "/api/tournament_registrations/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

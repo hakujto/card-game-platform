@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Cards.CardSetController do
   alias CardsProject.Cards
   alias CardsProject.Cards.CardSet
 
-  def index(conn, _params) do
-    card_sets = Cards.list_card_sets()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    card_sets = Cards.list_card_sets(q)
     json(conn, Enum.map(card_sets, &serialize_card_set/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Cards.CardSetController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    card_set = Cards.get_card_set!(id)
-    Cards.delete_card_set(card_set)
-    send_resp(conn, :no_content, "")
   end
 
   # GET /api/card-sets/{id}/standard-legal

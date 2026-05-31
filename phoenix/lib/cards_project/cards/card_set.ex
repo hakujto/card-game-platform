@@ -22,6 +22,21 @@ defmodule CardsProject.Cards.CardSet do
     |> cast(attrs, [:name, :code, :release_date, :total_cards, :is_rotated, :rotation_date, :set_type, :description, :logo_url])
     |> validate_required([:name, :code, :release_date, :total_cards, :is_rotated])
     |> validate_inclusion(:set_type, ["Core", "Expansion", "Supplemental", "Masters", "Draft"])
+    |> validate_number(:total_cards, greater_than: 0, message: "Card set must have at least one card")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :rotation_date)) and (not ((get_field(cs, :rotation_date) || 0) > get_field(cs, :release_date))) do
+        Ecto.Changeset.add_error(cs, :rotation_date, "Rotation date must be after release date")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :is_rotated) == "true" and (is_nil(get_field(cs, :rotation_date))) do
+        Ecto.Changeset.add_error(cs, :rotation_date, "Rotated set must have a rotation date")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

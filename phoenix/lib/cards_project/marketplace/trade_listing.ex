@@ -30,6 +30,21 @@ defmodule CardsProject.Marketplace.TradeListing do
     |> validate_inclusion(:status, ["Active", "Sold", "Expired", "Cancelled", "Pending"])
     |> validate_inclusion(:listing_type, ["FixedPrice", "Auction", "TradeOffer"])
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
+    |> validate_number(:quantity, greater_than_or_equal_to: 1, less_than_or_equal_to: 9999, message: "Listing quantity must be between 1 and 9999")
+    |> then(fn cs ->
+      if get_field(cs, :listing_type) == "FixedPrice" and (is_nil(get_field(cs, :asking_price))) do
+        Ecto.Changeset.add_error(cs, :asking_price, "Fixed price listing must have an asking price")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :listing_type) == "Auction" and (is_nil(get_field(cs, :auction_start_price)) or is_nil(get_field(cs, :auction_end_time))) do
+        Ecto.Changeset.add_error(cs, :auction_start_price, "Auction listing must have a start price and end time")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

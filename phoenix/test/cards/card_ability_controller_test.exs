@@ -4,12 +4,20 @@ defmodule CardsProjectWeb.Cards.CardAbilityControllerTest do
 
   @valid_params %{
     "ability_text" => "test",
-    "ability_type" => "Keyword"
+    "ability_type" => "Keyword",
+    "keyword" => "test"
   }
 
   describe "GET /api/card_abilities" do
     test "returns 200 with list", %{conn: conn} do
       conn = get(conn, "/api/card_abilities")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
+  describe "GET /api/card_abilities?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/card_abilities?q=test")
       assert json_response(conn, 200) |> is_list()
     end
   end
@@ -44,4 +52,5 @@ defmodule CardsProjectWeb.Cards.CardAbilityControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

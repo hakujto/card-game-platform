@@ -17,7 +17,10 @@ defmodule CardsProject.Players do
 
   # ── Player ─────────────────────────────────────────────────────
 
-  def list_players, do: Repo.all(Player)
+  def list_players(nil), do: Repo.all(Player)
+  def list_players(term) do
+    Repo.all(from q in Player, where: like(fragment("lower(?)", q.display_name), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_player!(id), do: Repo.get!(Player, id)
 
@@ -28,9 +31,12 @@ defmodule CardsProject.Players do
   end
 
   def update_player(%Player{} = player, attrs) do
-    player
-    |> Player.changeset(attrs)
-    |> Repo.update()
+    case player |> Player.changeset(attrs) |> Repo.update() do
+      {:ok, player} ->
+        player_hook_update_rank(player)
+        {:ok, player}
+      err -> err
+    end
   end
 
   def delete_player(%Player{} = player), do: Repo.delete(player)
@@ -82,6 +88,13 @@ defmodule CardsProject.Players do
     player = Repo.get!(Player, id)
     Player.update_rating(player, delta)
     Repo.update!(Player.changeset(player, %{}))
+  end
+
+  # ── Player lifecycle hooks ─────────────────────────────────────
+
+  defp player_hook_update_rank(%Player{} = player) do
+    # TODO: implement update_rank
+    player
   end
 
   # ── PlayerSeasonStats ─────────────────────────────────────────────────────
@@ -214,7 +227,10 @@ defmodule CardsProject.Players do
 
   # ── Achievement ─────────────────────────────────────────────────────
 
-  def list_achievements, do: Repo.all(Achievement)
+  def list_achievements(nil), do: Repo.all(Achievement)
+  def list_achievements(term) do
+    Repo.all(from q in Achievement, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.description), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_achievement!(id), do: Repo.get!(Achievement, id)
 

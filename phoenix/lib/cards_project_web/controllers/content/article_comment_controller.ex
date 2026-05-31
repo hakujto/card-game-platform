@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Content.ArticleCommentController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    article_comment = Content.get_article_comment!(id)
-    case Content.update_article_comment(article_comment, params) do
-      {:ok, article_comment} ->
-        json(conn, serialize_article_comment(article_comment))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     article_comment = Content.get_article_comment!(id)
     Content.delete_article_comment(article_comment)
@@ -67,7 +54,9 @@ defmodule CardsProjectWeb.Content.ArticleCommentController do
   end
 
   defp serialize_article_comment(%ArticleComment{} = record) do
-    Map.take(record, [:id, :body, :is_hidden, :created_at, :article_id, :author_id, :parent_comment_id])
+    record
+    |> Map.take([:id, :body, :is_hidden, :created_at, :article_id, :author_id, :parent_comment_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
   end
 
   defp format_errors(changeset) do

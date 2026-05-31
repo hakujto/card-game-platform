@@ -3,8 +3,8 @@ defmodule CardsProjectWeb.Content.DraftSessionControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "seats" => 0,
-    "time_per_pick_seconds" => 0,
+    "seats" => 2,
+    "time_per_pick_seconds" => 1,
     "created_at" => ~N[2024-01-01 00:00:00],
     "status" => "WaitingForPlayers",
     "draft_type" => "Booster"
@@ -22,6 +22,16 @@ defmodule CardsProjectWeb.Content.DraftSessionControllerTest do
       conn = post(conn, "/api/draft_sessions", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when seats_range violated", %{conn: conn} do
+      params = Map.put(@valid_params, "seats", 161)
+      conn = post(conn, "/api/draft_sessions", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when time_per_pick_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "time_per_pick_seconds", 0)
+      conn = post(conn, "/api/draft_sessions", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/draft_sessions/:id" do
@@ -32,21 +42,6 @@ defmodule CardsProjectWeb.Content.DraftSessionControllerTest do
     end
   end
 
-  describe "PUT /api/draft_sessions/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
-      conn = put(conn, "/api/draft_sessions/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/draft_sessions/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
-      conn = delete(conn, "/api/draft_sessions/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-drafting" do
     test "transitions WaitingForPlayers -> Drafting", %{conn: conn} do

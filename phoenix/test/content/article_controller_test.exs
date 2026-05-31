@@ -23,10 +23,27 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
     end
   end
 
+  describe "GET /api/articles?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/articles?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/articles" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/articles", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when view_count_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "view_count", -1)
+      conn = post(conn, "/api/articles", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when likes_count_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "likes_count", -1)
+      conn = post(conn, "/api/articles", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -46,13 +63,6 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
     end
   end
 
-  describe "DELETE /api/articles/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Content.create_article(@valid_params)
-      conn = delete(conn, "/api/articles/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/articles/:id/transitions/draft-to-published" do
     test "transitions Draft -> Published", %{conn: conn} do

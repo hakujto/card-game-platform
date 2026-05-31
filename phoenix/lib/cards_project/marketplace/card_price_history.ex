@@ -19,6 +19,8 @@ defmodule CardsProject.Marketplace.CardPriceHistory do
     record
     |> cast(attrs, [:price_date, :avg_price, :min_price, :max_price, :volume, :foil, :card_id])
     |> validate_required([:price_date, :avg_price, :min_price, :max_price, :volume, :foil])
+    |> validate_number(:volume, greater_than_or_equal_to: 0, message: "Price history volume must not be negative")
+    |> validate_number(:min_price, greater_than_or_equal_to: 0, message: "Prices must not be negative")
   end
 
   # ── Business operations ────────────────────────────────────────────

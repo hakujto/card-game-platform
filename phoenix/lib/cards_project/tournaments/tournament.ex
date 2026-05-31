@@ -35,6 +35,16 @@ defmodule CardsProject.Tournaments.Tournament do
     |> validate_inclusion(:status, ["Draft", "Registration", "Ongoing", "Completed", "Cancelled"])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:tournament_type, ["Swiss", "SingleElimination", "DoubleElimination", "RoundRobin"])
+    |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 512, message: "Tournament must allow between 2 and 512 players")
+    |> validate_number(:entry_fee, greater_than_or_equal_to: 0, message: "Entry fee must not be negative")
+    |> validate_number(:prize_pool, greater_than_or_equal_to: 0, message: "Prize pool must not be negative")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :end_time)) and (not ((get_field(cs, :end_time) || 0) > get_field(cs, :start_time))) do
+        Ecto.Changeset.add_error(cs, :end_time, "End time must be after start time")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

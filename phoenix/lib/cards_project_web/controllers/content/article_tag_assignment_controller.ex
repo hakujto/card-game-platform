@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Content.ArticleTagAssignmentController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    article_tag_assignment = Content.get_article_tag_assignment!(id)
-    case Content.update_article_tag_assignment(article_tag_assignment, params) do
-      {:ok, article_tag_assignment} ->
-        json(conn, serialize_article_tag_assignment(article_tag_assignment))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     article_tag_assignment = Content.get_article_tag_assignment!(id)
     Content.delete_article_tag_assignment(article_tag_assignment)

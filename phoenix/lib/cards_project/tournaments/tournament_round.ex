@@ -20,6 +20,22 @@ defmodule CardsProject.Tournaments.TournamentRound do
     |> cast(attrs, [:round_number, :time_limit_minutes, :status, :started_at, :ended_at, :tournament_id])
     |> validate_required([:round_number, :time_limit_minutes])
     |> validate_inclusion(:status, ["Pending", "Active", "Completed"])
+    |> validate_number(:round_number, greater_than: 0, message: "Round number must be greater than zero")
+    |> validate_number(:time_limit_minutes, greater_than: 0, message: "Round time limit must be greater than zero")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :ended_at)) and (not ((get_field(cs, :ended_at) || 0) > get_field(cs, :started_at))) do
+        Ecto.Changeset.add_error(cs, :ended_at, "Round end time must be after start time")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Completed" and (is_nil(get_field(cs, :started_at))) do
+        Ecto.Changeset.add_error(cs, :started_at, "Completed round must have a start time")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

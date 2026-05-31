@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Marketplace.OrderControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "total" => "0.00",
+    "total" => 1,
     "discount_applied" => "0.00",
     "currency" => "test",
     "created_at" => ~N[2024-01-01 00:00:00],
@@ -22,6 +22,16 @@ defmodule CardsProjectWeb.Marketplace.OrderControllerTest do
       conn = post(conn, "/api/orders", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when total_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "total", -1)
+      conn = post(conn, "/api/orders", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when discount_not_exceed_total violated", %{conn: conn} do
+      params = Map.put(@valid_params, "discount_applied", NaN)
+      conn = post(conn, "/api/orders", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/orders/:id" do
@@ -32,21 +42,6 @@ defmodule CardsProjectWeb.Marketplace.OrderControllerTest do
     end
   end
 
-  describe "PUT /api/orders/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
-      conn = put(conn, "/api/orders/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/orders/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_order(@valid_params)
-      conn = delete(conn, "/api/orders/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/orders/:id/transitions/pending-to-paid" do
     test "transitions Pending -> Paid", %{conn: conn} do

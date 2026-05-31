@@ -16,6 +16,7 @@ defmodule CardsProject.Players.CraftingRecipe do
     record
     |> cast(attrs, [:dust_cost, :is_available, :result_card_id])
     |> validate_required([:dust_cost, :is_available])
+    |> validate_number(:dust_cost, greater_than: 0, message: "Crafting recipe must have a dust cost greater than zero")
   end
 
   # ── Business operations ────────────────────────────────────────────

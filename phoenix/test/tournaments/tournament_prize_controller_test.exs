@@ -3,9 +3,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentPrizeControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "placement_from" => 0,
-    "placement_to" => 0,
-    "amount" => "0.00",
+    "placement_from" => 1,
+    "placement_to" => 1,
+    "amount" => 0,
     "season_points" => 0,
     "prize_type" => "Currency"
   }
@@ -21,6 +21,21 @@ defmodule CardsProjectWeb.Tournaments.TournamentPrizeControllerTest do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/tournament_prizes", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when placement_range_valid violated", %{conn: conn} do
+      params = Map.put(@valid_params, "placement_to", NaN)
+      conn = post(conn, "/api/tournament_prizes", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when placement_from_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "placement_from", 0)
+      conn = post(conn, "/api/tournament_prizes", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when amount_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "amount", -1)
+      conn = post(conn, "/api/tournament_prizes", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -47,4 +62,5 @@ defmodule CardsProjectWeb.Tournaments.TournamentPrizeControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

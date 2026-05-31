@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Tournaments.GameControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "game_number" => 0
+    "game_number" => 1
   }
 
   describe "GET /api/games" do
@@ -18,6 +18,11 @@ defmodule CardsProjectWeb.Tournaments.GameControllerTest do
       conn = post(conn, "/api/games", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when game_number_range violated", %{conn: conn} do
+      params = Map.put(@valid_params, "game_number", 31)
+      conn = post(conn, "/api/games", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/games/:id" do
@@ -28,19 +33,4 @@ defmodule CardsProjectWeb.Tournaments.GameControllerTest do
     end
   end
 
-  describe "PUT /api/games/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_game(@valid_params)
-      conn = put(conn, "/api/games/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/games/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_game(@valid_params)
-      conn = delete(conn, "/api/games/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
   alias CardsProject.Marketplace
   alias CardsProject.Marketplace.TradeListing
 
-  def index(conn, _params) do
-    trade_listings = Marketplace.list_trade_listings()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    trade_listings = Marketplace.list_trade_listings(q)
     json(conn, Enum.map(trade_listings, &serialize_trade_listing/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    trade_listing = Marketplace.get_trade_listing!(id)
-    Marketplace.delete_trade_listing(trade_listing)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/trade-listings/{id}/close
@@ -166,7 +161,11 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
   end
 
   defp serialize_trade_listing(%TradeListing{} = record) do
-    Map.take(record, [:id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
+    record
+    |> Map.take([:id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :expires_at), :expires_at, Map.get(m, :expires_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :auction_end_time), :auction_end_time, Map.get(m, :auction_end_time)) end).()
   end
 
   defp format_errors(changeset) do

@@ -21,6 +21,21 @@ defmodule CardsProject.Tournaments.TournamentRegistration do
     |> cast(attrs, [:points_earned, :registered_at, :status, :seed, :final_standing, :tournament_id, :player_id, :deck_id])
     |> validate_required([:points_earned, :registered_at])
     |> validate_inclusion(:status, ["Registered", "Waitlisted", "Withdrawn", "Disqualified"])
+    |> validate_number(:points_earned, greater_than_or_equal_to: 0, message: "Points earned must not be negative")
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :final_standing)) and (not ((get_field(cs, :final_standing) || 0) > 0)) do
+        Ecto.Changeset.add_error(cs, :final_standing, "Final standing must be greater than zero")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if not is_nil(get_field(cs, :seed)) and (not ((get_field(cs, :seed) || 0) > 0)) do
+        Ecto.Changeset.add_error(cs, :seed, "Seed must be greater than zero")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

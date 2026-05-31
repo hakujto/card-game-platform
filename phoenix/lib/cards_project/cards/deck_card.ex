@@ -16,6 +16,14 @@ defmodule CardsProject.Cards.DeckCard do
     record
     |> cast(attrs, [:quantity, :is_commander, :deck_id, :card_id])
     |> validate_required([:quantity, :is_commander])
+    |> validate_number(:quantity, greater_than_or_equal_to: 1, less_than_or_equal_to: 4, message: "A deck can contain between 1 and 4 copies of a card")
+    |> then(fn cs ->
+      if get_field(cs, :is_commander) == "true" and (get_field(cs, :quantity) != "1") do
+        Ecto.Changeset.add_error(cs, :quantity, "Commander card must appear exactly once in the deck")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

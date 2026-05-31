@@ -28,14 +28,6 @@ defmodule CardsProjectWeb.Players.CraftingIngredientControllerTest do
     end
   end
 
-  describe "PUT /api/crafting_ingredients/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Players.create_crafting_ingredient(@valid_params)
-      conn = put(conn, "/api/crafting_ingredients/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
   describe "DELETE /api/crafting_ingredients/:id" do
     test "deletes and returns 204", %{conn: conn} do
       {:ok, record} = CardsProject.Players.create_crafting_ingredient(@valid_params)
@@ -43,4 +35,5 @@ defmodule CardsProjectWeb.Players.CraftingIngredientControllerTest do
       assert response(conn, 204)
     end
   end
+
 end

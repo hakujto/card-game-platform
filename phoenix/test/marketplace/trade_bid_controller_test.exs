@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Marketplace.TradeBidControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "amount" => "0.00",
+    "amount" => 1,
     "placed_at" => ~N[2024-01-01 00:00:00],
     "is_winning" => true
   }
@@ -20,6 +20,11 @@ defmodule CardsProjectWeb.Marketplace.TradeBidControllerTest do
       conn = post(conn, "/api/trade_bids", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
     end
+    test "fails when amount_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "amount", 0)
+      conn = post(conn, "/api/trade_bids", params)
+      assert conn.status in [400, 422]
+    end
   end
 
   describe "GET /api/trade_bids/:id" do
@@ -30,19 +35,4 @@ defmodule CardsProjectWeb.Marketplace.TradeBidControllerTest do
     end
   end
 
-  describe "PUT /api/trade_bids/:id" do
-    test "updates and returns 200", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_trade_bid(@valid_params)
-      conn = put(conn, "/api/trade_bids/#{record.id}", @valid_params)
-      assert json_response(conn, 200)
-    end
-  end
-
-  describe "DELETE /api/trade_bids/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Marketplace.create_trade_bid(@valid_params)
-      conn = delete(conn, "/api/trade_bids/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 end

@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Cards.DeckController do
   alias CardsProject.Cards
   alias CardsProject.Cards.Deck
 
-  def index(conn, _params) do
-    decks = Cards.list_decks()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    decks = Cards.list_decks(q)
     json(conn, Enum.map(decks, &serialize_deck/1))
   end
 
@@ -100,7 +101,10 @@ defmodule CardsProjectWeb.Cards.DeckController do
   end
 
   defp serialize_deck(%Deck{} = record) do
-    Map.take(record, [:id, :name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :draws, :created_at, :updated_at, :player_id])
+    record
+    |> Map.take([:id, :name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :draws, :created_at, :updated_at, :player_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :updated_at), :updated_at, Map.get(m, :updated_at)) end).()
   end
 
   defp format_errors(changeset) do

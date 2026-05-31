@@ -15,39 +15,6 @@ defmodule CardsProjectWeb.Content.DraftPickController do
     json(conn, serialize_draft_pick(draft_pick))
   end
 
-  def create(conn, params) do
-    case Content.create_draft_pick(params) do
-      {:ok, draft_pick} ->
-        conn
-        |> put_status(:created)
-        |> json(serialize_draft_pick(draft_pick))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def update(conn, %{"id" => id} = params) do
-    draft_pick = Content.get_draft_pick!(id)
-    case Content.update_draft_pick(draft_pick, params) do
-      {:ok, draft_pick} ->
-        json(conn, serialize_draft_pick(draft_pick))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    draft_pick = Content.get_draft_pick!(id)
-    Content.delete_draft_pick(draft_pick)
-    send_resp(conn, :no_content, "")
-  end
-
   # GET /api/draft-picks/{id}/first-pick
   def is_first_pick(conn, %{"id" => id}) do
     result = Content.draft_pick_is_first_pick_behavior(id)
@@ -55,14 +22,9 @@ defmodule CardsProjectWeb.Content.DraftPickController do
   end
 
   defp serialize_draft_pick(%DraftPick{} = record) do
-    Map.take(record, [:id, :pick_number, :pack_number, :picked_at, :participant_id, :card_id])
+    record
+    |> Map.take([:id, :pick_number, :pack_number, :picked_at, :participant_id, :card_id])
+    |> (fn m -> Map.put(Map.delete(m, :picked_at), :picked_at, Map.get(m, :picked_at)) end).()
   end
 
-  defp format_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
-      end)
-    end)
-  end
 end

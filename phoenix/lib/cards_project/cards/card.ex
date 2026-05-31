@@ -35,6 +35,43 @@ defmodule CardsProject.Cards.Card do
     |> validate_inclusion(:rarity, ["Common", "Uncommon", "Rare", "MythicRare", "Legendary"])
     |> validate_inclusion(:mana_colors, ["White", "Blue", "Black", "Red", "Green", "Colorless"])
     |> validate_inclusion(:legal_formats, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> validate_number(:mana_cost, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, message: "mana_cost must be between 0 and 20")
+    |> validate_number(:power_level, greater_than_or_equal_to: 1, less_than_or_equal_to: 10, message: "power_level must be between 1 and 10")
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Creature" and (is_nil(get_field(cs, :attack)) or is_nil(get_field(cs, :defense))) do
+        Ecto.Changeset.add_error(cs, :attack, "Creature card must have attack and defense")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Planeswalker" and (is_nil(get_field(cs, :loyalty))) do
+        Ecto.Changeset.add_error(cs, :loyalty, "Planeswalker card must have loyalty")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Land" and (get_field(cs, :mana_cost) != "0") do
+        Ecto.Changeset.add_error(cs, :mana_cost, "Land card must have zero mana cost")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) != "Planeswalker" and (not is_nil(get_field(cs, :loyalty))) do
+        Ecto.Changeset.add_error(cs, :loyalty, "Only Planeswalker cards can have loyalty")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :is_banned) == "true" and (get_field(cs, :legal_formats) != "message") do
+        Ecto.Changeset.add_error(cs, :legal_formats, "banned_card_not_in_legal_formats validation failed")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

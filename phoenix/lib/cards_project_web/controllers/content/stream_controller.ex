@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Content.StreamController do
   alias CardsProject.Content
   alias CardsProject.Content.Stream
 
-  def index(conn, _params) do
-    streams = Content.list_streams()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    streams = Content.list_streams(q)
     json(conn, Enum.map(streams, &serialize_stream/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Content.StreamController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    stream = Content.get_stream!(id)
-    Content.delete_stream(stream)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/streams/{id}/live
@@ -117,7 +112,11 @@ defmodule CardsProjectWeb.Content.StreamController do
   end
 
   defp serialize_stream(%Stream{} = record) do
-    Map.take(record, [:id, :title, :stream_url, :status, :platform, :language, :is_official, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
+    record
+    |> Map.take([:id, :title, :stream_url, :status, :platform, :language, :is_official, :viewer_count_peak, :scheduled_start, :actual_start, :ended_at, :vod_url, :tournament_id, :streamer_id])
+    |> (fn m -> Map.put(Map.delete(m, :scheduled_start), :scheduled_start, Map.get(m, :scheduled_start)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :actual_start), :actual_start, Map.get(m, :actual_start)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :ended_at), :ended_at, Map.get(m, :ended_at)) end).()
   end
 
   defp format_errors(changeset) do

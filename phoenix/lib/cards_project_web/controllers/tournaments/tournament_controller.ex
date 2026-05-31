@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
   alias CardsProject.Tournaments
   alias CardsProject.Tournaments.Tournament
 
-  def index(conn, _params) do
-    tournaments = Tournaments.list_tournaments()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    tournaments = Tournaments.list_tournaments(q)
     json(conn, Enum.map(tournaments, &serialize_tournament/1))
   end
 
@@ -40,12 +41,6 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: format_errors(changeset)})
     end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    tournament = Tournaments.get_tournament!(id)
-    Tournaments.delete_tournament(tournament)
-    send_resp(conn, :no_content, "")
   end
 
   # POST /api/tournaments/{id}/start
@@ -197,7 +192,11 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
   end
 
   defp serialize_tournament(%Tournament{} = record) do
-    Map.take(record, [:id, :name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
+    record
+    |> Map.take([:id, :name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
+    |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :start_time), :start_time, Map.get(m, :start_time)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :end_time), :end_time, Map.get(m, :end_time)) end).()
   end
 
   defp format_errors(changeset) do

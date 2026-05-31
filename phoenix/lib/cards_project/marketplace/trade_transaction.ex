@@ -20,6 +20,24 @@ defmodule CardsProject.Marketplace.TradeTransaction do
     |> cast(attrs, [:final_price, :platform_fee, :status, :completed_at, :listing_id, :buyer_id, :seller_id])
     |> validate_required([:final_price, :platform_fee])
     |> validate_inclusion(:status, ["Pending", "Completed", "Disputed", "Refunded"])
+    |> then(fn cs ->
+      lv = get_field(cs, :final_price)
+      fv = get_field(cs, :platform_fee)
+      if not is_nil(lv) and not is_nil(fv) and not (fv <= lv) do
+        Ecto.Changeset.add_error(cs, :platform_fee, "Platform fee cannot exceed the final price")
+      else
+        cs
+      end
+    end)
+    |> validate_number(:platform_fee, greater_than_or_equal_to: 0, message: "Platform fee must not be negative")
+    |> validate_number(:final_price, greater_than: 0, message: "Transaction final price must be greater than zero")
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Completed" and (is_nil(get_field(cs, :completed_at))) do
+        Ecto.Changeset.add_error(cs, :completed_at, "Completed transaction must have a completed_at timestamp")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

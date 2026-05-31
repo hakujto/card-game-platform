@@ -21,6 +21,7 @@ defmodule CardsProject.Players.PlayerCollection do
     |> validate_required([:quantity, :foil, :acquired_at])
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
     |> validate_inclusion(:acquired_via, ["Purchase", "Trade", "TournamentReward", "Pack", "Craft"])
+    |> validate_number(:quantity, greater_than: 0, message: "Collection quantity must be greater than zero")
   end
 
   # ── Business operations ────────────────────────────────────────────

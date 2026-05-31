@@ -4,9 +4,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
 
   @valid_params %{
     "name" => "test",
-    "max_players" => 0,
-    "entry_fee" => "0.00",
-    "prize_pool" => "0.00",
+    "max_players" => 2,
+    "entry_fee" => 0,
+    "prize_pool" => 0,
     "start_time" => ~N[2024-01-01 00:00:00],
     "is_online" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
@@ -22,10 +22,32 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
     end
   end
 
+  describe "GET /api/tournaments?q=test" do
+    test "returns 200 with search results", %{conn: conn} do
+      conn = get(conn, "/api/tournaments?q=test")
+      assert json_response(conn, 200) |> is_list()
+    end
+  end
+
   describe "POST /api/tournaments" do
     test "creates record and returns 201", %{conn: conn} do
       conn = post(conn, "/api/tournaments", @valid_params)
       assert %{"id" => _id} = json_response(conn, 201)
+    end
+    test "fails when max_players_positive violated", %{conn: conn} do
+      params = Map.put(@valid_params, "max_players", 5121)
+      conn = post(conn, "/api/tournaments", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when entry_fee_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "entry_fee", -1)
+      conn = post(conn, "/api/tournaments", params)
+      assert conn.status in [400, 422]
+    end
+    test "fails when prize_pool_not_negative violated", %{conn: conn} do
+      params = Map.put(@valid_params, "prize_pool", -1)
+      conn = post(conn, "/api/tournaments", params)
+      assert conn.status in [400, 422]
     end
   end
 
@@ -45,13 +67,6 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
     end
   end
 
-  describe "DELETE /api/tournaments/:id" do
-    test "deletes and returns 204", %{conn: conn} do
-      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
-      conn = delete(conn, "/api/tournaments/#{record.id}")
-      assert response(conn, 204)
-    end
-  end
 
   describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
     test "transitions Draft -> Registration", %{conn: conn} do

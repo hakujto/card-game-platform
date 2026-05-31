@@ -29,19 +29,6 @@ defmodule CardsProjectWeb.Cards.DeckTagAssignmentController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    deck_tag_assignment = Cards.get_deck_tag_assignment!(id)
-    case Cards.update_deck_tag_assignment(deck_tag_assignment, params) do
-      {:ok, deck_tag_assignment} ->
-        json(conn, serialize_deck_tag_assignment(deck_tag_assignment))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
   def delete(conn, %{"id" => id}) do
     deck_tag_assignment = Cards.get_deck_tag_assignment!(id)
     Cards.delete_deck_tag_assignment(deck_tag_assignment)

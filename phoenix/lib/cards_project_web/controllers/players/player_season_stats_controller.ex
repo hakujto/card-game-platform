@@ -15,39 +15,6 @@ defmodule CardsProjectWeb.Players.PlayerSeasonStatsController do
     json(conn, serialize_player_season_stats(player_season_stats))
   end
 
-  def create(conn, params) do
-    case Players.create_player_season_stats(params) do
-      {:ok, player_season_stats} ->
-        conn
-        |> put_status(:created)
-        |> json(serialize_player_season_stats(player_season_stats))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def update(conn, %{"id" => id} = params) do
-    player_season_stats = Players.get_player_season_stats!(id)
-    case Players.update_player_season_stats(player_season_stats, params) do
-      {:ok, player_season_stats} ->
-        json(conn, serialize_player_season_stats(player_season_stats))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    player_season_stats = Players.get_player_season_stats!(id)
-    Players.delete_player_season_stats(player_season_stats)
-    send_resp(conn, :no_content, "")
-  end
-
   # GET /api/player-season-stats/{id}/win-rate
   def win_rate(conn, %{"id" => id}) do
     result = Players.player_season_stats_win_rate_behavior(id)
@@ -71,11 +38,4 @@ defmodule CardsProjectWeb.Players.PlayerSeasonStatsController do
     Map.take(record, [:id, :wins, :losses, :draws, :tournament_wins, :highest_rank, :season_points, :player_id, :season_id])
   end
 
-  defp format_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
-      end)
-    end)
-  end
 end

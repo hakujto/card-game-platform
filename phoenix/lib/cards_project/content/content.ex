@@ -178,20 +178,29 @@ defmodule CardsProject.Content do
 
   # ── Article ─────────────────────────────────────────────────────
 
-  def list_articles, do: Repo.all(Article)
+  def list_articles(nil), do: Repo.all(Article)
+  def list_articles(term) do
+    Repo.all(from q in Article, where: like(fragment("lower(?)", q.title), ^("%#{String.downcase(term)}%")) or like(fragment("lower(?)", q.excerpt), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_article!(id), do: Repo.get!(Article, id)
 
   def create_article(attrs \\ %{}) do
-    %Article{}
-    |> Article.changeset(attrs)
-    |> Repo.insert()
+    case %Article{} |> Article.changeset(attrs) |> Repo.insert() do
+      {:ok, article} ->
+        article_hook_update_search_index(article)
+        {:ok, article}
+      err -> err
+    end
   end
 
   def update_article(%Article{} = article, attrs) do
-    article
-    |> Article.changeset(attrs)
-    |> Repo.update()
+    case article |> Article.changeset(attrs) |> Repo.update() do
+      {:ok, article} ->
+        article_hook_update_search_index(article)
+        {:ok, article}
+      err -> err
+    end
   end
 
   def delete_article(%Article{} = article), do: Repo.delete(article)
@@ -277,9 +286,19 @@ defmodule CardsProject.Content do
     end
   end
 
+  # ── Article lifecycle hooks ─────────────────────────────────────
+
+  defp article_hook_update_search_index(%Article{} = article) do
+    # TODO: implement update_search_index
+    article
+  end
+
   # ── ArticleTag ─────────────────────────────────────────────────────
 
-  def list_article_tags, do: Repo.all(ArticleTag)
+  def list_article_tags(nil), do: Repo.all(ArticleTag)
+  def list_article_tags(term) do
+    Repo.all(from q in ArticleTag, where: like(fragment("lower(?)", q.name), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_article_tag!(id), do: Repo.get!(ArticleTag, id)
 
@@ -383,7 +402,10 @@ defmodule CardsProject.Content do
 
   # ── Stream ─────────────────────────────────────────────────────
 
-  def list_streams, do: Repo.all(Stream)
+  def list_streams(nil), do: Repo.all(Stream)
+  def list_streams(term) do
+    Repo.all(from q in Stream, where: like(fragment("lower(?)", q.title), ^("%#{String.downcase(term)}%")))
+  end
 
   def get_stream!(id), do: Repo.get!(Stream, id)
 

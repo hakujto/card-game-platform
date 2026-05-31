@@ -19,6 +19,15 @@ defmodule CardsProject.Tournaments.Season do
     |> cast(attrs, [:name, :start_date, :end_date, :is_active, :format, :reward_description])
     |> validate_required([:name, :start_date, :end_date, :is_active])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> then(fn cs ->
+      lv = get_field(cs, :start_date)
+      fv = get_field(cs, :end_date)
+      if not is_nil(lv) and not is_nil(fv) and not (fv > lv) do
+        Ecto.Changeset.add_error(cs, :end_date, "Season end date must be after start date")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

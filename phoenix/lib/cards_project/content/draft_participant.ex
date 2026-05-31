@@ -17,6 +17,7 @@ defmodule CardsProject.Content.DraftParticipant do
     record
     |> cast(attrs, [:seat_number, :joined_at, :session_id, :player_id])
     |> validate_required([:seat_number, :joined_at])
+    |> validate_number(:seat_number, greater_than: 0, message: "Seat number must be greater than zero")
   end
 
   # ── Business operations ────────────────────────────────────────────

@@ -29,25 +29,6 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
     end
   end
 
-  def update(conn, %{"id" => id} = params) do
-    trade_dispute = Marketplace.get_trade_dispute!(id)
-    case Marketplace.update_trade_dispute(trade_dispute, params) do
-      {:ok, trade_dispute} ->
-        json(conn, serialize_trade_dispute(trade_dispute))
-
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    trade_dispute = Marketplace.get_trade_dispute!(id)
-    Marketplace.delete_trade_dispute(trade_dispute)
-    send_resp(conn, :no_content, "")
-  end
-
   # POST /api/disputes/{id}/escalate
   def escalate(conn, %{"id" => id}) do
     Marketplace.trade_dispute_escalate_behavior(id)
@@ -153,7 +134,10 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
   end
 
   defp serialize_trade_dispute(%TradeDispute{} = record) do
-    Map.take(record, [:id, :status, :reason, :description, :resolution, :opened_at, :resolved_at, :transaction_id, :opened_by_id, :resolved_by_id])
+    record
+    |> Map.take([:id, :status, :reason, :description, :resolution, :opened_at, :resolved_at, :transaction_id, :opened_by_id, :resolved_by_id])
+    |> (fn m -> Map.put(Map.delete(m, :opened_at), :opened_at, Map.get(m, :opened_at)) end).()
+    |> (fn m -> Map.put(Map.delete(m, :resolved_at), :resolved_at, Map.get(m, :resolved_at)) end).()
   end
 
   defp format_errors(changeset) do

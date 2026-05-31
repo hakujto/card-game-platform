@@ -5,8 +5,9 @@ defmodule CardsProjectWeb.Content.ArticleTagController do
   alias CardsProject.Content
   alias CardsProject.Content.ArticleTag
 
-  def index(conn, _params) do
-    article_tags = Content.list_article_tags()
+  def index(conn, params) do
+    q = Map.get(params, "q")
+    article_tags = Content.list_article_tags(q)
     json(conn, Enum.map(article_tags, &serialize_article_tag/1))
   end
 
