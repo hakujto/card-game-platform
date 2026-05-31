@@ -83,7 +83,7 @@ public class OrderApiTests : IClassFixture<OrderApiTests.TestFactory>
     public async Task Create_Fails_When_PaidRequiresPaidAt_Violated()
     {
         // Paid order must have paid_at set: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""Total"": 0.00, ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Paid"", ""PaidAt"": null }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""Total"": 0.00, ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Paid"", ""paidAt"": null }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/orders", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -101,7 +101,7 @@ public class OrderApiTests : IClassFixture<OrderApiTests.TestFactory>
     public async Task Create_Fails_When_ShippedAtRequiresShippedStatus_Violated()
     {
         // shipped_at_requires_shipped_status: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""Status"": ""test"", ""Total"": 0.00, ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""ShippedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""Status"": ""test"", ""Total"": 0.00, ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""shippedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/orders", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -110,7 +110,7 @@ public class OrderApiTests : IClassFixture<OrderApiTests.TestFactory>
     public async Task Create_Fails_When_TotalNotNegative_Violated()
     {
         // Order total must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""PlayerId"": 1, ""Status"": ""Paid"", ""PaidAt"": ""2024-01-01T00:00:00"", ""TrackingNumber"": ""test"", ""ShippedAt"": ""2024-01-01T00:00:00"", ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Total"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""PlayerId"": 1, ""Status"": ""Paid"", ""paidAt"": ""2024-01-01T00:00:00"", ""TrackingNumber"": ""test"", ""shippedAt"": ""2024-01-01T00:00:00"", ""DiscountApplied"": 0.00, ""Currency"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Total"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/orders", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

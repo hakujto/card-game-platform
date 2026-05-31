@@ -82,7 +82,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     public async Task Create_Fails_When_SeatsRange_Violated()
     {
         // Draft session must have between 2 and 16 seats → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""CardSetId"": 1, ""CompletedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""DraftType"": ""test"", ""TimePerPickSeconds"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""Seats"": 17 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""CardSetId"": 1, ""completedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""DraftType"": ""test"", ""TimePerPickSeconds"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""Seats"": 17 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/draft_sessions", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -91,7 +91,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     public async Task Create_Fails_When_CompletedAtRequiresCompletedStatus_Violated()
     {
         // completed_at can only be set when draft status is Completed: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""CardSetId"": 1, ""Status"": ""test"", ""DraftType"": ""test"", ""Seats"": 1, ""TimePerPickSeconds"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""CompletedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""CardSetId"": 1, ""Status"": ""test"", ""DraftType"": ""test"", ""Seats"": 1, ""TimePerPickSeconds"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""completedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/draft_sessions", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -100,7 +100,7 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
     public async Task Create_Fails_When_TimePerPickPositive_Violated()
     {
         // Time per pick must be greater than zero → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""CardSetId"": 1, ""CompletedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""DraftType"": ""test"", ""Seats"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""TimePerPickSeconds"": 0 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""CardSetId"": 1, ""completedAt"": ""2024-01-01T00:00:00"", ""Status"": ""Completed"", ""DraftType"": ""test"", ""Seats"": 1, ""CreatedAt"": ""2024-01-01T00:00:00"", ""TimePerPickSeconds"": 0 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/draft_sessions", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

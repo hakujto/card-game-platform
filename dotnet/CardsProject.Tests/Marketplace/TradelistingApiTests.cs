@@ -117,7 +117,7 @@ public class TradeListingApiTests : IClassFixture<TradeListingApiTests.TestFacto
     public async Task Create_Fails_When_QuantityPositive_Violated()
     {
         // Listing quantity must be between 1 and 9999 → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""ListingType"": ""FixedPrice"", ""AskingPrice"": 0.00, ""AuctionStartPrice"": 0.00, ""AuctionEndTime"": ""2024-01-01T00:00:00"", ""Status"": ""test"", ""Foil"": true, ""Condition"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Quantity"": 10000 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SellerId"": 1, ""CardId"": 1, ""ListingType"": ""FixedPrice"", ""AskingPrice"": 0.00, ""AuctionStartPrice"": 0.00, ""auctionEndTime"": ""2024-01-01T00:00:00"", ""Status"": ""test"", ""Foil"": true, ""Condition"": ""test"", ""CreatedAt"": ""2024-01-01T00:00:00"", ""Quantity"": 10000 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/trade_listings", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

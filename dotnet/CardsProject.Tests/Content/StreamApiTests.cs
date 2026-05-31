@@ -97,7 +97,7 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
     public async Task Create_Fails_When_ActualStartRequiresLiveOrEnded_Violated()
     {
         // actual_start_requires_live_or_ended: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""StreamerId"": 1, ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Status"": ""test"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ViewerCountPeak"": 1, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""ActualStart"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""StreamerId"": 1, ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Status"": ""test"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ViewerCountPeak"": 1, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""actualStart"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/streams", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -106,7 +106,7 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
     public async Task Create_Fails_When_EndedAtRequiresEndedStatus_Violated()
     {
         // ended_at can only be set when stream status is Ended: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""StreamerId"": 1, ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Status"": ""test"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ViewerCountPeak"": 1, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""EndedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""StreamerId"": 1, ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Status"": ""test"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ViewerCountPeak"": 1, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""endedAt"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/streams", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -115,7 +115,7 @@ public class StreamApiTests : IClassFixture<StreamApiTests.TestFactory>
     public async Task Create_Fails_When_ViewerCountNotNegative_Violated()
     {
         // Peak viewer count must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""StreamerId"": 1, ""ActualStart"": ""2024-01-01T00:00:00"", ""Status"": ""Live"", ""EndedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""ViewerCountPeak"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""StreamerId"": 1, ""actualStart"": ""2024-01-01T00:00:00"", ""Status"": ""Live"", ""endedAt"": ""2024-01-01T00:00:00"", ""Title"": ""test"", ""StreamUrl"": ""https://example.com"", ""Platform"": ""test"", ""Language"": ""test"", ""IsOfficial"": true, ""ScheduledStart"": ""2024-01-01T00:00:00"", ""ViewerCountPeak"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/streams", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
