@@ -28,14 +28,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-crafting-ingredient
-  (testing "PUT /api/crafting_ingredients/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/crafting_ingredients/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
 (deftest test-delete-crafting-ingredient
   (testing "DELETE /api/crafting_ingredients/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/crafting_ingredients/1"))]

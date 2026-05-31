@@ -54,62 +54,20 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-player-achievement [record]
+  (when record
+    (let [m record] (-> m (dissoc :earned_at) (assoc :earned_at (get m :earned_at))))))
+
 (defroutes player-achievements-routes
 
   (GET "/api/player_achievements" []
-    (resp/response (queries/get-all-player-achievement db-spec)))
-
-  (POST "/api/player_achievements" {params :body}
-    (try
-      (let [kw (player-achievement-kw-params params)]
-        (validate-player-achievement-rules! kw)
-        (validate-player-achievement-implies! kw)
-        (let [new-id (insert-player-achievement! params)
-              record  (or (queries/get-player-achievement-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+    (resp/response (map apply-projection-player-achievement (queries/get-all-player-achievement db-spec))))
 
   (GET "/api/player_achievements/:id" [id]
     (if-let [record (queries/get-player-achievement-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-player-achievement record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/player_achievements/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-achievement-kw-params params)]
-        (validate-player-achievement-rules! kw)
-        (validate-player-achievement-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-achievement! int-id params)
-          (if-let [record (queries/get-player-achievement-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/player_achievements/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-achievement-kw-params params)]
-        (validate-player-achievement-rules! kw)
-        (validate-player-achievement-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-achievement! int-id params)
-          (if-let [record (queries/get-player-achievement-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/player_achievements/:id" [id]
-    (queries/delete-player-achievement! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (PATCH "/api/player_achievements/:id/progress" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

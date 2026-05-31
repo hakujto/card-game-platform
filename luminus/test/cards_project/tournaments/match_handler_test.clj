@@ -31,20 +31,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-match
-  (testing "PUT /api/matches/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/matches/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
-(deftest test-delete-match
-  (testing "DELETE /api/matches/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/matches/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-wins-not-negative
   (testing "POST /api/matches violates rule wins_not_negative → 422"

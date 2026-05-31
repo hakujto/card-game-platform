@@ -100,31 +100,31 @@
 
 (defn close!
   [id]
-  (if (queries/get-trade-listing-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (close-behavior! id)
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn extend!
   [id days]
-  (if (queries/get-trade-listing-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (extend-behavior! id days)
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn cancel!
   [id]
-  (if (queries/get-trade-listing-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (cancel-behavior! id)
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn is-expired!
   [id]
-  (if (queries/get-trade-listing-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (is-expired-behavior! id)
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn finalize-auction!
   [id]
-  (if (queries/get-trade-listing-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (finalize-auction-behavior! id)
     (throw (ex-info "TradeListing not found" {:id id}))))
 
@@ -135,7 +135,7 @@
     (do
       (jdbc/execute-one! db-spec
         ["UPDATE trade_listings SET status = ? WHERE id = ?" value id])
-      (when (= (clojure.string/upper-case (str value)) "SOLD")
+      (when (= (str value) "Sold")
         (finalize-auction-behavior! id)))
     (throw (ex-info "TradeListing not found" {:id id}))))
 

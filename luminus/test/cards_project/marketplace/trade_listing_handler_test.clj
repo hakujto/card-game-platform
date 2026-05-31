@@ -44,12 +44,6 @@
       (is (#{200 404 500} (:status resp)))))
 )
 
-(deftest test-delete-trade-listing
-  (testing "DELETE /api/trade_listings/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/trade_listings/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; IMPLIES: antecedent=true, consequent violated → 422
 (deftest test-rule-fixed-price-requires-asking-price
   (testing "POST /api/trade_listings violates rule fixed_price_requires_asking_price → 422"

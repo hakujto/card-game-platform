@@ -24,19 +24,19 @@
 
 (defn accept!
   [id]
-  (if (queries/get-friendship-by-id db-spec {:id id})
+  (if-let [record (queries/get-friendship-by-id db-spec {:id id})]
     (accept-behavior! id)
     (throw (ex-info "Friendship not found" {:id id}))))
 
 (defn decline!
   [id]
-  (if (queries/get-friendship-by-id db-spec {:id id})
+  (if-let [record (queries/get-friendship-by-id db-spec {:id id})]
     (decline-behavior! id)
     (throw (ex-info "Friendship not found" {:id id}))))
 
 (defn block!
   [id]
-  (if (queries/get-friendship-by-id db-spec {:id id})
+  (if-let [record (queries/get-friendship-by-id db-spec {:id id})]
     (block-behavior! id)
     (throw (ex-info "Friendship not found" {:id id}))))
 

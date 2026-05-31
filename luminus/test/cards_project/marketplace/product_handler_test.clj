@@ -40,12 +40,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-product
-  (testing "DELETE /api/products/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/products/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-price-positive
   (testing "POST /api/products violates rule price_positive → 422"

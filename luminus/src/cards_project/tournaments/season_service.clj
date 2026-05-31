@@ -28,25 +28,25 @@
 
 (defn activate!
   [id]
-  (if (queries/get-season-by-id db-spec {:id id})
+  (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (activate-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
 (defn deactivate!
   [id]
-  (if (queries/get-season-by-id db-spec {:id id})
+  (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (deactivate-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
 (defn finalize-rewards!
   [id]
-  (if (queries/get-season-by-id db-spec {:id id})
+  (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (finalize-rewards-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
 (defn is-ongoing!
   [id]
-  (if (queries/get-season-by-id db-spec {:id id})
+  (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (is-ongoing-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 

@@ -20,13 +20,13 @@
 
 (defn is-current!
   [id]
-  (if (queries/get-card-ruling-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-ruling-by-id db-spec {:id id})]
     (is-current-behavior! id)
     (throw (ex-info "CardRuling not found" {:id id}))))
 
 (defn supersedes-previous!
   [id]
-  (if (queries/get-card-ruling-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-ruling-by-id db-spec {:id id})]
     (supersedes-previous-behavior! id)
     (throw (ex-info "CardRuling not found" {:id id}))))
 

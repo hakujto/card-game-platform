@@ -53,8 +53,9 @@
 
 (defroutes products-routes
 
-  (GET "/api/products" []
-    (resp/response (queries/get-all-product db-spec)))
+  (GET "/api/products" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :description "")) q))) (queries/get-all-product db-spec)))))
 
   (POST "/api/products" {params :body}
     (try
@@ -101,9 +102,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/products/:id" [id]
-    (queries/delete-product! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/products/:id/activate" [id]
     (svc/activate! (Integer/parseInt id))

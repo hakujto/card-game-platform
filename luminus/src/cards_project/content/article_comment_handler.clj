@@ -35,16 +35,20 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-article-comment [record]
+  (when record
+    (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))))
+
 (defroutes article-comments-routes
 
   (GET "/api/article_comments" []
-    (resp/response (queries/get-all-article-comment db-spec)))
+    (resp/response (map apply-projection-article-comment (queries/get-all-article-comment db-spec))))
 
   (POST "/api/article_comments" {params :body}
     (try
       (let [new-id (insert-article-comment! params)
             record  (or (queries/get-article-comment-by-id db-spec {:id new-id}) {:id new-id})]
-        (-> (resp/response record) (resp/status 201)))
+        (-> (resp/response (apply-projection-article-comment record)) (resp/status 201)))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -52,32 +56,8 @@
 
   (GET "/api/article_comments/:id" [id]
     (if-let [record (queries/get-article-comment-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-article-comment record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
-
-  (PUT "/api/article_comments/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-article-comment! int-id params)
-        (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/article_comments/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-article-comment! int-id params)
-        (if-let [record (queries/get-article-comment-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (DELETE "/api/article_comments/:id" [id]
     (queries/delete-article-comment! db-spec {:id (Integer/parseInt id)})

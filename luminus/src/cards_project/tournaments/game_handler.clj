@@ -83,39 +83,6 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/games/:id" [id :as {params :body}]
-    (try
-      (let [kw (game-kw-params params)]
-        (validate-game-rules! kw)
-        (validate-game-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-game! int-id params)
-          (if-let [record (queries/get-game-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/games/:id" [id :as {params :body}]
-    (try
-      (let [kw (game-kw-params params)]
-        (validate-game-rules! kw)
-        (validate-game-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-game! int-id params)
-          (if-let [record (queries/get-game-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/games/:id" [id]
-    (queries/delete-game! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/games/:id/winner" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

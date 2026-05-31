@@ -60,8 +60,9 @@
 
 (defroutes coupons-routes
 
-  (GET "/api/coupons" []
-    (resp/response (queries/get-all-coupon db-spec)))
+  (GET "/api/coupons" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :code "")) q))) (queries/get-all-coupon db-spec)))))
 
   (POST "/api/coupons" {params :body}
     (try
@@ -111,9 +112,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/coupons/:id" [id]
-    (queries/delete-coupon! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/coupons/:id/valid" [id]
     (let [result (svc/is-valid! (Integer/parseInt id))]

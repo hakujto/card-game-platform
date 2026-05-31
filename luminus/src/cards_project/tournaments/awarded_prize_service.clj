@@ -16,7 +16,7 @@
 
 (defn claim!
   [id]
-  (if (queries/get-awarded-prize-by-id db-spec {:id id})
+  (if-let [record (queries/get-awarded-prize-by-id db-spec {:id id})]
     (claim-behavior! id)
     (throw (ex-info "AwardedPrize not found" {:id id}))))
 
@@ -27,7 +27,7 @@
     (do
       (jdbc/execute-one! db-spec
         ["UPDATE awarded_prizes SET claimed = ? WHERE id = ?" value id])
-      (when (= (clojure.string/upper-case (str value)) "TRUE")
+      (when (= (str value) "true")
         (claim-behavior! id)))
     (throw (ex-info "AwardedPrize not found" {:id id}))))
 

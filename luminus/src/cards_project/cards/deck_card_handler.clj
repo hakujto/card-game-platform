@@ -77,21 +77,6 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/deck_cards/:id" [id :as {params :body}]
-    (try
-      (let [kw (deck-card-kw-params params)]
-        (validate-deck-card-rules! kw)
-        (validate-deck-card-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-deck-card! int-id params)
-          (if-let [record (queries/get-deck-card-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (PATCH "/api/deck_cards/:id" [id :as {params :body}]
     (try
       (let [kw (deck-card-kw-params params)]

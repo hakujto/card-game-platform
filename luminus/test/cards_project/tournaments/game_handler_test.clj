@@ -29,20 +29,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-game
-  (testing "PUT /api/games/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/games/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
-(deftest test-delete-game
-  (testing "DELETE /api/games/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/games/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-game-number-range
   (testing "POST /api/games violates rule game_number_range → 422"

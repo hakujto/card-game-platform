@@ -20,13 +20,13 @@
 
 (defn price-change-percent!
   [id previous-avg]
-  (if (queries/get-card-price-history-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-price-history-by-id db-spec {:id id})]
     (price-change-percent-behavior! id previous-avg)
     (throw (ex-info "CardPriceHistory not found" {:id id}))))
 
 (defn is-price-spike!
   [id threshold-percent]
-  (if (queries/get-card-price-history-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-price-history-by-id db-spec {:id id})]
     (is-price-spike-behavior! id threshold-percent)
     (throw (ex-info "CardPriceHistory not found" {:id id}))))
 

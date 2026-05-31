@@ -42,12 +42,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-coupon
-  (testing "DELETE /api/coupons/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/coupons/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-valid-until-after-valid-from
   (testing "POST /api/coupons violates rule valid_until_after_valid_from → 422"

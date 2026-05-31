@@ -71,34 +71,6 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/order_items/:id" [id :as {params :body}]
-    (try
-      (let [kw (order-item-kw-params params)]
-        (validate-order-item-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-order-item! int-id params)
-          (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/order_items/:id" [id :as {params :body}]
-    (try
-      (let [kw (order-item-kw-params params)]
-        (validate-order-item-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-order-item! int-id params)
-          (if-let [record (queries/get-order-item-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (DELETE "/api/order_items/:id" [id]
     (queries/delete-order-item! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))

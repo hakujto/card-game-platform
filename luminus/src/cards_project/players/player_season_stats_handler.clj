@@ -58,54 +58,11 @@
   (GET "/api/player_season_statses" []
     (resp/response (queries/get-all-player-season-stats db-spec)))
 
-  (POST "/api/player_season_statses" {params :body}
-    (try
-      (let [kw (player-season-stats-kw-params params)]
-        (validate-player-season-stats-rules! kw)
-        (let [new-id (insert-player-season-stats! params)
-              record  (or (queries/get-player-season-stats-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (GET "/api/player_season_statses/:id" [id]
     (if-let [record (queries/get-player-season-stats-by-id db-spec {:id (Integer/parseInt id)})]
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/player_season_statses/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-season-stats-kw-params params)]
-        (validate-player-season-stats-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-season-stats! int-id params)
-          (if-let [record (queries/get-player-season-stats-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/player_season_statses/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-season-stats-kw-params params)]
-        (validate-player-season-stats-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-season-stats! int-id params)
-          (if-let [record (queries/get-player-season-stats-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/player_season_statses/:id" [id]
-    (queries/delete-player-season-stats! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/player_season_statses/:id/win-rate" [id]
     (let [result (svc/win-rate! (Integer/parseInt id))]

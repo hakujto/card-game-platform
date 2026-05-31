@@ -47,10 +47,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-player-collection [record]
+  (when record
+    (let [m record] (-> m (dissoc :acquired_at) (assoc :acquired_at (get m :acquired_at))))))
+
 (defroutes player-collections-routes
 
   (GET "/api/player_collections" []
-    (resp/response (queries/get-all-player-collection db-spec)))
+    (resp/response (map apply-projection-player-collection (queries/get-all-player-collection db-spec))))
 
   (POST "/api/player_collections" {params :body}
     (try
@@ -58,7 +62,7 @@
         (validate-player-collection-rules! kw)
         (let [new-id (insert-player-collection! params)
               record  (or (queries/get-player-collection-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-player-collection record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -66,22 +70,8 @@
 
   (GET "/api/player_collections/:id" [id]
     (if-let [record (queries/get-player-collection-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-player-collection record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
-
-  (PUT "/api/player_collections/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-collection-kw-params params)]
-        (validate-player-collection-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-collection! int-id params)
-          (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/player_collections/:id" [id :as {params :body}]
     (try
@@ -90,7 +80,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-player-collection! int-id params)
           (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-player-collection record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))

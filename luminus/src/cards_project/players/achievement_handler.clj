@@ -49,8 +49,9 @@
 
 (defroutes achievements-routes
 
-  (GET "/api/achievements" []
-    (resp/response (queries/get-all-achievement db-spec)))
+  (GET "/api/achievements" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :description "")) q))) (queries/get-all-achievement db-spec)))))
 
   (POST "/api/achievements" {params :body}
     (try
@@ -97,9 +98,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/achievements/:id" [id]
-    (queries/delete-achievement! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/achievements/:id/point-value" [id]
     (let [result (svc/point-value! (Integer/parseInt id))]

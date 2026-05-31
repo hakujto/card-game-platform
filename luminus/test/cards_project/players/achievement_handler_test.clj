@@ -38,12 +38,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-achievement
-  (testing "DELETE /api/achievements/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/achievements/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-points-positive
   (testing "POST /api/achievements violates rule points_positive → 422"

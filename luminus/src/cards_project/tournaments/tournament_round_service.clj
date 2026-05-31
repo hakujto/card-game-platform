@@ -28,25 +28,25 @@
 
 (defn start!
   [id]
-  (if (queries/get-tournament-round-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-round-by-id db-spec {:id id})]
     (start-behavior! id)
     (throw (ex-info "TournamentRound not found" {:id id}))))
 
 (defn complete!
   [id]
-  (if (queries/get-tournament-round-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-round-by-id db-spec {:id id})]
     (complete-behavior! id)
     (throw (ex-info "TournamentRound not found" {:id id}))))
 
 (defn generate-pairings!
   [id]
-  (if (queries/get-tournament-round-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-round-by-id db-spec {:id id})]
     (generate-pairings-behavior! id)
     (throw (ex-info "TournamentRound not found" {:id id}))))
 
 (defn is-time-expired!
   [id]
-  (if (queries/get-tournament-round-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-round-by-id db-spec {:id id})]
     (is-time-expired-behavior! id)
     (throw (ex-info "TournamentRound not found" {:id id}))))
 

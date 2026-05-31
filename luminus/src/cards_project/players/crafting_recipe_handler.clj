@@ -97,9 +97,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/crafting_recipes/:id" [id]
-    (queries/delete-crafting-recipe! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/crafting_recipes/:id/can-craft" [id]
     (let [result (svc/can-craft! (Integer/parseInt id))]

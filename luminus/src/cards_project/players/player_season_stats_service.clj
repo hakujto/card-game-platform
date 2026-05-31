@@ -24,19 +24,19 @@
 
 (defn win-rate!
   [id]
-  (if (queries/get-player-season-stats-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-season-stats-by-id db-spec {:id id})]
     (win-rate-behavior! id)
     (throw (ex-info "PlayerSeasonStats not found" {:id id}))))
 
 (defn add-points!
   [id points]
-  (if (queries/get-player-season-stats-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-season-stats-by-id db-spec {:id id})]
     (add-points-behavior! id points)
     (throw (ex-info "PlayerSeasonStats not found" {:id id}))))
 
 (defn record-tournament-win!
   [id]
-  (if (queries/get-player-season-stats-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-season-stats-by-id db-spec {:id id})]
     (record-tournament-win-behavior! id)
     (throw (ex-info "PlayerSeasonStats not found" {:id id}))))
 

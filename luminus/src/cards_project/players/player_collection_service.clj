@@ -24,19 +24,19 @@
 
 (defn add!
   [id quantity]
-  (if (queries/get-player-collection-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-collection-by-id db-spec {:id id})]
     (add-behavior! id quantity)
     (throw (ex-info "PlayerCollection not found" {:id id}))))
 
 (defn remove!
   [id quantity]
-  (if (queries/get-player-collection-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-collection-by-id db-spec {:id id})]
     (remove-behavior! id quantity)
     (throw (ex-info "PlayerCollection not found" {:id id}))))
 
 (defn estimated-value!
   [id]
-  (if (queries/get-player-collection-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-collection-by-id db-spec {:id id})]
     (estimated-value-behavior! id)
     (throw (ex-info "PlayerCollection not found" {:id id}))))
 

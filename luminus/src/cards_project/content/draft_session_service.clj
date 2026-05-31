@@ -95,25 +95,25 @@
 
 (defn start!
   [id]
-  (if (queries/get-draft-session-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-session-by-id db-spec {:id id})]
     (start-behavior! id)
     (throw (ex-info "DraftSession not found" {:id id}))))
 
 (defn abandon!
   [id]
-  (if (queries/get-draft-session-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-session-by-id db-spec {:id id})]
     (abandon-behavior! id)
     (throw (ex-info "DraftSession not found" {:id id}))))
 
 (defn complete!
   [id]
-  (if (queries/get-draft-session-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-session-by-id db-spec {:id id})]
     (complete-behavior! id)
     (throw (ex-info "DraftSession not found" {:id id}))))
 
 (defn is-full!
   [id]
-  (if (queries/get-draft-session-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-session-by-id db-spec {:id id})]
     (is-full-behavior! id)
     (throw (ex-info "DraftSession not found" {:id id}))))
 

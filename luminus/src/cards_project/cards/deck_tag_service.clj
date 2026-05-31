@@ -20,13 +20,13 @@
 
 (defn rename!
   [id new-name]
-  (if (queries/get-deck-tag-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-tag-by-id db-spec {:id id})]
     (rename-behavior! id new-name)
     (throw (ex-info "DeckTag not found" {:id id}))))
 
 (defn merge-into!
   [id target-tag-id]
-  (if (queries/get-deck-tag-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-tag-by-id db-spec {:id id})]
     (merge-into-behavior! id target-tag-id)
     (throw (ex-info "DeckTag not found" {:id id}))))
 

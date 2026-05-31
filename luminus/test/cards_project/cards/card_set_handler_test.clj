@@ -40,12 +40,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-card-set
-  (testing "DELETE /api/card_sets/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/card_sets/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-total-cards-positive
   (testing "POST /api/card_sets violates rule total_cards_positive → 422"

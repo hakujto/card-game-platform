@@ -30,20 +30,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-trade-bid
-  (testing "PUT /api/trade_bids/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/trade_bids/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
-(deftest test-delete-trade-bid
-  (testing "DELETE /api/trade_bids/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/trade_bids/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-amount-positive
   (testing "POST /api/trade_bids violates rule amount_positive → 422"

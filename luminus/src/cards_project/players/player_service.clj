@@ -40,43 +40,48 @@
 
 (defn promote!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (promote-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn demote!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (demote-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn record-win!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (record-win-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn record-loss!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (record-loss-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn win-rate!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (win-rate-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn verify!
   [id]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (verify-behavior! id)
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn update-rating!
   [id delta]
-  (if (queries/get-player-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (update-rating-behavior! id delta)
     (throw (ex-info "Player not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- update-rank-hook! [record]
+  ; TODO: implement update_rank
+  record)
 

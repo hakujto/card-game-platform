@@ -49,59 +49,20 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-draft-pick [record]
+  (when record
+    (let [m record] (-> m (dissoc :picked_at) (assoc :picked_at (get m :picked_at))))))
+
 (defroutes draft-picks-routes
 
   (GET "/api/draft_picks" []
-    (resp/response (queries/get-all-draft-pick db-spec)))
-
-  (POST "/api/draft_picks" {params :body}
-    (try
-      (let [kw (draft-pick-kw-params params)]
-        (validate-draft-pick-rules! kw)
-        (let [new-id (insert-draft-pick! params)
-              record  (or (queries/get-draft-pick-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+    (resp/response (map apply-projection-draft-pick (queries/get-all-draft-pick db-spec))))
 
   (GET "/api/draft_picks/:id" [id]
     (if-let [record (queries/get-draft-pick-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-draft-pick record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/draft_picks/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-pick-kw-params params)]
-        (validate-draft-pick-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-pick! int-id params)
-          (if-let [record (queries/get-draft-pick-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/draft_picks/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-pick-kw-params params)]
-        (validate-draft-pick-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-pick! int-id params)
-          (if-let [record (queries/get-draft-pick-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/draft_picks/:id" [id]
-    (queries/delete-draft-pick! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/draft_picks/:id/first-pick" [id]
     (let [result (svc/is-first-pick! (Integer/parseInt id))]

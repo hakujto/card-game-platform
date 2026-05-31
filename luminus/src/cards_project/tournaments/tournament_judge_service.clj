@@ -20,13 +20,13 @@
 
 (defn promote-to-head!
   [id]
-  (if (queries/get-tournament-judge-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-judge-by-id db-spec {:id id})]
     (promote-to-head-behavior! id)
     (throw (ex-info "TournamentJudge not found" {:id id}))))
 
 (defn remove!
   [id]
-  (if (queries/get-tournament-judge-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-judge-by-id db-spec {:id id})]
     (remove-behavior! id)
     (throw (ex-info "TournamentJudge not found" {:id id}))))
 

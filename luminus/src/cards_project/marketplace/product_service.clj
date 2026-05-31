@@ -36,37 +36,37 @@
 
 (defn activate!
   [id]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (activate-behavior! id)
     (throw (ex-info "Product not found" {:id id}))))
 
 (defn deactivate!
   [id]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (deactivate-behavior! id)
     (throw (ex-info "Product not found" {:id id}))))
 
 (defn apply-discount!
   [id percent]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (apply-discount-behavior! id percent)
     (throw (ex-info "Product not found" {:id id}))))
 
 (defn restock!
   [id quantity]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (restock-behavior! id quantity)
     (throw (ex-info "Product not found" {:id id}))))
 
 (defn effective-price!
   [id]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (effective-price-behavior! id)
     (throw (ex-info "Product not found" {:id id}))))
 
 (defn is-in-stock!
   [id]
-  (if (queries/get-product-by-id db-spec {:id id})
+  (if-let [record (queries/get-product-by-id db-spec {:id id})]
     (is-in-stock-behavior! id)
     (throw (ex-info "Product not found" {:id id}))))
 

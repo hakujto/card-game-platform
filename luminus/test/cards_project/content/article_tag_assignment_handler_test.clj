@@ -27,14 +27,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-article-tag-assignment
-  (testing "PUT /api/article_tag_assignments/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/article_tag_assignments/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
 (deftest test-delete-article-tag-assignment
   (testing "DELETE /api/article_tag_assignments/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/article_tag_assignments/1"))]

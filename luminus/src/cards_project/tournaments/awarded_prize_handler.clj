@@ -54,62 +54,20 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-awarded-prize [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :awarded_at) (assoc :awarded_at (get m :awarded_at))))] (-> m (dissoc :claimed_at) (assoc :claimed_at (get m :claimed_at))))))
+
 (defroutes awarded-prizes-routes
 
   (GET "/api/awarded_prizes" []
-    (resp/response (queries/get-all-awarded-prize db-spec)))
-
-  (POST "/api/awarded_prizes" {params :body}
-    (try
-      (let [kw (awarded-prize-kw-params params)]
-        (validate-awarded-prize-rules! kw)
-        (validate-awarded-prize-implies! kw)
-        (let [new-id (insert-awarded-prize! params)
-              record  (or (queries/get-awarded-prize-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+    (resp/response (map apply-projection-awarded-prize (queries/get-all-awarded-prize db-spec))))
 
   (GET "/api/awarded_prizes/:id" [id]
     (if-let [record (queries/get-awarded-prize-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-awarded-prize record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/awarded_prizes/:id" [id :as {params :body}]
-    (try
-      (let [kw (awarded-prize-kw-params params)]
-        (validate-awarded-prize-rules! kw)
-        (validate-awarded-prize-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-awarded-prize! int-id params)
-          (if-let [record (queries/get-awarded-prize-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/awarded_prizes/:id" [id :as {params :body}]
-    (try
-      (let [kw (awarded-prize-kw-params params)]
-        (validate-awarded-prize-rules! kw)
-        (validate-awarded-prize-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-awarded-prize! int-id params)
-          (if-let [record (queries/get-awarded-prize-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/awarded_prizes/:id" [id]
-    (queries/delete-awarded-prize! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/awarded_prizes/:id/claim" [id]
     (svc/claim! (Integer/parseInt id))

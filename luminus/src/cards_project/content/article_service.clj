@@ -90,37 +90,42 @@
 
 (defn publish!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (publish-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn archive!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (archive-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn increment-view!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (increment-view-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn like!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (like-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn unlike!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (unlike-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn reading-time-minutes!
   [id]
-  (if (queries/get-article-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (reading-time-minutes-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- update-search-index-hook! [record]
+  ; TODO: implement update_search_index
+  record)
 

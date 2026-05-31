@@ -94,25 +94,25 @@
 
 (defn escalate!
   [id]
-  (if (queries/get-trade-dispute-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-dispute-by-id db-spec {:id id})]
     (escalate-behavior! id)
     (throw (ex-info "TradeDispute not found" {:id id}))))
 
 (defn resolve!
   [id resolution-text]
-  (if (queries/get-trade-dispute-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-dispute-by-id db-spec {:id id})]
     (resolve-behavior! id resolution-text)
     (throw (ex-info "TradeDispute not found" {:id id}))))
 
 (defn close-resolved!
   [id]
-  (if (queries/get-trade-dispute-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-dispute-by-id db-spec {:id id})]
     (close-resolved-behavior! id)
     (throw (ex-info "TradeDispute not found" {:id id}))))
 
 (defn review!
   [id]
-  (if (queries/get-trade-dispute-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-dispute-by-id db-spec {:id id})]
     (review-behavior! id)
     (throw (ex-info "TradeDispute not found" {:id id}))))
 

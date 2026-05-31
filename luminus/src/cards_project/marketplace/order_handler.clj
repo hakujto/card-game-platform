@@ -60,10 +60,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-order [record]
+  (when record
+    (let [m (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :paid_at) (assoc :paid_at (get m :paid_at))))] (-> m (dissoc :shipped_at) (assoc :shipped_at (get m :shipped_at))))))
+
 (defroutes orders-routes
 
   (GET "/api/orders" []
-    (resp/response (queries/get-all-order db-spec)))
+    (resp/response (map apply-projection-order (queries/get-all-order db-spec))))
 
   (POST "/api/orders" {params :body}
     (try
@@ -72,7 +76,7 @@
         (validate-order-implies! kw)
         (let [new-id (insert-order! params)
               record  (or (queries/get-order-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-order record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -80,42 +84,9 @@
 
   (GET "/api/orders/:id" [id]
     (if-let [record (queries/get-order-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-order record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/orders/:id" [id :as {params :body}]
-    (try
-      (let [kw (order-kw-params params)]
-        (validate-order-rules! kw)
-        (validate-order-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-order! int-id params)
-          (if-let [record (queries/get-order-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/orders/:id" [id :as {params :body}]
-    (try
-      (let [kw (order-kw-params params)]
-        (validate-order-rules! kw)
-        (validate-order-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-order! int-id params)
-          (if-let [record (queries/get-order-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/orders/:id" [id]
-    (queries/delete-order! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (DELETE "/api/orders/:id/cancel" [id]
     (svc/cancel! (Integer/parseInt id))

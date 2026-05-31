@@ -47,8 +47,9 @@
 
 (defroutes card-abilities-routes
 
-  (GET "/api/card_abilities" []
-    (resp/response (queries/get-all-card-ability db-spec)))
+  (GET "/api/card_abilities" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :keyword "")) q) (clojure.string/includes? (str (get % :ability_text "")) q))) (queries/get-all-card-ability db-spec)))))
 
   (POST "/api/card_abilities" {params :body}
     (try

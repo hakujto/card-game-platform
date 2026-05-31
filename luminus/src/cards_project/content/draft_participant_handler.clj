@@ -47,10 +47,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-draft-participant [record]
+  (when record
+    (let [m record] (-> m (dissoc :joined_at) (assoc :joined_at (get m :joined_at))))))
+
 (defroutes draft-participants-routes
 
   (GET "/api/draft_participants" []
-    (resp/response (queries/get-all-draft-participant db-spec)))
+    (resp/response (map apply-projection-draft-participant (queries/get-all-draft-participant db-spec))))
 
   (POST "/api/draft_participants" {params :body}
     (try
@@ -58,7 +62,7 @@
         (validate-draft-participant-rules! kw)
         (let [new-id (insert-draft-participant! params)
               record  (or (queries/get-draft-participant-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-draft-participant record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -66,40 +70,9 @@
 
   (GET "/api/draft_participants/:id" [id]
     (if-let [record (queries/get-draft-participant-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-draft-participant record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/draft_participants/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-participant-kw-params params)]
-        (validate-draft-participant-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-participant! int-id params)
-          (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/draft_participants/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-participant-kw-params params)]
-        (validate-draft-participant-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-participant! int-id params)
-          (if-let [record (queries/get-draft-participant-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/draft_participants/:id" [id]
-    (queries/delete-draft-participant! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/draft_participants/:id/pick" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

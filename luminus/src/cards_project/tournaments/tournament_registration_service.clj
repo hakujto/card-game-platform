@@ -24,19 +24,19 @@
 
 (defn withdraw!
   [id]
-  (if (queries/get-tournament-registration-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-registration-by-id db-spec {:id id})]
     (withdraw-behavior! id)
     (throw (ex-info "TournamentRegistration not found" {:id id}))))
 
 (defn disqualify!
   [id reason]
-  (if (queries/get-tournament-registration-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-registration-by-id db-spec {:id id})]
     (disqualify-behavior! id reason)
     (throw (ex-info "TournamentRegistration not found" {:id id}))))
 
 (defn promote-from-waitlist!
   [id]
-  (if (queries/get-tournament-registration-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-registration-by-id db-spec {:id id})]
     (promote-from-waitlist-behavior! id)
     (throw (ex-info "TournamentRegistration not found" {:id id}))))
 

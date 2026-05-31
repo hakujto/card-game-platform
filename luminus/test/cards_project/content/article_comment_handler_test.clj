@@ -29,14 +29,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-article-comment
-  (testing "PUT /api/article_comments/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/article_comments/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
 (deftest test-delete-article-comment
   (testing "DELETE /api/article_comments/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/article_comments/1"))]

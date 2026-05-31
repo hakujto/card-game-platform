@@ -20,13 +20,13 @@
 
 (defn outbid-by!
   [id new-amount]
-  (if (queries/get-trade-bid-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-bid-by-id db-spec {:id id})]
     (outbid-by-behavior! id new-amount)
     (throw (ex-info "TradeBid not found" {:id id}))))
 
 (defn retract!
   [id]
-  (if (queries/get-trade-bid-by-id db-spec {:id id})
+  (if-let [record (queries/get-trade-bid-by-id db-spec {:id id})]
     (retract-behavior! id)
     (throw (ex-info "TradeBid not found" {:id id}))))
 

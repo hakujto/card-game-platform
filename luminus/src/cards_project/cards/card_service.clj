@@ -40,43 +40,48 @@
 
 (defn ban!
   [id]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (ban-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn unban!
   [id]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (unban-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn restrict!
   [id]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (restrict-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn unrestrict!
   [id]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (unrestrict-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn calculate-value!
   [id]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (calculate-value-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn apply-rarity-bonus!
   [id multiplier]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (apply-rarity-bonus-behavior! id multiplier)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn is-legal-in-format!
   [id format]
-  (if (queries/get-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (is-legal-in-format-behavior! id format)
     (throw (ex-info "Card not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- validate-legality-hook! [record]
+  ; TODO: implement validate_legality
+  record)
 

@@ -20,13 +20,13 @@
 
 (defn increment!
   [id amount]
-  (if (queries/get-deck-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-card-by-id db-spec {:id id})]
     (increment-behavior! id amount)
     (throw (ex-info "DeckCard not found" {:id id}))))
 
 (defn decrement!
   [id amount]
-  (if (queries/get-deck-card-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-card-by-id db-spec {:id id})]
     (decrement-behavior! id amount)
     (throw (ex-info "DeckCard not found" {:id id}))))
 

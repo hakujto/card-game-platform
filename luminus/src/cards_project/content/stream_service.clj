@@ -69,25 +69,25 @@
 
 (defn go-live!
   [id]
-  (if (queries/get-stream-by-id db-spec {:id id})
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
     (go-live-behavior! id)
     (throw (ex-info "Stream not found" {:id id}))))
 
 (defn end!
   [id]
-  (if (queries/get-stream-by-id db-spec {:id id})
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
     (end-behavior! id)
     (throw (ex-info "Stream not found" {:id id}))))
 
 (defn update-viewer-peak!
   [id count]
-  (if (queries/get-stream-by-id db-spec {:id id})
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
     (update-viewer-peak-behavior! id count)
     (throw (ex-info "Stream not found" {:id id}))))
 
 (defn duration-minutes!
   [id]
-  (if (queries/get-stream-by-id db-spec {:id id})
+  (if-let [record (queries/get-stream-by-id db-spec {:id id})]
     (duration-minutes-behavior! id)
     (throw (ex-info "Stream not found" {:id id}))))
 

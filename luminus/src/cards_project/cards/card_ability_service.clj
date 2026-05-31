@@ -20,13 +20,13 @@
 
 (defn is-usable-at!
   [id timing]
-  (if (queries/get-card-ability-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-ability-by-id db-spec {:id id})]
     (is-usable-at-behavior! id timing)
     (throw (ex-info "CardAbility not found" {:id id}))))
 
 (defn describe!
   [id]
-  (if (queries/get-card-ability-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-ability-by-id db-spec {:id id})]
     (describe-behavior! id)
     (throw (ex-info "CardAbility not found" {:id id}))))
 

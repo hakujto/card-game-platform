@@ -20,13 +20,13 @@
 
 (defn increment-progress!
   [id amount]
-  (if (queries/get-player-achievement-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-achievement-by-id db-spec {:id id})]
     (increment-progress-behavior! id amount)
     (throw (ex-info "PlayerAchievement not found" {:id id}))))
 
 (defn complete!
   [id]
-  (if (queries/get-player-achievement-by-id db-spec {:id id})
+  (if-let [record (queries/get-player-achievement-by-id db-spec {:id id})]
     (complete-behavior! id)
     (throw (ex-info "PlayerAchievement not found" {:id id}))))
 
@@ -37,7 +37,7 @@
     (do
       (jdbc/execute-one! db-spec
         ["UPDATE player_achievements SET is_completed = ? WHERE id = ?" value id])
-      (when (= (clojure.string/upper-case (str value)) "TRUE")
+      (when (= (str value) "true")
         (complete-behavior! id)))
     (throw (ex-info "PlayerAchievement not found" {:id id}))))
 

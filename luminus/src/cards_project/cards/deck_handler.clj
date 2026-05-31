@@ -58,10 +58,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-deck [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :updated_at) (assoc :updated_at (get m :updated_at))))))
+
 (defroutes decks-routes
 
-  (GET "/api/decks" []
-    (resp/response (queries/get-all-deck db-spec)))
+  (GET "/api/decks" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-deck (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :description "")) q))) (queries/get-all-deck db-spec))))))
 
   (POST "/api/decks" {params :body}
     (try
@@ -70,7 +75,7 @@
         (validate-deck-implies! kw)
         (let [new-id (insert-deck! params)
               record  (or (queries/get-deck-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-deck record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -78,7 +83,7 @@
 
   (GET "/api/decks/:id" [id]
     (if-let [record (queries/get-deck-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-deck record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/decks/:id" [id :as {params :body}]
@@ -89,7 +94,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-deck! int-id params)
           (if-let [record (queries/get-deck-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-deck record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
@@ -104,7 +109,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-deck! int-id params)
           (if-let [record (queries/get-deck-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-deck record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))

@@ -33,20 +33,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-order
-  (testing "PUT /api/orders/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/orders/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
-(deftest test-delete-order
-  (testing "DELETE /api/orders/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/orders/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; IMPLIES: antecedent=true, consequent violated → 422
 (deftest test-rule-paid-requires-paid-at
   (testing "POST /api/orders violates rule paid_requires_paid_at → 422"

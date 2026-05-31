@@ -31,20 +31,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-update-draft-session
-  (testing "PUT /api/draft_sessions/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/draft_sessions/1")
-                     (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
-)
-
-(deftest test-delete-draft-session
-  (testing "DELETE /api/draft_sessions/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/draft_sessions/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-seats-range
   (testing "POST /api/draft_sessions violates rule seats_range → 422"

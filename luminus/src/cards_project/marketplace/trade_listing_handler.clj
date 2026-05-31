@@ -56,10 +56,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-trade-listing [record]
+  (when record
+    (let [m (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :expires_at) (assoc :expires_at (get m :expires_at))))] (-> m (dissoc :auction_end_time) (assoc :auction_end_time (get m :auction_end_time))))))
+
 (defroutes trade-listings-routes
 
-  (GET "/api/trade_listings" []
-    (resp/response (queries/get-all-trade-listing db-spec)))
+  (GET "/api/trade_listings" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-trade-listing (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :description "")) q))) (queries/get-all-trade-listing db-spec))))))
 
   (POST "/api/trade_listings" {params :body}
     (try
@@ -68,7 +73,7 @@
         (validate-trade-listing-implies! kw)
         (let [new-id (insert-trade-listing! params)
               record  (or (queries/get-trade-listing-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-trade-listing record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -76,23 +81,8 @@
 
   (GET "/api/trade_listings/:id" [id]
     (if-let [record (queries/get-trade-listing-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-trade-listing record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
-
-  (PUT "/api/trade_listings/:id" [id :as {params :body}]
-    (try
-      (let [kw (trade-listing-kw-params params)]
-        (validate-trade-listing-rules! kw)
-        (validate-trade-listing-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-trade-listing! int-id params)
-          (if-let [record (queries/get-trade-listing-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/trade_listings/:id" [id :as {params :body}]
     (try
@@ -102,16 +92,13 @@
         (let [int-id (Integer/parseInt id)]
           (update-trade-listing! int-id params)
           (if-let [record (queries/get-trade-listing-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-trade-listing record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/trade_listings/:id" [id]
-    (queries/delete-trade-listing! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/trade_listings/:id/close" [id]
     (svc/close! (Integer/parseInt id))

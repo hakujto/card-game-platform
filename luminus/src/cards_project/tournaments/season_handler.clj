@@ -49,8 +49,9 @@
 
 (defroutes seasons-routes
 
-  (GET "/api/seasons" []
-    (resp/response (queries/get-all-season db-spec)))
+  (GET "/api/seasons" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q))) (queries/get-all-season db-spec)))))
 
   (POST "/api/seasons" {params :body}
     (try
@@ -97,9 +98,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/seasons/:id" [id]
-    (queries/delete-season! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/seasons/:id/activate" [id]
     (svc/activate! (Integer/parseInt id))

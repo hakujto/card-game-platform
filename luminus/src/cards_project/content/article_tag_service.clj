@@ -20,13 +20,13 @@
 
 (defn rename!
   [id new-name]
-  (if (queries/get-article-tag-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-tag-by-id db-spec {:id id})]
     (rename-behavior! id new-name)
     (throw (ex-info "ArticleTag not found" {:id id}))))
 
 (defn article-count!
   [id]
-  (if (queries/get-article-tag-by-id db-spec {:id id})
+  (if-let [record (queries/get-article-tag-by-id db-spec {:id id})]
     (article-count-behavior! id)
     (throw (ex-info "ArticleTag not found" {:id id}))))
 

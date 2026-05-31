@@ -16,7 +16,7 @@
 
 (defn line-total!
   [id]
-  (if (queries/get-order-item-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-item-by-id db-spec {:id id})]
     (line-total-behavior! id)
     (throw (ex-info "OrderItem not found" {:id id}))))
 

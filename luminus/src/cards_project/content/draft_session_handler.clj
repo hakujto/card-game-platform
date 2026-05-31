@@ -56,10 +56,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-draft-session [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :completed_at) (assoc :completed_at (get m :completed_at))))))
+
 (defroutes draft-sessions-routes
 
   (GET "/api/draft_sessions" []
-    (resp/response (queries/get-all-draft-session db-spec)))
+    (resp/response (map apply-projection-draft-session (queries/get-all-draft-session db-spec))))
 
   (POST "/api/draft_sessions" {params :body}
     (try
@@ -68,7 +72,7 @@
         (validate-draft-session-implies! kw)
         (let [new-id (insert-draft-session! params)
               record  (or (queries/get-draft-session-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-draft-session record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -76,42 +80,9 @@
 
   (GET "/api/draft_sessions/:id" [id]
     (if-let [record (queries/get-draft-session-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-draft-session record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/draft_sessions/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-session-kw-params params)]
-        (validate-draft-session-rules! kw)
-        (validate-draft-session-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-session! int-id params)
-          (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/draft_sessions/:id" [id :as {params :body}]
-    (try
-      (let [kw (draft-session-kw-params params)]
-        (validate-draft-session-rules! kw)
-        (validate-draft-session-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-draft-session! int-id params)
-          (if-let [record (queries/get-draft-session-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/draft_sessions/:id" [id]
-    (queries/delete-draft-session! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/draft_sessions/:id/start" [id]
     (svc/start! (Integer/parseInt id))

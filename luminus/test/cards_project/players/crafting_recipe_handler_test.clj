@@ -36,12 +36,6 @@
       (is (#{200 404 500} (:status resp)))))
 )
 
-(deftest test-delete-crafting-recipe
-  (testing "DELETE /api/crafting_recipes/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/crafting_recipes/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-dust-cost-positive
   (testing "POST /api/crafting_recipes violates rule dust_cost_positive → 422"

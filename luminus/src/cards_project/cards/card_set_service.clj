@@ -28,25 +28,25 @@
 
 (defn is-legal-in-standard!
   [id]
-  (if (queries/get-card-set-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-set-by-id db-spec {:id id})]
     (is-legal-in-standard-behavior! id)
     (throw (ex-info "CardSet not found" {:id id}))))
 
 (defn is-legal-in-format!
   [id format]
-  (if (queries/get-card-set-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-set-by-id db-spec {:id id})]
     (is-legal-in-format-behavior! id format)
     (throw (ex-info "CardSet not found" {:id id}))))
 
 (defn card-count-by-rarity!
   [id rarity]
-  (if (queries/get-card-set-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-set-by-id db-spec {:id id})]
     (card-count-by-rarity-behavior! id rarity)
     (throw (ex-info "CardSet not found" {:id id}))))
 
 (defn rotate-out!
   [id]
-  (if (queries/get-card-set-by-id db-spec {:id id})
+  (if-let [record (queries/get-card-set-by-id db-spec {:id id})]
     (rotate-out-behavior! id)
     (throw (ex-info "CardSet not found" {:id id}))))
 

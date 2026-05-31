@@ -60,10 +60,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-match [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :started_at) (assoc :started_at (get m :started_at))))] (-> m (dissoc :ended_at) (assoc :ended_at (get m :ended_at))))))
+
 (defroutes matches-routes
 
   (GET "/api/matches" []
-    (resp/response (queries/get-all-match db-spec)))
+    (resp/response (map apply-projection-match (queries/get-all-match db-spec))))
 
   (POST "/api/matches" {params :body}
     (try
@@ -72,7 +76,7 @@
         (validate-match-implies! kw)
         (let [new-id (insert-match! params)
               record  (or (queries/get-match-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-match record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -80,42 +84,9 @@
 
   (GET "/api/matches/:id" [id]
     (if-let [record (queries/get-match-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-match record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/matches/:id" [id :as {params :body}]
-    (try
-      (let [kw (match-kw-params params)]
-        (validate-match-rules! kw)
-        (validate-match-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-match! int-id params)
-          (if-let [record (queries/get-match-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/matches/:id" [id :as {params :body}]
-    (try
-      (let [kw (match-kw-params params)]
-        (validate-match-rules! kw)
-        (validate-match-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-match! int-id params)
-          (if-let [record (queries/get-match-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/matches/:id" [id]
-    (queries/delete-match! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/matches/:id/record" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

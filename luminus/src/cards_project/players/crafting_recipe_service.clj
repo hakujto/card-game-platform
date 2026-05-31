@@ -28,25 +28,25 @@
 
 (defn can-craft!
   [id player-id]
-  (if (queries/get-crafting-recipe-by-id db-spec {:id id})
+  (if-let [record (queries/get-crafting-recipe-by-id db-spec {:id id})]
     (can-craft-behavior! id player-id)
     (throw (ex-info "CraftingRecipe not found" {:id id}))))
 
 (defn execute-craft!
   [id player-id]
-  (if (queries/get-crafting-recipe-by-id db-spec {:id id})
+  (if-let [record (queries/get-crafting-recipe-by-id db-spec {:id id})]
     (execute-craft-behavior! id player-id)
     (throw (ex-info "CraftingRecipe not found" {:id id}))))
 
 (defn disable!
   [id]
-  (if (queries/get-crafting-recipe-by-id db-spec {:id id})
+  (if-let [record (queries/get-crafting-recipe-by-id db-spec {:id id})]
     (disable-behavior! id)
     (throw (ex-info "CraftingRecipe not found" {:id id}))))
 
 (defn enable!
   [id]
-  (if (queries/get-crafting-recipe-by-id db-spec {:id id})
+  (if-let [record (queries/get-crafting-recipe-by-id db-spec {:id id})]
     (enable-behavior! id)
     (throw (ex-info "CraftingRecipe not found" {:id id}))))
 

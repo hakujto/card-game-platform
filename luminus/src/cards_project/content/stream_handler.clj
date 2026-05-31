@@ -56,10 +56,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-stream [record]
+  (when record
+    (let [m (let [m (let [m record] (-> m (dissoc :scheduled_start) (assoc :scheduled_start (get m :scheduled_start))))] (-> m (dissoc :actual_start) (assoc :actual_start (get m :actual_start))))] (-> m (dissoc :ended_at) (assoc :ended_at (get m :ended_at))))))
+
 (defroutes streams-routes
 
-  (GET "/api/streams" []
-    (resp/response (queries/get-all-stream db-spec)))
+  (GET "/api/streams" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-stream (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :title "")) q))) (queries/get-all-stream db-spec))))))
 
   (POST "/api/streams" {params :body}
     (try
@@ -68,7 +73,7 @@
         (validate-stream-implies! kw)
         (let [new-id (insert-stream! params)
               record  (or (queries/get-stream-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-stream record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -76,7 +81,7 @@
 
   (GET "/api/streams/:id" [id]
     (if-let [record (queries/get-stream-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-stream record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/streams/:id" [id :as {params :body}]
@@ -87,7 +92,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-stream! int-id params)
           (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-stream record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
@@ -102,16 +107,13 @@
         (let [int-id (Integer/parseInt id)]
           (update-stream! int-id params)
           (if-let [record (queries/get-stream-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-stream record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/streams/:id" [id]
-    (queries/delete-stream! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/streams/:id/live" [id]
     (svc/go-live! (Integer/parseInt id))

@@ -56,10 +56,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-article [record]
+  (when record
+    (let [m (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :updated_at) (assoc :updated_at (get m :updated_at))))] (-> m (dissoc :published_at) (assoc :published_at (get m :published_at))))))
+
 (defroutes articles-routes
 
-  (GET "/api/articles" []
-    (resp/response (queries/get-all-article db-spec)))
+  (GET "/api/articles" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-article (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :title "")) q) (clojure.string/includes? (str (get % :excerpt "")) q))) (queries/get-all-article db-spec))))))
 
   (POST "/api/articles" {params :body}
     (try
@@ -68,7 +73,7 @@
         (validate-article-implies! kw)
         (let [new-id (insert-article! params)
               record  (or (queries/get-article-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-article record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -76,7 +81,7 @@
 
   (GET "/api/articles/:id" [id]
     (if-let [record (queries/get-article-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-article record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/articles/:id" [id :as {params :body}]
@@ -87,7 +92,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-article! int-id params)
           (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-article record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
@@ -102,16 +107,13 @@
         (let [int-id (Integer/parseInt id)]
           (update-article! int-id params)
           (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-article record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/articles/:id" [id]
-    (queries/delete-article! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/articles/:id/publish" [id]
     (svc/publish! (Integer/parseInt id))

@@ -47,12 +47,6 @@
       (is (#{200 404 500} (:status resp)))))
 )
 
-(deftest test-delete-card
-  (testing "DELETE /api/cards/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/cards/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; IMPLIES: antecedent=true, consequent violated → 422
 (deftest test-rule-creature-requires-stats
   (testing "POST /api/cards violates rule creature_requires_stats → 422"

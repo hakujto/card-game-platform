@@ -54,30 +54,6 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/article_tag_assignments/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-article-tag-assignment! int-id params)
-        (if-let [record (queries/get-article-tag-assignment-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/article_tag_assignments/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-article-tag-assignment! int-id params)
-        (if-let [record (queries/get-article-tag-assignment-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (DELETE "/api/article_tag_assignments/:id" [id]
     (queries/delete-article-tag-assignment! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))

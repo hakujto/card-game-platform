@@ -55,30 +55,6 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/card_rulings/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-card-ruling! int-id params)
-        (if-let [record (queries/get-card-ruling-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/card_rulings/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-card-ruling! int-id params)
-        (if-let [record (queries/get-card-ruling-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (DELETE "/api/card_rulings/:id" [id]
     (queries/delete-card-ruling! db-spec {:id (Integer/parseInt id)})
     (-> (resp/response nil) (resp/status 204)))

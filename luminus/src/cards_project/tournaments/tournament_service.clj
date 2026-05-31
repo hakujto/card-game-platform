@@ -123,43 +123,48 @@
 
 (defn start!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (start-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn cancel!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (cancel-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn complete!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (complete-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn generate-round!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (generate-round-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn calculate-prize-distribution!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (calculate-prize-distribution-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn register-player!
   [id player-id deck-id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (register-player-behavior! id player-id deck-id)
     (throw (ex-info "Tournament not found" {:id id}))))
 
 (defn is-full!
   [id]
-  (if (queries/get-tournament-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-by-id db-spec {:id id})]
     (is-full-behavior! id)
     (throw (ex-info "Tournament not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- sync-season-stats-hook! [record]
+  ; TODO: implement sync_season_stats
+  record)
 

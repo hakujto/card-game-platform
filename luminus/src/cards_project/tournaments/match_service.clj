@@ -103,7 +103,7 @@
 
 (defn record-result!
   [id p1-wins p2-wins]
-  (if (queries/get-match-by-id db-spec {:id id})
+  (if-let [record (queries/get-match-by-id db-spec {:id id})]
     (do
       (record-result-behavior! id p1-wins p2-wins)
       (determine-winner-behavior! id))
@@ -111,7 +111,7 @@
 
 (defn finalize-result!
   [id]
-  (if (queries/get-match-by-id db-spec {:id id})
+  (if-let [record (queries/get-match-by-id db-spec {:id id})]
     (do
       (finalize-result-behavior! id)
       (determine-winner-behavior! id))
@@ -119,19 +119,19 @@
 
 (defn determine-winner!
   [id]
-  (if (queries/get-match-by-id db-spec {:id id})
+  (if-let [record (queries/get-match-by-id db-spec {:id id})]
     (determine-winner-behavior! id)
     (throw (ex-info "Match not found" {:id id}))))
 
 (defn concede!
   [id player-id]
-  (if (queries/get-match-by-id db-spec {:id id})
+  (if-let [record (queries/get-match-by-id db-spec {:id id})]
     (concede-behavior! id player-id)
     (throw (ex-info "Match not found" {:id id}))))
 
 (defn draw!
   [id]
-  (if (queries/get-match-by-id db-spec {:id id})
+  (if-let [record (queries/get-match-by-id db-spec {:id id})]
     (draw-behavior! id)
     (throw (ex-info "Match not found" {:id id}))))
 

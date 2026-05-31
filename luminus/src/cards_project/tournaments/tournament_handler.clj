@@ -58,10 +58,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-tournament [record]
+  (when record
+    (let [m (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :start_time) (assoc :start_time (get m :start_time))))] (-> m (dissoc :end_time) (assoc :end_time (get m :end_time))))))
+
 (defroutes tournaments-routes
 
-  (GET "/api/tournaments" []
-    (resp/response (queries/get-all-tournament db-spec)))
+  (GET "/api/tournaments" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-tournament (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :description "")) q))) (queries/get-all-tournament db-spec))))))
 
   (POST "/api/tournaments" {params :body}
     (try
@@ -70,7 +75,7 @@
         (validate-tournament-implies! kw)
         (let [new-id (insert-tournament! params)
               record  (or (queries/get-tournament-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-tournament record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -78,7 +83,7 @@
 
   (GET "/api/tournaments/:id" [id]
     (if-let [record (queries/get-tournament-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-tournament record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/tournaments/:id" [id :as {params :body}]
@@ -89,7 +94,7 @@
         (let [int-id (Integer/parseInt id)]
           (update-tournament! int-id params)
           (if-let [record (queries/get-tournament-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-tournament record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
@@ -104,16 +109,13 @@
         (let [int-id (Integer/parseInt id)]
           (update-tournament! int-id params)
           (if-let [record (queries/get-tournament-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-tournament record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/tournaments/:id" [id]
-    (queries/delete-tournament! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/tournaments/:id/start" [id]
     (svc/start! (Integer/parseInt id))

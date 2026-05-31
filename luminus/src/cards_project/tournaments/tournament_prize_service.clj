@@ -20,13 +20,13 @@
 
 (defn applies-to-placement!
   [id placement]
-  (if (queries/get-tournament-prize-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-prize-by-id db-spec {:id id})]
     (applies-to-placement-behavior! id placement)
     (throw (ex-info "TournamentPrize not found" {:id id}))))
 
 (defn award-to-player!
   [id player-id]
-  (if (queries/get-tournament-prize-by-id db-spec {:id id})
+  (if-let [record (queries/get-tournament-prize-by-id db-spec {:id id})]
     (award-to-player-behavior! id player-id)
     (throw (ex-info "TournamentPrize not found" {:id id}))))
 

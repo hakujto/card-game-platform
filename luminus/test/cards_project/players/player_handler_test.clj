@@ -39,12 +39,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-player
-  (testing "DELETE /api/players/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/players/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-rating-range
   (testing "POST /api/players violates rule rating_range → 422"

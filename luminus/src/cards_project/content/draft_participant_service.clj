@@ -20,13 +20,13 @@
 
 (defn pick-card!
   [id card-id pack-number]
-  (if (queries/get-draft-participant-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-participant-by-id db-spec {:id id})]
     (pick-card-behavior! id card-id pack-number)
     (throw (ex-info "DraftParticipant not found" {:id id}))))
 
 (defn drafted-card-count!
   [id]
-  (if (queries/get-draft-participant-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-participant-by-id db-spec {:id id})]
     (drafted-card-count-behavior! id)
     (throw (ex-info "DraftParticipant not found" {:id id}))))
 

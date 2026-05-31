@@ -38,12 +38,6 @@
       (is (#{200 404} (:status resp)))))
 )
 
-(deftest test-delete-season
-  (testing "DELETE /api/seasons/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/seasons/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-end-date-after-start-date
   (testing "POST /api/seasons violates rule end_date_after_start_date → 422"

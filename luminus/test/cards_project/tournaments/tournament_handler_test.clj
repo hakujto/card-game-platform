@@ -46,12 +46,6 @@
       (is (#{200 404 500} (:status resp)))))
 )
 
-(deftest test-delete-tournament
-  (testing "DELETE /api/tournaments/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/tournaments/1"))]
-      (is (#{204 404} (:status resp)))))
-)
-
 ; Simple rule violated → 422
 (deftest test-rule-max-players-positive
   (testing "POST /api/tournaments violates rule max_players_positive → 422"

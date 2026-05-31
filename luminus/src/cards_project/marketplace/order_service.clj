@@ -145,39 +145,44 @@
 
 (defn cancel!
   [id]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (cancel-behavior! id)
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn pay!
   [id payment-ref]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (pay-behavior! id payment-ref)
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn process-payment!
   [id]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (process-payment-behavior! id)
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn calculate-total!
   [id]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (calculate-total-behavior! id)
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn apply-discount!
   [id percent]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (apply-discount-behavior! id percent)
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn refund!
   [id]
-  (if (queries/get-order-by-id db-spec {:id id})
+  (if-let [record (queries/get-order-by-id db-spec {:id id})]
     (refund-behavior! id)
     (throw (ex-info "Order not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- notify-status-change-hook! [record]
+  ; TODO: implement notify_status_change
+  record)
 
 ; triggered by @on(status = Shipped)
 (defn set-status!
@@ -186,7 +191,7 @@
     (do
       (jdbc/execute-one! db-spec
         ["UPDATE orders SET status = ? WHERE id = ?" value id])
-      (when (= (clojure.string/upper-case (str value)) "SHIPPED")
+      (when (= (str value) "Shipped")
         (notify-shipped-behavior! id)))
     (throw (ex-info "Order not found" {:id id}))))
 

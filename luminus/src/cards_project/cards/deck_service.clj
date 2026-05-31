@@ -44,49 +44,54 @@
 
 (defn validate-size!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (validate-size-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn add-card!
   [id card-id quantity]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (add-card-behavior! id card-id quantity)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn remove-card!
   [id card-id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (remove-card-behavior! id card-id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn win-rate!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (win-rate-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn clone!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (clone-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn publish!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (publish-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn unpublish!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (unpublish-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
 
 (defn certify-tournament-legal!
   [id]
-  (if (queries/get-deck-by-id db-spec {:id id})
+  (if-let [record (queries/get-deck-by-id db-spec {:id id})]
     (certify-tournament-legal-behavior! id)
     (throw (ex-info "Deck not found" {:id id}))))
+
+; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- recalculate-tournament-legal-hook! [record]
+  ; TODO: implement recalculate_tournament_legal
+  record)
 

@@ -51,10 +51,15 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-player [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :last_active_at) (assoc :last_active_at (get m :last_active_at))))))
+
 (defroutes players-routes
 
-  (GET "/api/players" []
-    (resp/response (queries/get-all-player db-spec)))
+  (GET "/api/players" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (map apply-projection-player (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :display_name "")) q))) (queries/get-all-player db-spec))))))
 
   (POST "/api/players" {params :body}
     (try
@@ -62,7 +67,7 @@
         (validate-player-rules! kw)
         (let [new-id (insert-player! params)
               record  (or (queries/get-player-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-player record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -70,22 +75,8 @@
 
   (GET "/api/players/:id" [id]
     (if-let [record (queries/get-player-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-player record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
-
-  (PUT "/api/players/:id" [id :as {params :body}]
-    (try
-      (let [kw (player-kw-params params)]
-        (validate-player-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player! int-id params)
-          (if-let [record (queries/get-player-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/players/:id" [id :as {params :body}]
     (try
@@ -94,16 +85,13 @@
         (let [int-id (Integer/parseInt id)]
           (update-player! int-id params)
           (if-let [record (queries/get-player-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-player record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/players/:id" [id]
-    (queries/delete-player! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/players/:id/promote" [id]
     (let [result (svc/promote! (Integer/parseInt id))]

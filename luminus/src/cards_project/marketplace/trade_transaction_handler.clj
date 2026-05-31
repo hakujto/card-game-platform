@@ -58,62 +58,20 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-trade-transaction [record]
+  (when record
+    (let [m record] (-> m (dissoc :completed_at) (assoc :completed_at (get m :completed_at))))))
+
 (defroutes trade-transactions-routes
 
   (GET "/api/trade_transactions" []
-    (resp/response (queries/get-all-trade-transaction db-spec)))
-
-  (POST "/api/trade_transactions" {params :body}
-    (try
-      (let [kw (trade-transaction-kw-params params)]
-        (validate-trade-transaction-rules! kw)
-        (validate-trade-transaction-implies! kw)
-        (let [new-id (insert-trade-transaction! params)
-              record  (or (queries/get-trade-transaction-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+    (resp/response (map apply-projection-trade-transaction (queries/get-all-trade-transaction db-spec))))
 
   (GET "/api/trade_transactions/:id" [id]
     (if-let [record (queries/get-trade-transaction-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-trade-transaction record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/trade_transactions/:id" [id :as {params :body}]
-    (try
-      (let [kw (trade-transaction-kw-params params)]
-        (validate-trade-transaction-rules! kw)
-        (validate-trade-transaction-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-trade-transaction! int-id params)
-          (if-let [record (queries/get-trade-transaction-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/trade_transactions/:id" [id :as {params :body}]
-    (try
-      (let [kw (trade-transaction-kw-params params)]
-        (validate-trade-transaction-rules! kw)
-        (validate-trade-transaction-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-trade-transaction! int-id params)
-          (if-let [record (queries/get-trade-transaction-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/trade_transactions/:id" [id]
-    (queries/delete-trade-transaction! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/trade_transactions/:id/complete" [id]
     (svc/complete! (Integer/parseInt id))

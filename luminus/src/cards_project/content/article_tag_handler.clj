@@ -37,8 +37,9 @@
 
 (defroutes article-tags-routes
 
-  (GET "/api/article_tags" []
-    (resp/response (queries/get-all-article-tag db-spec)))
+  (GET "/api/article_tags" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q))) (queries/get-all-article-tag db-spec)))))
 
   (POST "/api/article_tags" {params :body}
     (try
@@ -54,18 +55,6 @@
     (if-let [record (queries/get-article-tag-by-id db-spec {:id (Integer/parseInt id)})]
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
-
-  (PUT "/api/article_tags/:id" [id :as {params :body}]
-    (try
-      (let [int-id (Integer/parseInt id)]
-        (update-article-tag! int-id params)
-        (if-let [record (queries/get-article-tag-by-id db-spec {:id int-id})]
-          (resp/response record)
-          (-> (resp/response {:error "Not found"}) (resp/status 404))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
   (PATCH "/api/article_tags/:id" [id :as {params :body}]
     (try

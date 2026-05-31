@@ -58,10 +58,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-tournament-round [record]
+  (when record
+    (let [m (let [m record] (-> m (dissoc :started_at) (assoc :started_at (get m :started_at))))] (-> m (dissoc :ended_at) (assoc :ended_at (get m :ended_at))))))
+
 (defroutes tournament-rounds-routes
 
   (GET "/api/tournament_rounds" []
-    (resp/response (queries/get-all-tournament-round db-spec)))
+    (resp/response (map apply-projection-tournament-round (queries/get-all-tournament-round db-spec))))
 
   (POST "/api/tournament_rounds" {params :body}
     (try
@@ -70,7 +74,7 @@
         (validate-tournament-round-implies! kw)
         (let [new-id (insert-tournament-round! params)
               record  (or (queries/get-tournament-round-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-tournament-round record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -78,42 +82,9 @@
 
   (GET "/api/tournament_rounds/:id" [id]
     (if-let [record (queries/get-tournament-round-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-tournament-round record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/tournament_rounds/:id" [id :as {params :body}]
-    (try
-      (let [kw (tournament-round-kw-params params)]
-        (validate-tournament-round-rules! kw)
-        (validate-tournament-round-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-tournament-round! int-id params)
-          (if-let [record (queries/get-tournament-round-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/tournament_rounds/:id" [id :as {params :body}]
-    (try
-      (let [kw (tournament-round-kw-params params)]
-        (validate-tournament-round-rules! kw)
-        (validate-tournament-round-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-tournament-round! int-id params)
-          (if-let [record (queries/get-tournament-round-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/tournament_rounds/:id" [id]
-    (queries/delete-tournament-round! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/tournament_rounds/:id/start" [id]
     (svc/start! (Integer/parseInt id))

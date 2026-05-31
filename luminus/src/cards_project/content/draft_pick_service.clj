@@ -16,7 +16,7 @@
 
 (defn is-first-pick!
   [id]
-  (if (queries/get-draft-pick-by-id db-spec {:id id})
+  (if-let [record (queries/get-draft-pick-by-id db-spec {:id id})]
     (is-first-pick-behavior! id)
     (throw (ex-info "DraftPick not found" {:id id}))))
 

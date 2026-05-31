@@ -68,8 +68,9 @@
 
 (defroutes cards-routes
 
-  (GET "/api/cards" []
-    (resp/response (queries/get-all-card db-spec)))
+  (GET "/api/cards" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :artist_name "")) q))) (queries/get-all-card db-spec)))))
 
   (POST "/api/cards" {params :body}
     (try
@@ -119,9 +120,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/cards/:id" [id]
-    (queries/delete-card! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/cards/:id/ban" [id]
     (svc/ban! (Integer/parseInt id))

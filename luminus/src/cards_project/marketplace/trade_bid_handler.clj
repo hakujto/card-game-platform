@@ -47,10 +47,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-trade-bid [record]
+  (when record
+    (let [m record] (-> m (dissoc :placed_at) (assoc :placed_at (get m :placed_at))))))
+
 (defroutes trade-bids-routes
 
   (GET "/api/trade_bids" []
-    (resp/response (queries/get-all-trade-bid db-spec)))
+    (resp/response (map apply-projection-trade-bid (queries/get-all-trade-bid db-spec))))
 
   (POST "/api/trade_bids" {params :body}
     (try
@@ -58,7 +62,7 @@
         (validate-trade-bid-rules! kw)
         (let [new-id (insert-trade-bid! params)
               record  (or (queries/get-trade-bid-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-trade-bid record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -66,40 +70,9 @@
 
   (GET "/api/trade_bids/:id" [id]
     (if-let [record (queries/get-trade-bid-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-trade-bid record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/trade_bids/:id" [id :as {params :body}]
-    (try
-      (let [kw (trade-bid-kw-params params)]
-        (validate-trade-bid-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-trade-bid! int-id params)
-          (if-let [record (queries/get-trade-bid-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/trade_bids/:id" [id :as {params :body}]
-    (try
-      (let [kw (trade-bid-kw-params params)]
-        (validate-trade-bid-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-trade-bid! int-id params)
-          (if-let [record (queries/get-trade-bid-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/trade_bids/:id" [id]
-    (queries/delete-trade-bid! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/trade_bids/:id/outbid" [id]
     (let [result (svc/outbid-by! (Integer/parseInt id))]

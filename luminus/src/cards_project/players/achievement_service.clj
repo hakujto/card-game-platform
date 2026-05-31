@@ -20,13 +20,13 @@
 
 (defn point-value!
   [id multiplier]
-  (if (queries/get-achievement-by-id db-spec {:id id})
+  (if-let [record (queries/get-achievement-by-id db-spec {:id id})]
     (point-value-behavior! id multiplier)
     (throw (ex-info "Achievement not found" {:id id}))))
 
 (defn reveal!
   [id]
-  (if (queries/get-achievement-by-id db-spec {:id id})
+  (if-let [record (queries/get-achievement-by-id db-spec {:id id})]
     (reveal-behavior! id)
     (throw (ex-info "Achievement not found" {:id id}))))
 

@@ -58,8 +58,9 @@
 
 (defroutes card-sets-routes
 
-  (GET "/api/card_sets" []
-    (resp/response (queries/get-all-card-set db-spec)))
+  (GET "/api/card_sets" {params :query-params}
+    (let [q (or (get params "q") "")]
+      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :name "")) q) (clojure.string/includes? (str (get % :code "")) q))) (queries/get-all-card-set db-spec)))))
 
   (POST "/api/card_sets" {params :body}
     (try
@@ -109,9 +110,6 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/card_sets/:id" [id]
-    (queries/delete-card-set! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/card_sets/:id/standard-legal" [id]
     (let [result (svc/is-legal-in-standard! (Integer/parseInt id))]

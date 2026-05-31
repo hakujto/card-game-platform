@@ -56,10 +56,14 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-tournament-registration [record]
+  (when record
+    (let [m record] (-> m (dissoc :registered_at) (assoc :registered_at (get m :registered_at))))))
+
 (defroutes tournament-registrations-routes
 
   (GET "/api/tournament_registrations" []
-    (resp/response (queries/get-all-tournament-registration db-spec)))
+    (resp/response (map apply-projection-tournament-registration (queries/get-all-tournament-registration db-spec))))
 
   (POST "/api/tournament_registrations" {params :body}
     (try
@@ -68,7 +72,7 @@
         (validate-tournament-registration-implies! kw)
         (let [new-id (insert-tournament-registration! params)
               record  (or (queries/get-tournament-registration-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-tournament-registration record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -76,42 +80,9 @@
 
   (GET "/api/tournament_registrations/:id" [id]
     (if-let [record (queries/get-tournament-registration-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-tournament-registration record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/tournament_registrations/:id" [id :as {params :body}]
-    (try
-      (let [kw (tournament-registration-kw-params params)]
-        (validate-tournament-registration-rules! kw)
-        (validate-tournament-registration-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-tournament-registration! int-id params)
-          (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/tournament_registrations/:id" [id :as {params :body}]
-    (try
-      (let [kw (tournament-registration-kw-params params)]
-        (validate-tournament-registration-rules! kw)
-        (validate-tournament-registration-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-tournament-registration! int-id params)
-          (if-let [record (queries/get-tournament-registration-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/tournament_registrations/:id" [id]
-    (queries/delete-tournament-registration! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (POST "/api/tournament_registrations/:id/withdraw" [id]
     (svc/withdraw! (Integer/parseInt id))

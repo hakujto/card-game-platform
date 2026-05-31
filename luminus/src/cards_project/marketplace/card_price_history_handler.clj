@@ -56,54 +56,11 @@
   (GET "/api/card_price_histories" []
     (resp/response (queries/get-all-card-price-history db-spec)))
 
-  (POST "/api/card_price_histories" {params :body}
-    (try
-      (let [kw (card-price-history-kw-params params)]
-        (validate-card-price-history-rules! kw)
-        (let [new-id (insert-card-price-history! params)
-              record  (or (queries/get-card-price-history-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (GET "/api/card_price_histories/:id" [id]
     (if-let [record (queries/get-card-price-history-by-id db-spec {:id (Integer/parseInt id)})]
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/card_price_histories/:id" [id :as {params :body}]
-    (try
-      (let [kw (card-price-history-kw-params params)]
-        (validate-card-price-history-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-card-price-history! int-id params)
-          (if-let [record (queries/get-card-price-history-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (PATCH "/api/card_price_histories/:id" [id :as {params :body}]
-    (try
-      (let [kw (card-price-history-kw-params params)]
-        (validate-card-price-history-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-card-price-history! int-id params)
-          (if-let [record (queries/get-card-price-history-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
-  (DELETE "/api/card_price_histories/:id" [id]
-    (queries/delete-card-price-history! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
 
   (GET "/api/card_price_histories/:id/change" [id]
     (let [result (svc/price-change-percent! (Integer/parseInt id))]
