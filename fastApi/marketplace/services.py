@@ -144,7 +144,7 @@ class OrderService:
         if obj is None:
             raise ValueError("Order not found: " + str(pk))
         obj.status = value
-        if value == "SHIPPED":
+        if value == "Shipped":
             obj.notify_shipped()  # @on(status = Shipped)
         db.add(obj)
         db.commit()
@@ -285,7 +285,7 @@ class TradeListingService:
         if obj is None:
             raise ValueError("TradeListing not found: " + str(pk))
         obj.status = value
-        if value == "SOLD":
+        if value == "Sold":
             obj.finalize_auction()  # @on(status = Sold)
         db.add(obj)
         db.commit()

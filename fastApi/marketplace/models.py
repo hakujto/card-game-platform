@@ -154,6 +154,11 @@ class Order(Base):
         if (self.shipped_at is not None) and not (self.status == "Shipped"):
             errors.append("shipped_at_requires_shipped_status")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_notify_status_change(self) -> None:
+        # TODO: implement notify_status_change
+        pass
+
     def __repr__(self) -> str:
         return f"<Order id={{self.id}}>"
 
@@ -496,3 +501,12 @@ class TradeDispute(Base):
         return errors
     def __repr__(self) -> str:
         return f"<TradeDispute id={{self.id}}>"
+
+
+
+# ── SQLAlchemy event listeners ───────────────────────────────────────────
+from sqlalchemy import event
+
+@event.listens_for(Order, "after_update")
+def _order_notify_status_change(mapper, connection, target):
+    target._hook_notify_status_change()

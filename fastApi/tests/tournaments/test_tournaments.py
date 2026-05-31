@@ -39,6 +39,11 @@ class TestSeason:
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/seasons?q=test")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
     def test_create_returns_201(self, client: TestClient):
         data = {"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}
         res = client.post("/api/seasons", json=data)
@@ -55,11 +60,6 @@ class TestSeason:
         res = client.put(f"/api/seasons/{created['id']}", json={"name": "test"})
         assert res.status_code == 200
 
-    def test_delete_returns_204(self, client: TestClient):
-        created = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        res = client.delete(f"/api/seasons/{created['id']}")
-        assert res.status_code == 204
-
     def test_create_fails_when_end_date_after_start_date_violated(self, client: TestClient):
         # Simple rule violated → 422
         data = {"name": "test", "start_date": 1, "end_date": 0, "format": "Standard", "is_active": False}
@@ -70,6 +70,11 @@ class TestSeason:
 class TestTournament:
     def test_list_returns_200(self, client: TestClient):
         res = client.get("/api/tournaments")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/tournaments?q=test")
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
@@ -94,13 +99,6 @@ class TestTournament:
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
         res = client.put(f"/api/tournaments/{created['id']}", json={"name": "test"})
         assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.delete(f"/api/tournaments/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_max_players_positive_violated(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
@@ -207,14 +205,6 @@ class TestTournamentJudge:
         res = client.get(f"/api/tournament_judges/{created['id']}")
         assert res.status_code == 200
 
-    def test_update_returns_200(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        created = client.post("/api/tournament_judges", json={"role": "HeadJudge", "tournament_id": _dep_tournament["id"], "player_id": _dep_player["id"]}).json()
-        res = client.put(f"/api/tournament_judges/{created['id']}", json={})
-        assert res.status_code == 200
-
     def test_delete_returns_204(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -248,24 +238,6 @@ class TestTournamentRegistration:
         created = client.post("/api/tournament_registrations", json={"status": "Registered", "seed": 1, "final_standing": 1, "points_earned": 0, "registered_at": "2024-01-01T00:00:00", "tournament_id": _dep_tournament["id"], "player_id": _dep_player["id"], "deck_id": _dep_deck["id"]}).json()
         res = client.get(f"/api/tournament_registrations/{created['id']}")
         assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_deck = client.post("/api/decks", json={"name": "test", "format": "Standard", "is_public": True, "is_tournament_legal": False, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        created = client.post("/api/tournament_registrations", json={"status": "Registered", "seed": 1, "final_standing": 1, "points_earned": 0, "registered_at": "2024-01-01T00:00:00", "tournament_id": _dep_tournament["id"], "player_id": _dep_player["id"], "deck_id": _dep_deck["id"]}).json()
-        res = client.put(f"/api/tournament_registrations/{created['id']}", json={"seed": 1})
-        assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_deck = client.post("/api/decks", json={"name": "test", "format": "Standard", "is_public": True, "is_tournament_legal": False, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        created = client.post("/api/tournament_registrations", json={"status": "Registered", "seed": 1, "final_standing": 1, "points_earned": 0, "registered_at": "2024-01-01T00:00:00", "tournament_id": _dep_tournament["id"], "player_id": _dep_player["id"], "deck_id": _dep_deck["id"]}).json()
-        res = client.delete(f"/api/tournament_registrations/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_points_earned_not_negative_violated(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
@@ -320,22 +292,6 @@ class TestTournamentRound:
         created = client.post("/api/tournament_rounds", json={"round_number": 1, "status": "Pending", "started_at": "2024-01-01T00:00:00", "ended_at": None, "time_limit_minutes": 1, "tournament_id": _dep_tournament["id"]}).json()
         res = client.get(f"/api/tournament_rounds/{created['id']}")
         assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        created = client.post("/api/tournament_rounds", json={"round_number": 1, "status": "Pending", "started_at": "2024-01-01T00:00:00", "ended_at": None, "time_limit_minutes": 1, "tournament_id": _dep_tournament["id"]}).json()
-        res = client.put(f"/api/tournament_rounds/{created['id']}", json={"round_number": 1})
-        assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        created = client.post("/api/tournament_rounds", json={"round_number": 1, "status": "Pending", "started_at": "2024-01-01T00:00:00", "ended_at": None, "time_limit_minutes": 1, "tournament_id": _dep_tournament["id"]}).json()
-        res = client.delete(f"/api/tournament_rounds/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_ended_after_started_violated(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
@@ -392,18 +348,6 @@ class TestMatch:
         created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
         res = client.get(f"/api/matches/{created['id']}")
         assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.put(f"/api/matches/{created['id']}", json={"table_number": 0})
-        assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.delete(f"/api/matches/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_wins_not_negative_violated(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -503,20 +447,6 @@ class TestGame:
         created = client.post("/api/games", json={"game_number": 1, "winner_side": None, "turns_played": 1, "duration_seconds": 1, "match_id": _dep_match["id"]}).json()
         res = client.get(f"/api/games/{created['id']}")
         assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_match = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "ended_at": None, "started_at": "2024-01-01T00:00:00", "player1_id": _dep_player["id"]}).json()
-        created = client.post("/api/games", json={"game_number": 1, "winner_side": None, "turns_played": 1, "duration_seconds": 1, "match_id": _dep_match["id"]}).json()
-        res = client.put(f"/api/games/{created['id']}", json={"game_number": 1})
-        assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_match = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "ended_at": None, "started_at": "2024-01-01T00:00:00", "player1_id": _dep_player["id"]}).json()
-        created = client.post("/api/games", json={"game_number": 1, "winner_side": None, "turns_played": 1, "duration_seconds": 1, "match_id": _dep_match["id"]}).json()
-        res = client.delete(f"/api/games/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_game_number_range_violated(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -631,60 +561,3 @@ class TestAwardedPrize:
         res = client.get("/api/awarded_prizes")
         assert res.status_code == 200
         assert isinstance(res.json(), list)
-
-    def test_create_returns_201(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        data = {"final_placement": 1, "awarded_at": "2024-01-01T00:00:00", "claimed": False, "claimed_at": "2024-01-01T00:00:00", "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}
-        res = client.post("/api/awarded_prizes", json=data)
-        assert res.status_code == 201
-        assert "id" in res.json()
-
-    def test_retrieve_returns_200(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        created = client.post("/api/awarded_prizes", json={"final_placement": 1, "awarded_at": "2024-01-01T00:00:00", "claimed": False, "claimed_at": "2024-01-01T00:00:00", "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}).json()
-        res = client.get(f"/api/awarded_prizes/{created['id']}")
-        assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        created = client.post("/api/awarded_prizes", json={"final_placement": 1, "awarded_at": "2024-01-01T00:00:00", "claimed": False, "claimed_at": "2024-01-01T00:00:00", "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}).json()
-        res = client.put(f"/api/awarded_prizes/{created['id']}", json={"final_placement": 1})
-        assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        created = client.post("/api/awarded_prizes", json={"final_placement": 1, "awarded_at": "2024-01-01T00:00:00", "claimed": False, "claimed_at": "2024-01-01T00:00:00", "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}).json()
-        res = client.delete(f"/api/awarded_prizes/{created['id']}")
-        assert res.status_code == 204
-
-    def test_create_fails_when_claimed_requires_claimed_at_violated(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        # IMPLIES: antecedent=true, consequent violated → 422
-        data = {"final_placement": 1, "awarded_at": "2024-01-01T00:00:00", "claimed": True, "claimed_at": None, "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}
-        res = client.post("/api/awarded_prizes", json=data)
-        assert res.status_code == 422
-
-    def test_create_fails_when_final_placement_positive_violated(self, client: TestClient):
-        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_tournament = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": False, "created_at": "2024-01-01T00:00:00", "end_time": None, "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        _dep_tournament_prize = client.post("/api/tournament_prizes", json={"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 0, "season_points": 0, "tournament_id": _dep_tournament["id"]}).json()
-        # Simple rule violated → 422
-        data = {"final_placement": 0, "awarded_at": "2024-01-01T00:00:00", "claimed": True, "claimed_at": "2024-01-01T00:00:00", "prize_id": _dep_tournament_prize["id"], "player_id": _dep_player["id"]}
-        res = client.post("/api/awarded_prizes", json=data)
-        assert res.status_code == 422

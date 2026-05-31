@@ -39,30 +39,6 @@ def get_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSessi
         raise HTTPException(status_code=404, detail="DraftSession not found")
     return obj
 
-@router_draft_session.put("/{item_id}", response_model=DraftSessionRead)
-def update_draft_session(item_id: int, data: DraftSessionUpdate, db: Session = Depends(get_db)) -> DraftSession:
-    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftSession not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    _validate_draft_session(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_draft_session.patch("/{item_id}", response_model=DraftSessionRead)
-def patch_draft_session(item_id: int, data: DraftSessionUpdate, db: Session = Depends(get_db)) -> DraftSession:
-    return update_draft_session(item_id, data, db)
-
-@router_draft_session.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_draft_session(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftSession not found")
-    db.delete(obj)
-    db.commit()
-
 @router_draft_session.patch("/{item_id}/transitions/waitingforplayers-to-drafting", response_model=DraftSessionRead)
 def transition_waiting_for_players_to_drafting_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
     from fastapi import HTTPException
@@ -207,30 +183,6 @@ def get_draft_participant(item_id: int, db: Session = Depends(get_db)) -> DraftP
         raise HTTPException(status_code=404, detail="DraftParticipant not found")
     return obj
 
-@router_draft_participant.put("/{item_id}", response_model=DraftParticipantRead)
-def update_draft_participant(item_id: int, data: DraftParticipantUpdate, db: Session = Depends(get_db)) -> DraftParticipant:
-    obj = db.query(DraftParticipant).filter(DraftParticipant.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftParticipant not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    _validate_draft_participant(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_draft_participant.patch("/{item_id}", response_model=DraftParticipantRead)
-def patch_draft_participant(item_id: int, data: DraftParticipantUpdate, db: Session = Depends(get_db)) -> DraftParticipant:
-    return update_draft_participant(item_id, data, db)
-
-@router_draft_participant.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_draft_participant(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(DraftParticipant).filter(DraftParticipant.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftParticipant not found")
-    db.delete(obj)
-    db.commit()
-
 @router_draft_participant.post("/{item_id}/api/draft-participants/{id}/pick", status_code=status.HTTP_204_NO_CONTENT)
 def pick_card_draft_participant(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
     obj = db.query(DraftParticipant).filter(DraftParticipant.id == item_id).first()
@@ -263,45 +215,12 @@ def list_draft_picks(
 ) -> Sequence[DraftPick]:
     return db.query(DraftPick).offset(skip).limit(limit).all()
 
-@router_draft_pick.post("", response_model=DraftPickRead, status_code=status.HTTP_201_CREATED)
-def create_draft_pick(data: DraftPickCreate, db: Session = Depends(get_db)) -> DraftPick:
-    obj = DraftPick(**data.model_dump(exclude_unset=True))
-    _validate_draft_pick(obj)
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
 @router_draft_pick.get("/{item_id}", response_model=DraftPickRead)
 def get_draft_pick(item_id: int, db: Session = Depends(get_db)) -> DraftPick:
     obj = db.query(DraftPick).filter(DraftPick.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DraftPick not found")
     return obj
-
-@router_draft_pick.put("/{item_id}", response_model=DraftPickRead)
-def update_draft_pick(item_id: int, data: DraftPickUpdate, db: Session = Depends(get_db)) -> DraftPick:
-    obj = db.query(DraftPick).filter(DraftPick.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftPick not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    _validate_draft_pick(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_draft_pick.patch("/{item_id}", response_model=DraftPickRead)
-def patch_draft_pick(item_id: int, data: DraftPickUpdate, db: Session = Depends(get_db)) -> DraftPick:
-    return update_draft_pick(item_id, data, db)
-
-@router_draft_pick.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_draft_pick(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(DraftPick).filter(DraftPick.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DraftPick not found")
-    db.delete(obj)
-    db.commit()
 
 @router_draft_pick.get("/{item_id}/api/draft-picks/{id}/first-pick", response_model=bool)
 def is_first_pick_draft_pick(item_id: int, db: Session = Depends(get_db)):
@@ -324,9 +243,13 @@ router_article = APIRouter(prefix="/api/articles", tags=["Article"])
 
 @router_article.get("", response_model=list[ArticleRead])
 def list_articles(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Article]:
-    return db.query(Article).offset(skip).limit(limit).all()
+    query = db.query(Article)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Article.title.ilike(f"%{q}%"), Article.excerpt.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_article.post("", response_model=ArticleRead, status_code=status.HTTP_201_CREATED)
 def create_article(data: ArticleCreate, db: Session = Depends(get_db)) -> Article:
@@ -359,14 +282,6 @@ def update_article(item_id: int, data: ArticleUpdate, db: Session = Depends(get_
 @router_article.patch("/{item_id}", response_model=ArticleRead)
 def patch_article(item_id: int, data: ArticleUpdate, db: Session = Depends(get_db)) -> Article:
     return update_article(item_id, data, db)
-
-@router_article.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_article(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(Article).filter(Article.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Article not found")
-    db.delete(obj)
-    db.commit()
 
 @router_article.patch("/{item_id}/transitions/draft-to-published", response_model=ArticleRead)
 def transition_draft_to_published_article(item_id: int, db: Session = Depends(get_db)) -> Article:
@@ -480,9 +395,13 @@ router_article_tag = APIRouter(prefix="/api/article_tags", tags=["Article Tag"])
 
 @router_article_tag.get("", response_model=list[ArticleTagRead])
 def list_article_tags(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[ArticleTag]:
-    return db.query(ArticleTag).offset(skip).limit(limit).all()
+    query = db.query(ArticleTag)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(ArticleTag.name.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_article_tag.post("", response_model=ArticleTagRead, status_code=status.HTTP_201_CREATED)
 def create_article_tag(data: ArticleTagCreate, db: Session = Depends(get_db)) -> ArticleTag:
@@ -499,8 +418,8 @@ def get_article_tag(item_id: int, db: Session = Depends(get_db)) -> ArticleTag:
         raise HTTPException(status_code=404, detail="ArticleTag not found")
     return obj
 
-@router_article_tag.put("/{item_id}", response_model=ArticleTagRead)
-def update_article_tag(item_id: int, data: ArticleTagUpdate, db: Session = Depends(get_db)) -> ArticleTag:
+@router_article_tag.patch("/{item_id}", response_model=ArticleTagRead)
+def patch_article_tag(item_id: int, data: ArticleTagUpdate, db: Session = Depends(get_db)) -> ArticleTag:
     obj = db.query(ArticleTag).filter(ArticleTag.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="ArticleTag not found")
@@ -509,10 +428,6 @@ def update_article_tag(item_id: int, data: ArticleTagUpdate, db: Session = Depen
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_article_tag.patch("/{item_id}", response_model=ArticleTagRead)
-def patch_article_tag(item_id: int, data: ArticleTagUpdate, db: Session = Depends(get_db)) -> ArticleTag:
-    return update_article_tag(item_id, data, db)
 
 @router_article_tag.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_article_tag(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -562,21 +477,6 @@ def get_article_tag_assignment(item_id: int, db: Session = Depends(get_db)) -> A
         raise HTTPException(status_code=404, detail="ArticleTagAssignment not found")
     return obj
 
-@router_article_tag_assignment.put("/{item_id}", response_model=ArticleTagAssignmentRead)
-def update_article_tag_assignment(item_id: int, data: ArticleTagAssignmentUpdate, db: Session = Depends(get_db)) -> ArticleTagAssignment:
-    obj = db.query(ArticleTagAssignment).filter(ArticleTagAssignment.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="ArticleTagAssignment not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_article_tag_assignment.patch("/{item_id}", response_model=ArticleTagAssignmentRead)
-def patch_article_tag_assignment(item_id: int, data: ArticleTagAssignmentUpdate, db: Session = Depends(get_db)) -> ArticleTagAssignment:
-    return update_article_tag_assignment(item_id, data, db)
-
 @router_article_tag_assignment.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_article_tag_assignment(item_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.query(ArticleTagAssignment).filter(ArticleTagAssignment.id == item_id).first()
@@ -607,21 +507,6 @@ def get_article_comment(item_id: int, db: Session = Depends(get_db)) -> ArticleC
     if obj is None:
         raise HTTPException(status_code=404, detail="ArticleComment not found")
     return obj
-
-@router_article_comment.put("/{item_id}", response_model=ArticleCommentRead)
-def update_article_comment(item_id: int, data: ArticleCommentUpdate, db: Session = Depends(get_db)) -> ArticleComment:
-    obj = db.query(ArticleComment).filter(ArticleComment.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="ArticleComment not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_article_comment.patch("/{item_id}", response_model=ArticleCommentRead)
-def patch_article_comment(item_id: int, data: ArticleCommentUpdate, db: Session = Depends(get_db)) -> ArticleComment:
-    return update_article_comment(item_id, data, db)
 
 @router_article_comment.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_article_comment(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -668,9 +553,13 @@ router_stream = APIRouter(prefix="/api/streams", tags=["Stream"])
 
 @router_stream.get("", response_model=list[StreamRead])
 def list_streams(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Stream]:
-    return db.query(Stream).offset(skip).limit(limit).all()
+    query = db.query(Stream)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Stream.title.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_stream.post("", response_model=StreamRead, status_code=status.HTTP_201_CREATED)
 def create_stream(data: StreamCreate, db: Session = Depends(get_db)) -> Stream:
@@ -703,14 +592,6 @@ def update_stream(item_id: int, data: StreamUpdate, db: Session = Depends(get_db
 @router_stream.patch("/{item_id}", response_model=StreamRead)
 def patch_stream(item_id: int, data: StreamUpdate, db: Session = Depends(get_db)) -> Stream:
     return update_stream(item_id, data, db)
-
-@router_stream.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_stream(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(Stream).filter(Stream.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Stream not found")
-    db.delete(obj)
-    db.commit()
 
 @router_stream.patch("/{item_id}/transitions/scheduled-to-live", response_model=StreamRead)
 def transition_scheduled_to_live_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:

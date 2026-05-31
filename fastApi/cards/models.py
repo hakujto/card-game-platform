@@ -111,6 +111,11 @@ class Card(Base):
         if (self.is_banned is True) and not (self.legal_formats == "message"):
             errors.append("banned_card_not_in_legal_formats")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_validate_legality(self) -> None:
+        # TODO: implement validate_legality
+        pass
+
     def __repr__(self) -> str:
         return f"<Card id={{self.id}}>"
 
@@ -297,6 +302,11 @@ class Deck(Base):
         if (self.is_tournament_legal is True) and not (self.is_public is True):
             errors.append("Tournament-legal deck must be made public")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_recalculate_tournament_legal(self) -> None:
+        # TODO: implement recalculate_tournament_legal
+        pass
+
     def __repr__(self) -> str:
         return f"<Deck id={{self.id}}>"
 
@@ -393,3 +403,18 @@ class DeckTagAssignment(Base):
     tag = relationship("DeckTag", foreign_keys=[tag_id])
     def __repr__(self) -> str:
         return f"<DeckTagAssignment id={{self.id}}>"
+
+
+
+# ── SQLAlchemy event listeners ───────────────────────────────────────────
+from sqlalchemy import event
+
+@event.listens_for(Card, "before_insert")
+@event.listens_for(Card, "before_update")
+def _card_validate_legality(mapper, connection, target):
+    target._hook_validate_legality()
+
+@event.listens_for(Deck, "after_insert")
+@event.listens_for(Deck, "after_update")
+def _deck_recalculate_tournament_legal(mapper, connection, target):
+    target._hook_recalculate_tournament_legal()

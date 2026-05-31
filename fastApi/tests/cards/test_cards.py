@@ -39,6 +39,11 @@ class TestCard:
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/cards?q=test")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
     def test_create_returns_201(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         data = {"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 0, "defense": 0, "loyalty": None, "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "set_id": _dep_card_set["id"]}
@@ -57,12 +62,6 @@ class TestCard:
         created = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 0, "defense": 0, "loyalty": None, "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "set_id": _dep_card_set["id"]}).json()
         res = client.put(f"/api/cards/{created['id']}", json={"name": "test"})
         assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
-        created = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 0, "defense": 0, "loyalty": None, "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "set_id": _dep_card_set["id"]}).json()
-        res = client.delete(f"/api/cards/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_creature_requires_stats_violated(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
@@ -127,6 +126,11 @@ class TestCardSet:
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/card_sets?q=test")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
     def test_create_returns_201(self, client: TestClient):
         data = {"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": None, "set_type": "Core", "total_cards": 1, "is_rotated": False}
         res = client.post("/api/card_sets", json=data)
@@ -142,11 +146,6 @@ class TestCardSet:
         created = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": None, "set_type": "Core", "total_cards": 1, "is_rotated": False}).json()
         res = client.put(f"/api/card_sets/{created['id']}", json={"name": "test"})
         assert res.status_code == 200
-
-    def test_delete_returns_204(self, client: TestClient):
-        created = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "rotation_date": None, "set_type": "Core", "total_cards": 1, "is_rotated": False}).json()
-        res = client.delete(f"/api/card_sets/{created['id']}")
-        assert res.status_code == 204
 
     def test_create_fails_when_total_cards_positive_violated(self, client: TestClient):
         # Simple rule violated → 422
@@ -188,13 +187,6 @@ class TestCardRuling:
         res = client.get(f"/api/card_rulings/{created['id']}")
         assert res.status_code == 200
 
-    def test_update_returns_200(self, client: TestClient):
-        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
-        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
-        created = client.post("/api/card_rulings", json={"ruling_text": "test", "published_at": "2024-01-01", "source": "test", "card_id": _dep_card["id"]}).json()
-        res = client.put(f"/api/card_rulings/{created['id']}", json={"ruling_text": "test"})
-        assert res.status_code == 200
-
     def test_delete_returns_204(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
@@ -206,6 +198,11 @@ class TestCardRuling:
 class TestCardAbility:
     def test_list_returns_200(self, client: TestClient):
         res = client.get("/api/card_abilities")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/card_abilities?q=test")
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
@@ -250,6 +247,11 @@ class TestCardAbility:
 class TestDeck:
     def test_list_returns_200(self, client: TestClient):
         res = client.get("/api/decks")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/decks?q=test")
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
@@ -338,7 +340,7 @@ class TestDeckCard:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/deck_cards", json={"quantity": 1, "is_commander": False, "deck_id": _dep_deck["id"], "card_id": _dep_card["id"]}).json()
-        res = client.put(f"/api/deck_cards/{created['id']}", json={"quantity": 1})
+        res = client.patch(f"/api/deck_cards/{created['id']}", json={"quantity": 1})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
@@ -402,7 +404,7 @@ class TestDeckSideboardCard:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/deck_sideboard_cards", json={"quantity": 1, "deck_id": _dep_deck["id"], "card_id": _dep_card["id"]}).json()
-        res = client.put(f"/api/deck_sideboard_cards/{created['id']}", json={"quantity": 1})
+        res = client.patch(f"/api/deck_sideboard_cards/{created['id']}", json={"quantity": 1})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
@@ -431,6 +433,11 @@ class TestDeckTag:
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
+    def test_search_returns_200(self, client: TestClient):
+        res = client.get("/api/deck_tags?q=test")
+        assert res.status_code == 200
+        assert isinstance(res.json(), list)
+
     def test_create_returns_201(self, client: TestClient):
         data = {"name": "test"}
         res = client.post("/api/deck_tags", json=data)
@@ -444,7 +451,7 @@ class TestDeckTag:
 
     def test_update_returns_200(self, client: TestClient):
         created = client.post("/api/deck_tags", json={"name": "test"}).json()
-        res = client.put(f"/api/deck_tags/{created['id']}", json={"name": "test"})
+        res = client.patch(f"/api/deck_tags/{created['id']}", json={"name": "test"})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):
@@ -474,14 +481,6 @@ class TestDeckTagAssignment:
         _dep_deck_tag = client.post("/api/deck_tags", json={"name": "test"}).json()
         created = client.post("/api/deck_tag_assignments", json={"deck_id": _dep_deck["id"], "tag_id": _dep_deck_tag["id"]}).json()
         res = client.get(f"/api/deck_tag_assignments/{created['id']}")
-        assert res.status_code == 200
-
-    def test_update_returns_200(self, client: TestClient):
-        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
-        _dep_deck = client.post("/api/decks", json={"name": "test", "format": "Standard", "is_public": True, "is_tournament_legal": False, "wins": 0, "losses": 0, "draws": 0, "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "player_id": _dep_player["id"]}).json()
-        _dep_deck_tag = client.post("/api/deck_tags", json={"name": "test"}).json()
-        created = client.post("/api/deck_tag_assignments", json={"deck_id": _dep_deck["id"], "tag_id": _dep_deck_tag["id"]}).json()
-        res = client.put(f"/api/deck_tag_assignments/{created['id']}", json={})
         assert res.status_code == 200
 
     def test_delete_returns_204(self, client: TestClient):

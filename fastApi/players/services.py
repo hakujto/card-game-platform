@@ -263,7 +263,7 @@ class PlayerAchievementService:
         if obj is None:
             raise ValueError("PlayerAchievement not found: " + str(pk))
         obj.is_completed = value
-        if value == "TRUE":
+        if value == "true":
             obj.complete()  # @on(is_completed = true)
         db.add(obj)
         db.commit()

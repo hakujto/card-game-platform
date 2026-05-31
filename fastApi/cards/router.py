@@ -19,9 +19,13 @@ router_card = APIRouter(prefix="/api/cards", tags=["Card"])
 
 @router_card.get("", response_model=list[CardRead])
 def list_cards(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Card]:
-    return db.query(Card).offset(skip).limit(limit).all()
+    query = db.query(Card)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Card.name.ilike(f"%{q}%"), Card.artist_name.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_card.post("", response_model=CardRead, status_code=status.HTTP_201_CREATED)
 def create_card(data: CardCreate, db: Session = Depends(get_db)) -> Card:
@@ -54,14 +58,6 @@ def update_card(item_id: int, data: CardUpdate, db: Session = Depends(get_db)) -
 @router_card.patch("/{item_id}", response_model=CardRead)
 def patch_card(item_id: int, data: CardUpdate, db: Session = Depends(get_db)) -> Card:
     return update_card(item_id, data, db)
-
-@router_card.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_card(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(Card).filter(Card.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Card not found")
-    db.delete(obj)
-    db.commit()
 
 @router_card.post("/{item_id}/ban", status_code=status.HTTP_204_NO_CONTENT)
 def ban_card(item_id: int, db: Session = Depends(get_db)):
@@ -134,9 +130,13 @@ router_card_set = APIRouter(prefix="/api/card_sets", tags=["Card Set"])
 
 @router_card_set.get("", response_model=list[CardSetRead])
 def list_card_sets(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[CardSet]:
-    return db.query(CardSet).offset(skip).limit(limit).all()
+    query = db.query(CardSet)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(CardSet.name.ilike(f"%{q}%"), CardSet.code.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_card_set.post("", response_model=CardSetRead, status_code=status.HTTP_201_CREATED)
 def create_card_set(data: CardSetCreate, db: Session = Depends(get_db)) -> CardSet:
@@ -169,14 +169,6 @@ def update_card_set(item_id: int, data: CardSetUpdate, db: Session = Depends(get
 @router_card_set.patch("/{item_id}", response_model=CardSetRead)
 def patch_card_set(item_id: int, data: CardSetUpdate, db: Session = Depends(get_db)) -> CardSet:
     return update_card_set(item_id, data, db)
-
-@router_card_set.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_card_set(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(CardSet).filter(CardSet.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="CardSet not found")
-    db.delete(obj)
-    db.commit()
 
 @router_card_set.get("/{item_id}/api/card-sets/{id}/standard-legal", response_model=bool)
 def is_legal_in_standard_card_set(item_id: int, db: Session = Depends(get_db)):
@@ -236,21 +228,6 @@ def get_card_ruling(item_id: int, db: Session = Depends(get_db)) -> CardRuling:
         raise HTTPException(status_code=404, detail="CardRuling not found")
     return obj
 
-@router_card_ruling.put("/{item_id}", response_model=CardRulingRead)
-def update_card_ruling(item_id: int, data: CardRulingUpdate, db: Session = Depends(get_db)) -> CardRuling:
-    obj = db.query(CardRuling).filter(CardRuling.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="CardRuling not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_card_ruling.patch("/{item_id}", response_model=CardRulingRead)
-def patch_card_ruling(item_id: int, data: CardRulingUpdate, db: Session = Depends(get_db)) -> CardRuling:
-    return update_card_ruling(item_id, data, db)
-
 @router_card_ruling.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_card_ruling(item_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.query(CardRuling).filter(CardRuling.id == item_id).first()
@@ -288,9 +265,13 @@ router_card_ability = APIRouter(prefix="/api/card_abilities", tags=["Card Abilit
 
 @router_card_ability.get("", response_model=list[CardAbilityRead])
 def list_card_abilities(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[CardAbility]:
-    return db.query(CardAbility).offset(skip).limit(limit).all()
+    query = db.query(CardAbility)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(CardAbility.keyword.ilike(f"%{q}%"), CardAbility.ability_text.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_card_ability.post("", response_model=CardAbilityRead, status_code=status.HTTP_201_CREATED)
 def create_card_ability(data: CardAbilityCreate, db: Session = Depends(get_db)) -> CardAbility:
@@ -362,9 +343,13 @@ router_deck = APIRouter(prefix="/api/decks", tags=["Deck"])
 
 @router_deck.get("", response_model=list[DeckRead])
 def list_decks(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Deck]:
-    return db.query(Deck).offset(skip).limit(limit).all()
+    query = db.query(Deck)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Deck.name.ilike(f"%{q}%"), Deck.description.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_deck.post("", response_model=DeckRead, status_code=status.HTTP_201_CREATED)
 def create_deck(data: DeckCreate, db: Session = Depends(get_db)) -> Deck:
@@ -506,8 +491,8 @@ def get_deck_card(item_id: int, db: Session = Depends(get_db)) -> DeckCard:
         raise HTTPException(status_code=404, detail="DeckCard not found")
     return obj
 
-@router_deck_card.put("/{item_id}", response_model=DeckCardRead)
-def update_deck_card(item_id: int, data: DeckCardUpdate, db: Session = Depends(get_db)) -> DeckCard:
+@router_deck_card.patch("/{item_id}", response_model=DeckCardRead)
+def patch_deck_card(item_id: int, data: DeckCardUpdate, db: Session = Depends(get_db)) -> DeckCard:
     obj = db.query(DeckCard).filter(DeckCard.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckCard not found")
@@ -517,10 +502,6 @@ def update_deck_card(item_id: int, data: DeckCardUpdate, db: Session = Depends(g
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_deck_card.patch("/{item_id}", response_model=DeckCardRead)
-def patch_deck_card(item_id: int, data: DeckCardUpdate, db: Session = Depends(get_db)) -> DeckCard:
-    return update_deck_card(item_id, data, db)
 
 @router_deck_card.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_deck_card(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -577,8 +558,8 @@ def get_deck_sideboard_card(item_id: int, db: Session = Depends(get_db)) -> Deck
         raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
     return obj
 
-@router_deck_sideboard_card.put("/{item_id}", response_model=DeckSideboardCardRead)
-def update_deck_sideboard_card(item_id: int, data: DeckSideboardCardUpdate, db: Session = Depends(get_db)) -> DeckSideboardCard:
+@router_deck_sideboard_card.patch("/{item_id}", response_model=DeckSideboardCardRead)
+def patch_deck_sideboard_card(item_id: int, data: DeckSideboardCardUpdate, db: Session = Depends(get_db)) -> DeckSideboardCard:
     obj = db.query(DeckSideboardCard).filter(DeckSideboardCard.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckSideboardCard not found")
@@ -588,10 +569,6 @@ def update_deck_sideboard_card(item_id: int, data: DeckSideboardCardUpdate, db: 
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_deck_sideboard_card.patch("/{item_id}", response_model=DeckSideboardCardRead)
-def patch_deck_sideboard_card(item_id: int, data: DeckSideboardCardUpdate, db: Session = Depends(get_db)) -> DeckSideboardCard:
-    return update_deck_sideboard_card(item_id, data, db)
 
 @router_deck_sideboard_card.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_deck_sideboard_card(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -621,9 +598,13 @@ router_deck_tag = APIRouter(prefix="/api/deck_tags", tags=["Deck Tag"])
 
 @router_deck_tag.get("", response_model=list[DeckTagRead])
 def list_deck_tags(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[DeckTag]:
-    return db.query(DeckTag).offset(skip).limit(limit).all()
+    query = db.query(DeckTag)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(DeckTag.name.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_deck_tag.post("", response_model=DeckTagRead, status_code=status.HTTP_201_CREATED)
 def create_deck_tag(data: DeckTagCreate, db: Session = Depends(get_db)) -> DeckTag:
@@ -640,8 +621,8 @@ def get_deck_tag(item_id: int, db: Session = Depends(get_db)) -> DeckTag:
         raise HTTPException(status_code=404, detail="DeckTag not found")
     return obj
 
-@router_deck_tag.put("/{item_id}", response_model=DeckTagRead)
-def update_deck_tag(item_id: int, data: DeckTagUpdate, db: Session = Depends(get_db)) -> DeckTag:
+@router_deck_tag.patch("/{item_id}", response_model=DeckTagRead)
+def patch_deck_tag(item_id: int, data: DeckTagUpdate, db: Session = Depends(get_db)) -> DeckTag:
     obj = db.query(DeckTag).filter(DeckTag.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckTag not found")
@@ -650,10 +631,6 @@ def update_deck_tag(item_id: int, data: DeckTagUpdate, db: Session = Depends(get
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_deck_tag.patch("/{item_id}", response_model=DeckTagRead)
-def patch_deck_tag(item_id: int, data: DeckTagUpdate, db: Session = Depends(get_db)) -> DeckTag:
-    return update_deck_tag(item_id, data, db)
 
 @router_deck_tag.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_deck_tag(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -701,21 +678,6 @@ def get_deck_tag_assignment(item_id: int, db: Session = Depends(get_db)) -> Deck
     if obj is None:
         raise HTTPException(status_code=404, detail="DeckTagAssignment not found")
     return obj
-
-@router_deck_tag_assignment.put("/{item_id}", response_model=DeckTagAssignmentRead)
-def update_deck_tag_assignment(item_id: int, data: DeckTagAssignmentUpdate, db: Session = Depends(get_db)) -> DeckTagAssignment:
-    obj = db.query(DeckTagAssignment).filter(DeckTagAssignment.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="DeckTagAssignment not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_deck_tag_assignment.patch("/{item_id}", response_model=DeckTagAssignmentRead)
-def patch_deck_tag_assignment(item_id: int, data: DeckTagAssignmentUpdate, db: Session = Depends(get_db)) -> DeckTagAssignment:
-    return update_deck_tag_assignment(item_id, data, db)
 
 @router_deck_tag_assignment.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_deck_tag_assignment(item_id: int, db: Session = Depends(get_db)) -> None:

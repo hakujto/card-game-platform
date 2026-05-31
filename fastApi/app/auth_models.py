@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String(150), unique=True, index=True)
     email = Column(String(255), unique=True, index=True)
     hashed_password = Column(String(255))
+    role = Column(String(50), default="user")
     is_active = Column(Integer, default=1)
 
     def __repr__(self) -> str:

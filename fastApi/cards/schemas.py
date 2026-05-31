@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class CardBase(BaseModel):
     name: str
@@ -177,7 +177,9 @@ class DeckUpdate(BaseModel):
 
 class DeckRead(DeckBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    updated_at: datetime = Field(serialization_alias='updatedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class DeckCardBase(BaseModel):

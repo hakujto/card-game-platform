@@ -96,6 +96,11 @@ class Player(Base):
         if not (self.display_name is not None):
             errors.append("Display name must not be empty")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_update_rank(self) -> None:
+        # TODO: implement update_rank
+        pass
+
     def __repr__(self) -> str:
         return f"<Player id={{self.id}}>"
 
@@ -335,3 +340,12 @@ class CraftingIngredient(Base):
     card = relationship("Card", foreign_keys=[card_id])
     def __repr__(self) -> str:
         return f"<CraftingIngredient id={{self.id}}>"
+
+
+
+# ── SQLAlchemy event listeners ───────────────────────────────────────────
+from sqlalchemy import event
+
+@event.listens_for(Player, "after_update")
+def _player_update_rank(mapper, connection, target):
+    target._hook_update_rank()

@@ -143,6 +143,11 @@ class Tournament(Base):
         if (self.end_time is not None) and not ((self.end_time is None or (self.start_time is not None and self.end_time > self.start_time))):
             errors.append("End time must be after start time")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_sync_season_stats(self) -> None:
+        # TODO: implement sync_season_stats
+        pass
+
     def __repr__(self) -> str:
         return f"<Tournament id={{self.id}}>"
 
@@ -472,3 +477,12 @@ class AwardedPrize(Base):
         return errors
     def __repr__(self) -> str:
         return f"<AwardedPrize id={{self.id}}>"
+
+
+
+# ── SQLAlchemy event listeners ───────────────────────────────────────────
+from sqlalchemy import event
+
+@event.listens_for(Tournament, "after_update")
+def _tournament_sync_season_stats(mapper, connection, target):
+    target._hook_sync_season_stats()

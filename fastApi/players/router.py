@@ -18,9 +18,13 @@ router_player = APIRouter(prefix="/api/players", tags=["Player"])
 
 @router_player.get("", response_model=list[PlayerRead])
 def list_players(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Player]:
-    return db.query(Player).offset(skip).limit(limit).all()
+    query = db.query(Player)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Player.display_name.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_player.post("", response_model=PlayerRead, status_code=status.HTTP_201_CREATED)
 def create_player(data: PlayerCreate, db: Session = Depends(get_db)) -> Player:
@@ -38,8 +42,8 @@ def get_player(item_id: int, db: Session = Depends(get_db)) -> Player:
         raise HTTPException(status_code=404, detail="Player not found")
     return obj
 
-@router_player.put("/{item_id}", response_model=PlayerRead)
-def update_player(item_id: int, data: PlayerUpdate, db: Session = Depends(get_db)) -> Player:
+@router_player.patch("/{item_id}", response_model=PlayerRead)
+def patch_player(item_id: int, data: PlayerUpdate, db: Session = Depends(get_db)) -> Player:
     obj = db.query(Player).filter(Player.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -49,18 +53,6 @@ def update_player(item_id: int, data: PlayerUpdate, db: Session = Depends(get_db
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_player.patch("/{item_id}", response_model=PlayerRead)
-def patch_player(item_id: int, data: PlayerUpdate, db: Session = Depends(get_db)) -> Player:
-    return update_player(item_id, data, db)
-
-@router_player.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_player(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(Player).filter(Player.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Player not found")
-    db.delete(obj)
-    db.commit()
 
 @router_player.post("/{item_id}/promote", response_model=bool)
 def promote_player(item_id: int, db: Session = Depends(get_db)):
@@ -136,45 +128,12 @@ def list_player_season_statses(
 ) -> Sequence[PlayerSeasonStats]:
     return db.query(PlayerSeasonStats).offset(skip).limit(limit).all()
 
-@router_player_season_stats.post("", response_model=PlayerSeasonStatsRead, status_code=status.HTTP_201_CREATED)
-def create_player_season_stats(data: PlayerSeasonStatsCreate, db: Session = Depends(get_db)) -> PlayerSeasonStats:
-    obj = PlayerSeasonStats(**data.model_dump(exclude_unset=True))
-    _validate_player_season_stats(obj)
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
 @router_player_season_stats.get("/{item_id}", response_model=PlayerSeasonStatsRead)
 def get_player_season_stats(item_id: int, db: Session = Depends(get_db)) -> PlayerSeasonStats:
     obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
     return obj
-
-@router_player_season_stats.put("/{item_id}", response_model=PlayerSeasonStatsRead)
-def update_player_season_stats(item_id: int, data: PlayerSeasonStatsUpdate, db: Session = Depends(get_db)) -> PlayerSeasonStats:
-    obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    _validate_player_season_stats(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_player_season_stats.patch("/{item_id}", response_model=PlayerSeasonStatsRead)
-def patch_player_season_stats(item_id: int, data: PlayerSeasonStatsUpdate, db: Session = Depends(get_db)) -> PlayerSeasonStats:
-    return update_player_season_stats(item_id, data, db)
-
-@router_player_season_stats.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_player_season_stats(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(PlayerSeasonStats).filter(PlayerSeasonStats.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="PlayerSeasonStats not found")
-    db.delete(obj)
-    db.commit()
 
 @router_player_season_stats.get("/{item_id}/api/player-season-stats/{id}/win-rate", response_model=float)
 def win_rate_player_season_stats(item_id: int, db: Session = Depends(get_db)):
@@ -232,8 +191,8 @@ def get_player_collection(item_id: int, db: Session = Depends(get_db)) -> Player
         raise HTTPException(status_code=404, detail="PlayerCollection not found")
     return obj
 
-@router_player_collection.put("/{item_id}", response_model=PlayerCollectionRead)
-def update_player_collection(item_id: int, data: PlayerCollectionUpdate, db: Session = Depends(get_db)) -> PlayerCollection:
+@router_player_collection.patch("/{item_id}", response_model=PlayerCollectionRead)
+def patch_player_collection(item_id: int, data: PlayerCollectionUpdate, db: Session = Depends(get_db)) -> PlayerCollection:
     obj = db.query(PlayerCollection).filter(PlayerCollection.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="PlayerCollection not found")
@@ -243,10 +202,6 @@ def update_player_collection(item_id: int, data: PlayerCollectionUpdate, db: Ses
     db.commit()
     db.refresh(obj)
     return obj
-
-@router_player_collection.patch("/{item_id}", response_model=PlayerCollectionRead)
-def patch_player_collection(item_id: int, data: PlayerCollectionUpdate, db: Session = Depends(get_db)) -> PlayerCollection:
-    return update_player_collection(item_id, data, db)
 
 @router_player_collection.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_player_collection(item_id: int, db: Session = Depends(get_db)) -> None:
@@ -304,21 +259,6 @@ def get_friendship(item_id: int, db: Session = Depends(get_db)) -> Friendship:
         raise HTTPException(status_code=404, detail="Friendship not found")
     return obj
 
-@router_friendship.put("/{item_id}", response_model=FriendshipRead)
-def update_friendship(item_id: int, data: FriendshipUpdate, db: Session = Depends(get_db)) -> Friendship:
-    obj = db.query(Friendship).filter(Friendship.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Friendship not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_friendship.patch("/{item_id}", response_model=FriendshipRead)
-def patch_friendship(item_id: int, data: FriendshipUpdate, db: Session = Depends(get_db)) -> Friendship:
-    return update_friendship(item_id, data, db)
-
 @router_friendship.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_friendship(item_id: int, db: Session = Depends(get_db)) -> None:
     obj = db.query(Friendship).filter(Friendship.id == item_id).first()
@@ -362,9 +302,13 @@ router_achievement = APIRouter(prefix="/api/achievements", tags=["Achievement"])
 
 @router_achievement.get("", response_model=list[AchievementRead])
 def list_achievements(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+    q: str | None = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
 ) -> Sequence[Achievement]:
-    return db.query(Achievement).offset(skip).limit(limit).all()
+    query = db.query(Achievement)
+    if q:
+        from sqlalchemy import or_
+        query = query.filter(or_(Achievement.name.ilike(f"%{q}%"), Achievement.description.ilike(f"%{q}%")))
+    return query.offset(skip).limit(limit).all()
 
 @router_achievement.post("", response_model=AchievementRead, status_code=status.HTTP_201_CREATED)
 def create_achievement(data: AchievementCreate, db: Session = Depends(get_db)) -> Achievement:
@@ -397,14 +341,6 @@ def update_achievement(item_id: int, data: AchievementUpdate, db: Session = Depe
 @router_achievement.patch("/{item_id}", response_model=AchievementRead)
 def patch_achievement(item_id: int, data: AchievementUpdate, db: Session = Depends(get_db)) -> Achievement:
     return update_achievement(item_id, data, db)
-
-@router_achievement.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_achievement(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(Achievement).filter(Achievement.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="Achievement not found")
-    db.delete(obj)
-    db.commit()
 
 @router_achievement.get("/{item_id}/point-value", response_model=int)
 def point_value_achievement(item_id: int, db: Session = Depends(get_db)):
@@ -439,45 +375,12 @@ def list_player_achievements(
 ) -> Sequence[PlayerAchievement]:
     return db.query(PlayerAchievement).offset(skip).limit(limit).all()
 
-@router_player_achievement.post("", response_model=PlayerAchievementRead, status_code=status.HTTP_201_CREATED)
-def create_player_achievement(data: PlayerAchievementCreate, db: Session = Depends(get_db)) -> PlayerAchievement:
-    obj = PlayerAchievement(**data.model_dump(exclude_unset=True))
-    _validate_player_achievement(obj)
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
 @router_player_achievement.get("/{item_id}", response_model=PlayerAchievementRead)
 def get_player_achievement(item_id: int, db: Session = Depends(get_db)) -> PlayerAchievement:
     obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="PlayerAchievement not found")
     return obj
-
-@router_player_achievement.put("/{item_id}", response_model=PlayerAchievementRead)
-def update_player_achievement(item_id: int, data: PlayerAchievementUpdate, db: Session = Depends(get_db)) -> PlayerAchievement:
-    obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="PlayerAchievement not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    _validate_player_achievement(obj)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_player_achievement.patch("/{item_id}", response_model=PlayerAchievementRead)
-def patch_player_achievement(item_id: int, data: PlayerAchievementUpdate, db: Session = Depends(get_db)) -> PlayerAchievement:
-    return update_player_achievement(item_id, data, db)
-
-@router_player_achievement.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_player_achievement(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(PlayerAchievement).filter(PlayerAchievement.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="PlayerAchievement not found")
-    db.delete(obj)
-    db.commit()
 
 @router_player_achievement.patch("/{item_id}/api/player-achievements/{id}/progress", status_code=status.HTTP_204_NO_CONTENT)
 def increment_progress_player_achievement(item_id: int, body: dict = {}, db: Session = Depends(get_db)):
@@ -542,14 +445,6 @@ def update_crafting_recipe(item_id: int, data: CraftingRecipeUpdate, db: Session
 def patch_crafting_recipe(item_id: int, data: CraftingRecipeUpdate, db: Session = Depends(get_db)) -> CraftingRecipe:
     return update_crafting_recipe(item_id, data, db)
 
-@router_crafting_recipe.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_crafting_recipe(item_id: int, db: Session = Depends(get_db)) -> None:
-    obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="CraftingRecipe not found")
-    db.delete(obj)
-    db.commit()
-
 @router_crafting_recipe.get("/{item_id}/api/crafting-recipes/{id}/can-craft", response_model=bool)
 def can_craft_crafting_recipe(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(CraftingRecipe).filter(CraftingRecipe.id == item_id).first()
@@ -605,21 +500,6 @@ def get_crafting_ingredient(item_id: int, db: Session = Depends(get_db)) -> Craf
     if obj is None:
         raise HTTPException(status_code=404, detail="CraftingIngredient not found")
     return obj
-
-@router_crafting_ingredient.put("/{item_id}", response_model=CraftingIngredientRead)
-def update_crafting_ingredient(item_id: int, data: CraftingIngredientUpdate, db: Session = Depends(get_db)) -> CraftingIngredient:
-    obj = db.query(CraftingIngredient).filter(CraftingIngredient.id == item_id).first()
-    if obj is None:
-        raise HTTPException(status_code=404, detail="CraftingIngredient not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(obj, key, value)
-    db.commit()
-    db.refresh(obj)
-    return obj
-
-@router_crafting_ingredient.patch("/{item_id}", response_model=CraftingIngredientRead)
-def patch_crafting_ingredient(item_id: int, data: CraftingIngredientUpdate, db: Session = Depends(get_db)) -> CraftingIngredient:
-    return update_crafting_ingredient(item_id, data, db)
 
 @router_crafting_ingredient.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_crafting_ingredient(item_id: int, db: Session = Depends(get_db)) -> None:

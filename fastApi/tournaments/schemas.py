@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class SeasonBase(BaseModel):
     name: str
@@ -78,7 +78,10 @@ class TournamentUpdate(BaseModel):
 
 class TournamentRead(TournamentBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    start_time: datetime = Field(serialization_alias='startTime')
+    end_time: datetime | None = Field(None, serialization_alias='endTime')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class TournamentJudgeBase(BaseModel):
@@ -130,7 +133,8 @@ class TournamentRegistrationUpdate(BaseModel):
 
 class TournamentRegistrationRead(TournamentRegistrationBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    registered_at: datetime = Field(serialization_alias='registeredAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class TournamentRoundBase(BaseModel):
@@ -157,7 +161,9 @@ class TournamentRoundUpdate(BaseModel):
 
 class TournamentRoundRead(TournamentRoundBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    started_at: datetime | None = Field(None, serialization_alias='startedAt')
+    ended_at: datetime | None = Field(None, serialization_alias='endedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class MatchBase(BaseModel):
@@ -192,7 +198,9 @@ class MatchUpdate(BaseModel):
 
 class MatchRead(MatchBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    started_at: datetime | None = Field(None, serialization_alias='startedAt')
+    ended_at: datetime | None = Field(None, serialization_alias='endedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class GameBase(BaseModel):
@@ -281,4 +289,6 @@ class AwardedPrizeUpdate(BaseModel):
 
 class AwardedPrizeRead(AwardedPrizeBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    awarded_at: datetime = Field(serialization_alias='awardedAt')
+    claimed_at: datetime | None = Field(None, serialization_alias='claimedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

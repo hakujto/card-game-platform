@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class ProductBase(BaseModel):
     name: str
@@ -80,7 +80,10 @@ class OrderUpdate(BaseModel):
 
 class OrderRead(OrderBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    paid_at: datetime | None = Field(None, serialization_alias='paidAt')
+    shipped_at: datetime | None = Field(None, serialization_alias='shippedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class OrderItemBase(BaseModel):
@@ -181,7 +184,10 @@ class TradeListingUpdate(BaseModel):
 
 class TradeListingRead(TradeListingBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    expires_at: datetime | None = Field(None, serialization_alias='expiresAt')
+    auction_end_time: datetime | None = Field(None, serialization_alias='auctionEndTime')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class TradeBidBase(BaseModel):
@@ -206,7 +212,8 @@ class TradeBidUpdate(BaseModel):
 
 class TradeBidRead(TradeBidBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    placed_at: datetime = Field(serialization_alias='placedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class TradeTransactionBase(BaseModel):
@@ -235,7 +242,8 @@ class TradeTransactionUpdate(BaseModel):
 
 class TradeTransactionRead(TradeTransactionBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    completed_at: datetime | None = Field(None, serialization_alias='completedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class CardPriceHistoryBase(BaseModel):
@@ -297,4 +305,6 @@ class TradeDisputeUpdate(BaseModel):
 
 class TradeDisputeRead(TradeDisputeBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    opened_at: datetime = Field(serialization_alias='openedAt')
+    resolved_at: datetime | None = Field(None, serialization_alias='resolvedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

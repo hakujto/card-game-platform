@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class DraftSessionBase(BaseModel):
     status: str
@@ -31,7 +31,9 @@ class DraftSessionUpdate(BaseModel):
 
 class DraftSessionRead(DraftSessionBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    completed_at: datetime | None = Field(None, serialization_alias='completedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class DraftParticipantBase(BaseModel):
@@ -54,7 +56,8 @@ class DraftParticipantUpdate(BaseModel):
 
 class DraftParticipantRead(DraftParticipantBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    joined_at: datetime = Field(serialization_alias='joinedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class DraftPickBase(BaseModel):
@@ -79,7 +82,8 @@ class DraftPickUpdate(BaseModel):
 
 class DraftPickRead(DraftPickBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    picked_at: datetime = Field(serialization_alias='pickedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class ArticleBase(BaseModel):
@@ -128,7 +132,10 @@ class ArticleUpdate(BaseModel):
 
 class ArticleRead(ArticleBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    updated_at: datetime = Field(serialization_alias='updatedAt')
+    published_at: datetime | None = Field(None, serialization_alias='publishedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class ArticleTagBase(BaseModel):
@@ -193,7 +200,8 @@ class ArticleCommentUpdate(BaseModel):
 
 class ArticleCommentRead(ArticleCommentBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class StreamBase(BaseModel):
@@ -234,4 +242,7 @@ class StreamUpdate(BaseModel):
 
 class StreamRead(StreamBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    scheduled_start: datetime = Field(serialization_alias='scheduledStart')
+    actual_start: datetime | None = Field(None, serialization_alias='actualStart')
+    ended_at: datetime | None = Field(None, serialization_alias='endedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

@@ -392,7 +392,7 @@ class AwardedPrizeService:
         if obj is None:
             raise ValueError("AwardedPrize not found: " + str(pk))
         obj.claimed = value
-        if value == "TRUE":
+        if value == "true":
             obj.claim()  # @on(claimed = true)
         db.add(obj)
         db.commit()

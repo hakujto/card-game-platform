@@ -217,6 +217,11 @@ class Article(Base):
         if (self.status == "Published") and not (self.published_at is not None):
             errors.append("Published article must have a published_at timestamp")
         return errors
+    # ── Lifecycle hooks ──────────────────────────────────────────────
+    def _hook_update_search_index(self) -> None:
+        # TODO: implement update_search_index
+        pass
+
     def __repr__(self) -> str:
         return f"<Article id={{self.id}}>"
 
@@ -352,3 +357,13 @@ class Stream(Base):
         return errors
     def __repr__(self) -> str:
         return f"<Stream id={{self.id}}>"
+
+
+
+# ── SQLAlchemy event listeners ───────────────────────────────────────────
+from sqlalchemy import event
+
+@event.listens_for(Article, "after_insert")
+@event.listens_for(Article, "after_update")
+def _article_update_search_index(mapper, connection, target):
+    target._hook_update_search_index()

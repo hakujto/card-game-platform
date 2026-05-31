@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class PlayerBase(BaseModel):
     display_name: str
@@ -45,7 +45,9 @@ class PlayerUpdate(BaseModel):
 
 class PlayerRead(PlayerBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    last_active_at: datetime | None = Field(None, serialization_alias='lastActiveAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class PlayerSeasonStatsBase(BaseModel):
@@ -105,7 +107,8 @@ class PlayerCollectionUpdate(BaseModel):
 
 class PlayerCollectionRead(PlayerCollectionBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    acquired_at: datetime = Field(serialization_alias='acquiredAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class FriendshipBase(BaseModel):
@@ -128,7 +131,8 @@ class FriendshipUpdate(BaseModel):
 
 class FriendshipRead(FriendshipBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    created_at: datetime = Field(serialization_alias='createdAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class AchievementBase(BaseModel):
@@ -180,7 +184,8 @@ class PlayerAchievementUpdate(BaseModel):
 
 class PlayerAchievementRead(PlayerAchievementBase):
     id: int
-    model_config = ConfigDict(from_attributes=True)
+    earned_at: datetime = Field(serialization_alias='earnedAt')
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class CraftingRecipeBase(BaseModel):
