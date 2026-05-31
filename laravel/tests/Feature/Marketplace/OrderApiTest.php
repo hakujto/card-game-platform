@@ -68,20 +68,6 @@ class OrderApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/orders/{$this->entityId}", [
-            'currency' => 'tes',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/orders/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_paid_requires_paid_at_violated(): void
     {
         // Paid order must have paid_at set

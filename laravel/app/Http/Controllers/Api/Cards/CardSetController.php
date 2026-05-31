@@ -9,9 +9,18 @@ use App\Models\Cards\CardSet;
 
 class CardSetController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(CardSet::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = CardSet::query()
+                ->where('name', 'like', '%' . $q . '%')
+                ->orWhere('code', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = CardSet::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -67,11 +76,6 @@ class CardSetController extends Controller
         return response()->json($cardSet);
     }
 
-    public function destroy(CardSet $cardSet): JsonResponse
-    {
-        $cardSet->delete();
-        return response()->json(null, 204);
-    }
     public function isLegalInStandard(Request $request, CardSet $cardSet): JsonResponse
     {
         $result = $cardSet->isLegalInStandard();

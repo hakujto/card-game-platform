@@ -9,9 +9,18 @@ use App\Models\Players\Achievement;
 
 class AchievementController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Achievement::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Achievement::query()
+                ->where('name', 'like', '%' . $q . '%')
+                ->orWhere('description', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Achievement::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -51,11 +60,6 @@ class AchievementController extends Controller
         return response()->json($achievement);
     }
 
-    public function destroy(Achievement $achievement): JsonResponse
-    {
-        $achievement->delete();
-        return response()->json(null, 204);
-    }
     public function pointValue(Request $request, Achievement $achievement): JsonResponse
     {
         $result = $achievement->pointValue();

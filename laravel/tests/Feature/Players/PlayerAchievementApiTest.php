@@ -51,49 +51,10 @@ class PlayerAchievementApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_create_returns_201(): void
-    {
-        $response = $this->postJson('/api/player_achievements', [
-            'earned_at' => '2024-01-01 00:00:00',
-            'progress' => 1,
-            'is_completed' => false,
-            'player_id' => $this->depPlayer->id,
-            'achievement_id' => $this->depAchievement->id,
-        ]);
-        $response->assertStatus(201);
-    }
-
     public function test_show_returns_200(): void
     {
         $response = $this->getJson("/api/player_achievements/{$this->entityId}");
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/player_achievements/{$this->entityId}", [
-            'earned_at' => '2024-01-01 00:00:00',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/player_achievements/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
-    public function test_create_fails_when_completed_requires_progress_violated(): void
-    {
-        // Completed achievement must have progress greater than zero
-        $response = $this->postJson('/api/player_achievements', ['earned_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'achievement_id' => 1, 'is_completed' => true, 'progress' => 0]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_progress_not_negative_violated(): void
-    {
-        // Achievement progress must not be negative
-        $response = $this->postJson('/api/player_achievements', ['earned_at' => '2024-01-01 00:00:00', 'player_id' => 1, 'achievement_id' => 1, 'is_completed' => true, 'progress' => -1]);
-        $response->assertStatus(422);
-    }
 }

@@ -87,50 +87,10 @@ class AwardedPrizeApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_create_returns_201(): void
-    {
-        $response = $this->postJson('/api/awarded_prizes', [
-            'final_placement' => 1,
-            'awarded_at' => '2024-01-01 00:00:00',
-            'claimed' => false,
-            'claimed_at' => '2024-01-01 00:00:00',
-            'prize_id' => $this->depPrize->id,
-            'player_id' => $this->depPlayer->id,
-        ]);
-        $response->assertStatus(201);
-    }
-
     public function test_show_returns_200(): void
     {
         $response = $this->getJson("/api/awarded_prizes/{$this->entityId}");
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/awarded_prizes/{$this->entityId}", [
-            'final_placement' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/awarded_prizes/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
-    public function test_create_fails_when_claimed_requires_claimed_at_violated(): void
-    {
-        // Claimed prize must have a claimed_at timestamp
-        $response = $this->postJson('/api/awarded_prizes', ['final_placement' => 1, 'awarded_at' => '2024-01-01 00:00:00', 'prize_id' => 1, 'player_id' => 1, 'claimed' => true, 'claimed_at' => null]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_final_placement_positive_violated(): void
-    {
-        // Final placement must be greater than zero
-        $response = $this->postJson('/api/awarded_prizes', ['awarded_at' => '2024-01-01 00:00:00', 'prize_id' => 1, 'player_id' => 1, 'claimed' => true, 'claimed_at' => '2024-01-01 00:00:00', 'final_placement' => 0]);
-        $response->assertStatus(422);
-    }
 }

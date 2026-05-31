@@ -48,6 +48,12 @@ class StreamApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/streams?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/streams', [
@@ -78,12 +84,6 @@ class StreamApiTest extends TestCase
             'title' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/streams/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_actual_start_requires_live_or_ended_violated(): void

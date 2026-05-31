@@ -11,9 +11,17 @@ use App\Models\Players\Player;
 
 class StreamController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Stream::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Stream::query()
+                ->where('title', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Stream::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -77,11 +85,6 @@ class StreamController extends Controller
         return response()->json($stream);
     }
 
-    public function destroy(Stream $stream): JsonResponse
-    {
-        $stream->delete();
-        return response()->json(null, 204);
-    }
     public function goLive(Request $request, Stream $stream): JsonResponse
     {
         $stream->goLive();

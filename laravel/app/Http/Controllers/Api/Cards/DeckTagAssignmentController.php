@@ -11,6 +11,7 @@ use App\Models\Cards\DeckTag;
 
 class DeckTagAssignmentController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(DeckTagAssignment::all());
@@ -31,19 +32,10 @@ class DeckTagAssignmentController extends Controller
         return response()->json($deckTagAssignment);
     }
 
-    public function update(Request $request, DeckTagAssignment $deckTagAssignment): JsonResponse
-    {
-        $validated = $request->validate([
-            'deck_id' => 'sometimes|nullable|exists:decks,id',
-            'tag_id' => 'sometimes|nullable|exists:deck_tags,id',
-        ]);
-        $deckTagAssignment->update($validated);
-        return response()->json($deckTagAssignment);
-    }
-
     public function destroy(DeckTagAssignment $deckTagAssignment): JsonResponse
     {
         $deckTagAssignment->delete();
         return response()->json(null, 204);
     }
+
 }

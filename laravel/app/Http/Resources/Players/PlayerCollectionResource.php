@@ -14,7 +14,7 @@ class PlayerCollectionResource extends JsonResource
             'quantity' => $this->quantity,
             'foil' => $this->foil,
             'condition' => $this->condition,
-            'acquired_at' => $this->acquired_at,
+            'acquiredAt' => $this->acquired_at,
             'acquired_via' => $this->acquired_via,
             'player_id' => $this->player_id,
             'card_id' => $this->card_id,

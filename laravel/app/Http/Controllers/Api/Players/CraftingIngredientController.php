@@ -11,6 +11,7 @@ use App\Models\Cards\Card;
 
 class CraftingIngredientController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(CraftingIngredient::all());
@@ -32,20 +33,10 @@ class CraftingIngredientController extends Controller
         return response()->json($craftingIngredient);
     }
 
-    public function update(Request $request, CraftingIngredient $craftingIngredient): JsonResponse
-    {
-        $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer',
-            'recipe_id' => 'sometimes|nullable|exists:crafting_recipes,id',
-            'card_id' => 'sometimes|nullable|exists:cards,id',
-        ]);
-        $craftingIngredient->update($validated);
-        return response()->json($craftingIngredient);
-    }
-
     public function destroy(CraftingIngredient $craftingIngredient): JsonResponse
     {
         $craftingIngredient->delete();
         return response()->json(null, 204);
     }
+
 }

@@ -117,4 +117,18 @@ class Deck extends Model
         return null;
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(function (self $model) {
+            $model->recalculateTournamentLegal();
+        });
+    }
+
+    protected function recalculateTournamentLegal(): void
+    {
+        // TODO: implement recalculate_tournament_legal
+    }
+
 }

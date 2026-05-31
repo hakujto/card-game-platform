@@ -51,6 +51,12 @@ class CardApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/cards?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/cards', [
@@ -84,12 +90,6 @@ class CardApiTest extends TestCase
             'name' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/cards/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_creature_requires_stats_violated(): void

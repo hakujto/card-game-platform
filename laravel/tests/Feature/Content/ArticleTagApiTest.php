@@ -28,6 +28,12 @@ class ArticleTagApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/article_tags?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/article_tags', [

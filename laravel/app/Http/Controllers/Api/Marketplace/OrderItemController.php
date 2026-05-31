@@ -11,6 +11,7 @@ use App\Models\Marketplace\Product;
 
 class OrderItemController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(OrderItem::all());
@@ -36,26 +37,12 @@ class OrderItemController extends Controller
         return response()->json($orderItem);
     }
 
-    public function update(Request $request, OrderItem $orderItem): JsonResponse
-    {
-        $validated = $request->validate([
-            'quantity' => 'sometimes|nullable|integer',
-            'price_at_purchase' => 'sometimes|nullable',
-            'foil' => 'sometimes|nullable|boolean',
-            'order_id' => 'sometimes|nullable|exists:orders,id',
-            'product_id' => 'sometimes|nullable|exists:products,id',
-        ]);
-        $orderItem->update($validated);
-        $orderItem->validateRules();
-
-        return response()->json($orderItem);
-    }
-
     public function destroy(OrderItem $orderItem): JsonResponse
     {
         $orderItem->delete();
         return response()->json(null, 204);
     }
+
     public function lineTotal(Request $request, OrderItem $orderItem): JsonResponse
     {
         $result = $orderItem->lineTotal();

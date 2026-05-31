@@ -10,6 +10,7 @@ use App\Models\Cards\Card;
 
 class CardRulingController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(CardRuling::all());
@@ -32,23 +33,12 @@ class CardRulingController extends Controller
         return response()->json($cardRuling);
     }
 
-    public function update(Request $request, CardRuling $cardRuling): JsonResponse
-    {
-        $validated = $request->validate([
-            'ruling_text' => 'sometimes|nullable|string|max:200',
-            'published_at' => 'sometimes|nullable|date',
-            'source' => 'sometimes|nullable|string|max:200',
-            'card_id' => 'sometimes|nullable|exists:cards,id',
-        ]);
-        $cardRuling->update($validated);
-        return response()->json($cardRuling);
-    }
-
     public function destroy(CardRuling $cardRuling): JsonResponse
     {
         $cardRuling->delete();
         return response()->json(null, 204);
     }
+
     public function isCurrent(Request $request, CardRuling $cardRuling): JsonResponse
     {
         $result = $cardRuling->isCurrent();

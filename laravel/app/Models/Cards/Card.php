@@ -109,4 +109,18 @@ class Card extends Model
         return null;
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saving(function (self $model) {
+            $model->validateLegality();
+        });
+    }
+
+    protected function validateLegality(): void
+    {
+        // TODO: implement validate_legality
+    }
+
 }

@@ -12,6 +12,7 @@ use App\Models\Cards\Deck;
 
 class TournamentRegistrationController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TournamentRegistration::all());
@@ -45,34 +46,6 @@ class TournamentRegistrationController extends Controller
         return response()->json($tournamentRegistration);
     }
 
-    public function update(Request $request, TournamentRegistration $tournamentRegistration): JsonResponse
-    {
-        $validated = $request->validate([
-            'status' => 'sometimes|nullable|string|max:20',
-            'seed' => 'sometimes|nullable|integer',
-            'final_standing' => 'sometimes|nullable|integer',
-            'points_earned' => 'sometimes|nullable|integer',
-            'registered_at' => 'sometimes|nullable|date',
-            'tournament_id' => 'sometimes|nullable|exists:tournaments,id',
-            'player_id' => 'sometimes|nullable|exists:players,id',
-            'deck_id' => 'sometimes|nullable|exists:decks,id',
-        ]);
-        $tournamentRegistration->update($validated);
-        $tournamentRegistration->validateRules();
-        try {
-            $tournamentRegistration->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($tournamentRegistration);
-    }
-
-    public function destroy(TournamentRegistration $tournamentRegistration): JsonResponse
-    {
-        $tournamentRegistration->delete();
-        return response()->json(null, 204);
-    }
     public function withdraw(Request $request, TournamentRegistration $tournamentRegistration): JsonResponse
     {
         $tournamentRegistration->withdraw();

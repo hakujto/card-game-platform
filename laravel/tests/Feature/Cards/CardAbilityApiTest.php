@@ -56,6 +56,12 @@ class CardAbilityApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/card_abilities?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/card_abilities', [

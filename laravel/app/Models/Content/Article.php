@@ -113,4 +113,18 @@ class Article extends Model
         return null;
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(function (self $model) {
+            $model->updateSearchIndex();
+        });
+    }
+
+    protected function updateSearchIndex(): void
+    {
+        // TODO: implement update_search_index
+    }
+
 }

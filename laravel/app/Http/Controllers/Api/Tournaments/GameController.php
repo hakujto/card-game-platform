@@ -11,6 +11,7 @@ use App\Models\Players\Player;
 
 class GameController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(Game::all());
@@ -44,34 +45,6 @@ class GameController extends Controller
         return response()->json($game);
     }
 
-    public function update(Request $request, Game $game): JsonResponse
-    {
-        $validated = $request->validate([
-            'game_number' => 'sometimes|nullable|integer',
-            'winner_side' => 'sometimes|nullable|string|max:20',
-            'turns_played' => 'sometimes|nullable|integer',
-            'duration_seconds' => 'sometimes|nullable|integer',
-            'ended_by' => 'sometimes|nullable|string|max:20',
-            'replay_url' => 'sometimes|nullable|string|url|max:200',
-            'match_id' => 'sometimes|nullable|exists:matches,id',
-            'winner_id' => 'sometimes|nullable|exists:players,id',
-        ]);
-        $game->update($validated);
-        $game->validateRules();
-        try {
-            $game->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($game);
-    }
-
-    public function destroy(Game $game): JsonResponse
-    {
-        $game->delete();
-        return response()->json(null, 204);
-    }
     public function recordWinner(Request $request, Game $game): JsonResponse
     {
         $winner_side = $request->input('winner_side');

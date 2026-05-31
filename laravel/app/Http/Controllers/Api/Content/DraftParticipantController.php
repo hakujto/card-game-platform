@@ -11,6 +11,7 @@ use App\Models\Players\Player;
 
 class DraftParticipantController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(DraftParticipant::all());
@@ -35,25 +36,6 @@ class DraftParticipantController extends Controller
         return response()->json($draftParticipant);
     }
 
-    public function update(Request $request, DraftParticipant $draftParticipant): JsonResponse
-    {
-        $validated = $request->validate([
-            'seat_number' => 'sometimes|nullable|integer',
-            'joined_at' => 'sometimes|nullable|date',
-            'session_id' => 'sometimes|nullable|exists:draft_sessions,id',
-            'player_id' => 'sometimes|nullable|exists:players,id',
-        ]);
-        $draftParticipant->update($validated);
-        $draftParticipant->validateRules();
-
-        return response()->json($draftParticipant);
-    }
-
-    public function destroy(DraftParticipant $draftParticipant): JsonResponse
-    {
-        $draftParticipant->delete();
-        return response()->json(null, 204);
-    }
     public function pickCard(Request $request, DraftParticipant $draftParticipant): JsonResponse
     {
         $card_id = $request->input('card_id');

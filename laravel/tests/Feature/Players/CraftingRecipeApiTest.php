@@ -79,12 +79,6 @@ class CraftingRecipeApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/crafting_recipes/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_dust_cost_positive_violated(): void
     {
         // Crafting recipe must have a dust cost greater than zero

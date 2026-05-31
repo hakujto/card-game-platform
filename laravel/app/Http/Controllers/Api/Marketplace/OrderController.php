@@ -11,6 +11,7 @@ use App\Models\Marketplace\Coupon;
 
 class OrderController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(Order::all());
@@ -49,39 +50,6 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    public function update(Request $request, Order $order): JsonResponse
-    {
-        $validated = $request->validate([
-            'status' => 'sometimes|nullable|string|max:20',
-            'total' => 'sometimes|nullable',
-            'discount_applied' => 'sometimes|nullable',
-            'currency' => 'sometimes|nullable|string|max:3',
-            'payment_method' => 'sometimes|nullable|string|max:20',
-            'payment_reference' => 'sometimes|nullable|string|max:200',
-            'shipping_address' => 'sometimes|nullable|string|max:200',
-            'tracking_number' => 'sometimes|nullable|string|max:100',
-            'created_at' => 'sometimes|nullable|date',
-            'paid_at' => 'sometimes|nullable|date',
-            'shipped_at' => 'sometimes|nullable|date',
-            'player_id' => 'sometimes|nullable|exists:players,id',
-            'coupon_id' => 'sometimes|nullable|exists:coupons,id',
-        ]);
-        $order->update($validated);
-        $order->validateRules();
-        try {
-            $order->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($order);
-    }
-
-    public function destroy(Order $order): JsonResponse
-    {
-        $order->delete();
-        return response()->json(null, 204);
-    }
     public function cancel(Request $request, Order $order): JsonResponse
     {
         $order->cancel();

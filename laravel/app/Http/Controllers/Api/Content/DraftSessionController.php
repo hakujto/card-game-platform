@@ -10,6 +10,7 @@ use App\Models\Cards\CardSet;
 
 class DraftSessionController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(DraftSession::all());
@@ -42,33 +43,6 @@ class DraftSessionController extends Controller
         return response()->json($draftSession);
     }
 
-    public function update(Request $request, DraftSession $draftSession): JsonResponse
-    {
-        $validated = $request->validate([
-            'status' => 'sometimes|nullable|string|max:20',
-            'draft_type' => 'sometimes|nullable|string|max:20',
-            'seats' => 'sometimes|nullable|integer',
-            'time_per_pick_seconds' => 'sometimes|nullable|integer',
-            'created_at' => 'sometimes|nullable|date',
-            'completed_at' => 'sometimes|nullable|date',
-            'card_set_id' => 'sometimes|nullable|exists:card_sets,id',
-        ]);
-        $draftSession->update($validated);
-        $draftSession->validateRules();
-        try {
-            $draftSession->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($draftSession);
-    }
-
-    public function destroy(DraftSession $draftSession): JsonResponse
-    {
-        $draftSession->delete();
-        return response()->json(null, 204);
-    }
     public function start(Request $request, DraftSession $draftSession): JsonResponse
     {
         $draftSession->start();

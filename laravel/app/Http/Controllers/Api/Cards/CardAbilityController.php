@@ -10,9 +10,18 @@ use App\Models\Cards\Card;
 
 class CardAbilityController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(CardAbility::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = CardAbility::query()
+                ->where('keyword', 'like', '%' . $q . '%')
+                ->orWhere('ability_text', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = CardAbility::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -63,6 +72,7 @@ class CardAbilityController extends Controller
         $cardAbility->delete();
         return response()->json(null, 204);
     }
+
     public function isUsableAt(Request $request, CardAbility $cardAbility): JsonResponse
     {
         $result = $cardAbility->isUsableAt();

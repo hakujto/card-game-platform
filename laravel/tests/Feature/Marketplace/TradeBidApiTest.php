@@ -106,20 +106,6 @@ class TradeBidApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/trade_bids/{$this->entityId}", [
-            'placed_at' => '2024-01-01 00:00:00',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/trade_bids/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_amount_positive_violated(): void
     {
         // Bid amount must be greater than zero

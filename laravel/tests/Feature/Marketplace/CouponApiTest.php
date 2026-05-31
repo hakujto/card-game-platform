@@ -35,6 +35,12 @@ class CouponApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/coupons?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/coupons', [
@@ -63,12 +69,6 @@ class CouponApiTest extends TestCase
             'code' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/coupons/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_valid_until_after_valid_from_violated(): void

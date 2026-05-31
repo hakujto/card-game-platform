@@ -11,9 +11,18 @@ use App\Models\Cards\CardSet;
 
 class ProductController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Product::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Product::query()
+                ->where('name', 'like', '%' . $q . '%')
+                ->orWhere('description', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Product::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -63,11 +72,6 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    public function destroy(Product $product): JsonResponse
-    {
-        $product->delete();
-        return response()->json(null, 204);
-    }
     public function activate(Request $request, Product $product): JsonResponse
     {
         $product->activate();

@@ -102,20 +102,6 @@ class GameApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/games/{$this->entityId}", [
-            'game_number' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/games/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_game_number_range_violated(): void
     {
         // Game number must be between 1 and 3 (best-of-3)

@@ -10,6 +10,7 @@ use App\Models\Tournaments\Tournament;
 
 class TournamentRoundController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TournamentRound::all());
@@ -41,32 +42,6 @@ class TournamentRoundController extends Controller
         return response()->json($tournamentRound);
     }
 
-    public function update(Request $request, TournamentRound $tournamentRound): JsonResponse
-    {
-        $validated = $request->validate([
-            'round_number' => 'sometimes|nullable|integer',
-            'status' => 'sometimes|nullable|string|max:20',
-            'started_at' => 'sometimes|nullable|date',
-            'ended_at' => 'sometimes|nullable|date',
-            'time_limit_minutes' => 'sometimes|nullable|integer',
-            'tournament_id' => 'sometimes|nullable|exists:tournaments,id',
-        ]);
-        $tournamentRound->update($validated);
-        $tournamentRound->validateRules();
-        try {
-            $tournamentRound->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($tournamentRound);
-    }
-
-    public function destroy(TournamentRound $tournamentRound): JsonResponse
-    {
-        $tournamentRound->delete();
-        return response()->json(null, 204);
-    }
     public function start(Request $request, TournamentRound $tournamentRound): JsonResponse
     {
         $tournamentRound->start();

@@ -11,9 +11,18 @@ use App\Models\Cards\Deck;
 
 class ArticleController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Article::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Article::query()
+                ->where('title', 'like', '%' . $q . '%')
+                ->orWhere('excerpt', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Article::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -83,11 +92,6 @@ class ArticleController extends Controller
         return response()->json($article);
     }
 
-    public function destroy(Article $article): JsonResponse
-    {
-        $article->delete();
-        return response()->json(null, 204);
-    }
     public function publish(Request $request, Article $article): JsonResponse
     {
         $article->publish();

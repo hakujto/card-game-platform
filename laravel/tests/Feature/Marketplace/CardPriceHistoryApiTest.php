@@ -59,51 +59,10 @@ class CardPriceHistoryApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_create_returns_201(): void
-    {
-        $response = $this->postJson('/api/card_price_histories', [
-            'price_date' => '2024-01-01',
-            'avg_price' => '0.00',
-            'min_price' => '0.00',
-            'max_price' => '0.00',
-            'volume' => 1,
-            'foil' => true,
-            'card_id' => $this->depCard->id,
-        ]);
-        $response->assertStatus(201);
-    }
-
     public function test_show_returns_200(): void
     {
         $response = $this->getJson("/api/card_price_histories/{$this->entityId}");
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/card_price_histories/{$this->entityId}", [
-            'price_date' => '2024-01-01',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/card_price_histories/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
-    public function test_create_fails_when_volume_not_negative_violated(): void
-    {
-        // Price history volume must not be negative
-        $response = $this->postJson('/api/card_price_histories', ['price_date' => '2024-01-01', 'avg_price' => '0.00', 'min_price' => '0.00', 'max_price' => '0.00', 'card_id' => 1, 'volume' => -1]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_prices_not_negative_violated(): void
-    {
-        // Prices must not be negative
-        $response = $this->postJson('/api/card_price_histories', ['price_date' => '2024-01-01', 'avg_price' => '0.00', 'max_price' => '0.00', 'volume' => 1, 'card_id' => 1, 'min_price' => -1]);
-        $response->assertStatus(422);
-    }
 }

@@ -11,6 +11,7 @@ use App\Models\Cards\Card;
 
 class PlayerCollectionController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(PlayerCollection::all());
@@ -60,6 +61,7 @@ class PlayerCollectionController extends Controller
         $playerCollection->delete();
         return response()->json(null, 204);
     }
+
     public function add(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
         $quantity = $request->input('quantity');

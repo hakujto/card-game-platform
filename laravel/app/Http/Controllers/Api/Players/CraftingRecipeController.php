@@ -10,6 +10,7 @@ use App\Models\Cards\Card;
 
 class CraftingRecipeController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(CraftingRecipe::all());
@@ -46,11 +47,6 @@ class CraftingRecipeController extends Controller
         return response()->json($craftingRecipe);
     }
 
-    public function destroy(CraftingRecipe $craftingRecipe): JsonResponse
-    {
-        $craftingRecipe->delete();
-        return response()->json(null, 204);
-    }
     public function canCraft(Request $request, CraftingRecipe $craftingRecipe): JsonResponse
     {
         $result = $craftingRecipe->canCraft();

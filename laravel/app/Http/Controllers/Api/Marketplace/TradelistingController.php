@@ -11,9 +11,17 @@ use App\Models\Cards\Card;
 
 class TradeListingController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(TradeListing::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = TradeListing::query()
+                ->where('description', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = TradeListing::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -79,11 +87,6 @@ class TradeListingController extends Controller
         return response()->json($tradeListing);
     }
 
-    public function destroy(TradeListing $tradeListing): JsonResponse
-    {
-        $tradeListing->delete();
-        return response()->json(null, 204);
-    }
     public function close(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $tradeListing->close();

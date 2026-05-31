@@ -13,7 +13,7 @@ class DraftPickResource extends JsonResource
             'id' => $this->id,
             'pick_number' => $this->pick_number,
             'pack_number' => $this->pack_number,
-            'picked_at' => $this->picked_at,
+            'pickedAt' => $this->picked_at,
             'participant_id' => $this->participant_id,
             'card_id' => $this->card_id,
             'created_at' => $this->created_at,

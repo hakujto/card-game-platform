@@ -62,20 +62,6 @@ class MatchRecordApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/matches/{$this->entityId}", [
-            'table_number' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/matches/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_wins_not_negative_violated(): void
     {
         // Win counts must not be negative

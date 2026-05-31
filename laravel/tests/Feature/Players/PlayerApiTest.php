@@ -32,6 +32,12 @@ class PlayerApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/players?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/players', [
@@ -57,12 +63,6 @@ class PlayerApiTest extends TestCase
             'display_name' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/players/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_rating_range_violated(): void

@@ -10,6 +10,7 @@ use App\Models\Tournaments\Tournament;
 
 class TournamentPrizeController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TournamentPrize::all());
@@ -61,6 +62,7 @@ class TournamentPrizeController extends Controller
         $tournamentPrize->delete();
         return response()->json(null, 204);
     }
+
     public function appliesToPlacement(Request $request, TournamentPrize $tournamentPrize): JsonResponse
     {
         $result = $tournamentPrize->appliesToPlacement();

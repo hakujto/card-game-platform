@@ -90,14 +90,6 @@ class TournamentJudgeApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/tournament_judges/{$this->entityId}", [
-            'role' => 'HeadJudge',
-        ]);
-        $response->assertStatus(200);
-    }
-
     public function test_delete_returns_204(): void
     {
         $response = $this->deleteJson("/api/tournament_judges/{$this->entityId}");

@@ -12,9 +12,9 @@ class AwardedPrizeResource extends JsonResource
         return [
             'id' => $this->id,
             'final_placement' => $this->final_placement,
-            'awarded_at' => $this->awarded_at,
+            'awardedAt' => $this->awarded_at,
             'claimed' => $this->claimed,
-            'claimed_at' => $this->claimed_at,
+            'claimedAt' => $this->claimed_at,
             'prize_id' => $this->prize_id,
             'player_id' => $this->player_id,
             'created_at' => $this->created_at,

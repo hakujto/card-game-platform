@@ -98,4 +98,18 @@ class Player extends Model
         // TODO: implement update_rating
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::updated(function (self $model) {
+            $model->updateRank();
+        });
+    }
+
+    protected function updateRank(): void
+    {
+        // TODO: implement update_rank
+    }
+
 }

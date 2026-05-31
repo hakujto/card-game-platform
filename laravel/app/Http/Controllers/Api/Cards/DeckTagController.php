@@ -9,9 +9,17 @@ use App\Models\Cards\DeckTag;
 
 class DeckTagController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(DeckTag::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = DeckTag::query()
+                ->where('name', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = DeckTag::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -44,6 +52,7 @@ class DeckTagController extends Controller
         $deckTag->delete();
         return response()->json(null, 204);
     }
+
     public function rename(Request $request, DeckTag $deckTag): JsonResponse
     {
         $new_name = $request->input('new_name');

@@ -11,6 +11,7 @@ use App\Models\Players\Player;
 
 class TradeBidController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TradeBid::all());
@@ -36,26 +37,6 @@ class TradeBidController extends Controller
         return response()->json($tradeBid);
     }
 
-    public function update(Request $request, TradeBid $tradeBid): JsonResponse
-    {
-        $validated = $request->validate([
-            'amount' => 'sometimes|nullable',
-            'placed_at' => 'sometimes|nullable|date',
-            'is_winning' => 'sometimes|nullable|boolean',
-            'listing_id' => 'sometimes|nullable|exists:trade_listings,id',
-            'bidder_id' => 'sometimes|nullable|exists:players,id',
-        ]);
-        $tradeBid->update($validated);
-        $tradeBid->validateRules();
-
-        return response()->json($tradeBid);
-    }
-
-    public function destroy(TradeBid $tradeBid): JsonResponse
-    {
-        $tradeBid->delete();
-        return response()->json(null, 204);
-    }
     public function outbidBy(Request $request, TradeBid $tradeBid): JsonResponse
     {
         $result = $tradeBid->outbidBy();

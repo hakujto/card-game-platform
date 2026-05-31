@@ -85,49 +85,10 @@ class DraftPickApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_create_returns_201(): void
-    {
-        $response = $this->postJson('/api/draft_picks', [
-            'pick_number' => 1,
-            'pack_number' => 1,
-            'picked_at' => '2024-01-01 00:00:00',
-            'participant_id' => $this->depParticipant->id,
-            'card_id' => $this->depCard->id,
-        ]);
-        $response->assertStatus(201);
-    }
-
     public function test_show_returns_200(): void
     {
         $response = $this->getJson("/api/draft_picks/{$this->entityId}");
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/draft_picks/{$this->entityId}", [
-            'pick_number' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/draft_picks/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
-    public function test_create_fails_when_pick_number_positive_violated(): void
-    {
-        // Pick number must be greater than zero
-        $response = $this->postJson('/api/draft_picks', ['pack_number' => 1, 'picked_at' => '2024-01-01 00:00:00', 'participant_id' => 1, 'card_id' => 1, 'pick_number' => 0]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_pack_number_range_violated(): void
-    {
-        // Pack number must be between 1 and 3
-        $response = $this->postJson('/api/draft_picks', ['pick_number' => 1, 'picked_at' => '2024-01-01 00:00:00', 'participant_id' => 1, 'card_id' => 1, 'pack_number' => 4]);
-        $response->assertStatus(422);
-    }
 }

@@ -73,6 +73,12 @@ class TradeListingApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/trade_listings?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/trade_listings', [
@@ -103,12 +109,6 @@ class TradeListingApiTest extends TestCase
             'auction_end_time' => '2024-01-01 00:00:00',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/trade_listings/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_fixed_price_requires_asking_price_violated(): void

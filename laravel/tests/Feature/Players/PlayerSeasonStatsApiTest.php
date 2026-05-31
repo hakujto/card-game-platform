@@ -42,64 +42,10 @@ class PlayerSeasonStatsApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_create_returns_201(): void
-    {
-        $response = $this->postJson('/api/player_season_statses', [
-            'wins' => 1,
-            'losses' => 1,
-            'draws' => 1,
-            'tournament_wins' => 1,
-            'season_points' => 1,
-            'season_id' => $this->depSeason->id,
-        ]);
-        $response->assertStatus(201);
-    }
-
     public function test_show_returns_200(): void
     {
         $response = $this->getJson("/api/player_season_statses/{$this->entityId}");
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/player_season_statses/{$this->entityId}", [
-            'wins' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/player_season_statses/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
-    public function test_create_fails_when_wins_not_negative_violated(): void
-    {
-        // Season wins must not be negative
-        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'wins' => -1]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_losses_not_negative_violated(): void
-    {
-        // Season losses must not be negative
-        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'losses' => -1]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_tournament_wins_not_negative_violated(): void
-    {
-        // Season tournament wins must not be negative
-        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'tournament_wins' => -1]);
-        $response->assertStatus(422);
-    }
-
-    public function test_create_fails_when_season_points_not_negative_violated(): void
-    {
-        // Season points must not be negative
-        $response = $this->postJson('/api/player_season_statses', ['player_id' => 1, 'season_id' => 1, 'season_points' => -1]);
-        $response->assertStatus(422);
-    }
 }

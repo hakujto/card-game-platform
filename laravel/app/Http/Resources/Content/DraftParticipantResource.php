@@ -12,7 +12,7 @@ class DraftParticipantResource extends JsonResource
         return [
             'id' => $this->id,
             'seat_number' => $this->seat_number,
-            'joined_at' => $this->joined_at,
+            'joinedAt' => $this->joined_at,
             'session_id' => $this->session_id,
             'player_id' => $this->player_id,
             'created_at' => $this->created_at,

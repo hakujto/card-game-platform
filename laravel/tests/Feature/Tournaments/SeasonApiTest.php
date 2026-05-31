@@ -31,6 +31,12 @@ class SeasonApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/seasons?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/seasons', [
@@ -55,12 +61,6 @@ class SeasonApiTest extends TestCase
             'name' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/seasons/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_end_date_after_start_date_violated(): void

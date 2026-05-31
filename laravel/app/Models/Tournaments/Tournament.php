@@ -124,4 +124,18 @@ class Tournament extends Model
         return null;
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::updated(function (self $model) {
+            $model->syncSeasonStats();
+        });
+    }
+
+    protected function syncSeasonStats(): void
+    {
+        // TODO: implement sync_season_stats
+    }
+
 }

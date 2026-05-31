@@ -124,4 +124,18 @@ class Order extends Model
         // TODO: implement notify_shipped
     }
 
+    // ── Lifecycle hooks ──────────────────────────────────────────────
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::updated(function (self $model) {
+            $model->notifyStatusChange();
+        });
+    }
+
+    protected function notifyStatusChange(): void
+    {
+        // TODO: implement notify_status_change
+    }
+
 }

@@ -13,7 +13,7 @@ class ArticleCommentResource extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'is_hidden' => $this->is_hidden,
-            'created_at' => $this->created_at,
+            'createdAt' => $this->created_at,
             'article_id' => $this->article_id,
             'author_id' => $this->author_id,
             'parent_comment_id' => $this->parent_comment_id,

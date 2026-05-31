@@ -9,9 +9,17 @@ use App\Models\Marketplace\Coupon;
 
 class CouponController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Coupon::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Coupon::query()
+                ->where('code', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Coupon::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -67,11 +75,6 @@ class CouponController extends Controller
         return response()->json($coupon);
     }
 
-    public function destroy(Coupon $coupon): JsonResponse
-    {
-        $coupon->delete();
-        return response()->json(null, 204);
-    }
     public function isValid(Request $request, Coupon $coupon): JsonResponse
     {
         $result = $coupon->isValid();

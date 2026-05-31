@@ -11,6 +11,7 @@ use App\Models\Players\Player;
 
 class TournamentJudgeController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TournamentJudge::all());
@@ -32,22 +33,12 @@ class TournamentJudgeController extends Controller
         return response()->json($tournamentJudge);
     }
 
-    public function update(Request $request, TournamentJudge $tournamentJudge): JsonResponse
-    {
-        $validated = $request->validate([
-            'role' => 'sometimes|nullable|string|max:20',
-            'tournament_id' => 'sometimes|nullable|exists:tournaments,id',
-            'player_id' => 'sometimes|nullable|exists:players,id',
-        ]);
-        $tournamentJudge->update($validated);
-        return response()->json($tournamentJudge);
-    }
-
     public function destroy(TournamentJudge $tournamentJudge): JsonResponse
     {
         $tournamentJudge->delete();
         return response()->json(null, 204);
     }
+
     public function promoteToHead(Request $request, TournamentJudge $tournamentJudge): JsonResponse
     {
         $tournamentJudge->promoteToHead();

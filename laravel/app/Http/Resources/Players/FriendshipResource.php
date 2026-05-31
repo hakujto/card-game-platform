@@ -12,7 +12,7 @@ class FriendshipResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status,
-            'created_at' => $this->created_at,
+            'createdAt' => $this->created_at,
             'requester_id' => $this->requester_id,
             'receiver_id' => $this->receiver_id,
             'created_at' => $this->created_at,

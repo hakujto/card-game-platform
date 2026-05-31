@@ -11,6 +11,7 @@ use App\Models\Players\Player;
 
 class TradeDisputeController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(TradeDispute::all());
@@ -44,34 +45,6 @@ class TradeDisputeController extends Controller
         return response()->json($tradeDispute);
     }
 
-    public function update(Request $request, TradeDispute $tradeDispute): JsonResponse
-    {
-        $validated = $request->validate([
-            'status' => 'sometimes|nullable|string|max:20',
-            'reason' => 'sometimes|nullable|string|max:20',
-            'description' => 'sometimes|nullable|string|max:200',
-            'resolution' => 'sometimes|nullable|string|max:200',
-            'opened_at' => 'sometimes|nullable|date',
-            'resolved_at' => 'sometimes|nullable|date',
-            'transaction_id' => 'sometimes|nullable|exists:trade_transactions,id',
-            'opened_by_id' => 'sometimes|nullable|exists:players,id',
-            'resolved_by_id' => 'sometimes|nullable|exists:players,id',
-        ]);
-        $tradeDispute->update($validated);
-        try {
-            $tradeDispute->validateImplies();
-        } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
-        }
-
-        return response()->json($tradeDispute);
-    }
-
-    public function destroy(TradeDispute $tradeDispute): JsonResponse
-    {
-        $tradeDispute->delete();
-        return response()->json(null, 204);
-    }
     public function escalate(Request $request, TradeDispute $tradeDispute): JsonResponse
     {
         $tradeDispute->escalate();

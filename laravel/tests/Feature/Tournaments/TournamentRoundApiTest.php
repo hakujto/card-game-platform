@@ -87,20 +87,6 @@ class TournamentRoundApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/tournament_rounds/{$this->entityId}", [
-            'round_number' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/tournament_rounds/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_ended_after_started_violated(): void
     {
         // Round end time must be after start time

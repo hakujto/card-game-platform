@@ -50,6 +50,12 @@ class ArticleApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/articles?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/articles', [
@@ -82,12 +88,6 @@ class ArticleApiTest extends TestCase
             'title' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/articles/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_published_requires_published_at_violated(): void

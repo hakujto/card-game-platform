@@ -11,6 +11,7 @@ use App\Models\Cards\Card;
 
 class DeckSideboardCardController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(DeckSideboardCard::all());
@@ -52,6 +53,7 @@ class DeckSideboardCardController extends Controller
         $deckSideboardCard->delete();
         return response()->json(null, 204);
     }
+
     public function incrementAction(Request $request, DeckSideboardCard $deckSideboardCard): JsonResponse
     {
         $amount = $request->input('amount');

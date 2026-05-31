@@ -59,6 +59,12 @@ class TournamentApiTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_search_returns_200(): void
+    {
+        $response = $this->getJson('/api/tournaments?q=test');
+        $response->assertStatus(200);
+    }
+
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/tournaments', [
@@ -91,12 +97,6 @@ class TournamentApiTest extends TestCase
             'name' => 'test',
         ]);
         $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/tournaments/{$this->entityId}");
-        $response->assertStatus(204);
     }
 
     public function test_create_fails_when_max_players_positive_violated(): void

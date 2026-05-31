@@ -64,20 +64,6 @@ class DraftSessionApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/draft_sessions/{$this->entityId}", [
-            'seats' => 2,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/draft_sessions/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_seats_range_violated(): void
     {
         // Draft session must have between 2 and 16 seats

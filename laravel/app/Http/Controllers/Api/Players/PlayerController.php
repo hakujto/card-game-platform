@@ -10,9 +10,17 @@ use App\Models\User;
 
 class PlayerController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Player::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Player::query()
+                ->where('display_name', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Player::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -64,11 +72,6 @@ class PlayerController extends Controller
         return response()->json($player);
     }
 
-    public function destroy(Player $player): JsonResponse
-    {
-        $player->delete();
-        return response()->json(null, 204);
-    }
     public function promote(Request $request, Player $player): JsonResponse
     {
         $result = $player->promote();

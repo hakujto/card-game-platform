@@ -11,6 +11,7 @@ use App\Models\Content\ArticleTag;
 
 class ArticleTagAssignmentController extends Controller
 {
+
     public function index(): JsonResponse
     {
         return response()->json(ArticleTagAssignment::all());
@@ -31,19 +32,10 @@ class ArticleTagAssignmentController extends Controller
         return response()->json($articleTagAssignment);
     }
 
-    public function update(Request $request, ArticleTagAssignment $articleTagAssignment): JsonResponse
-    {
-        $validated = $request->validate([
-            'article_id' => 'sometimes|nullable|exists:articles,id',
-            'tag_id' => 'sometimes|nullable|exists:article_tags,id',
-        ]);
-        $articleTagAssignment->update($validated);
-        return response()->json($articleTagAssignment);
-    }
-
     public function destroy(ArticleTagAssignment $articleTagAssignment): JsonResponse
     {
         $articleTagAssignment->delete();
         return response()->json(null, 204);
     }
+
 }

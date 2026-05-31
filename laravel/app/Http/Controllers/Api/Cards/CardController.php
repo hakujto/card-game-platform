@@ -10,9 +10,18 @@ use App\Models\Cards\CardSet;
 
 class CardController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Card::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Card::query()
+                ->where('name', 'like', '%' . $q . '%')
+                ->orWhere('artist_name', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Card::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -84,11 +93,6 @@ class CardController extends Controller
         return response()->json($card);
     }
 
-    public function destroy(Card $card): JsonResponse
-    {
-        $card->delete();
-        return response()->json(null, 204);
-    }
     public function ban(Request $request, Card $card): JsonResponse
     {
         $card->ban();

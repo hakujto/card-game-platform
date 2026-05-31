@@ -9,9 +9,17 @@ use App\Models\Content\ArticleTag;
 
 class ArticleTagController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(ArticleTag::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = ArticleTag::query()
+                ->where('name', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = ArticleTag::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -44,6 +52,7 @@ class ArticleTagController extends Controller
         $articleTag->delete();
         return response()->json(null, 204);
     }
+
     public function rename(Request $request, ArticleTag $articleTag): JsonResponse
     {
         $new_name = $request->input('new_name');

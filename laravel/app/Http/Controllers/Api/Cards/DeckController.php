@@ -10,9 +10,18 @@ use App\Models\Players\Player;
 
 class DeckController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Deck::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Deck::query()
+                ->where('name', 'like', '%' . $q . '%')
+                ->orWhere('description', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Deck::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -79,6 +88,7 @@ class DeckController extends Controller
         $deck->delete();
         return response()->json(null, 204);
     }
+
     public function validateSize(Request $request, Deck $deck): JsonResponse
     {
         $result = $deck->validateSize();

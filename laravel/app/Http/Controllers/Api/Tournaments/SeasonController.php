@@ -9,9 +9,17 @@ use App\Models\Tournaments\Season;
 
 class SeasonController extends Controller
 {
-    public function index(): JsonResponse
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Season::all());
+        $q = $request->query('q');
+        if ($q) {
+            $items = Season::query()
+                ->where('name', 'like', '%' . $q . '%')->get();
+        } else {
+            $items = Season::all();
+        }
+        return response()->json($items);
     }
 
     public function store(Request $request): JsonResponse
@@ -51,11 +59,6 @@ class SeasonController extends Controller
         return response()->json($season);
     }
 
-    public function destroy(Season $season): JsonResponse
-    {
-        $season->delete();
-        return response()->json(null, 204);
-    }
     public function activate(Request $request, Season $season): JsonResponse
     {
         $season->activate();

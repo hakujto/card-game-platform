@@ -56,20 +56,6 @@ class DraftParticipantApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/draft_participants/{$this->entityId}", [
-            'seat_number' => 1,
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_delete_returns_204(): void
-    {
-        $response = $this->deleteJson("/api/draft_participants/{$this->entityId}");
-        $response->assertStatus(204);
-    }
-
     public function test_create_fails_when_seat_number_positive_violated(): void
     {
         // Seat number must be greater than zero

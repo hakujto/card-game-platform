@@ -15,7 +15,7 @@ class TournamentRegistrationResource extends JsonResource
             'seed' => $this->seed,
             'final_standing' => $this->final_standing,
             'points_earned' => $this->points_earned,
-            'registered_at' => $this->registered_at,
+            'registeredAt' => $this->registered_at,
             'tournament_id' => $this->tournament_id,
             'player_id' => $this->player_id,
             'deck_id' => $this->deck_id,

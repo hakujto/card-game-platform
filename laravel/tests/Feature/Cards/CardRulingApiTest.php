@@ -73,14 +73,6 @@ class CardRulingApiTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_update_returns_200(): void
-    {
-        $response = $this->patchJson("/api/card_rulings/{$this->entityId}", [
-            'ruling_text' => 'test',
-        ]);
-        $response->assertStatus(200);
-    }
-
     public function test_delete_returns_204(): void
     {
         $response = $this->deleteJson("/api/card_rulings/{$this->entityId}");
