@@ -70,4 +70,9 @@ export class OrderService {
       // TODO: call entity.notify_shipped() after implementing domain model
     }
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async notifyStatusChange(entity: any): Promise<void> {
+    // TODO: implement notify_status_change
+  }
 }

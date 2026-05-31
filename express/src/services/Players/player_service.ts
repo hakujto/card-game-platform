@@ -65,4 +65,9 @@ export class PlayerService {
     if (!entity) throw new Error('Player not found: ' + id);
     // TODO: implement update_rating domain logic
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async updateRank(entity: any): Promise<void> {
+    // TODO: implement update_rank
+  }
 }

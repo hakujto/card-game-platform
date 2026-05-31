@@ -36,6 +36,7 @@ describe('DeckCard API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+
   it("POST /api/deck_cards returns 400 when quantity_range violated", async () => {
     const res = await request(app).post('/api/deck_cards').send({ deckId: 1, cardId: 1, isCommander: true, quantity: 5 });
     expect(res.status).toBe(400);

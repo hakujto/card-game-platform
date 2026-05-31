@@ -8,10 +8,17 @@ const service = new PlayerCollectionService();
 function validate(data: any): void {
   if (!((data.quantity == null || data.quantity > 0))) throw new Error(`Collection quantity must be greater than zero`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  if ('acquiredAt' in r) { r.acquiredAt = r.acquiredAt; delete r.acquiredAt; }
+  return r;
+}
 
-router.get('/', async (_req, res) => {
+
+router.get('/', async (req, res) => {
   const items = await prisma.playerCollection.findMany();
-  res.json(items);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -27,36 +34,17 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.playerCollection.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const entity = await prisma.playerCollection.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
-});
-
-router.put('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.quantity !== undefined) data.quantity = body.quantity;
-    if (body.foil !== undefined) data.foil = body.foil;
-    if (body.condition !== undefined) data.condition = body.condition;
-    if (body.acquiredAt !== undefined) data.acquiredAt = body.acquiredAt != null ? new Date(body.acquiredAt) : null;
-    if (body.acquiredVia !== undefined) data.acquiredVia = body.acquiredVia;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.cardId !== undefined) data.cardId = body.cardId;
-  try {
-  validate(data);
-    const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
+  res.json(applyProjection(entity));
 });
 
 router.patch('/:id', async (req, res) => {
@@ -72,10 +60,10 @@ router.patch('/:id', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -95,7 +83,8 @@ router.post('/:id/add', async (req, res) => {
     await service.add(id, quantity);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -105,7 +94,8 @@ router.get('/:id/value', async (req, res) => {
     const result = await service.estimated_value(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

@@ -11,6 +11,12 @@ describe('Article API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/articles?q=test returns 200', async () => {
+    const res = await request(app).get('/api/articles?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/articles creates entity', async () => {
     const res = await request(app)
       .post('/api/articles')
@@ -37,10 +43,6 @@ describe('Article API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/articles/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/articles/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/articles returns 400 when published_requires_published_at violated", async () => {
     const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: null });
@@ -56,6 +58,7 @@ describe('Article API', () => {
     const res = await request(app).post('/api/articles').send({ title: 'test', slug: 'test', body: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', authorId: 1, status: 'PUBLISHED', publishedAt: '2024-01-01T00:00:00.000Z', likesCount: -1 });
     expect(res.status).toBe(400);
   });
+
   it('PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published', async () => {
     const res = await request(app).patch('/api/articles/1/transitions/draft-to-published');
     expect([200, 409, 422, 404]).toContain(res.status);

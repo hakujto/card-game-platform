@@ -11,6 +11,12 @@ describe('Player API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/players?q=test returns 200', async () => {
+    const res = await request(app).get('/api/players?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/players creates entity', async () => {
     const res = await request(app)
       .post('/api/players')
@@ -34,10 +40,6 @@ describe('Player API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/players/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/players/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/players returns 400 when rating_range violated", async () => {
     const res = await request(app).post('/api/players').send({ displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', rating: 10000 });

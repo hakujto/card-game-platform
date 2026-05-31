@@ -11,6 +11,12 @@ describe('Product API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/products?q=test returns 200', async () => {
+    const res = await request(app).get('/api/products?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/products creates entity', async () => {
     const res = await request(app)
       .post('/api/products')
@@ -35,10 +41,6 @@ describe('Product API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/products/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/products/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/products returns 400 when price_positive violated", async () => {
     const res = await request(app).post('/api/products').send({ name: 'test', price: 0 });

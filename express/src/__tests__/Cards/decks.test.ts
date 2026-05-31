@@ -11,6 +11,12 @@ describe('Deck API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/decks?q=test returns 200', async () => {
+    const res = await request(app).get('/api/decks?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/decks creates entity', async () => {
     const res = await request(app)
       .post('/api/decks')
@@ -41,6 +47,7 @@ describe('Deck API', () => {
     const res = await request(app).delete('/api/decks/1');
     expect([204, 404]).toContain(res.status);
   });
+
 
   it("POST /api/decks returns 400 when wins_not_negative violated", async () => {
     const res = await request(app).post('/api/decks').send({ name: 'test', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z', playerId: 1, isTournamentLegal: true, isPublic: true, wins: -1 });

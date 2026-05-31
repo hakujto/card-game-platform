@@ -11,6 +11,12 @@ describe('CardAbility API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/card_abilities?q=test returns 200', async () => {
+    const res = await request(app).get('/api/card_abilities?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/card_abilities creates entity', async () => {
     const res = await request(app)
       .post('/api/card_abilities')
@@ -34,6 +40,7 @@ describe('CardAbility API', () => {
     const res = await request(app).delete('/api/card_abilities/1');
     expect([204, 404]).toContain(res.status);
   });
+
 
   it("POST /api/card_abilities returns 400 when keyword_ability_requires_keyword violated", async () => {
     const res = await request(app).post('/api/card_abilities').send({ abilityText: 'test', cardId: 1, abilityType: 'KEYWORD', keyword: null });

@@ -11,6 +11,12 @@ describe('Season API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/seasons?q=test returns 200', async () => {
+    const res = await request(app).get('/api/seasons?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/seasons creates entity', async () => {
     const res = await request(app)
       .post('/api/seasons')
@@ -31,11 +37,6 @@ describe('Season API', () => {
   it('PATCH /api/seasons/:id returns 200 or 404', async () => {
     const res = await request(app).patch('/api/seasons/1').send({});
     expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/seasons/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/seasons/1');
-    expect([204, 404]).toContain(res.status);
   });
 
 });

@@ -12,29 +12,9 @@ function validate(data: any): void {
   if (!((data.seasonPoints == null || data.seasonPoints >= 0))) throw new Error(`Season points must not be negative`);
 }
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   const items = await prisma.playerSeasonStats.findMany();
   res.json(items);
-});
-
-router.post('/', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.wins !== undefined) data.wins = body.wins;
-    if (body.losses !== undefined) data.losses = body.losses;
-    if (body.draws !== undefined) data.draws = body.draws;
-    if (body.tournamentWins !== undefined) data.tournamentWins = body.tournamentWins;
-    if (body.highestRank !== undefined) data.highestRank = body.highestRank;
-    if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.seasonId !== undefined) data.seasonId = body.seasonId;
-  try {
-  validate(data);
-    const entity = await prisma.playerSeasonStats.create({ data });
-    res.status(201).json(entity);
-  } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
-  }
 });
 
 router.get('/:id', async (req, res) => {
@@ -43,64 +23,14 @@ router.get('/:id', async (req, res) => {
   res.json(entity);
 });
 
-router.put('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.wins !== undefined) data.wins = body.wins;
-    if (body.losses !== undefined) data.losses = body.losses;
-    if (body.draws !== undefined) data.draws = body.draws;
-    if (body.tournamentWins !== undefined) data.tournamentWins = body.tournamentWins;
-    if (body.highestRank !== undefined) data.highestRank = body.highestRank;
-    if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.seasonId !== undefined) data.seasonId = body.seasonId;
-  try {
-  validate(data);
-    const entity = await prisma.playerSeasonStats.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.patch('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.wins !== undefined) data.wins = body.wins;
-    if (body.losses !== undefined) data.losses = body.losses;
-    if (body.draws !== undefined) data.draws = body.draws;
-    if (body.tournamentWins !== undefined) data.tournamentWins = body.tournamentWins;
-    if (body.highestRank !== undefined) data.highestRank = body.highestRank;
-    if (body.seasonPoints !== undefined) data.seasonPoints = body.seasonPoints;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.seasonId !== undefined) data.seasonId = body.seasonId;
-  try {
-  validate(data);
-    const entity = await prisma.playerSeasonStats.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.playerSeasonStats.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
-  }
-});
-
 router.get('/:id/win-rate', async (req, res) => {
   const id = Number((req.params as any).id);
   try {
     const result = await service.win_rate(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -111,7 +41,8 @@ router.patch('/:id/points', async (req, res) => {
     await service.add_points(id, points);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -121,7 +52,8 @@ router.post('/:id/tournament-win', async (req, res) => {
     await service.record_tournament_win(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

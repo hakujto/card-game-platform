@@ -11,10 +11,20 @@ function validate(data: any): void {
   if (!((data.draws == null || data.draws >= 0))) throw new Error(`Deck draws count must not be negative`);
   if ((data.isTournamentLegal === true) && !(data.isPublic === true)) throw new Error(`Tournament-legal deck must be made public`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  if ('createdAt' in r) { r.createdAt = r.createdAt; delete r.createdAt; }
+  if ('updatedAt' in r) { r.updatedAt = r.updatedAt; delete r.updatedAt; }
+  return r;
+}
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.deck.findMany();
-  res.json(items);
+
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ name: { contains: q } }, { description: { contains: q } }] } : undefined;
+  const items = await prisma.deck.findMany(where ? { where } : undefined);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -35,16 +45,17 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.deck.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const entity = await prisma.deck.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
+  res.json(applyProjection(entity));
 });
 
 router.put('/:id', async (req, res) => {
@@ -65,10 +76,10 @@ router.put('/:id', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -90,10 +101,10 @@ router.patch('/:id', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -112,7 +123,8 @@ router.get('/:id/validate', async (req, res) => {
     const result = await service.validate_size(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -124,7 +136,8 @@ router.post('/:id/cards', async (req, res) => {
     await service.add_card(id, cardId, quantity);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -135,7 +148,8 @@ router.delete('/:id/cards/:card_id', async (req, res) => {
     await service.remove_card(id, cardId);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -145,7 +159,8 @@ router.get('/:id/win-rate', async (req, res) => {
     const result = await service.win_rate(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -155,7 +170,8 @@ router.post('/:id/clone', async (req, res) => {
     const result = await service.clone(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -165,7 +181,8 @@ router.post('/:id/publish', async (req, res) => {
     await service.publish(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -175,7 +192,8 @@ router.post('/:id/unpublish', async (req, res) => {
     await service.unpublish(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -185,7 +203,8 @@ router.post('/:id/certify', async (req, res) => {
     const result = await service.certify_tournament_legal(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

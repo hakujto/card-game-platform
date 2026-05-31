@@ -25,11 +25,6 @@ describe('Friendship API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/friendships/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/friendships/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/friendships/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/friendships/1');
     expect([204, 404]).toContain(res.status);

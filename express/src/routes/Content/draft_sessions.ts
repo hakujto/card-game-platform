@@ -10,6 +10,14 @@ function validate(data: any): void {
   if (!((data.timePerPickSeconds == null || data.timePerPickSeconds > 0))) throw new Error(`Time per pick must be greater than zero`);
   if ((data.completedAt != null) && !(data.status === 'COMPLETED')) throw new Error(`completed_at can only be set when draft status is Completed`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  if ('createdAt' in r) { r.createdAt = r.createdAt; delete r.createdAt; }
+  if ('completedAt' in r) { r.completedAt = r.completedAt; delete r.completedAt; }
+  return r;
+}
+
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   'WaitingForPlayers': ['Drafting', 'Abandoned'],
   'Drafting': ['Completed', 'Abandoned']
@@ -73,9 +81,9 @@ class DraftSessionLifecycleService {
 const lifecycleService = new DraftSessionLifecycleService();
 
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   const items = await prisma.draftSession.findMany();
-  res.json(items);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -91,65 +99,17 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.draftSession.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const entity = await prisma.draftSession.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
-});
-
-router.put('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
-    if (body.draftType !== undefined) data.draftType = body.draftType;
-    if (body.seats !== undefined) data.seats = body.seats;
-    if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
-    if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
-    if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
-  try {
-  validate(data);
-    const entity = await prisma.draftSession.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.patch('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
-    if (body.draftType !== undefined) data.draftType = body.draftType;
-    if (body.seats !== undefined) data.seats = body.seats;
-    if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
-    if (body.completedAt !== undefined) data.completedAt = body.completedAt != null ? new Date(body.completedAt) : null;
-    if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
-  try {
-  validate(data);
-    const entity = await prisma.draftSession.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.draftSession.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
-  }
+  res.json(applyProjection(entity));
 });
 
 router.post('/:id/start', async (req, res) => {
@@ -158,7 +118,8 @@ router.post('/:id/start', async (req, res) => {
     await service.start(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -168,7 +129,8 @@ router.post('/:id/abandon', async (req, res) => {
     await service.abandon(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -178,7 +140,8 @@ router.post('/:id/complete', async (req, res) => {
     await service.complete(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -188,7 +151,8 @@ router.get('/:id/full', async (req, res) => {
     const result = await service.is_full(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 

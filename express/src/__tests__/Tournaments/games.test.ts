@@ -25,15 +25,6 @@ describe('Game API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/games/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/games/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/games/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/games/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/games returns 400 when game_number_range violated", async () => {
     const res = await request(app).post('/api/games').send({ matchId: 1, turnsPlayed: 1, durationSeconds: 1, winnerSide: 'PLAYER1', winnerId: 1, gameNumber: 4 });

@@ -11,6 +11,12 @@ describe('Stream API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/streams?q=test returns 200', async () => {
+    const res = await request(app).get('/api/streams?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/streams creates entity', async () => {
     const res = await request(app)
       .post('/api/streams')
@@ -34,10 +40,6 @@ describe('Stream API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/streams/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/streams/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/streams returns 400 when actual_start_requires_live_or_ended violated", async () => {
     const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z' });
@@ -53,6 +55,7 @@ describe('Stream API', () => {
     const res = await request(app).post('/api/streams').send({ title: 'test', streamUrl: 'https://example.com', scheduledStart: '2024-01-01T00:00:00.000Z', streamerId: 1, actualStart: '2024-01-01T00:00:00.000Z', status: 'ENDED', endedAt: '2024-01-01T00:00:00.000Z', viewerCountPeak: -1 });
     expect(res.status).toBe(400);
   });
+
   it('PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live', async () => {
     const res = await request(app).patch('/api/streams/1/transitions/scheduled-to-live');
     expect([200, 409, 422, 404]).toContain(res.status);

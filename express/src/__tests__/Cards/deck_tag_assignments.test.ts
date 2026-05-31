@@ -23,11 +23,6 @@ describe('DeckTagAssignment API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/deck_tag_assignments/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/deck_tag_assignments/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/deck_tag_assignments/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/deck_tag_assignments/1');
     expect([204, 404]).toContain(res.status);

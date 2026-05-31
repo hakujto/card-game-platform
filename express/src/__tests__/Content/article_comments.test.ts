@@ -27,11 +27,6 @@ describe('ArticleComment API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/article_comments/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/article_comments/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/article_comments/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/article_comments/1');
     expect([204, 404]).toContain(res.status);

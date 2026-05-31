@@ -12,8 +12,10 @@ function validate(data: any): void {
   if ((data.maxUses != null) && !((data.usesCount == null || (data.maxUses != null && data.usesCount <= data.maxUses)))) throw new Error(`Coupon uses count cannot exceed max_uses`);
 }
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.coupon.findMany();
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ code: { contains: q } }] } : undefined;
+  const items = await prisma.coupon.findMany(where ? { where } : undefined);
   res.json(items);
 });
 
@@ -34,7 +36,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.coupon.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -61,8 +64,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.coupon.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -83,17 +86,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.coupon.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.coupon.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -103,7 +97,8 @@ router.get('/:id/valid', async (req, res) => {
     const result = await service.is_valid(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -114,7 +109,8 @@ router.get('/:id/applicable', async (req, res) => {
     const result = await service.is_applicable_to_order(id, orderTotal);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -124,7 +120,8 @@ router.post('/:id/redeem', async (req, res) => {
     await service.redeem(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -134,7 +131,8 @@ router.post('/:id/deactivate', async (req, res) => {
     await service.deactivate(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

@@ -11,7 +11,7 @@ function validate(data: any): void {
   if (!((data.amount == null || Number(data.amount) >= 0))) throw new Error(`Prize amount must not be negative`);
 }
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   const items = await prisma.tournamentPrize.findMany();
   res.json(items);
 });
@@ -32,7 +32,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.tournamentPrize.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -58,8 +59,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.tournamentPrize.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -79,8 +80,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.tournamentPrize.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -100,7 +101,8 @@ router.get('/:id/applies', async (req, res) => {
     const result = await service.applies_to_placement(id, placement);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -111,7 +113,8 @@ router.post('/:id/award', async (req, res) => {
     await service.award_to_player(id, playerId);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

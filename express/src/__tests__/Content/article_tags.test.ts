@@ -11,6 +11,12 @@ describe('ArticleTag API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/article_tags?q=test returns 200', async () => {
+    const res = await request(app).get('/api/article_tags?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/article_tags creates entity', async () => {
     const res = await request(app)
       .post('/api/article_tags')

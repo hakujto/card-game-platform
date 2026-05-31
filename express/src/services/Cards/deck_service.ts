@@ -72,4 +72,9 @@ export class DeckService {
     // TODO: implement certify_tournament_legal domain logic
     return undefined as any;
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async recalculateTournamentLegal(entity: any): Promise<void> {
+    // TODO: implement recalculate_tournament_legal
+  }
 }

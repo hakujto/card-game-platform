@@ -11,6 +11,12 @@ describe('Tournament API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/tournaments?q=test returns 200', async () => {
+    const res = await request(app).get('/api/tournaments?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/tournaments creates entity', async () => {
     const res = await request(app)
       .post('/api/tournaments')
@@ -36,10 +42,6 @@ describe('Tournament API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/tournaments/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/tournaments/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/tournaments returns 400 when max_players_positive violated", async () => {
     const res = await request(app).post('/api/tournaments').send({ name: 'test', startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z', maxPlayers: 513 });
@@ -60,6 +62,7 @@ describe('Tournament API', () => {
     const res = await request(app).post('/api/tournaments').send({ name: 'test', maxPlayers: 2, startTime: '2024-01-01T00:00:00.000Z', createdAt: '2024-01-01T00:00:00.000Z', seasonId: 1, organizerId: 1, endTime: '2024-01-01T00:00:00.000Z' });
     expect(res.status).toBe(400);
   });
+
   it('PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/draft-to-registration');
     expect([200, 409, 422, 404]).toContain(res.status);

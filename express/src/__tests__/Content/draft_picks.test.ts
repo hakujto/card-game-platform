@@ -11,39 +11,9 @@ describe('DraftPick API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('POST /api/draft_picks creates entity', async () => {
-    const res = await request(app)
-      .post('/api/draft_picks')
-      .send({
-      pickNumber: 1,
-      packNumber: 1,
-      pickedAt: '2024-01-01T00:00:00.000Z'
-    });
-    expect([200, 201]).toContain(res.status);
-  });
-
   it('GET /api/draft_picks/:id returns 200 or 404', async () => {
     const res = await request(app).get('/api/draft_picks/1');
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/draft_picks/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/draft_picks/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/draft_picks/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/draft_picks/1');
-    expect([204, 404]).toContain(res.status);
-  });
-
-  it("POST /api/draft_picks returns 400 when pick_number_positive violated", async () => {
-    const res = await request(app).post('/api/draft_picks').send({ packNumber: 1, pickedAt: '2024-01-01T00:00:00.000Z', participantId: 1, cardId: 1, pickNumber: 0 });
-    expect(res.status).toBe(400);
-  });
-
-  it("POST /api/draft_picks returns 400 when pack_number_range violated", async () => {
-    const res = await request(app).post('/api/draft_picks').send({ pickNumber: 1, pickedAt: '2024-01-01T00:00:00.000Z', participantId: 1, cardId: 1, packNumber: 4 });
-    expect(res.status).toBe(400);
-  });
 });

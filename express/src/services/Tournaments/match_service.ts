@@ -25,12 +25,14 @@ export class MatchService {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement record_result domain logic
+    // TODO: await service.determineWinner(id); // @after
   }
 
   async finalize_result(id: number): Promise<void> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
     // TODO: implement finalize_result domain logic
+    // TODO: await service.determineWinner(id); // @after
   }
 
   async determine_winner(id: number): Promise<boolean> {

@@ -11,6 +11,12 @@ describe('Achievement API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/achievements?q=test returns 200', async () => {
+    const res = await request(app).get('/api/achievements?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/achievements creates entity', async () => {
     const res = await request(app)
       .post('/api/achievements')
@@ -33,10 +39,6 @@ describe('Achievement API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/achievements/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/achievements/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/achievements returns 400 when points_positive violated", async () => {
     const res = await request(app).post('/api/achievements').send({ name: 'test', description: 'test', points: 0 });

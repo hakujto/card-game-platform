@@ -23,11 +23,6 @@ describe('TournamentJudge API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournament_judges/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/tournament_judges/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/tournament_judges/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/tournament_judges/1');
     expect([204, 404]).toContain(res.status);

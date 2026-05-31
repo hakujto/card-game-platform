@@ -16,8 +16,10 @@ function validate(data: any): void {
   if ((data.isBanned === true) && !(data.legalFormats === "message")) throw new Error(`banned_card_not_in_legal_formats`);
 }
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.card.findMany();
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ name: { contains: q } }, { artistName: { contains: q } }] } : undefined;
+  const items = await prisma.card.findMany(where ? { where } : undefined);
   res.json(items);
 });
 
@@ -46,7 +48,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.card.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -81,8 +84,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.card.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -111,17 +114,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.card.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.card.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -131,7 +125,8 @@ router.post('/:id/ban', async (req, res) => {
     await service.ban(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -141,7 +136,8 @@ router.post('/:id/unban', async (req, res) => {
     await service.unban(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -151,7 +147,8 @@ router.post('/:id/restrict', async (req, res) => {
     await service.restrict(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -161,7 +158,8 @@ router.post('/:id/unrestrict', async (req, res) => {
     await service.unrestrict(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -171,7 +169,8 @@ router.get('/:id/value', async (req, res) => {
     const result = await service.calculate_value(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -182,7 +181,8 @@ router.post('/:id/rarity-bonus', async (req, res) => {
     const result = await service.apply_rarity_bonus(id, multiplier);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -193,7 +193,8 @@ router.get('/:id/legal', async (req, res) => {
     const result = await service.is_legal_in_format(id, format);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

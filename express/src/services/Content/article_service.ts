@@ -57,4 +57,9 @@ export class ArticleService {
     // TODO: implement reading_time_minutes domain logic
     return undefined as any;
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async updateSearchIndex(entity: any): Promise<void> {
+    // TODO: implement update_search_index
+  }
 }

@@ -11,6 +11,12 @@ describe('DeckTag API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/deck_tags?q=test returns 200', async () => {
+    const res = await request(app).get('/api/deck_tags?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/deck_tags creates entity', async () => {
     const res = await request(app)
       .post('/api/deck_tags')

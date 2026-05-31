@@ -65,4 +65,9 @@ export class CardService {
     // TODO: implement is_legal_in_format domain logic
     return undefined as any;
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async validateLegality(entity: any): Promise<void> {
+    // TODO: implement validate_legality
+  }
 }

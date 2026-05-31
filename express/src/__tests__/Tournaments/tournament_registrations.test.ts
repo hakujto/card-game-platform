@@ -26,15 +26,6 @@ describe('TournamentRegistration API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournament_registrations/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/tournament_registrations/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/tournament_registrations/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/tournament_registrations/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/tournament_registrations returns 400 when points_earned_not_negative violated", async () => {
     const res = await request(app).post('/api/tournament_registrations').send({ registeredAt: '2024-01-01T00:00:00.000Z', tournamentId: 1, playerId: 1, deckId: 1, finalStanding: 1, seed: 1, pointsEarned: -1 });

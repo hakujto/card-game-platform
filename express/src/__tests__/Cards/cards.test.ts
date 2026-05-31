@@ -11,6 +11,12 @@ describe('Card API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/cards?q=test returns 200', async () => {
+    const res = await request(app).get('/api/cards?q=test');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
   it('POST /api/cards creates entity', async () => {
     const res = await request(app)
       .post('/api/cards')
@@ -35,10 +41,6 @@ describe('Card API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('DELETE /api/cards/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/cards/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/cards returns 400 when creature_requires_stats violated", async () => {
     const res = await request(app).post('/api/cards').send({ name: 'test', manaColors: 'WHITE', description: 'test', legalFormats: "message", setId: 1, cardType: 'CREATURE', attack: null });

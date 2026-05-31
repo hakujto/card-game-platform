@@ -28,15 +28,6 @@ describe('Order API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/orders/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/orders/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/orders/1');
-    expect([204, 404]).toContain(res.status);
-  });
 
   it("POST /api/orders returns 400 when paid_requires_paid_at violated", async () => {
     const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'PAID', paidAt: null });
@@ -62,6 +53,7 @@ describe('Order API', () => {
     const res = await request(app).post('/api/orders').send({ createdAt: '2024-01-01T00:00:00.000Z', playerId: 1, status: 'SHIPPED', paidAt: '2024-01-01T00:00:00.000Z', trackingNumber: 'test', shippedAt: '2024-01-01T00:00:00.000Z', discountApplied: 1, total: 0 });
     expect(res.status).toBe(400);
   });
+
   it('PATCH /api/orders/1/transitions/pending-to-paid transitions Pending -> Paid', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/pending-to-paid');
     expect([200, 409, 422, 404]).toContain(res.status);

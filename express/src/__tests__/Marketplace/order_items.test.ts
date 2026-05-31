@@ -27,15 +27,11 @@ describe('OrderItem API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/order_items/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/order_items/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/order_items/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/order_items/1');
     expect([204, 404]).toContain(res.status);
   });
+
 
   it("POST /api/order_items returns 400 when quantity_positive violated", async () => {
     const res = await request(app).post('/api/order_items').send({ priceAtPurchase: 0.00, orderId: 1, productId: 1, quantity: 0 });

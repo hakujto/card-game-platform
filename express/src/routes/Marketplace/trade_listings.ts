@@ -10,6 +10,15 @@ function validate(data: any): void {
   if ((data.listingType === 'FIXEDPRICE') && !((data.askingPrice === undefined || data.askingPrice != null))) throw new Error(`Fixed price listing must have an asking price`);
   if ((data.listingType === 'AUCTION') && !((data.auctionStartPrice === undefined || data.auctionStartPrice != null) && (data.auctionEndTime === undefined || data.auctionEndTime != null))) throw new Error(`Auction listing must have a start price and end time`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  if ('createdAt' in r) { r.createdAt = r.createdAt; delete r.createdAt; }
+  if ('expiresAt' in r) { r.expiresAt = r.expiresAt; delete r.expiresAt; }
+  if ('auctionEndTime' in r) { r.auctionEndTime = r.auctionEndTime; delete r.auctionEndTime; }
+  return r;
+}
+
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   'Pending': ['Active'],
   'Active': ['Sold', 'Expired', 'Cancelled']
@@ -73,9 +82,11 @@ class TradeListingLifecycleService {
 const lifecycleService = new TradeListingLifecycleService();
 
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.tradeListing.findMany();
-  res.json(items);
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ description: { contains: q } }] } : undefined;
+  const items = await prisma.tradeListing.findMany(where ? { where } : undefined);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -98,43 +109,17 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.tradeListing.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const entity = await prisma.tradeListing.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
-});
-
-router.put('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
-    if (body.listingType !== undefined) data.listingType = body.listingType;
-    if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
-    if (body.auctionStartPrice !== undefined) data.auctionStartPrice = body.auctionStartPrice;
-    if (body.auctionCurrentBid !== undefined) data.auctionCurrentBid = body.auctionCurrentBid;
-    if (body.auctionEndTime !== undefined) data.auctionEndTime = body.auctionEndTime != null ? new Date(body.auctionEndTime) : null;
-    if (body.foil !== undefined) data.foil = body.foil;
-    if (body.condition !== undefined) data.condition = body.condition;
-    if (body.quantity !== undefined) data.quantity = body.quantity;
-    if (body.description !== undefined) data.description = body.description;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
-    if (body.expiresAt !== undefined) data.expiresAt = body.expiresAt != null ? new Date(body.expiresAt) : null;
-    if (body.sellerId !== undefined) data.sellerId = body.sellerId;
-    if (body.cardId !== undefined) data.cardId = body.cardId;
-  try {
-  validate(data);
-    const entity = await prisma.tradeListing.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
+  res.json(applyProjection(entity));
 });
 
 router.patch('/:id', async (req, res) => {
@@ -157,19 +142,10 @@ router.patch('/:id', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.tradeListing.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.tradeListing.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -179,7 +155,8 @@ router.post('/:id/close', async (req, res) => {
     await service.close(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -190,7 +167,8 @@ router.patch('/:id/extend', async (req, res) => {
     await service.extend(id, days);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -200,7 +178,8 @@ router.delete('/:id/cancel', async (req, res) => {
     await service.cancel(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -210,7 +189,8 @@ router.get('/:id/expired', async (req, res) => {
     const result = await service.is_expired(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -220,7 +200,8 @@ router.post('/:id/finalize', async (req, res) => {
     await service.finalize_auction(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 

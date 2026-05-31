@@ -11,8 +11,10 @@ function validate(data: any): void {
   if (!((data.discountPercent == null || (data.discountPercent >= 0 && data.discountPercent <= 100)))) throw new Error(`Product discount percent must be between 0 and 100`);
 }
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.product.findMany();
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ name: { contains: q } }, { description: { contains: q } }] } : undefined;
+  const items = await prisma.product.findMany(where ? { where } : undefined);
   res.json(items);
 });
 
@@ -35,7 +37,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.product.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -64,8 +67,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -88,17 +91,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.product.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -108,7 +102,8 @@ router.post('/:id/activate', async (req, res) => {
     await service.activate(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -118,7 +113,8 @@ router.post('/:id/deactivate', async (req, res) => {
     await service.deactivate(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -129,7 +125,8 @@ router.patch('/:id/discount', async (req, res) => {
     const result = await service.apply_discount(id, percent);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -140,7 +137,8 @@ router.post('/:id/restock', async (req, res) => {
     await service.restock(id, quantity);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -150,7 +148,8 @@ router.get('/:id/effective-price', async (req, res) => {
     const result = await service.effective_price(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -160,7 +159,8 @@ router.get('/:id/in-stock', async (req, res) => {
     const result = await service.is_in_stock(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

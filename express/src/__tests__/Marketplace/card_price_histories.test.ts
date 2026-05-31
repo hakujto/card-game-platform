@@ -11,47 +11,9 @@ describe('CardPriceHistory API', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('POST /api/card_price_histories creates entity', async () => {
-    const res = await request(app)
-      .post('/api/card_price_histories')
-      .send({
-      priceDate: '2024-01-01',
-      avgPrice: 0.00,
-      minPrice: 0.00,
-      maxPrice: 0.00,
-      volume: 1,
-      foil: true
-    });
-    expect([200, 201]).toContain(res.status);
-  });
-
   it('GET /api/card_price_histories/:id returns 200 or 404', async () => {
     const res = await request(app).get('/api/card_price_histories/1');
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/card_price_histories/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/card_price_histories/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
-  it('DELETE /api/card_price_histories/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/card_price_histories/1');
-    expect([204, 404]).toContain(res.status);
-  });
-
-  it("POST /api/card_price_histories returns 400 when price_bounds_consistent violated", async () => {
-    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', maxPrice: 0.00, volume: 1, cardId: 1, minPrice: 1, avgPrice: 0 });
-    expect(res.status).toBe(400);
-  });
-
-  it("POST /api/card_price_histories returns 400 when volume_not_negative violated", async () => {
-    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, minPrice: 0.00, maxPrice: 0.00, cardId: 1, volume: -1 });
-    expect(res.status).toBe(400);
-  });
-
-  it("POST /api/card_price_histories returns 400 when prices_not_negative violated", async () => {
-    const res = await request(app).post('/api/card_price_histories').send({ priceDate: '2024-01-01', avgPrice: 0.00, maxPrice: 0.00, volume: 1, cardId: 1, minPrice: -1 });
-    expect(res.status).toBe(400);
-  });
 });

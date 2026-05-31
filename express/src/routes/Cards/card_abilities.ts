@@ -9,8 +9,10 @@ function validate(data: any): void {
   if ((data.abilityType === 'KEYWORD') && !((data.keyword === undefined || data.keyword != null))) throw new Error(`Keyword ability must have a keyword name`);
 }
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.cardAbility.findMany();
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ keyword: { contains: q } }, { abilityText: { contains: q } }] } : undefined;
+  const items = await prisma.cardAbility.findMany(where ? { where } : undefined);
   res.json(items);
 });
 
@@ -27,7 +29,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.cardAbility.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -50,8 +53,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.cardAbility.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -68,8 +71,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.cardAbility.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -89,7 +92,8 @@ router.get('/:id/usable', async (req, res) => {
     const result = await service.is_usable_at(id, timing);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -99,7 +103,8 @@ router.get('/:id/describe', async (req, res) => {
     const result = await service.describe(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

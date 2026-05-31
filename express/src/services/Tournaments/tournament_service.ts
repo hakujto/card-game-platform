@@ -64,4 +64,9 @@ export class TournamentService {
     // TODO: implement is_full domain logic
     return undefined as any;
   }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async syncSeasonStats(entity: any): Promise<void> {
+    // TODO: implement sync_season_stats
+  }
 }

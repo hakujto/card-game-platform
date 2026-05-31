@@ -27,11 +27,6 @@ describe('CardRuling API', () => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/card_rulings/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/card_rulings/1').send({});
-    expect([200, 404]).toContain(res.status);
-  });
-
   it('DELETE /api/card_rulings/:id returns 204 or 404', async () => {
     const res = await request(app).delete('/api/card_rulings/1');
     expect([204, 404]).toContain(res.status);

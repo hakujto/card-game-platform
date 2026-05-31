@@ -12,6 +12,15 @@ function validate(data: any): void {
   if ((data.status === 'SHIPPED') && !((data.trackingNumber === undefined || data.trackingNumber != null))) throw new Error(`Shipped order must have a tracking number`);
   if ((data.shippedAt != null) && !(data.status === 'SHIPPED')) throw new Error(`shipped_at_requires_shipped_status`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  if ('createdAt' in r) { r.createdAt = r.createdAt; delete r.createdAt; }
+  if ('paidAt' in r) { r.paidAt = r.paidAt; delete r.paidAt; }
+  if ('shippedAt' in r) { r.shippedAt = r.shippedAt; delete r.shippedAt; }
+  return r;
+}
+
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   'Pending': ['Paid', 'Cancelled'],
   'Paid': ['Processing', 'Cancelled'],
@@ -105,9 +114,9 @@ class OrderLifecycleService {
 const lifecycleService = new OrderLifecycleService();
 
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   const items = await prisma.order.findMany();
-  res.json(items);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -129,77 +138,17 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.order.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const entity = await prisma.order.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
-});
-
-router.put('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
-    if (body.total !== undefined) data.total = body.total;
-    if (body.discountApplied !== undefined) data.discountApplied = body.discountApplied;
-    if (body.currency !== undefined) data.currency = body.currency;
-    if (body.paymentMethod !== undefined) data.paymentMethod = body.paymentMethod;
-    if (body.paymentReference !== undefined) data.paymentReference = body.paymentReference;
-    if (body.shippingAddress !== undefined) data.shippingAddress = body.shippingAddress;
-    if (body.trackingNumber !== undefined) data.trackingNumber = body.trackingNumber;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
-    if (body.paidAt !== undefined) data.paidAt = body.paidAt != null ? new Date(body.paidAt) : null;
-    if (body.shippedAt !== undefined) data.shippedAt = body.shippedAt != null ? new Date(body.shippedAt) : null;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.couponId !== undefined) data.couponId = body.couponId;
-  try {
-  validate(data);
-    const entity = await prisma.order.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.patch('/:id', async (req, res) => {
-  const body = req.body;
-  const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
-    if (body.total !== undefined) data.total = body.total;
-    if (body.discountApplied !== undefined) data.discountApplied = body.discountApplied;
-    if (body.currency !== undefined) data.currency = body.currency;
-    if (body.paymentMethod !== undefined) data.paymentMethod = body.paymentMethod;
-    if (body.paymentReference !== undefined) data.paymentReference = body.paymentReference;
-    if (body.shippingAddress !== undefined) data.shippingAddress = body.shippingAddress;
-    if (body.trackingNumber !== undefined) data.trackingNumber = body.trackingNumber;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
-    if (body.paidAt !== undefined) data.paidAt = body.paidAt != null ? new Date(body.paidAt) : null;
-    if (body.shippedAt !== undefined) data.shippedAt = body.shippedAt != null ? new Date(body.shippedAt) : null;
-    if (body.playerId !== undefined) data.playerId = body.playerId;
-    if (body.couponId !== undefined) data.couponId = body.couponId;
-  try {
-  validate(data);
-    const entity = await prisma.order.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
-  } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.order.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
-  }
+  res.json(applyProjection(entity));
 });
 
 router.delete('/:id/cancel', async (req, res) => {
@@ -208,7 +157,8 @@ router.delete('/:id/cancel', async (req, res) => {
     await service.cancel(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -219,7 +169,8 @@ router.post('/:id/pay', async (req, res) => {
     const result = await service.pay(id, paymentRef);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -229,7 +180,8 @@ router.post('/:id/process-payment', async (req, res) => {
     const result = await service.process_payment(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -239,7 +191,8 @@ router.get('/:id/total', async (req, res) => {
     const result = await service.calculate_total(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -250,7 +203,8 @@ router.patch('/:id/discount', async (req, res) => {
     const result = await service.apply_discount(id, percent);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -260,7 +214,8 @@ router.post('/:id/refund', async (req, res) => {
     await service.refund(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 

@@ -11,8 +11,10 @@ function validate(data: any): void {
   if ((data.isRotated === true) && !((data.rotationDate === undefined || data.rotationDate != null))) throw new Error(`Rotated set must have a rotation date`);
 }
 
-router.get('/', async (_req, res) => {
-  const items = await prisma.cardSet.findMany();
+router.get('/', async (req, res) => {
+  const q = req.query.q as string | undefined;
+  const where = q ? { OR: [{ name: { contains: q } }, { code: { contains: q } }] } : undefined;
+  const items = await prisma.cardSet.findMany(where ? { where } : undefined);
   res.json(items);
 });
 
@@ -33,7 +35,8 @@ router.post('/', async (req, res) => {
     const entity = await prisma.cardSet.create({ data });
     res.status(201).json(entity);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message ?? 'Validation error' });
+    const status = err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
   }
 });
 
@@ -60,8 +63,8 @@ router.put('/:id', async (req, res) => {
     const entity = await prisma.cardSet.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -82,17 +85,8 @@ router.patch('/:id', async (req, res) => {
     const entity = await prisma.cardSet.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
-    const status = err?.code === 'P2025' ? 404 : 400;
-    res.status(status).json({ error: err?.message ?? 'Error' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await prisma.cardSet.delete({ where: { id: Number(req.params.id) } });
-    res.status(204).send();
-  } catch {
-    res.status(404).json({ error: 'Not found' });
+    const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
+    res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
   }
 });
 
@@ -102,7 +96,8 @@ router.get('/:id/standard-legal', async (req, res) => {
     const result = await service.is_legal_in_standard(id);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -113,7 +108,8 @@ router.get('/:id/legal', async (req, res) => {
     const result = await service.is_legal_in_format(id, format);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -124,7 +120,8 @@ router.get('/:id/rarity-count', async (req, res) => {
     const result = await service.card_count_by_rarity(id, rarity);
     res.json({ result });
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 
@@ -134,7 +131,8 @@ router.post('/:id/rotate', async (req, res) => {
     await service.rotate_out(id);
     res.status(204).send();
   } catch (err: any) {
-    res.status(404).json({ error: err?.message ?? 'Not found' });
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
   }
 });
 export default router;

@@ -38,6 +38,7 @@ describe('TournamentPrize API', () => {
     expect([204, 404]).toContain(res.status);
   });
 
+
   it("POST /api/tournament_prizes returns 400 when placement_range_valid violated", async () => {
     const res = await request(app).post('/api/tournament_prizes').send({ placementFrom: 1, prizeType: 'CURRENCY', tournamentId: 1, placementTo: 0 });
     expect(res.status).toBe(400);
