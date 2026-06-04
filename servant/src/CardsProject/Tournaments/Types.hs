@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Tournaments.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
@@ -239,8 +240,8 @@ data Tournament = Tournament
   , tournamentFormat :: TournamentFormatType
   , tournamentTournamentType :: TournamentTournamentTypeType
   , tournamentMaxPlayers :: Int
-  , tournamentEntryFee :: Text
-  , tournamentPrizePool :: Text
+  , tournamentEntryFee :: Double
+  , tournamentPrizePool :: Double
   , tournamentStartTime :: Text
   , tournamentEndTime :: Maybe Text
   , tournamentIsOnline :: Bool
@@ -249,18 +250,33 @@ data Tournament = Tournament
   , tournamentCreatedAt :: Text
   , tournamentSeasonId :: Maybe Int
   , tournamentOrganizerId :: Maybe Int
-  , tournamentRegistrationsId :: Maybe Int
-  , tournamentRoundsId :: Maybe Int
-  , tournamentPrizesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Tournament where
-  toJSON = genericToJSON _tournamentOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tournamentId
+    , "name" .= rec.tournamentName
+    , "description" .= rec.tournamentDescription
+    , "status" .= rec.tournamentStatus
+    , "format" .= rec.tournamentFormat
+    , "tournament_type" .= rec.tournamentTournamentType
+    , "max_players" .= rec.tournamentMaxPlayers
+    , "entry_fee" .= rec.tournamentEntryFee
+    , "prize_pool" .= rec.tournamentPrizePool
+    , "startTime" .= rec.tournamentStartTime
+    , "endTime" .= rec.tournamentEndTime
+    , "is_online" .= rec.tournamentIsOnline
+    , "location" .= rec.tournamentLocation
+    , "rules_text" .= rec.tournamentRulesText
+    , "createdAt" .= rec.tournamentCreatedAt
+    , "season_id" .= rec.tournamentSeasonId
+    , "organizer_id" .= rec.tournamentOrganizerId
+    ]
 instance FromJSON Tournament where
   parseJSON = genericParseJSON _tournamentOpts
 
 instance FromRow Tournament where
-  fromRow = Tournament <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Tournament <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newTournamentOpts :: Options
 _newTournamentOpts = defaultOptions
@@ -273,8 +289,8 @@ data NewTournament = NewTournament
   , bTournamentFormat :: TournamentFormatType
   , bTournamentTournamentType :: TournamentTournamentTypeType
   , bTournamentMaxPlayers :: Int
-  , bTournamentEntryFee :: Text
-  , bTournamentPrizePool :: Text
+  , bTournamentEntryFee :: Double
+  , bTournamentPrizePool :: Double
   , bTournamentStartTime :: Text
   , bTournamentEndTime :: Maybe Text
   , bTournamentIsOnline :: Bool
@@ -283,9 +299,6 @@ data NewTournament = NewTournament
   , bTournamentCreatedAt :: Text
   , bTournamentSeasonId :: Maybe Int
   , bTournamentOrganizerId :: Maybe Int
-  , bTournamentRegistrationsId :: Maybe Int
-  , bTournamentRoundsId :: Maybe Int
-  , bTournamentPrizesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournament where
@@ -294,7 +307,7 @@ instance FromJSON NewTournament where
   parseJSON = genericParseJSON _newTournamentOpts
 
 instance ToRow NewTournament where
-  toRow b = [toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentStatus b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b), toField (bTournamentRegistrationsId b), toField (bTournamentRoundsId b), toField (bTournamentPrizesId b)]
+  toRow b = [toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentStatus b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b)]
 
 data TournamentJudgeRoleType
   = TournamentJudgeRoleType_HeadJudge
@@ -417,7 +430,17 @@ data TournamentRegistration = TournamentRegistration
   } deriving (Show, Generic)
 
 instance ToJSON TournamentRegistration where
-  toJSON = genericToJSON _tournamentRegistrationOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tournamentRegistrationId
+    , "status" .= rec.tournamentRegistrationStatus
+    , "seed" .= rec.tournamentRegistrationSeed
+    , "final_standing" .= rec.tournamentRegistrationFinalStanding
+    , "points_earned" .= rec.tournamentRegistrationPointsEarned
+    , "registeredAt" .= rec.tournamentRegistrationRegisteredAt
+    , "tournament_id" .= rec.tournamentRegistrationTournamentId
+    , "player_id" .= rec.tournamentRegistrationPlayerId
+    , "deck_id" .= rec.tournamentRegistrationDeckId
+    ]
 instance FromJSON TournamentRegistration where
   parseJSON = genericParseJSON _tournamentRegistrationOpts
 
@@ -490,16 +513,23 @@ data TournamentRound = TournamentRound
   , tournamentRoundEndedAt :: Maybe Text
   , tournamentRoundTimeLimitMinutes :: Int
   , tournamentRoundTournamentId :: Maybe Int
-  , tournamentRoundMatchesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TournamentRound where
-  toJSON = genericToJSON _tournamentRoundOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tournamentRoundId
+    , "round_number" .= rec.tournamentRoundRoundNumber
+    , "status" .= rec.tournamentRoundStatus
+    , "startedAt" .= rec.tournamentRoundStartedAt
+    , "endedAt" .= rec.tournamentRoundEndedAt
+    , "time_limit_minutes" .= rec.tournamentRoundTimeLimitMinutes
+    , "tournament_id" .= rec.tournamentRoundTournamentId
+    ]
 instance FromJSON TournamentRound where
   parseJSON = genericParseJSON _tournamentRoundOpts
 
 instance FromRow TournamentRound where
-  fromRow = TournamentRound <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = TournamentRound <$> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newTournamentRoundOpts :: Options
 _newTournamentRoundOpts = defaultOptions
@@ -512,7 +542,6 @@ data NewTournamentRound = NewTournamentRound
   , bTournamentRoundEndedAt :: Maybe Text
   , bTournamentRoundTimeLimitMinutes :: Int
   , bTournamentRoundTournamentId :: Maybe Int
-  , bTournamentRoundMatchesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTournamentRound where
@@ -521,7 +550,7 @@ instance FromJSON NewTournamentRound where
   parseJSON = genericParseJSON _newTournamentRoundOpts
 
 instance ToRow NewTournamentRound where
-  toRow b = [toField (bTournamentRoundRoundNumber b), toField (bTournamentRoundStatus b), toField (bTournamentRoundStartedAt b), toField (bTournamentRoundEndedAt b), toField (bTournamentRoundTimeLimitMinutes b), toField (bTournamentRoundTournamentId b), toField (bTournamentRoundMatchesId b)]
+  toRow b = [toField (bTournamentRoundRoundNumber b), toField (bTournamentRoundStatus b), toField (bTournamentRoundStartedAt b), toField (bTournamentRoundEndedAt b), toField (bTournamentRoundTimeLimitMinutes b), toField (bTournamentRoundTournamentId b)]
 
 data MatchStatusType
   = MatchStatusType_Pending
@@ -580,16 +609,27 @@ data Match = Match
   , matchRoundId :: Maybe Int
   , matchPlayer1Id :: Maybe Int
   , matchPlayer2Id :: Maybe Int
-  , matchGamesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Match where
-  toJSON = genericToJSON _matchOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.matchId
+    , "table_number" .= rec.matchTableNumber
+    , "status" .= rec.matchStatus
+    , "player1_wins" .= rec.matchPlayer1Wins
+    , "player2_wins" .= rec.matchPlayer2Wins
+    , "startedAt" .= rec.matchStartedAt
+    , "endedAt" .= rec.matchEndedAt
+    , "result_notes" .= rec.matchResultNotes
+    , "round_id" .= rec.matchRoundId
+    , "player1_id" .= rec.matchPlayer1Id
+    , "player2_id" .= rec.matchPlayer2Id
+    ]
 instance FromJSON Match where
   parseJSON = genericParseJSON _matchOpts
 
 instance FromRow Match where
-  fromRow = Match <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Match <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newMatchOpts :: Options
 _newMatchOpts = defaultOptions
@@ -606,7 +646,6 @@ data NewMatch = NewMatch
   , bMatchRoundId :: Maybe Int
   , bMatchPlayer1Id :: Maybe Int
   , bMatchPlayer2Id :: Maybe Int
-  , bMatchGamesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewMatch where
@@ -615,7 +654,7 @@ instance FromJSON NewMatch where
   parseJSON = genericParseJSON _newMatchOpts
 
 instance ToRow NewMatch where
-  toRow b = [toField (bMatchTableNumber b), toField (bMatchStatus b), toField (bMatchPlayer1Wins b), toField (bMatchPlayer2Wins b), toField (bMatchStartedAt b), toField (bMatchEndedAt b), toField (bMatchResultNotes b), toField (bMatchRoundId b), toField (bMatchPlayer1Id b), toField (bMatchPlayer2Id b), toField (bMatchGamesId b)]
+  toRow b = [toField (bMatchTableNumber b), toField (bMatchStatus b), toField (bMatchPlayer1Wins b), toField (bMatchPlayer2Wins b), toField (bMatchStartedAt b), toField (bMatchEndedAt b), toField (bMatchResultNotes b), toField (bMatchRoundId b), toField (bMatchPlayer1Id b), toField (bMatchPlayer2Id b)]
 
 data GameWinnerSideType
   = GameWinnerSideType_Player1
@@ -786,7 +825,7 @@ data TournamentPrize = TournamentPrize
   , tournamentPrizePlacementFrom :: Int
   , tournamentPrizePlacementTo :: Int
   , tournamentPrizePrizeType :: TournamentPrizePrizeTypeType
-  , tournamentPrizeAmount :: Text
+  , tournamentPrizeAmount :: Double
   , tournamentPrizeDescription :: Maybe Text
   , tournamentPrizePacksCount :: Maybe Int
   , tournamentPrizeSeasonPoints :: Int
@@ -809,7 +848,7 @@ data NewTournamentPrize = NewTournamentPrize
   { bTournamentPrizePlacementFrom :: Int
   , bTournamentPrizePlacementTo :: Int
   , bTournamentPrizePrizeType :: TournamentPrizePrizeTypeType
-  , bTournamentPrizeAmount :: Text
+  , bTournamentPrizeAmount :: Double
   , bTournamentPrizeDescription :: Maybe Text
   , bTournamentPrizePacksCount :: Maybe Int
   , bTournamentPrizeSeasonPoints :: Int
@@ -839,7 +878,15 @@ data AwardedPrize = AwardedPrize
   } deriving (Show, Generic)
 
 instance ToJSON AwardedPrize where
-  toJSON = genericToJSON _awardedPrizeOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.awardedPrizeId
+    , "final_placement" .= rec.awardedPrizeFinalPlacement
+    , "awardedAt" .= rec.awardedPrizeAwardedAt
+    , "claimed" .= rec.awardedPrizeClaimed
+    , "claimedAt" .= rec.awardedPrizeClaimedAt
+    , "prize_id" .= rec.awardedPrizePrizeId
+    , "player_id" .= rec.awardedPrizePlayerId
+    ]
 instance FromJSON AwardedPrize where
   parseJSON = genericParseJSON _awardedPrizeOpts
 

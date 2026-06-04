@@ -17,19 +17,13 @@ spec = with (return app) $ do
 
   describe "POST /api/deck_sideboard_cards" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"quantity": 0, "deckId": 1, "cardId": 1}|]
+      let body = [json|{"quantity": 1, "deckId": 1, "cardId": 1}|]
       request "POST" "/api/deck_sideboard_cards" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/deck_sideboard_cards/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/deck_sideboard_cards/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/deck_sideboard_cards/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"quantity": 0, "deckId": 1, "cardId": 1}|]
-      resp <- request "PUT" "/api/deck_sideboard_cards/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/deck_sideboard_cards/1" $ do
@@ -46,4 +40,10 @@ spec = with (return app) $ do
     it "behavior decrement stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/deck_sideboard_cards/1/decrement" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/deck_sideboard_cards rule quantity_range" $ do
+    it "rejects when quantity_range violated" $ do
+      let body = [json|{"quantity": 5, "deckId": 1, "cardId": 1}|]
+      resp <- request "POST" "/api/deck_sideboard_cards" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

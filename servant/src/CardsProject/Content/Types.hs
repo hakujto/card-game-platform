@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Content.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
@@ -95,16 +96,24 @@ data DraftSession = DraftSession
   , draftSessionCreatedAt :: Text
   , draftSessionCompletedAt :: Maybe Text
   , draftSessionCardSetId :: Maybe Int
-  , draftSessionParticipantsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DraftSession where
-  toJSON = genericToJSON _draftSessionOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.draftSessionId
+    , "status" .= rec.draftSessionStatus
+    , "draft_type" .= rec.draftSessionDraftType
+    , "seats" .= rec.draftSessionSeats
+    , "time_per_pick_seconds" .= rec.draftSessionTimePerPickSeconds
+    , "createdAt" .= rec.draftSessionCreatedAt
+    , "completedAt" .= rec.draftSessionCompletedAt
+    , "card_set_id" .= rec.draftSessionCardSetId
+    ]
 instance FromJSON DraftSession where
   parseJSON = genericParseJSON _draftSessionOpts
 
 instance FromRow DraftSession where
-  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newDraftSessionOpts :: Options
 _newDraftSessionOpts = defaultOptions
@@ -118,7 +127,6 @@ data NewDraftSession = NewDraftSession
   , bDraftSessionCreatedAt :: Text
   , bDraftSessionCompletedAt :: Maybe Text
   , bDraftSessionCardSetId :: Maybe Int
-  , bDraftSessionParticipantsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDraftSession where
@@ -127,7 +135,7 @@ instance FromJSON NewDraftSession where
   parseJSON = genericParseJSON _newDraftSessionOpts
 
 instance ToRow NewDraftSession where
-  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionSeats b), toField (bDraftSessionTimePerPickSeconds b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b), toField (bDraftSessionParticipantsId b)]
+  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionSeats b), toField (bDraftSessionTimePerPickSeconds b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b)]
 
 _draftParticipantOpts :: Options
 _draftParticipantOpts = defaultOptions
@@ -139,16 +147,21 @@ data DraftParticipant = DraftParticipant
   , draftParticipantJoinedAt :: Text
   , draftParticipantSessionId :: Maybe Int
   , draftParticipantPlayerId :: Maybe Int
-  , draftParticipantDraftedCardsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON DraftParticipant where
-  toJSON = genericToJSON _draftParticipantOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.draftParticipantId
+    , "seat_number" .= rec.draftParticipantSeatNumber
+    , "joinedAt" .= rec.draftParticipantJoinedAt
+    , "session_id" .= rec.draftParticipantSessionId
+    , "player_id" .= rec.draftParticipantPlayerId
+    ]
 instance FromJSON DraftParticipant where
   parseJSON = genericParseJSON _draftParticipantOpts
 
 instance FromRow DraftParticipant where
-  fromRow = DraftParticipant <$> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = DraftParticipant <$> field <*> field <*> field <*> field <*> field
 
 _newDraftParticipantOpts :: Options
 _newDraftParticipantOpts = defaultOptions
@@ -159,7 +172,6 @@ data NewDraftParticipant = NewDraftParticipant
   , bDraftParticipantJoinedAt :: Text
   , bDraftParticipantSessionId :: Maybe Int
   , bDraftParticipantPlayerId :: Maybe Int
-  , bDraftParticipantDraftedCardsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewDraftParticipant where
@@ -168,7 +180,7 @@ instance FromJSON NewDraftParticipant where
   parseJSON = genericParseJSON _newDraftParticipantOpts
 
 instance ToRow NewDraftParticipant where
-  toRow b = [toField (bDraftParticipantSeatNumber b), toField (bDraftParticipantJoinedAt b), toField (bDraftParticipantSessionId b), toField (bDraftParticipantPlayerId b), toField (bDraftParticipantDraftedCardsId b)]
+  toRow b = [toField (bDraftParticipantSeatNumber b), toField (bDraftParticipantJoinedAt b), toField (bDraftParticipantSessionId b), toField (bDraftParticipantPlayerId b)]
 
 _draftPickOpts :: Options
 _draftPickOpts = defaultOptions
@@ -184,7 +196,14 @@ data DraftPick = DraftPick
   } deriving (Show, Generic)
 
 instance ToJSON DraftPick where
-  toJSON = genericToJSON _draftPickOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.draftPickId
+    , "pick_number" .= rec.draftPickPickNumber
+    , "pack_number" .= rec.draftPickPackNumber
+    , "pickedAt" .= rec.draftPickPickedAt
+    , "participant_id" .= rec.draftPickParticipantId
+    , "card_id" .= rec.draftPickCardId
+    ]
 instance FromJSON DraftPick where
   parseJSON = genericParseJSON _draftPickOpts
 
@@ -361,16 +380,33 @@ data Article = Article
   , articleUpdatedAt :: Text
   , articleAuthorId :: Maybe Int
   , articleFeaturedDeckId :: Maybe Int
-  , articleCommentsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Article where
-  toJSON = genericToJSON _articleOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.articleId
+    , "title" .= rec.articleTitle
+    , "slug" .= rec.articleSlug
+    , "body" .= rec.articleBody
+    , "excerpt" .= rec.articleExcerpt
+    , "cover_image_url" .= rec.articleCoverImageUrl
+    , "status" .= rec.articleStatus
+    , "article_type" .= rec.articleArticleType
+    , "language" .= rec.articleLanguage
+    , "view_count" .= rec.articleViewCount
+    , "likes_count" .= rec.articleLikesCount
+    , "is_featured" .= rec.articleIsFeatured
+    , "publishedAt" .= rec.articlePublishedAt
+    , "createdAt" .= rec.articleCreatedAt
+    , "updatedAt" .= rec.articleUpdatedAt
+    , "author_id" .= rec.articleAuthorId
+    , "featured_deck_id" .= rec.articleFeaturedDeckId
+    ]
 instance FromJSON Article where
   parseJSON = genericParseJSON _articleOpts
 
 instance FromRow Article where
-  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newArticleOpts :: Options
 _newArticleOpts = defaultOptions
@@ -393,7 +429,6 @@ data NewArticle = NewArticle
   , bArticleUpdatedAt :: Text
   , bArticleAuthorId :: Maybe Int
   , bArticleFeaturedDeckId :: Maybe Int
-  , bArticleCommentsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewArticle where
@@ -402,7 +437,7 @@ instance FromJSON NewArticle where
   parseJSON = genericParseJSON _newArticleOpts
 
 instance ToRow NewArticle where
-  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleLanguage b), toField (bArticleViewCount b), toField (bArticleLikesCount b), toField (bArticleIsFeatured b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b), toField (bArticleCommentsId b)]
+  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleLanguage b), toField (bArticleViewCount b), toField (bArticleLikesCount b), toField (bArticleIsFeatured b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b)]
 
 _articleTagOpts :: Options
 _articleTagOpts = defaultOptions
@@ -489,7 +524,15 @@ data ArticleComment = ArticleComment
   } deriving (Show, Generic)
 
 instance ToJSON ArticleComment where
-  toJSON = genericToJSON _articleCommentOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.articleCommentId
+    , "body" .= rec.articleCommentBody
+    , "is_hidden" .= rec.articleCommentIsHidden
+    , "createdAt" .= rec.articleCommentCreatedAt
+    , "article_id" .= rec.articleCommentArticleId
+    , "author_id" .= rec.articleCommentAuthorId
+    , "parent_comment_id" .= rec.articleCommentParentCommentId
+    ]
 instance FromJSON ArticleComment where
   parseJSON = genericParseJSON _articleCommentOpts
 
@@ -657,7 +700,22 @@ data Stream = Stream
   } deriving (Show, Generic)
 
 instance ToJSON Stream where
-  toJSON = genericToJSON _streamOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.streamId
+    , "title" .= rec.streamTitle
+    , "stream_url" .= rec.streamStreamUrl
+    , "status" .= rec.streamStatus
+    , "platform" .= rec.streamPlatform
+    , "language" .= rec.streamLanguage
+    , "is_official" .= rec.streamIsOfficial
+    , "viewer_count_peak" .= rec.streamViewerCountPeak
+    , "scheduledStart" .= rec.streamScheduledStart
+    , "actualStart" .= rec.streamActualStart
+    , "endedAt" .= rec.streamEndedAt
+    , "vod_url" .= rec.streamVodUrl
+    , "tournament_id" .= rec.streamTournamentId
+    , "streamer_id" .= rec.streamStreamerId
+    ]
 instance FromJSON Stream where
   parseJSON = genericParseJSON _streamOpts
 

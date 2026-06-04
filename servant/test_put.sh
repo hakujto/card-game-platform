@@ -78,7 +78,7 @@ curl -s -X PUT "$BASE/products/$ID_Product" \
 echo && echo "=== PUT coupons/$ID_Coupon ==="
 curl -s -X PUT "$BASE/coupons/$ID_Coupon" \
   -H "Content-Type: application/json" \
-  -d "{\"code\": \"foo_code\", \"discountType\": \"Percent\", \"discountValue\": 1, \"minOrderValue\": \"1.00\", \"maxUses\": null, \"usesCount\": 1, \"validFrom\": \"2024-01-01T00:00:00Z\", \"validUntil\": \"2024-01-01T00:00:01Z\", \"isActive\": true}" | python3 -m json.tool
+  -d "{\"code\": \"foo_code\", \"discountType\": \"Percent\", \"discountValue\": 1, \"minOrderValue\": 1, \"maxUses\": null, \"usesCount\": 1, \"validFrom\": \"2024-01-01T00:00:00Z\", \"validUntil\": \"2024-01-01T00:00:01Z\", \"isActive\": true}" | python3 -m json.tool
 
 echo && echo "=== PUT article_tags/$ID_ArticleTag ==="
 curl -s -X PUT "$BASE/article_tags/$ID_ArticleTag" \
@@ -108,7 +108,7 @@ curl -s -X PUT "$BASE/friendships/$ID_Friendship" \
 echo && echo "=== PUT orders/$ID_Order ==="
 curl -s -X PUT "$BASE/orders/$ID_Order" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Pending\", \"total\": 0, \"discountApplied\": \"0.00\", \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": null, \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | python3 -m json.tool
+  -d "{\"status\": \"Pending\", \"total\": 0, \"discountApplied\": 0, \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": null, \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT articles/$ID_Article ==="
 curl -s -X PUT "$BASE/articles/$ID_Article" \
@@ -158,12 +158,12 @@ curl -s -X PUT "$BASE/crafting_recipes/$ID_CraftingRecipe" \
 echo && echo "=== PUT trade_listings/$ID_TradeListing ==="
 curl -s -X PUT "$BASE/trade_listings/$ID_TradeListing" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": ${ID_Player:-null}, \"cardId\": ${ID_Card:-null}}" | python3 -m json.tool
+  -d "{\"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": 1, \"auctionStartPrice\": 1, \"auctionCurrentBid\": 1, \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": ${ID_Player:-null}, \"cardId\": ${ID_Card:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT card_price_histories/$ID_CardPriceHistory ==="
 curl -s -X PUT "$BASE/card_price_histories/$ID_CardPriceHistory" \
   -H "Content-Type: application/json" \
-  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"0.00\", \"minPrice\": 0, \"maxPrice\": \"1.00\", \"volume\": 0, \"foil\": true, \"cardId\": ${ID_Card:-null}}" | python3 -m json.tool
+  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": 0, \"minPrice\": 0, \"maxPrice\": 1, \"volume\": 0, \"foil\": true, \"cardId\": ${ID_Card:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT draft_participants/$ID_DraftParticipant ==="
 curl -s -X PUT "$BASE/draft_participants/$ID_DraftParticipant" \
@@ -253,7 +253,7 @@ curl -s -X PUT "$BASE/awarded_prizes/$ID_AwardedPrize" \
 echo && echo "=== PUT trade_disputes/$ID_TradeDispute ==="
 curl -s -X PUT "$BASE/trade_disputes/$ID_TradeDispute" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Open\", \"reason\": \"ItemNotReceived\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": null, \"transactionId\": ${ID_TradeTransaction:-null}, \"openedById\": ${ID_Player:-null}, \"resolvedById\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"status\": \"Open\", \"reason\": \"ItemNotReceived\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": null, \"openedById\": ${ID_Player:-null}, \"resolvedById\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT games/$ID_Game ==="
 curl -s -X PUT "$BASE/games/$ID_Game" \

@@ -17,19 +17,13 @@ spec = with (return app) $ do
 
   describe "POST /api/order_items" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"quantity": 0, "priceAtPurchase": "1.00", "foil": true, "orderId": null, "productId": 1}|]
+      let body = [json|{"quantity": 1, "priceAtPurchase": 0, "foil": false, "orderId": null, "productId": 1}|]
       request "POST" "/api/order_items" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/order_items/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/order_items/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/order_items/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"quantity": 0, "priceAtPurchase": "1.00", "foil": true, "orderId": null, "productId": 1}|]
-      resp <- request "PUT" "/api/order_items/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/order_items/1" $ do
@@ -41,4 +35,16 @@ spec = with (return app) $ do
     it "behavior line_total stub returns 404 or 500" $ do
       resp <- get "/api/order_items/1/total"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/order_items rule quantity_positive" $ do
+    it "rejects when quantity_positive violated" $ do
+      let body = [json|{"quantity": 0, "priceAtPurchase": 0.0, "foil": false, "orderId": null, "productId": 1}|]
+      resp <- request "POST" "/api/order_items" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/order_items rule price_not_negative" $ do
+    it "rejects when price_not_negative violated" $ do
+      let body = [json|{"quantity": 0, "priceAtPurchase": -2, "foil": false, "orderId": null, "productId": 1}|]
+      resp <- request "POST" "/api/order_items" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

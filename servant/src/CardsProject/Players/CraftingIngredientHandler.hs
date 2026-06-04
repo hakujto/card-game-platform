@@ -14,16 +14,12 @@ type CraftingIngredientAPI
   =    "api" :> "crafting_ingredients" :> Get '[JSON] [CraftingIngredient]
   :<|> "api" :> "crafting_ingredients" :> ReqBody '[JSON] NewCraftingIngredient :> PostCreated '[JSON] CraftingIngredient
   :<|> "api" :> "crafting_ingredients" :> Capture "id" Int :> Get '[JSON] CraftingIngredient
-  :<|> "api" :> "crafting_ingredients" :> Capture "id" Int :> ReqBody '[JSON] NewCraftingIngredient :> Put '[JSON] CraftingIngredient
-  :<|> "api" :> "crafting_ingredients" :> Capture "id" Int :> ReqBody '[JSON] NewCraftingIngredient :> Patch '[JSON] CraftingIngredient
   :<|> "api" :> "crafting_ingredients" :> Capture "id" Int :> DeleteNoContent
 
 craftingIngredientServer :: Server CraftingIngredientAPI
 craftingIngredientServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
@@ -45,17 +41,6 @@ craftingIngredientServer = listAll
       case rows of
         (r:_) -> return r
         []    -> throwError err404
-
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE crafting_ingredients SET quantity = ?, recipe_id = ?, card_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, quantity, recipe_id, card_id FROM crafting_ingredients WHERE id = ?" (Only eid) :: IO [CraftingIngredient]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
 
     delete eid = do
       liftIO $ withDb $ \conn ->

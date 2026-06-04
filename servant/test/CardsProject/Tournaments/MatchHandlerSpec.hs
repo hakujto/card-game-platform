@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/matches" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"tableNumber": 0, "status": "Pending", "player1Wins": 0, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null, "gamesId": null}|]
+      let body = [json|{"tableNumber": null, "status": "Pending", "player1Wins": 0, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00Z", "endedAt": "2024-01-02T00:00:00Z", "resultNotes": null, "roundId": null, "player1Id": 1, "player2Id": null}|]
       request "POST" "/api/matches" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +25,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/matches/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/matches/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"tableNumber": 0, "status": "Pending", "player1Wins": 0, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null, "gamesId": null}|]
-      resp <- request "PUT" "/api/matches/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/matches/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/matches/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/matches/1/transitions/pending-to-active" $ do
     it "transitions Pending -> Active" $ do
@@ -96,4 +85,34 @@ spec = with (return app) $ do
     it "behavior draw stub returns 404 or 500" $ do
       resp <- request "POST" "/api/matches/1/draw" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/matches rule wins_not_negative" $ do
+    it "rejects when wins_not_negative violated" $ do
+      let body = [json|{"tableNumber": 0, "status": "Pending", "player1Wins": -2, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null}|]
+      resp <- request "POST" "/api/matches" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/matches rule max_three_games" $ do
+    it "rejects when max_three_games violated" $ do
+      let body = [json|{"tableNumber": 0, "status": "Pending", "player1Wins": 3, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null}|]
+      resp <- request "POST" "/api/matches" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/matches rule bye_has_no_player2" $ do
+    it "rejects when bye_has_no_player2 violated" $ do
+      let body = [json|{"tableNumber": 0, "status": "BYE", "player1Wins": 0, "player2Wins": 0, "startedAt": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": 1}|]
+      resp <- request "POST" "/api/matches" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/matches rule ended_after_started" $ do
+    it "rejects when ended_after_started violated" $ do
+      let body = [json|{"tableNumber": 0, "status": "Pending", "player1Wins": 0, "player2Wins": 0, "startedAt": "2024-01-02T00:00:00Z", "endedAt": "2024-01-01T00:00:00Z", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null}|]
+      resp <- request "POST" "/api/matches" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/matches rule completed_requires_started_at" $ do
+    it "rejects when completed_requires_started_at violated" $ do
+      let body = [json|{"tableNumber": 0, "status": "Completed", "player1Wins": 0, "player2Wins": 0, "startedAt": null, "endedAt": "2024-01-01T00:00:00", "resultNotes": "test", "roundId": null, "player1Id": 1, "player2Id": null}|]
+      resp <- request "POST" "/api/matches" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

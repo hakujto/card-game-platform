@@ -17,19 +17,13 @@ spec = with (return app) $ do
 
   describe "POST /api/player_collections" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"quantity": 0, "foil": true, "condition": "Mint", "acquiredAt": "2024-01-01T00:00:00", "acquiredVia": "Purchase", "playerId": 1, "cardId": 1}|]
+      let body = [json|{"quantity": 1, "foil": false, "condition": "Mint", "acquiredAt": "2024-01-01T00:00:00", "acquiredVia": "Purchase", "playerId": 1, "cardId": 1}|]
       request "POST" "/api/player_collections" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/player_collections/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/player_collections/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/player_collections/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"quantity": 0, "foil": true, "condition": "Mint", "acquiredAt": "2024-01-01T00:00:00", "acquiredVia": "Purchase", "playerId": 1, "cardId": 1}|]
-      resp <- request "PUT" "/api/player_collections/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/player_collections/1" $ do
@@ -51,4 +45,10 @@ spec = with (return app) $ do
     it "behavior estimated_value stub returns 404 or 500" $ do
       resp <- get "/api/player_collections/1/value"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/player_collections rule quantity_positive" $ do
+    it "rejects when quantity_positive violated" $ do
+      let body = [json|{"quantity": 0, "foil": false, "condition": "Mint", "acquiredAt": "2024-01-01T00:00:00", "acquiredVia": "Purchase", "playerId": 1, "cardId": 1}|]
+      resp <- request "POST" "/api/player_collections" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

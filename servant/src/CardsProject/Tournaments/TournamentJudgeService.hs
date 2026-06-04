@@ -11,15 +11,15 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for TournamentJudge
+-- Domain service for TournamentJudge
 validateTournamentJudge :: NewTournamentJudge -> Either String NewTournamentJudge
 validateTournamentJudge body = Right body
 
 -- @invoke behavior stub (no-op)
 promote_to_head :: Int -> IO ()
-promote_to_head _eid = return ()
+promote_to_head _eid = throwIO (userError "promote_to_head not implemented")
 
 -- @invoke behavior stub (no-op)
 remove :: Int -> IO ()
-remove _eid = return ()
+remove _eid = throwIO (userError "remove not implemented")
 

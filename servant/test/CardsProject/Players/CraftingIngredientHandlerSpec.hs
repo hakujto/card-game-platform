@@ -26,12 +26,6 @@ spec = with (return app) $ do
       resp <- get "/api/crafting_ingredients/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
-  describe "PUT /api/crafting_ingredients/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"quantity": 0, "recipeId": 1, "cardId": 1}|]
-      resp <- request "PUT" "/api/crafting_ingredients/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
   describe "DELETE /api/crafting_ingredients/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/crafting_ingredients/1" [] ""

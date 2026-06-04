@@ -26,12 +26,6 @@ spec = with (return app) $ do
       resp <- get "/api/deck_tag_assignments/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
-  describe "PUT /api/deck_tag_assignments/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"deckId": 1, "tagId": 1}|]
-      resp <- request "PUT" "/api/deck_tag_assignments/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
   describe "DELETE /api/deck_tag_assignments/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/deck_tag_assignments/1" [] ""

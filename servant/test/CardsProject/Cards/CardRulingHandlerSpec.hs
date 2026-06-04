@@ -26,12 +26,6 @@ spec = with (return app) $ do
       resp <- get "/api/card_rulings/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
-  describe "PUT /api/card_rulings/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"rulingText": "test", "publishedAt": "2024-01-01", "source": "test", "cardId": 1}|]
-      resp <- request "PUT" "/api/card_rulings/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
   describe "DELETE /api/card_rulings/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/card_rulings/1" [] ""

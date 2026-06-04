@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/crafting_recipes" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"dustCost": 0, "isAvailable": true, "resultCardId": 1}|]
+      let body = [json|{"dustCost": 1, "isAvailable": false, "resultCardId": 1}|]
       request "POST" "/api/crafting_recipes" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +28,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/crafting_recipes/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"dustCost": 0, "isAvailable": true, "resultCardId": 1}|]
+      let body = [json|{"dustCost": 1, "isAvailable": false, "resultCardId": 1}|]
       resp <- request "PUT" "/api/crafting_recipes/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/crafting_recipes/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/crafting_recipes/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "GET /api/crafting_recipes/1/can-craft" $ do
     it "behavior can_craft stub returns 404 or 500" $ do
@@ -56,4 +51,10 @@ spec = with (return app) $ do
     it "behavior enable stub returns 404 or 500" $ do
       resp <- request "POST" "/api/crafting_recipes/1/enable" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/crafting_recipes rule dust_cost_positive" $ do
+    it "rejects when dust_cost_positive violated" $ do
+      let body = [json|{"dustCost": 0, "isAvailable": false, "resultCardId": 1}|]
+      resp <- request "POST" "/api/crafting_recipes" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

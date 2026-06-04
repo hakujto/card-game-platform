@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/draft_participants" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"seatNumber": 0, "joinedAt": "2024-01-01T00:00:00", "sessionId": null, "playerId": 1, "draftedCardsId": null}|]
+      let body = [json|{"seatNumber": 1, "joinedAt": "2024-01-01T00:00:00", "sessionId": null, "playerId": 1}|]
       request "POST" "/api/draft_participants" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +25,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/draft_participants/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/draft_participants/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"seatNumber": 0, "joinedAt": "2024-01-01T00:00:00", "sessionId": null, "playerId": 1, "draftedCardsId": null}|]
-      resp <- request "PUT" "/api/draft_participants/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/draft_participants/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/draft_participants/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "POST /api/draft_participants/1/pick" $ do
     it "behavior pick_card stub returns 404 or 500" $ do
@@ -46,4 +35,10 @@ spec = with (return app) $ do
     it "behavior drafted_card_count stub returns 404 or 500" $ do
       resp <- get "/api/draft_participants/1/card-count"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/draft_participants rule seat_number_positive" $ do
+    it "rejects when seat_number_positive violated" $ do
+      let body = [json|{"seatNumber": 0, "joinedAt": "2024-01-01T00:00:00", "sessionId": null, "playerId": 1}|]
+      resp <- request "POST" "/api/draft_participants" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

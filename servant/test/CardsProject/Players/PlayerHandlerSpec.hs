@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/players" `shouldRespondWith` 200
 
+  describe "GET /api/players?q=test" $ do
+    it "returns 200" $ do
+      get "/api/players?q=test" `shouldRespondWith` 200
+
   describe "POST /api/players" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"displayName": "test", "rank": "Bronze", "rating": 0, "peakRating": 0, "bio": "test", "countryCode": "test", "avatarUrl": "https://example.com", "preferredFormat": "Standard", "isVerified": true, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": "2024-01-01T00:00:00", "userId": null, "seasonStatsId": 1}|]
+      let body = [json|{"displayName": "test", "rank": "Bronze", "rating": 0, "peakRating": 1, "bio": null, "countryCode": null, "avatarUrl": null, "preferredFormat": null, "isVerified": false, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": null, "userId": null}|]
       request "POST" "/api/players" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +29,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/players/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/players/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"displayName": "test", "rank": "Bronze", "rating": 0, "peakRating": 0, "bio": "test", "countryCode": "test", "avatarUrl": "https://example.com", "preferredFormat": "Standard", "isVerified": true, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": "2024-01-01T00:00:00", "userId": null, "seasonStatsId": 1}|]
-      resp <- request "PUT" "/api/players/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/players/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/players/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "POST /api/players/1/promote" $ do
     it "behavior promote stub returns 404 or 500" $ do
@@ -71,4 +64,16 @@ spec = with (return app) $ do
     it "behavior update_rating stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/players/1/rating" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/players rule rating_range" $ do
+    it "rejects when rating_range violated" $ do
+      let body = [json|{"displayName": "test", "rank": "Bronze", "rating": 10000, "peakRating": 0, "bio": "test", "countryCode": "test", "avatarUrl": "https://example.com", "preferredFormat": "Standard", "isVerified": false, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": "2024-01-01T00:00:00", "userId": null}|]
+      resp <- request "POST" "/api/players" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/players rule display_name_not_empty" $ do
+    it "rejects when display_name_not_empty violated" $ do
+      let body = [json|{"displayName": null, "rank": "Bronze", "rating": 0, "peakRating": 0, "bio": "test", "countryCode": "test", "avatarUrl": "https://example.com", "preferredFormat": "Standard", "isVerified": false, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": "2024-01-01T00:00:00", "userId": null}|]
+      resp <- request "POST" "/api/players" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

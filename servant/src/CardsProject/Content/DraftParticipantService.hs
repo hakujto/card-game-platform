@@ -11,15 +11,17 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for DraftParticipant
+-- Domain service for DraftParticipant
 validateDraftParticipant :: NewDraftParticipant -> Either String NewDraftParticipant
-validateDraftParticipant body = Right body
+validateDraftParticipant body
+  | not (bDraftParticipantSeatNumber body > 0) = Left "Seat number must be greater than zero"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 pick_card :: Int -> IO ()
-pick_card _eid = return ()
+pick_card _eid = throwIO (userError "pick_card not implemented")
 
 -- @invoke behavior stub (no-op)
 drafted_card_count :: Int -> IO Int
-drafted_card_count _eid = return (error "TODO")
+drafted_card_count _eid = throwIO (userError "drafted_card_count not implemented")
 

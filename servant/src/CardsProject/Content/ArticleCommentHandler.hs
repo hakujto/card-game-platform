@@ -10,25 +10,22 @@ import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Content.ArticleCommentService as ArticleCommentSvc
+import Control.Exception (catch, IOException)
 import Data.Text (Text)
 
 type ArticleCommentAPI
   =    "api" :> "article_comments" :> Get '[JSON] [ArticleComment]
   :<|> "api" :> "article_comments" :> ReqBody '[JSON] NewArticleComment :> PostCreated '[JSON] ArticleComment
   :<|> "api" :> "article_comments" :> Capture "id" Int :> Get '[JSON] ArticleComment
-  :<|> "api" :> "article_comments" :> Capture "id" Int :> ReqBody '[JSON] NewArticleComment :> Put '[JSON] ArticleComment
-  :<|> "api" :> "article_comments" :> Capture "id" Int :> ReqBody '[JSON] NewArticleComment :> Patch '[JSON] ArticleComment
   :<|> "api" :> "article_comments" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "article_comments" :> Capture "id" Int :> "hide" :> Post '[JSON] NoContent
-  :<|> "api" :> "article_comments" :> Capture "id" Int :> "unhide" :> Post '[JSON] NoContent
+  :<|> "api" :> "article_comments" :> Capture "id" Int :> "hide" :> PostNoContent
+  :<|> "api" :> "article_comments" :> Capture "id" Int :> "unhide" :> PostNoContent
   :<|> "api" :> "article_comments" :> Capture "id" Int :> "is-reply" :> Get '[JSON] Bool
 
 articleCommentServer :: Server ArticleCommentAPI
 articleCommentServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   :<|> behaviorHide
   :<|> behaviorUnhide
@@ -54,17 +51,6 @@ articleCommentServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE article_comments SET body = ?, is_hidden = ?, created_at = ?, article_id = ?, author_id = ?, parent_comment_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, body, is_hidden, created_at, article_id, author_id, parent_comment_id FROM article_comments WHERE id = ?" (Only eid) :: IO [ArticleComment]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
     delete eid = do
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM article_comments WHERE id = ?" (Only eid)
@@ -76,8 +62,11 @@ articleCommentServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ ArticleCommentSvc.hide eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> ArticleCommentSvc.hide eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorUnhide eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -85,8 +74,11 @@ articleCommentServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ ArticleCommentSvc.unhide eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> ArticleCommentSvc.unhide eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorIsReply eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -94,6 +86,9 @@ articleCommentServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ ArticleCommentSvc.is_reply eid
-          return result
+          eResult <- liftIO $ (Right <$> ArticleCommentSvc.is_reply eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 

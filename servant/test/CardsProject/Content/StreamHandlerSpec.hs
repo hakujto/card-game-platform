@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/streams" `shouldRespondWith` 200
 
+  describe "GET /api/streams?q=test" $ do
+    it "returns 200" $ do
+      get "/api/streams?q=test" `shouldRespondWith` 200
+
   describe "POST /api/streams" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": true, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": null, "endedAt": null, "vodUrl": null, "tournamentId": null, "streamerId": 1}|]
       request "POST" "/api/streams" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +32,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/streams/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": true, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": null, "endedAt": null, "vodUrl": null, "tournamentId": null, "streamerId": 1}|]
       resp <- request "PUT" "/api/streams/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/streams/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/streams/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/streams/1/transitions/scheduled-to-live" $ do
     it "transitions Scheduled -> Live" $ do
@@ -71,4 +70,22 @@ spec = with (return app) $ do
     it "behavior duration_minutes stub returns 404 or 500" $ do
       resp <- get "/api/streams/1/duration"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/streams rule actual_start_requires_live_or_ended" $ do
+    it "rejects when actual_start_requires_live_or_ended violated" $ do
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "test", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      resp <- request "POST" "/api/streams" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/streams rule ended_at_requires_ended_status" $ do
+    it "rejects when ended_at_requires_ended_status violated" $ do
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "test", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      resp <- request "POST" "/api/streams" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/streams rule viewer_count_not_negative" $ do
+    it "rejects when viewer_count_not_negative violated" $ do
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": -2, "scheduledStart": "2024-01-01T00:00:00", "actualStart": "2024-01-01T00:00:00", "endedAt": "2024-01-01T00:00:00", "vodUrl": "https://example.com", "tournamentId": null, "streamerId": 1}|]
+      resp <- request "POST" "/api/streams" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

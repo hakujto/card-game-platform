@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/card_abilities" `shouldRespondWith` 200
 
+  describe "GET /api/card_abilities?q=test" $ do
+    it "returns 200" $ do
+      get "/api/card_abilities?q=test" `shouldRespondWith` 200
+
   describe "POST /api/card_abilities" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"abilityType": "Keyword", "keyword": "test", "abilityText": "test", "timing": "Any", "cardId": 1}|]
+      let body = [json|{"abilityType": "Keyword", "keyword": "test", "abilityText": "test", "timing": null, "cardId": 1}|]
       request "POST" "/api/card_abilities" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +32,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/card_abilities/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"abilityType": "Keyword", "keyword": "test", "abilityText": "test", "timing": "Any", "cardId": 1}|]
+      let body = [json|{"abilityType": "Keyword", "keyword": "test", "abilityText": "test", "timing": null, "cardId": 1}|]
       resp <- request "PUT" "/api/card_abilities/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -46,4 +50,10 @@ spec = with (return app) $ do
     it "behavior describe stub returns 404 or 500" $ do
       resp <- get "/api/card_abilities/1/describe"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/card_abilities rule keyword_ability_requires_keyword" $ do
+    it "rejects when keyword_ability_requires_keyword violated" $ do
+      let body = [json|{"abilityType": "Keyword", "keyword": null, "abilityText": "test", "timing": "Any", "cardId": 1}|]
+      resp <- request "POST" "/api/card_abilities" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

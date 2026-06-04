@@ -7,34 +7,45 @@ import CardsProject.Tournaments.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Match
+-- Domain service for Match
 validateMatch :: NewMatch -> Either String NewMatch
-validateMatch body = Right body
+validateMatch body
+  | not ((bMatchPlayer1Wins body >= 0 && bMatchPlayer2Wins body >= 0)) = Left "Win counts must not be negative"
+  | not (((bMatchPlayer1Wins body >= 0 && bMatchPlayer1Wins body <= 2) && (bMatchPlayer2Wins body >= 0 && bMatchPlayer2Wins body <= 2))) = Left "Win counts cannot exceed 2 in a best-of-3 match"
+  | otherwise = validateMatchImplies body
+
+validateMatchImplies :: NewMatch -> Either String NewMatch
+validateMatchImplies body
+  | (bMatchStatus body == MatchStatusType_BYE) && not (bMatchPlayer2Id body == Nothing) = Left "BYE match must not have a second player"
+  | (bMatchEndedAt body /= Nothing) && not (maybe True (> (fromMaybe "" (bMatchStartedAt body))) (bMatchEndedAt body)) = Left "Match end time must be after start time"
+  | (bMatchStatus body == MatchStatusType_Completed) && not (bMatchStartedAt body /= Nothing) = Left "Completed match must have a start time"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 record_result :: Int -> IO ()
-record_result _eid = return ()
+record_result _eid = throwIO (userError "record_result not implemented")
 
 -- @invoke behavior stub (no-op)
 finalize_result :: Int -> IO ()
-finalize_result _eid = return ()
+finalize_result _eid = throwIO (userError "finalize_result not implemented")
 
 -- @invoke behavior stub (no-op)
 determine_winner :: Int -> IO Bool
-determine_winner _eid = return (error "TODO")
+determine_winner _eid = throwIO (userError "determine_winner not implemented")
 
 -- @invoke behavior stub (no-op)
 concede :: Int -> IO ()
-concede _eid = return ()
+concede _eid = throwIO (userError "concede not implemented")
 
 -- @invoke behavior stub (no-op)
 draw :: Int -> IO ()
-draw _eid = return ()
+draw _eid = throwIO (userError "draw not implemented")
 
 -- ── Lifecycle state machine ─────────────────────────────────────────
 allowedTransitions :: [(Text, [Text])]
@@ -56,61 +67,61 @@ assertTransition current to_ = do
 
 transitionPendingToActive :: Int -> IO Match
 transitionPendingToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
       assertTransition (enumToText (matchStatus record)) "Active"
       execute conn "UPDATE matches SET status = ? WHERE id = ?" ("Active" :: Text, eid)
-      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Match not found after update")
 
 transitionActiveToCompleted :: Int -> IO Match
 transitionActiveToCompleted eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
       assertTransition (enumToText (matchStatus record)) "Completed"
       execute conn "UPDATE matches SET status = ? WHERE id = ?" ("Completed" :: Text, eid)
       finalize_result eid  -- @after
-      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Match not found after update")
 
 transitionActiveToDraw :: Int -> IO Match
 transitionActiveToDraw eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
       assertTransition (enumToText (matchStatus record)) "Draw"
       execute conn "UPDATE matches SET status = ? WHERE id = ?" ("Draw" :: Text, eid)
       draw eid  -- @after
-      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Match not found after update")
 
 transitionPendingToBYE :: Int -> IO Match
 transitionPendingToBYE eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
       assertTransition (enumToText (matchStatus record)) "BYE"
       execute conn "UPDATE matches SET status = ? WHERE id = ?" ("BYE" :: Text, eid)
-      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+      updated <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Match not found after update")
 
 transitionCompletedToActive :: Int -> IO Match
 transitionCompletedToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
@@ -118,7 +129,7 @@ transitionCompletedToActive eid = withDb $ \conn -> do
 
 transitionDrawToActive :: Int -> IO Match
 transitionDrawToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do
@@ -126,7 +137,7 @@ transitionDrawToActive eid = withDb $ \conn -> do
 
 transitionBYEToActive :: Int -> IO Match
 transitionBYEToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id, games_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
+  rows <- query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match]
   case rows of
     [] -> throwIO (userError "Match not found")
     (record:_) -> do

@@ -2,7 +2,7 @@
 BASE="http://localhost:8080/api"
 
 extract_id() {
-  python3 -c "import sys,json; d=json.load(sys.stdin); print(d['id']) if 'id' in d else (print('POST failed:', d, file=sys.stderr) or exit(1))"
+  python3 -c "import sys,json; body=sys.stdin.read().strip(); d=json.loads(body) if body else {}; print(d['id']) if 'id' in d else (print('POST failed:', body or '(empty)', file=sys.stderr) or exit(1))"
 }
 
 ID_CardSet=""
@@ -76,12 +76,12 @@ echo "Season id=$ID_Season"
 
 ID_Product=$(curl -s -X POST "$BASE/products" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"productType\": \"SingleCard\", \"price\": \"1.00\", \"stock\": 0, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"cardId\": ${ID_Card:-null}, \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"productType\": \"SingleCard\", \"price\": 1, \"stock\": 0, \"active\": true, \"discountPercent\": 1, \"description\": \"foo_description\", \"imageUrl\": \"https://example.com/foo\", \"featured\": true, \"cardId\": ${ID_Card:-null}, \"cardSetId\": ${ID_CardSet:-null}}" | extract_id)
 echo "Product id=$ID_Product"
 
 ID_Coupon=$(curl -s -X POST "$BASE/coupons" \
   -H "Content-Type: application/json" \
-  -d "{\"code\": \"foo_code\", \"discountType\": \"Percent\", \"discountValue\": \"1.00\", \"minOrderValue\": \"1.00\", \"maxUses\": null, \"usesCount\": 1, \"validFrom\": \"2024-01-01T00:00:00Z\", \"validUntil\": \"2024-01-01T00:00:01Z\", \"isActive\": true}" | extract_id)
+  -d "{\"code\": \"foo_code\", \"discountType\": \"Percent\", \"discountValue\": 1, \"minOrderValue\": 1, \"maxUses\": null, \"usesCount\": 1, \"validFrom\": \"2024-01-01T00:00:00Z\", \"validUntil\": \"2024-01-01T00:00:01Z\", \"isActive\": true}" | extract_id)
 echo "Coupon id=$ID_Coupon"
 
 ID_ArticleTag=$(curl -s -X POST "$BASE/article_tags" \
@@ -111,7 +111,7 @@ echo "Friendship id=$ID_Friendship"
 
 ID_Order=$(curl -s -X POST "$BASE/orders" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Pending\", \"total\": \"1.00\", \"discountApplied\": \"0.00\", \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": null, \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | extract_id)
+  -d "{\"status\": \"Pending\", \"total\": 0, \"discountApplied\": 0, \"currency\": \"foo\", \"paymentMethod\": \"Card\", \"paymentReference\": \"foo_payment_reference\", \"shippingAddress\": \"foo_shipping_address\", \"trackingNumber\": \"foo_tracking_number\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"paidAt\": \"2024-01-01T00:00:00Z\", \"shippedAt\": null, \"playerId\": ${ID_Player:-null}, \"couponId\": ${ID_Coupon:-null}}" | extract_id)
 echo "Order id=$ID_Order"
 
 ID_Article=$(curl -s -X POST "$BASE/articles" \
@@ -124,19 +124,17 @@ ID_Stream=$(curl -s -X POST "$BASE/streams" \
   -d "{\"title\": \"foo_title\", \"streamUrl\": \"https://example.com/foo\", \"status\": \"Scheduled\", \"platform\": \"Twitch\", \"language\": \"EN\", \"isOfficial\": true, \"viewerCountPeak\": 0, \"scheduledStart\": \"2024-01-01T00:00:00Z\", \"actualStart\": null, \"endedAt\": null, \"vodUrl\": \"https://example.com/foo\", \"tournamentId\": ${ID_Tournament:-null}, \"streamerId\": ${ID_Player:-null}}" | extract_id)
 echo "Stream id=$ID_Stream"
 
-ID_PlayerAchievement=$(curl -s -X POST "$BASE/player_achievements" \
-  -H "Content-Type: application/json" \
-  -d "{\"earnedAt\": \"2024-01-01T00:00:00Z\", \"progress\": 0, \"isCompleted\": false, \"playerId\": ${ID_Player:-null}, \"achievementId\": ${ID_Achievement:-null}}" | extract_id)
+# PlayerAchievement: create not allowed — using id=1 as placeholder
+ID_PlayerAchievement=1
 echo "PlayerAchievement id=$ID_PlayerAchievement"
 
-ID_PlayerSeasonStats=$(curl -s -X POST "$BASE/player_season_statses" \
-  -H "Content-Type: application/json" \
-  -d "{\"wins\": 0, \"losses\": 0, \"draws\": 1, \"tournamentWins\": 0, \"highestRank\": \"Bronze\", \"seasonPoints\": 0, \"playerId\": ${ID_Player:-null}, \"seasonId\": ${ID_Season:-null}}" | extract_id)
+# PlayerSeasonStats: create not allowed — using id=1 as placeholder
+ID_PlayerSeasonStats=1
 echo "PlayerSeasonStats id=$ID_PlayerSeasonStats"
 
 ID_Tournament=$(curl -s -X POST "$BASE/tournaments" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"status\": \"Draft\", \"format\": \"Standard\", \"tournamentType\": \"Swiss\", \"maxPlayers\": 2, \"entryFee\": \"1.00\", \"prizePool\": \"1.00\", \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": null, \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"seasonId\": ${ID_Season:-null}, \"organizerId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"status\": \"Draft\", \"format\": \"Standard\", \"tournamentType\": \"Swiss\", \"maxPlayers\": 2, \"entryFee\": 0, \"prizePool\": 0, \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": null, \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"seasonId\": ${ID_Season:-null}, \"organizerId\": ${ID_Player:-null}}" | extract_id)
 echo "Tournament id=$ID_Tournament"
 
 ID_CardRuling=$(curl -s -X POST "$BASE/card_rulings" \
@@ -161,12 +159,11 @@ echo "CraftingRecipe id=$ID_CraftingRecipe"
 
 ID_TradeListing=$(curl -s -X POST "$BASE/trade_listings" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": ${ID_Player:-null}, \"cardId\": ${ID_Card:-null}}" | extract_id)
+  -d "{\"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": 1, \"auctionStartPrice\": 1, \"auctionCurrentBid\": 1, \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"sellerId\": ${ID_Player:-null}, \"cardId\": ${ID_Card:-null}}" | extract_id)
 echo "TradeListing id=$ID_TradeListing"
 
-ID_CardPriceHistory=$(curl -s -X POST "$BASE/card_price_histories" \
-  -H "Content-Type: application/json" \
-  -d "{\"priceDate\": \"2024-01-01\", \"avgPrice\": \"0.00\", \"minPrice\": \"1.00\", \"maxPrice\": \"1.00\", \"volume\": 0, \"foil\": true, \"cardId\": ${ID_Card:-null}}" | extract_id)
+# CardPriceHistory: create not allowed — using id=1 as placeholder
+ID_CardPriceHistory=1
 echo "CardPriceHistory id=$ID_CardPriceHistory"
 
 ID_DraftParticipant=$(curl -s -X POST "$BASE/draft_participants" \
@@ -191,7 +188,7 @@ echo "DeckTagAssignment id=$ID_DeckTagAssignment"
 
 ID_OrderItem=$(curl -s -X POST "$BASE/order_items" \
   -H "Content-Type: application/json" \
-  -d "{\"quantity\": 1, \"priceAtPurchase\": \"1.00\", \"foil\": true, \"orderId\": ${ID_Order:-null}, \"productId\": ${ID_Product:-null}}" | extract_id)
+  -d "{\"quantity\": 1, \"priceAtPurchase\": 0, \"foil\": true, \"orderId\": ${ID_Order:-null}, \"productId\": ${ID_Product:-null}}" | extract_id)
 echo "OrderItem id=$ID_OrderItem"
 
 ID_ArticleTagAssignment=$(curl -s -X POST "$BASE/article_tag_assignments" \
@@ -221,7 +218,7 @@ echo "TournamentRound id=$ID_TournamentRound"
 
 ID_TournamentPrize=$(curl -s -X POST "$BASE/tournament_prizes" \
   -H "Content-Type: application/json" \
-  -d "{\"placementFrom\": 1, \"placementTo\": 1, \"prizeType\": \"Currency\", \"amount\": \"1.00\", \"description\": \"foo_description\", \"packsCount\": 1, \"seasonPoints\": 1, \"tournamentId\": ${ID_Tournament:-null}}" | extract_id)
+  -d "{\"placementFrom\": 1, \"placementTo\": 1, \"prizeType\": \"Currency\", \"amount\": 0, \"description\": \"foo_description\", \"packsCount\": 1, \"seasonPoints\": 1, \"tournamentId\": ${ID_Tournament:-null}}" | extract_id)
 echo "TournamentPrize id=$ID_TournamentPrize"
 
 ID_CraftingIngredient=$(curl -s -X POST "$BASE/crafting_ingredients" \
@@ -231,17 +228,15 @@ echo "CraftingIngredient id=$ID_CraftingIngredient"
 
 ID_TradeBid=$(curl -s -X POST "$BASE/trade_bids" \
   -H "Content-Type: application/json" \
-  -d "{\"amount\": \"1.00\", \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listingId\": ${ID_TradeListing:-null}, \"bidderId\": ${ID_Player:-null}}" | extract_id)
+  -d "{\"amount\": 1, \"placedAt\": \"2024-01-01T00:00:00Z\", \"isWinning\": true, \"listingId\": ${ID_TradeListing:-null}, \"bidderId\": ${ID_Player:-null}}" | extract_id)
 echo "TradeBid id=$ID_TradeBid"
 
-ID_TradeTransaction=$(curl -s -X POST "$BASE/trade_transactions" \
-  -H "Content-Type: application/json" \
-  -d "{\"finalPrice\": \"1.00\", \"platformFee\": \"1.00\", \"status\": \"Pending\", \"completedAt\": \"2024-01-01T00:00:00Z\", \"listingId\": ${ID_TradeListing:-null}, \"buyerId\": ${ID_Player:-null}, \"sellerId\": ${ID_Player:-null}}" | extract_id)
+# TradeTransaction: create not allowed — using id=1 as placeholder
+ID_TradeTransaction=1
 echo "TradeTransaction id=$ID_TradeTransaction"
 
-ID_DraftPick=$(curl -s -X POST "$BASE/draft_picks" \
-  -H "Content-Type: application/json" \
-  -d "{\"pickNumber\": 1, \"packNumber\": 1, \"pickedAt\": \"2024-01-01T00:00:00Z\", \"participantId\": ${ID_DraftParticipant:-null}, \"cardId\": ${ID_Card:-null}}" | extract_id)
+# DraftPick: create not allowed — using id=1 as placeholder
+ID_DraftPick=1
 echo "DraftPick id=$ID_DraftPick"
 
 ID_Match=$(curl -s -X POST "$BASE/matches" \
@@ -249,15 +244,13 @@ ID_Match=$(curl -s -X POST "$BASE/matches" \
   -d "{\"tableNumber\": 1, \"status\": \"Pending\", \"player1Wins\": 0, \"player2Wins\": 0, \"startedAt\": \"2024-01-01T00:00:00Z\", \"endedAt\": null, \"resultNotes\": \"foo_result_notes\", \"roundId\": ${ID_TournamentRound:-null}, \"player1Id\": ${ID_Player:-null}, \"player2Id\": ${ID_Player:-null}}" | extract_id)
 echo "Match id=$ID_Match"
 
-ID_AwardedPrize=$(curl -s -X POST "$BASE/awarded_prizes" \
-  -H "Content-Type: application/json" \
-  -d "{\"finalPlacement\": 1, \"awardedAt\": \"2024-01-01T00:00:00Z\", \"claimed\": false, \"claimedAt\": \"2024-01-01T00:00:00Z\", \"prizeId\": ${ID_TournamentPrize:-null}, \"playerId\": ${ID_Player:-null}}" | extract_id)
+# AwardedPrize: create not allowed — using id=1 as placeholder
+ID_AwardedPrize=1
 echo "AwardedPrize id=$ID_AwardedPrize"
 
-ID_TradeDispute=$(curl -s -X POST "$BASE/trade_disputes" \
-  -H "Content-Type: application/json" \
-  -d "{\"status\": \"Open\", \"reason\": \"ItemNotReceived\", \"description\": \"foo_description\", \"resolution\": \"foo_resolution\", \"openedAt\": \"2024-01-01T00:00:00Z\", \"resolvedAt\": null, \"transactionId\": ${ID_TradeTransaction:-null}, \"openedById\": ${ID_Player:-null}, \"resolvedById\": ${ID_Player:-null}}" | extract_id)
-echo "TradeDispute id=$ID_TradeDispute"
+# TradeDispute: skipped — cannot be created via API
+ID_TradeDispute=""
+echo "TradeDispute id=skipped"
 
 ID_Game=$(curl -s -X POST "$BASE/games" \
   -H "Content-Type: application/json" \

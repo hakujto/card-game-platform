@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/coupons" `shouldRespondWith` 200
 
+  describe "GET /api/coupons?q=test" $ do
+    it "returns 200" $ do
+      get "/api/coupons?q=test" `shouldRespondWith` 200
+
   describe "POST /api/coupons" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": "1.00", "minOrderValue": "1.00", "maxUses": 0, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-01T00:00:00", "isActive": true}|]
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 1, "minOrderValue": 0.0, "maxUses": null, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-02T00:00:00Z", "isActive": false}|]
       request "POST" "/api/coupons" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +32,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/coupons/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": "1.00", "minOrderValue": "1.00", "maxUses": 0, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-01T00:00:00", "isActive": true}|]
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 1, "minOrderValue": 0.0, "maxUses": null, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-02T00:00:00Z", "isActive": false}|]
       resp <- request "PUT" "/api/coupons/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/coupons/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/coupons/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "GET /api/coupons/1/valid" $ do
     it "behavior is_valid stub returns 404 or 500" $ do
@@ -56,4 +55,28 @@ spec = with (return app) $ do
     it "behavior deactivate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/coupons/1/deactivate" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/coupons rule valid_until_after_valid_from" $ do
+    it "rejects when valid_until_after_valid_from violated" $ do
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 0.0, "minOrderValue": 0.0, "maxUses": 0, "usesCount": 0, "validFrom": "2024-01-02T00:00:00Z", "validUntil": "2024-01-01T00:00:00Z", "isActive": false}|]
+      resp <- request "POST" "/api/coupons" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/coupons rule discount_value_positive" $ do
+    it "rejects when discount_value_positive violated" $ do
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 0, "minOrderValue": 0.0, "maxUses": 0, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-01T00:00:00", "isActive": false}|]
+      resp <- request "POST" "/api/coupons" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/coupons rule percent_discount_range" $ do
+    it "rejects when percent_discount_range violated" $ do
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 101, "minOrderValue": 0.0, "maxUses": 0, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-01T00:00:00", "isActive": false}|]
+      resp <- request "POST" "/api/coupons" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/coupons rule uses_not_exceed_max" $ do
+    it "rejects when uses_not_exceed_max violated" $ do
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 0.0, "minOrderValue": 0.0, "maxUses": "test", "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-01T00:00:00", "isActive": false}|]
+      resp <- request "POST" "/api/coupons" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

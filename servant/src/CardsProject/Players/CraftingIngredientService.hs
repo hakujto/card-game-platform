@@ -7,7 +7,7 @@ import CardsProject.Players.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 
--- Domain service stub for CraftingIngredient
+-- Domain service for CraftingIngredient
 validateCraftingIngredient :: NewCraftingIngredient -> Either String NewCraftingIngredient
 validateCraftingIngredient body = Right body
 

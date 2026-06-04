@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/decks" `shouldRespondWith` 200
 
+  describe "GET /api/decks?q=test" $ do
+    it "returns 200" $ do
+      get "/api/decks?q=test" `shouldRespondWith` 200
+
   describe "POST /api/decks" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": true, "isTournamentLegal": true, "archetype": "Aggro", "wins": 0, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      let body = [json|{"name": "test", "description": null, "format": "Standard", "isPublic": true, "isTournamentLegal": false, "archetype": null, "wins": 0, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
       request "POST" "/api/decks" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,7 +32,7 @@ spec = with (return app) $ do
 
   describe "PUT /api/decks/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": true, "isTournamentLegal": true, "archetype": "Aggro", "wins": 0, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      let body = [json|{"name": "test", "description": null, "format": "Standard", "isPublic": true, "isTournamentLegal": false, "archetype": null, "wins": 0, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
       resp <- request "PUT" "/api/decks/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
@@ -76,4 +80,28 @@ spec = with (return app) $ do
     it "behavior certify_tournament_legal stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/certify" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/decks rule wins_not_negative" $ do
+    it "rejects when wins_not_negative violated" $ do
+      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": false, "isTournamentLegal": false, "archetype": "Aggro", "wins": -2, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      resp <- request "POST" "/api/decks" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/decks rule losses_not_negative" $ do
+    it "rejects when losses_not_negative violated" $ do
+      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": false, "isTournamentLegal": false, "archetype": "Aggro", "wins": 0, "losses": -2, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      resp <- request "POST" "/api/decks" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/decks rule draws_not_negative" $ do
+    it "rejects when draws_not_negative violated" $ do
+      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": false, "isTournamentLegal": false, "archetype": "Aggro", "wins": 0, "losses": 0, "draws": -2, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      resp <- request "POST" "/api/decks" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/decks rule tournament_legal_deck_must_be_validated" $ do
+    it "rejects when tournament_legal_deck_must_be_validated violated" $ do
+      let body = [json|{"name": "test", "description": "test", "format": "Standard", "isPublic": false, "isTournamentLegal": true, "archetype": "Aggro", "wins": 0, "losses": 0, "draws": 0, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "playerId": 1}|]
+      resp <- request "POST" "/api/decks" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

@@ -7,30 +7,39 @@ import CardsProject.Content.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Stream
+-- Domain service for Stream
 validateStream :: NewStream -> Either String NewStream
-validateStream body = Right body
+validateStream body
+  | not (bStreamViewerCountPeak body >= 0) = Left "Peak viewer count must not be negative"
+  | otherwise = validateStreamImplies body
+
+validateStreamImplies :: NewStream -> Either String NewStream
+validateStreamImplies body
+  | (bStreamActualStart body /= Nothing) && not (bStreamStatus body == StreamStatusType_Live) = Left "actual start requires live or ended"
+  | (bStreamEndedAt body /= Nothing) && not (bStreamStatus body == StreamStatusType_Ended) = Left "ended_at can only be set when stream status is Ended"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 go_live :: Int -> IO ()
-go_live _eid = return ()
+go_live _eid = throwIO (userError "go_live not implemented")
 
 -- @invoke behavior stub (no-op)
 end :: Int -> IO ()
-end _eid = return ()
+end _eid = throwIO (userError "end not implemented")
 
 -- @invoke behavior stub (no-op)
 update_viewer_peak :: Int -> IO ()
-update_viewer_peak _eid = return ()
+update_viewer_peak _eid = throwIO (userError "update_viewer_peak not implemented")
 
 -- @invoke behavior stub (no-op)
 duration_minutes :: Int -> IO Int
-duration_minutes _eid = return (error "TODO")
+duration_minutes _eid = throwIO (userError "duration_minutes not implemented")
 
 -- ── Lifecycle state machine ─────────────────────────────────────────
 allowedTransitions :: [(Text, [Text])]

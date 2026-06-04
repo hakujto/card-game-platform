@@ -11,35 +11,45 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Player
+-- Domain service for Player
 validatePlayer :: NewPlayer -> Either String NewPlayer
-validatePlayer body = Right body
+validatePlayer body
+  | not ((bPlayerRating body >= 0 && bPlayerRating body <= 9999)) = Left "Rating must be between 0 and 9999"
+  | not (bPlayerPeakRating body >= bPlayerRating body) = Left "Peak rating must be greater than or equal to current rating"
+  | not (True) = Left "Display name must not be empty"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 promote :: Int -> IO Bool
-promote _eid = return (error "TODO")
+promote _eid = throwIO (userError "promote not implemented")
 
 -- @invoke behavior stub (no-op)
 demote :: Int -> IO Bool
-demote _eid = return (error "TODO")
+demote _eid = throwIO (userError "demote not implemented")
 
 -- @invoke behavior stub (no-op)
 record_win :: Int -> IO ()
-record_win _eid = return ()
+record_win _eid = throwIO (userError "record_win not implemented")
 
 -- @invoke behavior stub (no-op)
 record_loss :: Int -> IO ()
-record_loss _eid = return ()
+record_loss _eid = throwIO (userError "record_loss not implemented")
 
 -- @invoke behavior stub (no-op)
 win_rate :: Int -> IO Text
-win_rate _eid = return (error "TODO")
+win_rate _eid = throwIO (userError "win_rate not implemented")
 
 -- @invoke behavior stub (no-op)
 verify :: Int -> IO ()
-verify _eid = return ()
+verify _eid = throwIO (userError "verify not implemented")
 
 -- @invoke behavior stub (no-op)
 update_rating :: Int -> IO ()
-update_rating _eid = return ()
+update_rating _eid = throwIO (userError "update_rating not implemented")
+
+-- ── Lifecycle hooks ─────────────────────────────────────────────────
+
+-- TODO: implement update_rank
+updateRankHook :: a -> IO ()
+updateRankHook _ = return ()
 

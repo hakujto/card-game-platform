@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/orders" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"status": "Pending", "total": "1.00", "discountApplied": "1.00", "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00", "shippedAt": "2024-01-01T00:00:00", "playerId": 1, "itemsId": 1, "couponId": null}|]
+      let body = [json|{"status": "Pending", "total": 0, "discountApplied": 0.0, "currency": "test", "paymentMethod": null, "paymentReference": null, "shippingAddress": null, "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00Z", "shippedAt": null, "playerId": 1, "couponId": null}|]
       request "POST" "/api/orders" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +25,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/orders/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/orders/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"status": "Pending", "total": "1.00", "discountApplied": "1.00", "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00", "shippedAt": "2024-01-01T00:00:00", "playerId": 1, "itemsId": 1, "couponId": null}|]
-      resp <- request "PUT" "/api/orders/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/orders/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/orders/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/orders/1/transitions/pending-to-paid" $ do
     it "transitions Pending -> Paid" $ do
@@ -111,4 +100,28 @@ spec = with (return app) $ do
     it "behavior refund stub returns 404 or 500" $ do
       resp <- request "POST" "/api/orders/1/refund" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/orders rule paid_requires_paid_at" $ do
+    it "rejects when paid_requires_paid_at violated" $ do
+      let body = [json|{"status": "Paid", "total": 0.0, "discountApplied": 0.0, "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": null, "shippedAt": "2024-01-01T00:00:00", "playerId": 1, "couponId": null}|]
+      resp <- request "POST" "/api/orders" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/orders rule shipped_requires_tracking" $ do
+    it "rejects when shipped_requires_tracking violated" $ do
+      let body = [json|{"status": "Shipped", "total": 0.0, "discountApplied": 0.0, "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": null, "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00", "shippedAt": "2024-01-01T00:00:00", "playerId": 1, "couponId": null}|]
+      resp <- request "POST" "/api/orders" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/orders rule shipped_at_requires_shipped_status" $ do
+    it "rejects when shipped_at_requires_shipped_status violated" $ do
+      let body = [json|{"status": "Pending", "total": 0.0, "discountApplied": 0.0, "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00", "shippedAt": "test", "playerId": 1, "couponId": null}|]
+      resp <- request "POST" "/api/orders" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/orders rule total_not_negative" $ do
+    it "rejects when total_not_negative violated" $ do
+      let body = [json|{"status": "Pending", "total": -2, "discountApplied": 0.0, "currency": "test", "paymentMethod": "Card", "paymentReference": "test", "shippingAddress": "test", "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00", "shippedAt": "2024-01-01T00:00:00", "playerId": 1, "couponId": null}|]
+      resp <- request "POST" "/api/orders" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

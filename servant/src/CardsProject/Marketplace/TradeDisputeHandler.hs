@@ -10,6 +10,7 @@ import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Marketplace.TradeDisputeService as TradeDisputeSvc
+import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
@@ -19,13 +20,10 @@ type TradeDisputeAPI
   =    "api" :> "trade_disputes" :> Get '[JSON] [TradeDispute]
   :<|> "api" :> "trade_disputes" :> ReqBody '[JSON] NewTradeDispute :> PostCreated '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> Get '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> ReqBody '[JSON] NewTradeDispute :> Put '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> ReqBody '[JSON] NewTradeDispute :> Patch '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "escalate" :> Post '[JSON] NoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "resolve" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "close" :> Post '[JSON] NoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "review" :> Post '[JSON] NoContent
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "escalate" :> PostNoContent
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "resolve" :> ReqBody '[JSON] Object :> PostNoContent
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "close" :> PostNoContent
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "review" :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "open-to-underreview" :> Patch '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-resolved" :> Patch '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-escalated" :> Patch '[JSON] TradeDispute
@@ -36,9 +34,6 @@ tradeDisputeServer :: Server TradeDisputeAPI
 tradeDisputeServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
-  :<|> delete
   :<|> behaviorEscalate
   :<|> behaviorResolve
   :<|> behaviorCloseResolved
@@ -53,14 +48,17 @@ tradeDisputeServer = listAll
       query_ conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes" :: IO [TradeDispute]
 
     create body = do
-      mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO trade_disputes (status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" body
-        rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [TradeDispute]
-        return $ case rows of { (r:_) -> Just r; [] -> Nothing }
-      case mRow of
-        Just r  -> return r
-        Nothing -> throwError err500
+      case TradeDisputeSvc.validateTradeDispute body of
+        Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
+        Right validBody -> do
+          mRow <- liftIO $ withDb $ \conn -> do
+            execute conn "INSERT INTO trade_disputes (status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            rowId <- lastInsertRowId conn
+            rows <- query conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [TradeDispute]
+            return $ case rows of { (r:_) -> Just r; [] -> Nothing }
+          case mRow of
+            Just r  -> return r
+            Nothing -> throwError err500
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -69,30 +67,17 @@ tradeDisputeServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE trade_disputes SET status = ?, reason = ?, description = ?, resolution = ?, opened_at = ?, resolved_at = ?, transaction_id = ?, opened_by_id = ?, resolved_by_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes WHERE id = ?" (Only eid) :: IO [TradeDispute]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
-    delete eid = do
-      liftIO $ withDb $ \conn ->
-        execute conn "DELETE FROM trade_disputes WHERE id = ?" (Only eid)
-      return NoContent
-
     behaviorEscalate eid = do
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes WHERE id = ?" (Only eid) :: IO [TradeDispute]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TradeDisputeSvc.escalate eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TradeDisputeSvc.escalate eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorResolve eid _body = do
       rows <- liftIO $ withDb $ \conn ->
@@ -100,8 +85,11 @@ tradeDisputeServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TradeDisputeSvc.resolve eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TradeDisputeSvc.resolve eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorCloseResolved eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -109,8 +97,11 @@ tradeDisputeServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TradeDisputeSvc.close_resolved eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TradeDisputeSvc.close_resolved eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorReview eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -118,8 +109,11 @@ tradeDisputeServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TradeDisputeSvc.review eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TradeDisputeSvc.review eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     transitionHandlerOpenToUnderReview eid = do
       result <- liftIO $ (TradeDisputeSvc.transitionOpenToUnderReview eid >>= (return . Right))

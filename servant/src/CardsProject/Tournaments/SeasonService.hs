@@ -11,23 +11,25 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Season
+-- Domain service for Season
 validateSeason :: NewSeason -> Either String NewSeason
-validateSeason body = Right body
+validateSeason body
+  | not (bSeasonEndDate body > bSeasonStartDate body) = Left "Season end date must be after start date"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 activate :: Int -> IO ()
-activate _eid = return ()
+activate _eid = throwIO (userError "activate not implemented")
 
 -- @invoke behavior stub (no-op)
 deactivate :: Int -> IO ()
-deactivate _eid = return ()
+deactivate _eid = throwIO (userError "deactivate not implemented")
 
 -- @invoke behavior stub (no-op)
 finalize_rewards :: Int -> IO ()
-finalize_rewards _eid = return ()
+finalize_rewards _eid = throwIO (userError "finalize_rewards not implemented")
 
 -- @invoke behavior stub (no-op)
 is_ongoing :: Int -> IO Bool
-is_ongoing _eid = return (error "TODO")
+is_ongoing _eid = throwIO (userError "is_ongoing not implemented")
 

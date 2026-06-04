@@ -7,40 +7,49 @@ import CardsProject.Marketplace.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text
 import Database.SQLite.Simple hiding (close)
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for TradeListing
+-- Domain service for TradeListing
 validateTradeListing :: NewTradeListing -> Either String NewTradeListing
-validateTradeListing body = Right body
+validateTradeListing body
+  | not ((bTradeListingQuantity body >= 1 && bTradeListingQuantity body <= 9999)) = Left "Listing quantity must be between 1 and 9999"
+  | otherwise = validateTradeListingImplies body
+
+validateTradeListingImplies :: NewTradeListing -> Either String NewTradeListing
+validateTradeListingImplies body
+  | (bTradeListingListingType body == TradeListingListingTypeType_FixedPrice) && not (bTradeListingAskingPrice body /= Nothing) = Left "Fixed price listing must have an asking price"
+  | (bTradeListingListingType body == TradeListingListingTypeType_Auction) && not (bTradeListingAuctionStartPrice body /= Nothing && bTradeListingAuctionEndTime body /= Nothing) = Left "Auction listing must have a start price and end time"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 close :: Int -> IO ()
-close _eid = return ()
+close _eid = throwIO (userError "close not implemented")
 
 -- @invoke behavior stub (no-op)
 extend :: Int -> IO ()
-extend _eid = return ()
+extend _eid = throwIO (userError "extend not implemented")
 
 -- @invoke behavior stub (no-op)
 cancel :: Int -> IO ()
-cancel _eid = return ()
+cancel _eid = throwIO (userError "cancel not implemented")
 
 -- @invoke behavior stub (no-op)
 is_expired :: Int -> IO Bool
-is_expired _eid = return (error "TODO")
+is_expired _eid = throwIO (userError "is_expired not implemented")
 
 -- @invoke behavior stub (no-op)
 finalize_auction :: Int -> IO ()
-finalize_auction _eid = return ()
+finalize_auction _eid = throwIO (userError "finalize_auction not implemented")
 
 -- triggered by @on(status = Sold)
 setStatus :: Int -> Text -> IO ()
 setStatus eid value = withDb $ \conn -> do
   execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" (value, eid)
-  if value == "SOLD"
+  if value == "Sold"
     then return () -- TODO: finalize_auction @on trigger
     else return ()
 
@@ -64,62 +73,62 @@ assertTransition current to_ = do
 
 transitionPendingToActive :: Int -> IO TradeListing
 transitionPendingToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do
       assertTransition (enumToText (tradeListingStatus record)) "Active"
       execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" ("Active" :: Text, eid)
-      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "TradeListing not found after update")
 
 transitionActiveToSold :: Int -> IO TradeListing
 transitionActiveToSold eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do
       assertTransition (enumToText (tradeListingStatus record)) "Sold"
       execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" ("Sold" :: Text, eid)
       finalize_auction eid  -- @after
-      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "TradeListing not found after update")
 
 transitionActiveToExpired :: Int -> IO TradeListing
 transitionActiveToExpired eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do
       assertTransition (enumToText (tradeListingStatus record)) "Expired"
       execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" ("Expired" :: Text, eid)
       close eid  -- @after
-      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "TradeListing not found after update")
 
 transitionActiveToCancelled :: Int -> IO TradeListing
 transitionActiveToCancelled eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do
       assertTransition (enumToText (tradeListingStatus record)) "Cancelled"
       execute conn "UPDATE trade_listings SET status = ? WHERE id = ?" ("Cancelled" :: Text, eid)
       cancel eid  -- @after
-      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+      updated <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "TradeListing not found after update")
 
 transitionSoldToActive :: Int -> IO TradeListing
 transitionSoldToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do
@@ -127,7 +136,7 @@ transitionSoldToActive eid = withDb $ \conn -> do
 
 transitionExpiredToActive :: Int -> IO TradeListing
 transitionExpiredToActive eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id, bids_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
+  rows <- query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing]
   case rows of
     [] -> throwIO (userError "TradeListing not found")
     (record:_) -> do

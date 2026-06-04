@@ -11,15 +11,19 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for TournamentPrize
+-- Domain service for TournamentPrize
 validateTournamentPrize :: NewTournamentPrize -> Either String NewTournamentPrize
-validateTournamentPrize body = Right body
+validateTournamentPrize body
+  | not (bTournamentPrizePlacementTo body >= bTournamentPrizePlacementFrom body) = Left "placement_to must be greater than or equal to placement_from"
+  | not (bTournamentPrizePlacementFrom body > 0) = Left "placement_from must be greater than zero"
+  | not (bTournamentPrizeAmount body >= 0) = Left "Prize amount must not be negative"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 applies_to_placement :: Int -> IO Bool
-applies_to_placement _eid = return (error "TODO")
+applies_to_placement _eid = throwIO (userError "applies_to_placement not implemented")
 
 -- @invoke behavior stub (no-op)
 award_to_player :: Int -> IO ()
-award_to_player _eid = return ()
+award_to_player _eid = throwIO (userError "award_to_player not implemented")
 

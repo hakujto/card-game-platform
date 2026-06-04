@@ -10,41 +10,25 @@ import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Players.PlayerAchievementService as PlayerAchievementSvc
+import qualified Data.ByteString.Lazy.Char8
+import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
 
 type PlayerAchievementAPI
   =    "api" :> "player_achievements" :> Get '[JSON] [PlayerAchievement]
-  :<|> "api" :> "player_achievements" :> ReqBody '[JSON] NewPlayerAchievement :> PostCreated '[JSON] PlayerAchievement
   :<|> "api" :> "player_achievements" :> Capture "id" Int :> Get '[JSON] PlayerAchievement
-  :<|> "api" :> "player_achievements" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerAchievement :> Put '[JSON] PlayerAchievement
-  :<|> "api" :> "player_achievements" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerAchievement :> Patch '[JSON] PlayerAchievement
-  :<|> "api" :> "player_achievements" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "progress" :> ReqBody '[JSON] Object :> Patch '[JSON] NoContent
-  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "complete" :> Post '[JSON] NoContent
+  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "progress" :> ReqBody '[JSON] Object :> PatchNoContent
+  :<|> "api" :> "player_achievements" :> Capture "id" Int :> "complete" :> PostNoContent
 
 playerAchievementServer :: Server PlayerAchievementAPI
 playerAchievementServer = listAll
-  :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
-  :<|> delete
   :<|> behaviorIncrementProgress
   :<|> behaviorComplete
   where
     listAll = liftIO $ withDb $ \conn ->
       query_ conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements" :: IO [PlayerAchievement]
-
-    create body = do
-      mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO player_achievements (earned_at, progress, is_completed, player_id, achievement_id) VALUES (?, ?, ?, ?, ?)" body
-        rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [PlayerAchievement]
-        return $ case rows of { (r:_) -> Just r; [] -> Nothing }
-      case mRow of
-        Just r  -> return r
-        Nothing -> throwError err500
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -53,30 +37,17 @@ playerAchievementServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE player_achievements SET earned_at = ?, progress = ?, is_completed = ?, player_id = ?, achievement_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements WHERE id = ?" (Only eid) :: IO [PlayerAchievement]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
-    delete eid = do
-      liftIO $ withDb $ \conn ->
-        execute conn "DELETE FROM player_achievements WHERE id = ?" (Only eid)
-      return NoContent
-
     behaviorIncrementProgress eid _body = do
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, earned_at, progress, is_completed, player_id, achievement_id FROM player_achievements WHERE id = ?" (Only eid) :: IO [PlayerAchievement]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ PlayerAchievementSvc.increment_progress eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> PlayerAchievementSvc.increment_progress eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorComplete eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -84,6 +55,9 @@ playerAchievementServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ PlayerAchievementSvc.complete eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> PlayerAchievementSvc.complete eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 

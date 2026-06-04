@@ -11,19 +11,19 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Friendship
+-- Domain service for Friendship
 validateFriendship :: NewFriendship -> Either String NewFriendship
 validateFriendship body = Right body
 
 -- @invoke behavior stub (no-op)
 accept :: Int -> IO ()
-accept _eid = return ()
+accept _eid = throwIO (userError "accept not implemented")
 
 -- @invoke behavior stub (no-op)
 decline :: Int -> IO ()
-decline _eid = return ()
+decline _eid = throwIO (userError "decline not implemented")
 
 -- @invoke behavior stub (no-op)
 block :: Int -> IO ()
-block _eid = return ()
+block _eid = throwIO (userError "block not implemented")
 

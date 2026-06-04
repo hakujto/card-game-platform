@@ -11,15 +11,15 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for ArticleTag
+-- Domain service for ArticleTag
 validateArticleTag :: NewArticleTag -> Either String NewArticleTag
 validateArticleTag body = Right body
 
 -- @invoke behavior stub (no-op)
 rename :: Int -> IO ()
-rename _eid = return ()
+rename _eid = throwIO (userError "rename not implemented")
 
 -- @invoke behavior stub (no-op)
 article_count :: Int -> IO Int
-article_count _eid = return (error "TODO")
+article_count _eid = throwIO (userError "article_count not implemented")
 

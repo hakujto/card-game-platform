@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Cards.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
@@ -217,8 +218,6 @@ data Card = Card
   , cardIsRestricted :: Bool
   , cardPowerLevel :: Int
   , cardSetId :: Maybe Int
-  , cardRulingsId :: Maybe Int
-  , cardAbilitiesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Card where
@@ -227,7 +226,7 @@ instance FromJSON Card where
   parseJSON = genericParseJSON _cardOpts
 
 instance FromRow Card where
-  fromRow = Card <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Card <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newCardOpts :: Options
 _newCardOpts = defaultOptions
@@ -251,8 +250,6 @@ data NewCard = NewCard
   , bCardIsRestricted :: Bool
   , bCardPowerLevel :: Int
   , bCardSetId :: Maybe Int
-  , bCardRulingsId :: Maybe Int
-  , bCardAbilitiesId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewCard where
@@ -261,7 +258,7 @@ instance FromJSON NewCard where
   parseJSON = genericParseJSON _newCardOpts
 
 instance ToRow NewCard where
-  toRow b = [toField (bCardName b), toField (bCardCardType b), toField (bCardRarity b), toField (bCardManaCost b), toField (bCardManaColors b), toField (bCardAttack b), toField (bCardDefense b), toField (bCardLoyalty b), toField (bCardDescription b), toField (bCardFlavorText b), toField (bCardImageUrl b), toField (bCardArtistName b), toField (bCardLegalFormats b), toField (bCardIsBanned b), toField (bCardIsRestricted b), toField (bCardPowerLevel b), toField (bCardSetId b), toField (bCardRulingsId b), toField (bCardAbilitiesId b)]
+  toRow b = [toField (bCardName b), toField (bCardCardType b), toField (bCardRarity b), toField (bCardManaCost b), toField (bCardManaColors b), toField (bCardAttack b), toField (bCardDefense b), toField (bCardLoyalty b), toField (bCardDescription b), toField (bCardFlavorText b), toField (bCardImageUrl b), toField (bCardArtistName b), toField (bCardLegalFormats b), toField (bCardIsBanned b), toField (bCardIsRestricted b), toField (bCardPowerLevel b), toField (bCardSetId b)]
 
 data CardSetSetTypeType
   = CardSetSetTypeType_Core
@@ -618,7 +615,21 @@ data Deck = Deck
   } deriving (Show, Generic)
 
 instance ToJSON Deck where
-  toJSON = genericToJSON _deckOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.deckId
+    , "name" .= rec.deckName
+    , "description" .= rec.deckDescription
+    , "format" .= rec.deckFormat
+    , "is_public" .= rec.deckIsPublic
+    , "is_tournament_legal" .= rec.deckIsTournamentLegal
+    , "archetype" .= rec.deckArchetype
+    , "wins" .= rec.deckWins
+    , "losses" .= rec.deckLosses
+    , "draws" .= rec.deckDraws
+    , "createdAt" .= rec.deckCreatedAt
+    , "updatedAt" .= rec.deckUpdatedAt
+    , "player_id" .= rec.deckPlayerId
+    ]
 instance FromJSON Deck where
   parseJSON = genericParseJSON _deckOpts
 

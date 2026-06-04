@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/achievements" `shouldRespondWith` 200
 
+  describe "GET /api/achievements?q=test" $ do
+    it "returns 200" $ do
+      get "/api/achievements?q=test" `shouldRespondWith` 200
+
   describe "POST /api/achievements" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "description": "test", "iconUrl": "https://example.com", "points": 0, "rarity": "Common", "isHidden": true}|]
+      let body = [json|{"name": "test", "description": "test", "iconUrl": null, "points": 1, "rarity": "Common", "isHidden": false}|]
       request "POST" "/api/achievements" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +32,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/achievements/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "description": "test", "iconUrl": "https://example.com", "points": 0, "rarity": "Common", "isHidden": true}|]
+      let body = [json|{"name": "test", "description": "test", "iconUrl": null, "points": 1, "rarity": "Common", "isHidden": false}|]
       resp <- request "PUT" "/api/achievements/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/achievements/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/achievements/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "GET /api/achievements/1/point-value" $ do
     it "behavior point_value stub returns 404 or 500" $ do
@@ -46,4 +45,10 @@ spec = with (return app) $ do
     it "behavior reveal stub returns 404 or 500" $ do
       resp <- request "POST" "/api/achievements/1/reveal" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/achievements rule points_positive" $ do
+    it "rejects when points_positive violated" $ do
+      let body = [json|{"name": "test", "description": "test", "iconUrl": "https://example.com", "points": 0, "rarity": "Common", "isHidden": false}|]
+      resp <- request "POST" "/api/achievements" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

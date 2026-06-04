@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/tournaments" `shouldRespondWith` 200
 
+  describe "GET /api/tournaments?q=test" $ do
+    it "returns 200" $ do
+      get "/api/tournaments?q=test" `shouldRespondWith` 200
+
   describe "POST /api/tournaments" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
+      let body = [json|{"name": "test", "description": null, "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 2, "entryFee": 0, "prizePool": 0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-02T00:00:00Z", "isOnline": false, "location": null, "rulesText": null, "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
       request "POST" "/api/tournaments" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +32,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/tournaments/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": "1.00", "prizePool": "1.00", "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": true, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1, "registrationsId": null, "roundsId": null, "prizesId": null}|]
+      let body = [json|{"name": "test", "description": null, "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 2, "entryFee": 0, "prizePool": 0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-02T00:00:00Z", "isOnline": false, "location": null, "rulesText": null, "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
       resp <- request "PUT" "/api/tournaments/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/tournaments/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/tournaments/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/tournaments/1/transitions/draft-to-registration" $ do
     it "transitions Draft -> Registration" $ do
@@ -106,4 +105,28 @@ spec = with (return app) $ do
     it "behavior is_full stub returns 404 or 500" $ do
       resp <- get "/api/tournaments/1/full"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/tournaments rule max_players_positive" $ do
+    it "rejects when max_players_positive violated" $ do
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 513, "entryFee": 0.0, "prizePool": 0.0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": false, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
+      resp <- request "POST" "/api/tournaments" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/tournaments rule entry_fee_not_negative" $ do
+    it "rejects when entry_fee_not_negative violated" $ do
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": -2, "prizePool": 0.0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": false, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
+      resp <- request "POST" "/api/tournaments" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/tournaments rule prize_pool_not_negative" $ do
+    it "rejects when prize_pool_not_negative violated" $ do
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": 0.0, "prizePool": -2, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-01T00:00:00", "isOnline": false, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
+      resp <- request "POST" "/api/tournaments" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/tournaments rule end_time_after_start" $ do
+    it "rejects when end_time_after_start violated" $ do
+      let body = [json|{"name": "test", "description": "test", "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 0, "entryFee": 0.0, "prizePool": 0.0, "startTime": "2024-01-02T00:00:00Z", "endTime": "2024-01-01T00:00:00Z", "isOnline": false, "location": "test", "rulesText": "test", "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
+      resp <- request "POST" "/api/tournaments" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

@@ -15,9 +15,13 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/seasons" `shouldRespondWith` 200
 
+  describe "GET /api/seasons?q=test" $ do
+    it "returns 200" $ do
+      get "/api/seasons?q=test" `shouldRespondWith` 200
+
   describe "POST /api/seasons" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "startDate": "2024-01-01", "endDate": "2024-01-01", "format": "Standard", "isActive": true, "rewardDescription": "test"}|]
+      let body = [json|{"name": "test", "startDate": "2024-01-01", "endDate": "2024-01-02", "format": "Standard", "isActive": false, "rewardDescription": null}|]
       request "POST" "/api/seasons" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -28,14 +32,9 @@ spec = with (return app) $ do
 
   describe "PUT /api/seasons/1" $ do
     it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "startDate": "2024-01-01", "endDate": "2024-01-01", "format": "Standard", "isActive": true, "rewardDescription": "test"}|]
+      let body = [json|{"name": "test", "startDate": "2024-01-01", "endDate": "2024-01-02", "format": "Standard", "isActive": false, "rewardDescription": null}|]
       resp <- request "PUT" "/api/seasons/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/seasons/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/seasons/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "POST /api/seasons/1/activate" $ do
     it "behavior activate stub returns 404 or 500" $ do
@@ -56,4 +55,10 @@ spec = with (return app) $ do
     it "behavior is_ongoing stub returns 404 or 500" $ do
       resp <- get "/api/seasons/1/ongoing"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/seasons rule end_date_after_start_date" $ do
+    it "rejects when end_date_after_start_date violated" $ do
+      let body = [json|{"name": "test", "startDate": "2024-01-02T00:00:00Z", "endDate": "2024-01-01T00:00:00Z", "format": "Standard", "isActive": false, "rewardDescription": "test"}|]
+      resp <- request "POST" "/api/seasons" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

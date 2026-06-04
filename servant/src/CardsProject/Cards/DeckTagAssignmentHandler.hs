@@ -14,16 +14,12 @@ type DeckTagAssignmentAPI
   =    "api" :> "deck_tag_assignments" :> Get '[JSON] [DeckTagAssignment]
   :<|> "api" :> "deck_tag_assignments" :> ReqBody '[JSON] NewDeckTagAssignment :> PostCreated '[JSON] DeckTagAssignment
   :<|> "api" :> "deck_tag_assignments" :> Capture "id" Int :> Get '[JSON] DeckTagAssignment
-  :<|> "api" :> "deck_tag_assignments" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTagAssignment :> Put '[JSON] DeckTagAssignment
-  :<|> "api" :> "deck_tag_assignments" :> Capture "id" Int :> ReqBody '[JSON] NewDeckTagAssignment :> Patch '[JSON] DeckTagAssignment
   :<|> "api" :> "deck_tag_assignments" :> Capture "id" Int :> DeleteNoContent
 
 deckTagAssignmentServer :: Server DeckTagAssignmentAPI
 deckTagAssignmentServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   where
     listAll = liftIO $ withDb $ \conn ->
@@ -45,17 +41,6 @@ deckTagAssignmentServer = listAll
       case rows of
         (r:_) -> return r
         []    -> throwError err404
-
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE deck_tag_assignments SET deck_id = ?, tag_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, deck_id, tag_id FROM deck_tag_assignments WHERE id = ?" (Only eid) :: IO [DeckTagAssignment]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
 
     delete eid = do
       liftIO $ withDb $ \conn ->

@@ -11,19 +11,19 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for ArticleComment
+-- Domain service for ArticleComment
 validateArticleComment :: NewArticleComment -> Either String NewArticleComment
 validateArticleComment body = Right body
 
 -- @invoke behavior stub (no-op)
 hide :: Int -> IO ()
-hide _eid = return ()
+hide _eid = throwIO (userError "hide not implemented")
 
 -- @invoke behavior stub (no-op)
 unhide :: Int -> IO ()
-unhide _eid = return ()
+unhide _eid = throwIO (userError "unhide not implemented")
 
 -- @invoke behavior stub (no-op)
 is_reply :: Int -> IO Bool
-is_reply _eid = return (error "TODO")
+is_reply _eid = throwIO (userError "is_reply not implemented")
 

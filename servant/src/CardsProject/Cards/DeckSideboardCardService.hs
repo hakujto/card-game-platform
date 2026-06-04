@@ -11,15 +11,17 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for DeckSideboardCard
+-- Domain service for DeckSideboardCard
 validateDeckSideboardCard :: NewDeckSideboardCard -> Either String NewDeckSideboardCard
-validateDeckSideboardCard body = Right body
+validateDeckSideboardCard body
+  | not ((bDeckSideboardCardQuantity body >= 1 && bDeckSideboardCardQuantity body <= 4)) = Left "Sideboard card quantity must be between 1 and 4 copies"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 increment :: Int -> IO ()
-increment _eid = return ()
+increment _eid = throwIO (userError "increment not implemented")
 
 -- @invoke behavior stub (no-op)
 decrement :: Int -> IO ()
-decrement _eid = return ()
+decrement _eid = throwIO (userError "decrement not implemented")
 

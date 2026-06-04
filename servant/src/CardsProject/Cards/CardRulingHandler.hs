@@ -10,13 +10,12 @@ import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Cards.CardRulingService as CardRulingSvc
+import Control.Exception (catch, IOException)
 
 type CardRulingAPI
   =    "api" :> "card_rulings" :> Get '[JSON] [CardRuling]
   :<|> "api" :> "card_rulings" :> ReqBody '[JSON] NewCardRuling :> PostCreated '[JSON] CardRuling
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> Get '[JSON] CardRuling
-  :<|> "api" :> "card_rulings" :> Capture "id" Int :> ReqBody '[JSON] NewCardRuling :> Put '[JSON] CardRuling
-  :<|> "api" :> "card_rulings" :> Capture "id" Int :> ReqBody '[JSON] NewCardRuling :> Patch '[JSON] CardRuling
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> "current" :> Get '[JSON] Bool
   :<|> "api" :> "card_rulings" :> Capture "id" Int :> "supersedes" :> Get '[JSON] Bool
@@ -25,8 +24,6 @@ cardRulingServer :: Server CardRulingAPI
 cardRulingServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   :<|> behaviorIsCurrent
   :<|> behaviorSupersedesPrevious
@@ -51,17 +48,6 @@ cardRulingServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE card_rulings SET ruling_text = ?, published_at = ?, source = ?, card_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, ruling_text, published_at, source, card_id FROM card_rulings WHERE id = ?" (Only eid) :: IO [CardRuling]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
     delete eid = do
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM card_rulings WHERE id = ?" (Only eid)
@@ -73,8 +59,11 @@ cardRulingServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ CardRulingSvc.is_current eid
-          return result
+          eResult <- liftIO $ (Right <$> CardRulingSvc.is_current eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 
     behaviorSupersedesPrevious eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -82,6 +71,9 @@ cardRulingServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ CardRulingSvc.supersedes_previous eid
-          return result
+          eResult <- liftIO $ (Right <$> CardRulingSvc.supersedes_previous eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 

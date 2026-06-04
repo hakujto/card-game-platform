@@ -10,6 +10,8 @@ import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Players.PlayerCollectionService as PlayerCollectionSvc
+import qualified Data.ByteString.Lazy.Char8
+import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
 
@@ -17,18 +19,16 @@ type PlayerCollectionAPI
   =    "api" :> "player_collections" :> Get '[JSON] [PlayerCollection]
   :<|> "api" :> "player_collections" :> ReqBody '[JSON] NewPlayerCollection :> PostCreated '[JSON] PlayerCollection
   :<|> "api" :> "player_collections" :> Capture "id" Int :> Get '[JSON] PlayerCollection
-  :<|> "api" :> "player_collections" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerCollection :> Put '[JSON] PlayerCollection
   :<|> "api" :> "player_collections" :> Capture "id" Int :> ReqBody '[JSON] NewPlayerCollection :> Patch '[JSON] PlayerCollection
   :<|> "api" :> "player_collections" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "player_collections" :> Capture "id" Int :> "add" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
-  :<|> "api" :> "player_collections" :> Capture "id" Int :> "remove" :> ReqBody '[JSON] Object :> Post '[JSON] NoContent
+  :<|> "api" :> "player_collections" :> Capture "id" Int :> "add" :> ReqBody '[JSON] Object :> PostNoContent
+  :<|> "api" :> "player_collections" :> Capture "id" Int :> "remove" :> ReqBody '[JSON] Object :> PostNoContent
   :<|> "api" :> "player_collections" :> Capture "id" Int :> "value" :> Get '[JSON] Text
 
 playerCollectionServer :: Server PlayerCollectionAPI
 playerCollectionServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
   :<|> partialUpdate
   :<|> delete
   :<|> behaviorAdd
@@ -39,14 +39,17 @@ playerCollectionServer = listAll
       query_ conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections" :: IO [PlayerCollection]
 
     create body = do
-      mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO player_collections (quantity, foil, condition, acquired_at, acquired_via, player_id, card_id) VALUES (?, ?, ?, ?, ?, ?, ?)" body
-        rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [PlayerCollection]
-        return $ case rows of { (r:_) -> Just r; [] -> Nothing }
-      case mRow of
-        Just r  -> return r
-        Nothing -> throwError err500
+      case PlayerCollectionSvc.validatePlayerCollection body of
+        Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
+        Right validBody -> do
+          mRow <- liftIO $ withDb $ \conn -> do
+            execute conn "INSERT INTO player_collections (quantity, foil, condition, acquired_at, acquired_via, player_id, card_id) VALUES (?, ?, ?, ?, ?, ?, ?)" validBody
+            rowId <- lastInsertRowId conn
+            rows <- query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [PlayerCollection]
+            return $ case rows of { (r:_) -> Just r; [] -> Nothing }
+          case mRow of
+            Just r  -> return r
+            Nothing -> throwError err500
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -55,16 +58,17 @@ playerCollectionServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE player_collections SET quantity = ?, foil = ?, condition = ?, acquired_at = ?, acquired_via = ?, player_id = ?, card_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only eid) :: IO [PlayerCollection]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
+    partialUpdate eid body = do
+      case PlayerCollectionSvc.validatePlayerCollection body of
+        Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
+        Right validBody -> do
+          rows <- liftIO $ withDb $ \conn -> do
+            let bodyRow = toRow validBody ++ toRow (Only eid)
+            execute conn "UPDATE player_collections SET quantity = ?, foil = ?, condition = ?, acquired_at = ?, acquired_via = ?, player_id = ?, card_id = ? WHERE id = ?" bodyRow
+            query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only eid) :: IO [PlayerCollection]
+          case rows of
+            (r:_) -> return r
+            []    -> throwError err404
 
     delete eid = do
       liftIO $ withDb $ \conn ->
@@ -77,8 +81,11 @@ playerCollectionServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ PlayerCollectionSvc.add eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> PlayerCollectionSvc.add eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorRemove eid _body = do
       rows <- liftIO $ withDb $ \conn ->
@@ -86,8 +93,11 @@ playerCollectionServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ PlayerCollectionSvc.remove eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> PlayerCollectionSvc.remove eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorEstimatedValue eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -95,6 +105,9 @@ playerCollectionServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ PlayerCollectionSvc.estimated_value eid
-          return result
+          eResult <- liftIO $ (Right <$> PlayerCollectionSvc.estimated_value eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 

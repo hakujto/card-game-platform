@@ -7,27 +7,37 @@ import CardsProject.Marketplace.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for TradeTransaction
+-- Domain service for TradeTransaction
 validateTradeTransaction :: NewTradeTransaction -> Either String NewTradeTransaction
-validateTradeTransaction body = Right body
+validateTradeTransaction body
+  | not (bTradeTransactionPlatformFee body <= bTradeTransactionFinalPrice body) = Left "Platform fee cannot exceed the final price"
+  | not (bTradeTransactionPlatformFee body >= 0) = Left "Platform fee must not be negative"
+  | not (bTradeTransactionFinalPrice body > 0) = Left "Transaction final price must be greater than zero"
+  | otherwise = validateTradeTransactionImplies body
+
+validateTradeTransactionImplies :: NewTradeTransaction -> Either String NewTradeTransaction
+validateTradeTransactionImplies body
+  | (bTradeTransactionStatus body == TradeTransactionStatusType_Completed) && not (bTradeTransactionCompletedAt body /= Nothing) = Left "Completed transaction must have a completed_at timestamp"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 complete :: Int -> IO ()
-complete _eid = return ()
+complete _eid = throwIO (userError "complete not implemented")
 
 -- @invoke behavior stub (no-op)
 refund :: Int -> IO ()
-refund _eid = return ()
+refund _eid = throwIO (userError "refund not implemented")
 
 -- @invoke behavior stub (no-op)
 open_dispute :: Int -> IO ()
-open_dispute _eid = return ()
+open_dispute _eid = throwIO (userError "open_dispute not implemented")
 
 -- @invoke behavior stub (no-op)
 seller_net :: Int -> IO Text
-seller_net _eid = return (error "TODO")
+seller_net _eid = throwIO (userError "seller_net not implemented")
 

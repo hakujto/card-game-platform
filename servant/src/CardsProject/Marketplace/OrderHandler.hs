@@ -10,6 +10,7 @@ import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Marketplace.OrderService as OrderSvc
+import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
@@ -19,15 +20,12 @@ type OrderAPI
   =    "api" :> "orders" :> Get '[JSON] [Order]
   :<|> "api" :> "orders" :> ReqBody '[JSON] NewOrder :> PostCreated '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> Get '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> ReqBody '[JSON] NewOrder :> Put '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> ReqBody '[JSON] NewOrder :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> DeleteNoContent
   :<|> "api" :> "orders" :> Capture "id" Int :> "cancel" :> DeleteNoContent
   :<|> "api" :> "orders" :> Capture "id" Int :> "pay" :> ReqBody '[JSON] Object :> Post '[JSON] Bool
   :<|> "api" :> "orders" :> Capture "id" Int :> "process-payment" :> Post '[JSON] Bool
   :<|> "api" :> "orders" :> Capture "id" Int :> "total" :> Get '[JSON] Text
   :<|> "api" :> "orders" :> Capture "id" Int :> "discount" :> ReqBody '[JSON] Object :> Patch '[JSON] Text
-  :<|> "api" :> "orders" :> Capture "id" Int :> "refund" :> Post '[JSON] NoContent
+  :<|> "api" :> "orders" :> Capture "id" Int :> "refund" :> PostNoContent
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "pending-to-paid" :> Patch '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "paid-to-processing" :> Patch '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "processing-to-shipped" :> Patch '[JSON] Order
@@ -42,9 +40,6 @@ orderServer :: Server OrderAPI
 orderServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
-  :<|> delete
   :<|> behaviorCancel
   :<|> behaviorPay
   :<|> behaviorProcessPayment
@@ -62,94 +57,99 @@ orderServer = listAll
   :<|> transitionHandlerCompletedToCancelled
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders" :: IO [Order]
+      query_ conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders" :: IO [Order]
 
     create body = do
-      mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO orders (status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" body
-        rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Order]
-        return $ case rows of { (r:_) -> Just r; [] -> Nothing }
-      case mRow of
-        Just r  -> return r
-        Nothing -> throwError err500
+      case OrderSvc.validateOrder body of
+        Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
+        Right validBody -> do
+          mRow <- liftIO $ withDb $ \conn -> do
+            execute conn "INSERT INTO orders (status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            rowId <- lastInsertRowId conn
+            rows <- query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Order]
+            return $ case rows of { (r:_) -> Just r; [] -> Nothing }
+          case mRow of
+            Just r  -> return r
+            Nothing -> throwError err500
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
-
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE orders SET status = ?, total = ?, discount_applied = ?, currency = ?, payment_method = ?, payment_reference = ?, shipping_address = ?, tracking_number = ?, created_at = ?, paid_at = ?, shipped_at = ?, player_id = ?, items_id = ?, coupon_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
-    delete eid = do
-      liftIO $ withDb $ \conn ->
-        execute conn "DELETE FROM orders WHERE id = ?" (Only eid)
-      return NoContent
 
     behaviorCancel eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ OrderSvc.cancel eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> OrderSvc.cancel eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorPay eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ OrderSvc.pay eid
-          return result
+          eResult <- liftIO $ (Right <$> OrderSvc.pay eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 
     behaviorProcessPayment eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ OrderSvc.process_payment eid
-          return result
+          eResult <- liftIO $ (Right <$> OrderSvc.process_payment eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 
     behaviorCalculateTotal eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ OrderSvc.calculate_total eid
-          return result
+          eResult <- liftIO $ (Right <$> OrderSvc.calculate_total eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 
     behaviorApplyDiscount eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          result <- liftIO $ OrderSvc.apply_discount eid
-          return result
+          eResult <- liftIO $ (Right <$> OrderSvc.apply_discount eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
 
     behaviorRefund eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, items_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
+        query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ OrderSvc.refund eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> OrderSvc.refund eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     transitionHandlerPendingToPaid eid = do
       result <- liftIO $ (OrderSvc.transitionPendingToPaid eid >>= (return . Right))

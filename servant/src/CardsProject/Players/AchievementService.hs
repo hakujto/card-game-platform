@@ -11,15 +11,17 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for Achievement
+-- Domain service for Achievement
 validateAchievement :: NewAchievement -> Either String NewAchievement
-validateAchievement body = Right body
+validateAchievement body
+  | not (bAchievementPoints body > 0) = Left "Achievement must award at least one point"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 point_value :: Int -> IO Int
-point_value _eid = return (error "TODO")
+point_value _eid = throwIO (userError "point_value not implemented")
 
 -- @invoke behavior stub (no-op)
 reveal :: Int -> IO ()
-reveal _eid = return ()
+reveal _eid = throwIO (userError "reveal not implemented")
 

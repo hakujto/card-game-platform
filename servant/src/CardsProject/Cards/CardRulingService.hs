@@ -11,15 +11,15 @@ import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for CardRuling
+-- Domain service for CardRuling
 validateCardRuling :: NewCardRuling -> Either String NewCardRuling
 validateCardRuling body = Right body
 
 -- @invoke behavior stub (no-op)
 is_current :: Int -> IO Bool
-is_current _eid = return (error "TODO")
+is_current _eid = throwIO (userError "is_current not implemented")
 
 -- @invoke behavior stub (no-op)
 supersedes_previous :: Int -> IO Bool
-supersedes_previous _eid = return (error "TODO")
+supersedes_previous _eid = throwIO (userError "supersedes_previous not implemented")
 

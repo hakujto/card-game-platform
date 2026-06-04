@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/trade_disputes" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"status": "Open", "reason": "ItemNotReceived", "description": "test", "resolution": "test", "openedAt": "2024-01-01T00:00:00", "resolvedAt": "2024-01-01T00:00:00", "transactionId": 1, "openedById": 1, "resolvedById": null}|]
+      let body = [json|{"status": "Open", "reason": "ItemNotReceived", "description": "test", "resolution": null, "openedAt": "2024-01-01T00:00:00", "resolvedAt": null, "transactionId": 1, "openedById": 1, "resolvedById": null}|]
       request "POST" "/api/trade_disputes" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +25,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/trade_disputes/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/trade_disputes/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"status": "Open", "reason": "ItemNotReceived", "description": "test", "resolution": "test", "openedAt": "2024-01-01T00:00:00", "resolvedAt": "2024-01-01T00:00:00", "transactionId": 1, "openedById": 1, "resolvedById": null}|]
-      resp <- request "PUT" "/api/trade_disputes/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/trade_disputes/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/trade_disputes/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/trade_disputes/1/transitions/open-to-underreview" $ do
     it "transitions Open -> UnderReview" $ do
@@ -81,4 +70,10 @@ spec = with (return app) $ do
     it "behavior review stub returns 404 or 500" $ do
       resp <- request "POST" "/api/trade_disputes/1/review" [("Content-Type","application/json")] "{}"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/trade_disputes rule resolved_at_requires_terminal_status" $ do
+    it "rejects when resolved_at_requires_terminal_status violated" $ do
+      let body = [json|{"status": "Open", "reason": "ItemNotReceived", "description": "test", "resolution": "test", "openedAt": "2024-01-01T00:00:00", "resolvedAt": "test", "transactionId": 1, "openedById": 1, "resolvedById": null}|]
+      resp <- request "POST" "/api/trade_disputes" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Players.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
@@ -130,16 +131,29 @@ data Player = Player
   , playerCreatedAt :: Text
   , playerLastActiveAt :: Maybe Text
   , playerUserId :: Maybe Int
-  , playerSeasonStatsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Player where
-  toJSON = genericToJSON _playerOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.playerId
+    , "display_name" .= rec.playerDisplayName
+    , "rank" .= rec.playerRank
+    , "rating" .= rec.playerRating
+    , "peak_rating" .= rec.playerPeakRating
+    , "bio" .= rec.playerBio
+    , "country_code" .= rec.playerCountryCode
+    , "avatar_url" .= rec.playerAvatarUrl
+    , "preferred_format" .= rec.playerPreferredFormat
+    , "is_verified" .= rec.playerIsVerified
+    , "createdAt" .= rec.playerCreatedAt
+    , "lastActiveAt" .= rec.playerLastActiveAt
+    , "user_id" .= rec.playerUserId
+    ]
 instance FromJSON Player where
   parseJSON = genericParseJSON _playerOpts
 
 instance FromRow Player where
-  fromRow = Player <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Player <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newPlayerOpts :: Options
 _newPlayerOpts = defaultOptions
@@ -158,7 +172,6 @@ data NewPlayer = NewPlayer
   , bPlayerCreatedAt :: Text
   , bPlayerLastActiveAt :: Maybe Text
   , bPlayerUserId :: Maybe Int
-  , bPlayerSeasonStatsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewPlayer where
@@ -167,7 +180,7 @@ instance FromJSON NewPlayer where
   parseJSON = genericParseJSON _newPlayerOpts
 
 instance ToRow NewPlayer where
-  toRow b = [toField (bPlayerDisplayName b), toField (bPlayerRank b), toField (bPlayerRating b), toField (bPlayerPeakRating b), toField (bPlayerBio b), toField (bPlayerCountryCode b), toField (bPlayerAvatarUrl b), toField (bPlayerPreferredFormat b), toField (bPlayerIsVerified b), toField (bPlayerCreatedAt b), toField (bPlayerLastActiveAt b), toField (bPlayerUserId b), toField (bPlayerSeasonStatsId b)]
+  toRow b = [toField (bPlayerDisplayName b), toField (bPlayerRank b), toField (bPlayerRating b), toField (bPlayerPeakRating b), toField (bPlayerBio b), toField (bPlayerCountryCode b), toField (bPlayerAvatarUrl b), toField (bPlayerPreferredFormat b), toField (bPlayerIsVerified b), toField (bPlayerCreatedAt b), toField (bPlayerLastActiveAt b), toField (bPlayerUserId b)]
 
 data PlayerSeasonStatsHighestRankType
   = PlayerSeasonStatsHighestRankType_Bronze
@@ -365,7 +378,16 @@ data PlayerCollection = PlayerCollection
   } deriving (Show, Generic)
 
 instance ToJSON PlayerCollection where
-  toJSON = genericToJSON _playerCollectionOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.playerCollectionId
+    , "quantity" .= rec.playerCollectionQuantity
+    , "foil" .= rec.playerCollectionFoil
+    , "condition" .= rec.playerCollectionCondition
+    , "acquiredAt" .= rec.playerCollectionAcquiredAt
+    , "acquired_via" .= rec.playerCollectionAcquiredVia
+    , "player_id" .= rec.playerCollectionPlayerId
+    , "card_id" .= rec.playerCollectionCardId
+    ]
 instance FromJSON PlayerCollection where
   parseJSON = genericParseJSON _playerCollectionOpts
 
@@ -438,7 +460,13 @@ data Friendship = Friendship
   } deriving (Show, Generic)
 
 instance ToJSON Friendship where
-  toJSON = genericToJSON _friendshipOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.friendshipId
+    , "status" .= rec.friendshipStatus
+    , "createdAt" .= rec.friendshipCreatedAt
+    , "requester_id" .= rec.friendshipRequesterId
+    , "receiver_id" .= rec.friendshipReceiverId
+    ]
 instance FromJSON Friendship where
   parseJSON = genericParseJSON _friendshipOpts
 
@@ -562,7 +590,14 @@ data PlayerAchievement = PlayerAchievement
   } deriving (Show, Generic)
 
 instance ToJSON PlayerAchievement where
-  toJSON = genericToJSON _playerAchievementOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.playerAchievementId
+    , "earnedAt" .= rec.playerAchievementEarnedAt
+    , "progress" .= rec.playerAchievementProgress
+    , "is_completed" .= rec.playerAchievementIsCompleted
+    , "player_id" .= rec.playerAchievementPlayerId
+    , "achievement_id" .= rec.playerAchievementAchievementId
+    ]
 instance FromJSON PlayerAchievement where
   parseJSON = genericParseJSON _playerAchievementOpts
 

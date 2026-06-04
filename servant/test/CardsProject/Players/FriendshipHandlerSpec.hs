@@ -26,12 +26,6 @@ spec = with (return app) $ do
       resp <- get "/api/friendships/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
-  describe "PUT /api/friendships/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"status": "Pending", "createdAt": "2024-01-01T00:00:00", "requesterId": 1, "receiverId": 1}|]
-      resp <- request "PUT" "/api/friendships/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
   describe "DELETE /api/friendships/1" $ do
     it "returns 204 or 404" $ do
       resp <- request "DELETE" "/api/friendships/1" [] ""

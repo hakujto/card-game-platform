@@ -7,30 +7,39 @@ import CardsProject.Content.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for DraftSession
+-- Domain service for DraftSession
 validateDraftSession :: NewDraftSession -> Either String NewDraftSession
-validateDraftSession body = Right body
+validateDraftSession body
+  | not ((bDraftSessionSeats body >= 2 && bDraftSessionSeats body <= 16)) = Left "Draft session must have between 2 and 16 seats"
+  | not (bDraftSessionTimePerPickSeconds body > 0) = Left "Time per pick must be greater than zero"
+  | otherwise = validateDraftSessionImplies body
+
+validateDraftSessionImplies :: NewDraftSession -> Either String NewDraftSession
+validateDraftSessionImplies body
+  | (bDraftSessionCompletedAt body /= Nothing) && not (bDraftSessionStatus body == DraftSessionStatusType_Completed) = Left "completed_at can only be set when draft status is Completed"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 start :: Int -> IO ()
-start _eid = return ()
+start _eid = throwIO (userError "start not implemented")
 
 -- @invoke behavior stub (no-op)
 abandon :: Int -> IO ()
-abandon _eid = return ()
+abandon _eid = throwIO (userError "abandon not implemented")
 
 -- @invoke behavior stub (no-op)
 complete :: Int -> IO ()
-complete _eid = return ()
+complete _eid = throwIO (userError "complete not implemented")
 
 -- @invoke behavior stub (no-op)
 is_full :: Int -> IO Bool
-is_full _eid = return (error "TODO")
+is_full _eid = throwIO (userError "is_full not implemented")
 
 -- ── Lifecycle state machine ─────────────────────────────────────────
 allowedTransitions :: [(Text, [Text])]
@@ -52,63 +61,63 @@ assertTransition current to_ = do
 
 transitionWaitingForPlayersToDrafting :: Int -> IO DraftSession
 transitionWaitingForPlayersToDrafting eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do
       assertTransition (enumToText (draftSessionStatus record)) "Drafting"
       execute conn "UPDATE draft_sessions SET status = ? WHERE id = ?" ("Drafting" :: Text, eid)
       start eid  -- @after
-      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "DraftSession not found after update")
 
 transitionDraftingToCompleted :: Int -> IO DraftSession
 transitionDraftingToCompleted eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do
       assertTransition (enumToText (draftSessionStatus record)) "Completed"
       execute conn "UPDATE draft_sessions SET status = ? WHERE id = ?" ("Completed" :: Text, eid)
       complete eid  -- @after
-      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "DraftSession not found after update")
 
 transitionDraftingToAbandoned :: Int -> IO DraftSession
 transitionDraftingToAbandoned eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do
       assertTransition (enumToText (draftSessionStatus record)) "Abandoned"
       execute conn "UPDATE draft_sessions SET status = ? WHERE id = ?" ("Abandoned" :: Text, eid)
       abandon eid  -- @after
-      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "DraftSession not found after update")
 
 transitionWaitingForPlayersToAbandoned :: Int -> IO DraftSession
 transitionWaitingForPlayersToAbandoned eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do
       assertTransition (enumToText (draftSessionStatus record)) "Abandoned"
       execute conn "UPDATE draft_sessions SET status = ? WHERE id = ?" ("Abandoned" :: Text, eid)
       abandon eid  -- @after
-      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+      updated <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "DraftSession not found after update")
 
 transitionCompletedToDrafting :: Int -> IO DraftSession
 transitionCompletedToDrafting eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do
@@ -116,7 +125,7 @@ transitionCompletedToDrafting eid = withDb $ \conn -> do
 
 transitionAbandonedToDrafting :: Int -> IO DraftSession
 transitionAbandonedToDrafting eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id, participants_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+  rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
   case rows of
     [] -> throwIO (userError "DraftSession not found")
     (record:_) -> do

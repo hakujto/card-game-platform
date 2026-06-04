@@ -27,11 +27,7 @@ CREATE TABLE IF NOT EXISTS cards (
   is_restricted INTEGER NOT NULL,
   power_level INTEGER NOT NULL,
   set_id INTEGER,
-  rulings_id INTEGER,
-  abilities_id INTEGER,
-  FOREIGN KEY (set_id) REFERENCES card_sets(id),
-  FOREIGN KEY (rulings_id) REFERENCES card_rulings(id),
-  FOREIGN KEY (abilities_id) REFERENCES card_abilities(id)
+  FOREIGN KEY (set_id) REFERENCES card_sets(id)
 );
 
 CREATE TABLE IF NOT EXISTS card_sets (
@@ -148,9 +144,7 @@ CREATE TABLE IF NOT EXISTS players (
   created_at TEXT NOT NULL,
   last_active_at TEXT,
   user_id INTEGER,
-  season_stats_id INTEGER,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (season_stats_id) REFERENCES player_season_statses(id)
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS players_achievements_m2m (
@@ -264,8 +258,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
   format TEXT NOT NULL,
   tournament_type TEXT NOT NULL,
   max_players INTEGER NOT NULL,
-  entry_fee TEXT NOT NULL,
-  prize_pool TEXT NOT NULL,
+  entry_fee REAL NOT NULL,
+  prize_pool REAL NOT NULL,
   start_time TEXT NOT NULL,
   end_time TEXT,
   is_online INTEGER NOT NULL,
@@ -274,14 +268,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
   created_at TEXT NOT NULL,
   season_id INTEGER,
   organizer_id INTEGER,
-  registrations_id INTEGER,
-  rounds_id INTEGER,
-  prizes_id INTEGER,
   FOREIGN KEY (season_id) REFERENCES seasons(id),
-  FOREIGN KEY (organizer_id) REFERENCES players(id),
-  FOREIGN KEY (registrations_id) REFERENCES tournament_registrations(id),
-  FOREIGN KEY (rounds_id) REFERENCES tournament_rounds(id),
-  FOREIGN KEY (prizes_id) REFERENCES tournament_prizes(id)
+  FOREIGN KEY (organizer_id) REFERENCES players(id)
 );
 
 CREATE TABLE IF NOT EXISTS tournaments_judges_m2m (
@@ -322,9 +310,7 @@ CREATE TABLE IF NOT EXISTS tournament_rounds (
   ended_at TEXT,
   time_limit_minutes INTEGER NOT NULL,
   tournament_id INTEGER,
-  matches_id INTEGER,
-  FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-  FOREIGN KEY (matches_id) REFERENCES matches(id)
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
 );
 
 CREATE TABLE IF NOT EXISTS matches (
@@ -339,11 +325,9 @@ CREATE TABLE IF NOT EXISTS matches (
   round_id INTEGER,
   player1_id INTEGER,
   player2_id INTEGER,
-  games_id INTEGER,
   FOREIGN KEY (round_id) REFERENCES tournament_rounds(id),
   FOREIGN KEY (player1_id) REFERENCES players(id),
-  FOREIGN KEY (player2_id) REFERENCES players(id),
-  FOREIGN KEY (games_id) REFERENCES games(id)
+  FOREIGN KEY (player2_id) REFERENCES players(id)
 );
 
 CREATE TABLE IF NOT EXISTS games (
@@ -365,7 +349,7 @@ CREATE TABLE IF NOT EXISTS tournament_prizes (
   placement_from INTEGER NOT NULL,
   placement_to INTEGER NOT NULL,
   prize_type TEXT NOT NULL,
-  amount TEXT NOT NULL,
+  amount REAL NOT NULL,
   description TEXT,
   packs_count INTEGER,
   season_points INTEGER NOT NULL,
@@ -389,7 +373,7 @@ CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   product_type TEXT NOT NULL,
-  price TEXT NOT NULL,
+  price REAL NOT NULL,
   stock INTEGER NOT NULL,
   active INTEGER NOT NULL,
   discount_percent INTEGER NOT NULL,
@@ -405,8 +389,8 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   status TEXT NOT NULL,
-  total TEXT NOT NULL,
-  discount_applied TEXT NOT NULL,
+  total REAL NOT NULL,
+  discount_applied REAL NOT NULL,
   currency TEXT NOT NULL,
   payment_method TEXT,
   payment_reference TEXT,
@@ -416,17 +400,15 @@ CREATE TABLE IF NOT EXISTS orders (
   paid_at TEXT,
   shipped_at TEXT,
   player_id INTEGER,
-  items_id INTEGER,
   coupon_id INTEGER,
   FOREIGN KEY (player_id) REFERENCES players(id),
-  FOREIGN KEY (items_id) REFERENCES order_items(id),
   FOREIGN KEY (coupon_id) REFERENCES coupons(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   quantity INTEGER NOT NULL,
-  price_at_purchase TEXT NOT NULL,
+  price_at_purchase REAL NOT NULL,
   foil INTEGER NOT NULL,
   order_id INTEGER,
   product_id INTEGER,
@@ -438,8 +420,8 @@ CREATE TABLE IF NOT EXISTS coupons (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   code TEXT NOT NULL,
   discount_type TEXT NOT NULL,
-  discount_value TEXT NOT NULL,
-  min_order_value TEXT NOT NULL,
+  discount_value REAL NOT NULL,
+  min_order_value REAL NOT NULL,
   max_uses INTEGER,
   uses_count INTEGER NOT NULL,
   valid_from TEXT NOT NULL,
@@ -451,9 +433,9 @@ CREATE TABLE IF NOT EXISTS trade_listings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   status TEXT NOT NULL,
   listing_type TEXT NOT NULL,
-  asking_price TEXT,
-  auction_start_price TEXT,
-  auction_current_bid TEXT,
+  asking_price REAL,
+  auction_start_price REAL,
+  auction_current_bid REAL,
   auction_end_time TEXT,
   foil INTEGER NOT NULL,
   condition TEXT NOT NULL,
@@ -463,15 +445,13 @@ CREATE TABLE IF NOT EXISTS trade_listings (
   expires_at TEXT,
   seller_id INTEGER,
   card_id INTEGER,
-  bids_id INTEGER,
   FOREIGN KEY (seller_id) REFERENCES players(id),
-  FOREIGN KEY (card_id) REFERENCES cards(id),
-  FOREIGN KEY (bids_id) REFERENCES trade_bids(id)
+  FOREIGN KEY (card_id) REFERENCES cards(id)
 );
 
 CREATE TABLE IF NOT EXISTS trade_bids (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  amount TEXT NOT NULL,
+  amount REAL NOT NULL,
   placed_at TEXT NOT NULL,
   is_winning INTEGER NOT NULL,
   listing_id INTEGER,
@@ -482,8 +462,8 @@ CREATE TABLE IF NOT EXISTS trade_bids (
 
 CREATE TABLE IF NOT EXISTS trade_transactions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  final_price TEXT NOT NULL,
-  platform_fee TEXT NOT NULL,
+  final_price REAL NOT NULL,
+  platform_fee REAL NOT NULL,
   status TEXT NOT NULL,
   completed_at TEXT,
   listing_id INTEGER,
@@ -497,9 +477,9 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
 CREATE TABLE IF NOT EXISTS card_price_histories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   price_date TEXT NOT NULL,
-  avg_price TEXT NOT NULL,
-  min_price TEXT NOT NULL,
-  max_price TEXT NOT NULL,
+  avg_price REAL NOT NULL,
+  min_price REAL NOT NULL,
+  max_price REAL NOT NULL,
   volume INTEGER NOT NULL,
   foil INTEGER NOT NULL,
   card_id INTEGER,
@@ -531,9 +511,7 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
   created_at TEXT NOT NULL,
   completed_at TEXT,
   card_set_id INTEGER,
-  participants_id INTEGER,
-  FOREIGN KEY (card_set_id) REFERENCES card_sets(id),
-  FOREIGN KEY (participants_id) REFERENCES draft_participants(id)
+  FOREIGN KEY (card_set_id) REFERENCES card_sets(id)
 );
 
 CREATE TABLE IF NOT EXISTS draft_participants (
@@ -542,10 +520,8 @@ CREATE TABLE IF NOT EXISTS draft_participants (
   joined_at TEXT NOT NULL,
   session_id INTEGER,
   player_id INTEGER,
-  drafted_cards_id INTEGER,
   FOREIGN KEY (session_id) REFERENCES draft_sessions(id),
-  FOREIGN KEY (player_id) REFERENCES players(id),
-  FOREIGN KEY (drafted_cards_id) REFERENCES draft_picks(id)
+  FOREIGN KEY (player_id) REFERENCES players(id)
 );
 
 CREATE TABLE IF NOT EXISTS draft_picks (
@@ -577,10 +553,8 @@ CREATE TABLE IF NOT EXISTS articles (
   updated_at TEXT NOT NULL,
   author_id INTEGER,
   featured_deck_id INTEGER,
-  comments_id INTEGER,
   FOREIGN KEY (author_id) REFERENCES players(id),
-  FOREIGN KEY (featured_deck_id) REFERENCES decks(id),
-  FOREIGN KEY (comments_id) REFERENCES article_comments(id)
+  FOREIGN KEY (featured_deck_id) REFERENCES decks(id)
 );
 
 CREATE TABLE IF NOT EXISTS articles_tags_m2m (

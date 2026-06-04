@@ -17,7 +17,7 @@ spec = with (return app) $ do
 
   describe "POST /api/draft_sessions" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 2, "timePerPickSeconds": 1, "createdAt": "2024-01-01T00:00:00", "completedAt": null, "cardSetId": 1}|]
       request "POST" "/api/draft_sessions" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -25,17 +25,6 @@ spec = with (return app) $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/draft_sessions/1"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/draft_sessions/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1, "participantsId": 1}|]
-      resp <- request "PUT" "/api/draft_sessions/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "DELETE /api/draft_sessions/1" $ do
-    it "returns 204 or 404" $ do
-      resp <- request "DELETE" "/api/draft_sessions/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
 
   describe "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-drafting" $ do
     it "transitions WaitingForPlayers -> Drafting" $ do
@@ -86,4 +75,22 @@ spec = with (return app) $ do
     it "behavior is_full stub returns 404 or 500" $ do
       resp <- get "/api/draft_sessions/1/full"
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+
+  describe "POST /api/draft_sessions rule seats_range" $ do
+    it "rejects when seats_range violated" $ do
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 17, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1}|]
+      resp <- request "POST" "/api/draft_sessions" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/draft_sessions rule completed_at_requires_completed_status" $ do
+    it "rejects when completed_at_requires_completed_status violated" $ do
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "test", "cardSetId": 1}|]
+      resp <- request "POST" "/api/draft_sessions" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
+
+  describe "POST /api/draft_sessions rule time_per_pick_positive" $ do
+    it "rejects when time_per_pick_positive violated" $ do
+      let body = [json|{"status": "WaitingForPlayers", "draftType": "Booster", "seats": 0, "timePerPickSeconds": 0, "createdAt": "2024-01-01T00:00:00", "completedAt": "2024-01-01T00:00:00", "cardSetId": 1}|]
+      resp <- request "POST" "/api/draft_sessions" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

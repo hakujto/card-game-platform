@@ -10,24 +10,21 @@ import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Tournaments.TournamentJudgeService as TournamentJudgeSvc
+import Control.Exception (catch, IOException)
 import Data.Text (Text)
 
 type TournamentJudgeAPI
   =    "api" :> "tournament_judges" :> Get '[JSON] [TournamentJudge]
   :<|> "api" :> "tournament_judges" :> ReqBody '[JSON] NewTournamentJudge :> PostCreated '[JSON] TournamentJudge
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> Get '[JSON] TournamentJudge
-  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentJudge :> Put '[JSON] TournamentJudge
-  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> ReqBody '[JSON] NewTournamentJudge :> Patch '[JSON] TournamentJudge
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> "promote" :> Post '[JSON] NoContent
+  :<|> "api" :> "tournament_judges" :> Capture "id" Int :> "promote" :> PostNoContent
   :<|> "api" :> "tournament_judges" :> Capture "id" Int :> DeleteNoContent
 
 tournamentJudgeServer :: Server TournamentJudgeAPI
 tournamentJudgeServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   :<|> behaviorPromoteToHead
   :<|> behaviorRemove
@@ -52,17 +49,6 @@ tournamentJudgeServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE tournament_judges SET role = ?, tournament_id = ?, player_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, role, tournament_id, player_id FROM tournament_judges WHERE id = ?" (Only eid) :: IO [TournamentJudge]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
     delete eid = do
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM tournament_judges WHERE id = ?" (Only eid)
@@ -74,8 +60,11 @@ tournamentJudgeServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TournamentJudgeSvc.promote_to_head eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TournamentJudgeSvc.promote_to_head eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorRemove eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -83,6 +72,9 @@ tournamentJudgeServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ TournamentJudgeSvc.remove eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> TournamentJudgeSvc.remove eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 

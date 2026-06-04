@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Marketplace.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
@@ -64,7 +65,7 @@ data Product = Product
   { productId :: Int
   , productName :: Text
   , productProductType :: ProductProductTypeType
-  , productPrice :: Text
+  , productPrice :: Double
   , productStock :: Int
   , productActive :: Bool
   , productDiscountPercent :: Int
@@ -90,7 +91,7 @@ _newProductOpts = defaultOptions
 data NewProduct = NewProduct
   { bProductName :: Text
   , bProductProductType :: ProductProductTypeType
-  , bProductPrice :: Text
+  , bProductPrice :: Double
   , bProductStock :: Int
   , bProductActive :: Bool
   , bProductDiscountPercent :: Int
@@ -203,8 +204,8 @@ _orderOpts = defaultOptions
 data Order = Order
   { orderId :: Int
   , orderStatus :: OrderStatusType
-  , orderTotal :: Text
-  , orderDiscountApplied :: Text
+  , orderTotal :: Double
+  , orderDiscountApplied :: Double
   , orderCurrency :: Text
   , orderPaymentMethod :: Maybe OrderPaymentMethodType
   , orderPaymentReference :: Maybe Text
@@ -214,17 +215,31 @@ data Order = Order
   , orderPaidAt :: Maybe Text
   , orderShippedAt :: Maybe Text
   , orderPlayerId :: Maybe Int
-  , orderItemsId :: Maybe Int
   , orderCouponId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON Order where
-  toJSON = genericToJSON _orderOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.orderId
+    , "status" .= rec.orderStatus
+    , "total" .= rec.orderTotal
+    , "discount_applied" .= rec.orderDiscountApplied
+    , "currency" .= rec.orderCurrency
+    , "payment_method" .= rec.orderPaymentMethod
+    , "payment_reference" .= rec.orderPaymentReference
+    , "shipping_address" .= rec.orderShippingAddress
+    , "tracking_number" .= rec.orderTrackingNumber
+    , "createdAt" .= rec.orderCreatedAt
+    , "paidAt" .= rec.orderPaidAt
+    , "shippedAt" .= rec.orderShippedAt
+    , "player_id" .= rec.orderPlayerId
+    , "coupon_id" .= rec.orderCouponId
+    ]
 instance FromJSON Order where
   parseJSON = genericParseJSON _orderOpts
 
 instance FromRow Order where
-  fromRow = Order <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Order <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newOrderOpts :: Options
 _newOrderOpts = defaultOptions
@@ -232,8 +247,8 @@ _newOrderOpts = defaultOptions
 
 data NewOrder = NewOrder
   { bOrderStatus :: OrderStatusType
-  , bOrderTotal :: Text
-  , bOrderDiscountApplied :: Text
+  , bOrderTotal :: Double
+  , bOrderDiscountApplied :: Double
   , bOrderCurrency :: Text
   , bOrderPaymentMethod :: Maybe OrderPaymentMethodType
   , bOrderPaymentReference :: Maybe Text
@@ -243,7 +258,6 @@ data NewOrder = NewOrder
   , bOrderPaidAt :: Maybe Text
   , bOrderShippedAt :: Maybe Text
   , bOrderPlayerId :: Maybe Int
-  , bOrderItemsId :: Maybe Int
   , bOrderCouponId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -253,7 +267,7 @@ instance FromJSON NewOrder where
   parseJSON = genericParseJSON _newOrderOpts
 
 instance ToRow NewOrder where
-  toRow b = [toField (bOrderStatus b), toField (bOrderTotal b), toField (bOrderDiscountApplied b), toField (bOrderCurrency b), toField (bOrderPaymentMethod b), toField (bOrderPaymentReference b), toField (bOrderShippingAddress b), toField (bOrderTrackingNumber b), toField (bOrderCreatedAt b), toField (bOrderPaidAt b), toField (bOrderShippedAt b), toField (bOrderPlayerId b), toField (bOrderItemsId b), toField (bOrderCouponId b)]
+  toRow b = [toField (bOrderStatus b), toField (bOrderTotal b), toField (bOrderDiscountApplied b), toField (bOrderCurrency b), toField (bOrderPaymentMethod b), toField (bOrderPaymentReference b), toField (bOrderShippingAddress b), toField (bOrderTrackingNumber b), toField (bOrderCreatedAt b), toField (bOrderPaidAt b), toField (bOrderShippedAt b), toField (bOrderPlayerId b), toField (bOrderCouponId b)]
 
 _orderItemOpts :: Options
 _orderItemOpts = defaultOptions
@@ -262,7 +276,7 @@ _orderItemOpts = defaultOptions
 data OrderItem = OrderItem
   { orderItemId :: Int
   , orderItemQuantity :: Int
-  , orderItemPriceAtPurchase :: Text
+  , orderItemPriceAtPurchase :: Double
   , orderItemFoil :: Bool
   , orderItemOrderId :: Maybe Int
   , orderItemProductId :: Maybe Int
@@ -282,7 +296,7 @@ _newOrderItemOpts = defaultOptions
 
 data NewOrderItem = NewOrderItem
   { bOrderItemQuantity :: Int
-  , bOrderItemPriceAtPurchase :: Text
+  , bOrderItemPriceAtPurchase :: Double
   , bOrderItemFoil :: Bool
   , bOrderItemOrderId :: Maybe Int
   , bOrderItemProductId :: Maybe Int
@@ -330,8 +344,8 @@ data Coupon = Coupon
   { couponId :: Int
   , couponCode :: Text
   , couponDiscountType :: CouponDiscountTypeType
-  , couponDiscountValue :: Text
-  , couponMinOrderValue :: Text
+  , couponDiscountValue :: Double
+  , couponMinOrderValue :: Double
   , couponMaxUses :: Maybe Int
   , couponUsesCount :: Int
   , couponValidFrom :: Text
@@ -354,8 +368,8 @@ _newCouponOpts = defaultOptions
 data NewCoupon = NewCoupon
   { bCouponCode :: Text
   , bCouponDiscountType :: CouponDiscountTypeType
-  , bCouponDiscountValue :: Text
-  , bCouponMinOrderValue :: Text
+  , bCouponDiscountValue :: Double
+  , bCouponMinOrderValue :: Double
   , bCouponMaxUses :: Maybe Int
   , bCouponUsesCount :: Int
   , bCouponValidFrom :: Text
@@ -492,9 +506,9 @@ data TradeListing = TradeListing
   { tradeListingId :: Int
   , tradeListingStatus :: TradeListingStatusType
   , tradeListingListingType :: TradeListingListingTypeType
-  , tradeListingAskingPrice :: Maybe Text
-  , tradeListingAuctionStartPrice :: Maybe Text
-  , tradeListingAuctionCurrentBid :: Maybe Text
+  , tradeListingAskingPrice :: Maybe Double
+  , tradeListingAuctionStartPrice :: Maybe Double
+  , tradeListingAuctionCurrentBid :: Maybe Double
   , tradeListingAuctionEndTime :: Maybe Text
   , tradeListingFoil :: Bool
   , tradeListingCondition :: TradeListingConditionType
@@ -504,16 +518,31 @@ data TradeListing = TradeListing
   , tradeListingExpiresAt :: Maybe Text
   , tradeListingSellerId :: Maybe Int
   , tradeListingCardId :: Maybe Int
-  , tradeListingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON TradeListing where
-  toJSON = genericToJSON _tradeListingOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tradeListingId
+    , "status" .= rec.tradeListingStatus
+    , "listing_type" .= rec.tradeListingListingType
+    , "asking_price" .= rec.tradeListingAskingPrice
+    , "auction_start_price" .= rec.tradeListingAuctionStartPrice
+    , "auction_current_bid" .= rec.tradeListingAuctionCurrentBid
+    , "auctionEndTime" .= rec.tradeListingAuctionEndTime
+    , "foil" .= rec.tradeListingFoil
+    , "condition" .= rec.tradeListingCondition
+    , "quantity" .= rec.tradeListingQuantity
+    , "description" .= rec.tradeListingDescription
+    , "createdAt" .= rec.tradeListingCreatedAt
+    , "expiresAt" .= rec.tradeListingExpiresAt
+    , "seller_id" .= rec.tradeListingSellerId
+    , "card_id" .= rec.tradeListingCardId
+    ]
 instance FromJSON TradeListing where
   parseJSON = genericParseJSON _tradeListingOpts
 
 instance FromRow TradeListing where
-  fromRow = TradeListing <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = TradeListing <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newTradeListingOpts :: Options
 _newTradeListingOpts = defaultOptions
@@ -522,9 +551,9 @@ _newTradeListingOpts = defaultOptions
 data NewTradeListing = NewTradeListing
   { bTradeListingStatus :: TradeListingStatusType
   , bTradeListingListingType :: TradeListingListingTypeType
-  , bTradeListingAskingPrice :: Maybe Text
-  , bTradeListingAuctionStartPrice :: Maybe Text
-  , bTradeListingAuctionCurrentBid :: Maybe Text
+  , bTradeListingAskingPrice :: Maybe Double
+  , bTradeListingAuctionStartPrice :: Maybe Double
+  , bTradeListingAuctionCurrentBid :: Maybe Double
   , bTradeListingAuctionEndTime :: Maybe Text
   , bTradeListingFoil :: Bool
   , bTradeListingCondition :: TradeListingConditionType
@@ -534,7 +563,6 @@ data NewTradeListing = NewTradeListing
   , bTradeListingExpiresAt :: Maybe Text
   , bTradeListingSellerId :: Maybe Int
   , bTradeListingCardId :: Maybe Int
-  , bTradeListingBidsId :: Maybe Int
   } deriving (Show, Generic)
 
 instance ToJSON NewTradeListing where
@@ -543,7 +571,7 @@ instance FromJSON NewTradeListing where
   parseJSON = genericParseJSON _newTradeListingOpts
 
 instance ToRow NewTradeListing where
-  toRow b = [toField (bTradeListingStatus b), toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b), toField (bTradeListingBidsId b)]
+  toRow b = [toField (bTradeListingStatus b), toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b)]
 
 _tradeBidOpts :: Options
 _tradeBidOpts = defaultOptions
@@ -551,7 +579,7 @@ _tradeBidOpts = defaultOptions
 
 data TradeBid = TradeBid
   { tradeBidId :: Int
-  , tradeBidAmount :: Text
+  , tradeBidAmount :: Double
   , tradeBidPlacedAt :: Text
   , tradeBidIsWinning :: Bool
   , tradeBidListingId :: Maybe Int
@@ -559,7 +587,14 @@ data TradeBid = TradeBid
   } deriving (Show, Generic)
 
 instance ToJSON TradeBid where
-  toJSON = genericToJSON _tradeBidOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tradeBidId
+    , "amount" .= rec.tradeBidAmount
+    , "placedAt" .= rec.tradeBidPlacedAt
+    , "is_winning" .= rec.tradeBidIsWinning
+    , "listing_id" .= rec.tradeBidListingId
+    , "bidder_id" .= rec.tradeBidBidderId
+    ]
 instance FromJSON TradeBid where
   parseJSON = genericParseJSON _tradeBidOpts
 
@@ -571,7 +606,7 @@ _newTradeBidOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 9 }
 
 data NewTradeBid = NewTradeBid
-  { bTradeBidAmount :: Text
+  { bTradeBidAmount :: Double
   , bTradeBidPlacedAt :: Text
   , bTradeBidIsWinning :: Bool
   , bTradeBidListingId :: Maybe Int
@@ -628,8 +663,8 @@ _tradeTransactionOpts = defaultOptions
 
 data TradeTransaction = TradeTransaction
   { tradeTransactionId :: Int
-  , tradeTransactionFinalPrice :: Text
-  , tradeTransactionPlatformFee :: Text
+  , tradeTransactionFinalPrice :: Double
+  , tradeTransactionPlatformFee :: Double
   , tradeTransactionStatus :: TradeTransactionStatusType
   , tradeTransactionCompletedAt :: Maybe Text
   , tradeTransactionListingId :: Maybe Int
@@ -638,7 +673,16 @@ data TradeTransaction = TradeTransaction
   } deriving (Show, Generic)
 
 instance ToJSON TradeTransaction where
-  toJSON = genericToJSON _tradeTransactionOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tradeTransactionId
+    , "final_price" .= rec.tradeTransactionFinalPrice
+    , "platform_fee" .= rec.tradeTransactionPlatformFee
+    , "status" .= rec.tradeTransactionStatus
+    , "completedAt" .= rec.tradeTransactionCompletedAt
+    , "listing_id" .= rec.tradeTransactionListingId
+    , "buyer_id" .= rec.tradeTransactionBuyerId
+    , "seller_id" .= rec.tradeTransactionSellerId
+    ]
 instance FromJSON TradeTransaction where
   parseJSON = genericParseJSON _tradeTransactionOpts
 
@@ -650,8 +694,8 @@ _newTradeTransactionOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 17 }
 
 data NewTradeTransaction = NewTradeTransaction
-  { bTradeTransactionFinalPrice :: Text
-  , bTradeTransactionPlatformFee :: Text
+  { bTradeTransactionFinalPrice :: Double
+  , bTradeTransactionPlatformFee :: Double
   , bTradeTransactionStatus :: TradeTransactionStatusType
   , bTradeTransactionCompletedAt :: Maybe Text
   , bTradeTransactionListingId :: Maybe Int
@@ -674,9 +718,9 @@ _cardPriceHistoryOpts = defaultOptions
 data CardPriceHistory = CardPriceHistory
   { cardPriceHistoryId :: Int
   , cardPriceHistoryPriceDate :: Text
-  , cardPriceHistoryAvgPrice :: Text
-  , cardPriceHistoryMinPrice :: Text
-  , cardPriceHistoryMaxPrice :: Text
+  , cardPriceHistoryAvgPrice :: Double
+  , cardPriceHistoryMinPrice :: Double
+  , cardPriceHistoryMaxPrice :: Double
   , cardPriceHistoryVolume :: Int
   , cardPriceHistoryFoil :: Bool
   , cardPriceHistoryCardId :: Maybe Int
@@ -696,9 +740,9 @@ _newCardPriceHistoryOpts = defaultOptions
 
 data NewCardPriceHistory = NewCardPriceHistory
   { bCardPriceHistoryPriceDate :: Text
-  , bCardPriceHistoryAvgPrice :: Text
-  , bCardPriceHistoryMinPrice :: Text
-  , bCardPriceHistoryMaxPrice :: Text
+  , bCardPriceHistoryAvgPrice :: Double
+  , bCardPriceHistoryMinPrice :: Double
+  , bCardPriceHistoryMaxPrice :: Double
   , bCardPriceHistoryVolume :: Int
   , bCardPriceHistoryFoil :: Bool
   , bCardPriceHistoryCardId :: Maybe Int
@@ -802,7 +846,18 @@ data TradeDispute = TradeDispute
   } deriving (Show, Generic)
 
 instance ToJSON TradeDispute where
-  toJSON = genericToJSON _tradeDisputeOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.tradeDisputeId
+    , "status" .= rec.tradeDisputeStatus
+    , "reason" .= rec.tradeDisputeReason
+    , "description" .= rec.tradeDisputeDescription
+    , "resolution" .= rec.tradeDisputeResolution
+    , "openedAt" .= rec.tradeDisputeOpenedAt
+    , "resolvedAt" .= rec.tradeDisputeResolvedAt
+    , "transaction_id" .= rec.tradeDisputeTransactionId
+    , "opened_by_id" .= rec.tradeDisputeOpenedById
+    , "resolved_by_id" .= rec.tradeDisputeResolvedById
+    ]
 instance FromJSON TradeDispute where
   parseJSON = genericParseJSON _tradeDisputeOpts
 

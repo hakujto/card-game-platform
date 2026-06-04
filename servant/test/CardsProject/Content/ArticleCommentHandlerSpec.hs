@@ -17,19 +17,13 @@ spec = with (return app) $ do
 
   describe "POST /api/article_comments" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"body": "test", "isHidden": true, "createdAt": "2024-01-01T00:00:00", "articleId": null, "authorId": 1, "parentCommentId": null}|]
+      let body = [json|{"body": "test", "isHidden": false, "createdAt": "2024-01-01T00:00:00", "articleId": null, "authorId": 1, "parentCommentId": null}|]
       request "POST" "/api/article_comments" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/article_comments/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/article_comments/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/article_comments/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"body": "test", "isHidden": true, "createdAt": "2024-01-01T00:00:00", "articleId": null, "authorId": 1, "parentCommentId": null}|]
-      resp <- request "PUT" "/api/article_comments/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/article_comments/1" $ do

@@ -7,30 +7,36 @@ import CardsProject.Marketplace.Types
 import Control.Exception (throwIO)
 import System.IO.Error (userError)
 import Data.Text (Text)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text
 import Database.SQLite.Simple
 import Database.SQLite.Simple.FromField ()
 import CardsProject.Db (withDb)
 
--- Domain service stub for TradeDispute
+-- Domain service for TradeDispute
 validateTradeDispute :: NewTradeDispute -> Either String NewTradeDispute
-validateTradeDispute body = Right body
+validateTradeDispute body = validateTradeDisputeImplies body
+
+validateTradeDisputeImplies :: NewTradeDispute -> Either String NewTradeDispute
+validateTradeDisputeImplies body
+  | (bTradeDisputeResolvedAt body /= Nothing) && not (bTradeDisputeStatus body == TradeDisputeStatusType_Resolved) = Left "resolved at requires terminal status"
+  | otherwise = Right body
 
 -- @invoke behavior stub (no-op)
 escalate :: Int -> IO ()
-escalate _eid = return ()
+escalate _eid = throwIO (userError "escalate not implemented")
 
 -- @invoke behavior stub (no-op)
 resolve :: Int -> IO ()
-resolve _eid = return ()
+resolve _eid = throwIO (userError "resolve not implemented")
 
 -- @invoke behavior stub (no-op)
 close_resolved :: Int -> IO ()
-close_resolved _eid = return ()
+close_resolved _eid = throwIO (userError "close_resolved not implemented")
 
 -- @invoke behavior stub (no-op)
 review :: Int -> IO ()
-review _eid = return ()
+review _eid = throwIO (userError "review not implemented")
 
 -- ── Lifecycle state machine ─────────────────────────────────────────
 allowedTransitions :: [(Text, [Text])]

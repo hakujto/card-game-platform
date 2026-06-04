@@ -10,25 +10,22 @@ import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Players.FriendshipService as FriendshipSvc
+import Control.Exception (catch, IOException)
 import Data.Text (Text)
 
 type FriendshipAPI
   =    "api" :> "friendships" :> Get '[JSON] [Friendship]
   :<|> "api" :> "friendships" :> ReqBody '[JSON] NewFriendship :> PostCreated '[JSON] Friendship
   :<|> "api" :> "friendships" :> Capture "id" Int :> Get '[JSON] Friendship
-  :<|> "api" :> "friendships" :> Capture "id" Int :> ReqBody '[JSON] NewFriendship :> Put '[JSON] Friendship
-  :<|> "api" :> "friendships" :> Capture "id" Int :> ReqBody '[JSON] NewFriendship :> Patch '[JSON] Friendship
   :<|> "api" :> "friendships" :> Capture "id" Int :> DeleteNoContent
-  :<|> "api" :> "friendships" :> Capture "id" Int :> "accept" :> Post '[JSON] NoContent
-  :<|> "api" :> "friendships" :> Capture "id" Int :> "decline" :> Post '[JSON] NoContent
-  :<|> "api" :> "friendships" :> Capture "id" Int :> "block" :> Post '[JSON] NoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "accept" :> PostNoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "decline" :> PostNoContent
+  :<|> "api" :> "friendships" :> Capture "id" Int :> "block" :> PostNoContent
 
 friendshipServer :: Server FriendshipAPI
 friendshipServer = listAll
   :<|> create
   :<|> getOne
-  :<|> update
-  :<|> partialUpdate
   :<|> delete
   :<|> behaviorAccept
   :<|> behaviorDecline
@@ -54,17 +51,6 @@ friendshipServer = listAll
         (r:_) -> return r
         []    -> throwError err404
 
-    update eid body = do
-      rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE friendships SET status = ?, created_at = ?, requester_id = ?, receiver_id = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, status, created_at, requester_id, receiver_id FROM friendships WHERE id = ?" (Only eid) :: IO [Friendship]
-      case rows of
-        (r:_) -> return r
-        []    -> throwError err404
-
-    partialUpdate = update
-
     delete eid = do
       liftIO $ withDb $ \conn ->
         execute conn "DELETE FROM friendships WHERE id = ?" (Only eid)
@@ -76,8 +62,11 @@ friendshipServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ FriendshipSvc.accept eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> FriendshipSvc.accept eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorDecline eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -85,8 +74,11 @@ friendshipServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ FriendshipSvc.decline eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> FriendshipSvc.decline eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 
     behaviorBlock eid = do
       rows <- liftIO $ withDb $ \conn ->
@@ -94,6 +86,9 @@ friendshipServer = listAll
       case rows of
         []    -> throwError err404
         (_:_) -> do
-          liftIO $ FriendshipSvc.block eid
-          return NoContent
+          eResult <- liftIO $ (Right <$> FriendshipSvc.block eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right _ -> return NoContent
+            Left _  -> throwError err500
 

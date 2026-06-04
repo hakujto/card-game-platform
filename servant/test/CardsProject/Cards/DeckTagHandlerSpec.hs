@@ -15,21 +15,19 @@ spec = with (return app) $ do
     it "returns 200" $ do
       get "/api/deck_tags" `shouldRespondWith` 200
 
+  describe "GET /api/deck_tags?q=test" $ do
+    it "returns 200" $ do
+      get "/api/deck_tags?q=test" `shouldRespondWith` 200
+
   describe "POST /api/deck_tags" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"name": "test", "color": "test"}|]
+      let body = [json|{"name": "test", "color": null}|]
       request "POST" "/api/deck_tags" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/deck_tags/1" $ do
     it "returns 200 or 404" $ do
       resp <- get "/api/deck_tags/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
-
-  describe "PUT /api/deck_tags/1" $ do
-    it "returns 200 or 404" $ do
-      let body = [json|{"name": "test", "color": "test"}|]
-      resp <- request "PUT" "/api/deck_tags/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
 
   describe "DELETE /api/deck_tags/1" $ do
