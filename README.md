@@ -16,6 +16,12 @@ Currently implemented:
 - PHP — Laravel
 - Haskell — Servant
 - Clojure — Luminus
+- Go — Gin
+- Erlang — Cowboy
+- Perl — Mojolicious
+- Rust — Axum
+- Kotlin — Ktor
+- OCaml - Dream
 
 More implementations will be added regularly over time.
 
@@ -49,6 +55,12 @@ Aktualnie zaimplementowane:
 - PHP — Laravel
 - Haskell — Servant
 - Clojure — Luminus
+- Go — Gin
+- Erlang — Cowboy
+- Perl — Mojolicious
+- Rust — Axum
+- Kotlin — Ktor
+- OCaml - Dream
 
 Projekt będzie regularnie rozwijany o kolejne implementacje.
 
