@@ -1,0 +1,9 @@
+pub mod season;
+pub mod tournament;
+pub mod tournament_judge;
+pub mod tournament_registration;
+pub mod tournament_round;
+pub mod r#match;
+pub mod game;
+pub mod tournament_prize;
+pub mod awarded_prize;
