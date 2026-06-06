@@ -1,0 +1,9 @@
+{application, cards_project, [
+    {description, "cards_project"},
+    {vsn, "0.1.0"},
+    {modules, []},
+    {registered, []},
+    {mod, {cards_project_app, []}},
+    {applications, [kernel, stdlib, mnesia, cowboy, jsone]},
+    {env, []}
+]}.
