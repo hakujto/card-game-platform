@@ -1,0 +1,10 @@
+requires 'Mojolicious', '>= 9.0';
+requires 'DBIx::Class', '>= 0.082843';
+requires 'DBD::SQLite', '>= 1.64';
+requires 'Mojo::JSON';
+requires 'SQL::Translator', '>= 0.11021';
+
+on 'test' => sub {
+  requires 'Test::More';
+  requires 'Test::Mojo';
+};

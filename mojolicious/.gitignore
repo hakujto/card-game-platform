@@ -1,0 +1,7 @@
+*.db
+*.db-journal
+local/
+_build/
+.build/
+*.bak
+*.swp

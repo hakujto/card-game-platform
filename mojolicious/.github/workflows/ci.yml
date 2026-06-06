@@ -1,0 +1,16 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.40'
+      - uses: actions/cache@v4
+        with:
+          path: ~/perl5
+          key: perl-${{ hashFiles('cpanfile') }}
+      - run: cpanm --notest --installdeps .
+      - run: prove -lr t/
