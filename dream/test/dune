@@ -1,0 +1,9 @@
+(executable
+ (name run_tests)
+ (libraries cards_project_lib alcotest cohttp-lwt-unix lwt lwt.unix)
+ (modules run_tests card_test card_set_test card_ruling_test card_ability_test deck_test deck_card_test deck_sideboard_card_test deck_tag_test deck_tag_assignment_test player_test player_season_stats_test player_collection_test friendship_test achievement_test player_achievement_test crafting_recipe_test crafting_ingredient_test season_test tournament_test tournament_judge_test tournament_registration_test tournament_round_test match_test game_test tournament_prize_test awarded_prize_test product_test order_test order_item_test coupon_test trade_listing_test trade_bid_test trade_transaction_test card_price_history_test trade_dispute_test draft_session_test draft_participant_test draft_pick_test article_test article_tag_test article_tag_assignment_test article_comment_test stream_test))
+
+(rule
+ (alias runtest)
+ (deps run_tests.exe ../main.exe ../migrate.exe run_integration.sh)
+ (action (run bash run_integration.sh)))

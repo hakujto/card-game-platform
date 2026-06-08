@@ -1,0 +1,6 @@
+_build/
+*.db
+.opam-switch/
+*.install
+.merlin
+.ocamlformat-cache

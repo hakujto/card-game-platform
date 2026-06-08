@@ -1,0 +1,4 @@
+(executables
+ (names main migrate)
+ (libraries cards_project_lib dream caqti caqti-lwt caqti-lwt.unix caqti-driver-sqlite3 yojson ppx_deriving_yojson.runtime lwt lwt.unix sqlite3)
+ (preprocess (pps ppx_deriving_yojson)))

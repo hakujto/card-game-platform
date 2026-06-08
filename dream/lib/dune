@@ -1,0 +1,6 @@
+(include_subdirs unqualified)
+
+(library
+ (name cards_project_lib)
+ (libraries dream caqti caqti-lwt caqti-driver-sqlite3 yojson ppx_deriving_yojson.runtime lwt lwt.unix str)
+ (preprocess (pps ppx_deriving_yojson)))

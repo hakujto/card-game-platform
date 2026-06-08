@@ -1,0 +1,24 @@
+opam-version: "2.0"
+name: "cards-project"
+version: "0.1.0"
+synopsis: "CardsProject — Dream REST API"
+maintainer: "dev@example.com"
+authors: "dev@example.com"
+depends: [
+  "ocaml"       {>= "5.0"}
+  "dune"        {>= "3.0"}
+  "dream"
+  "caqti"
+  "caqti-lwt"
+  "caqti-driver-sqlite3"
+  "yojson"
+  "ppx_deriving_yojson"
+  "lwt"
+  "lwt_ppx"
+  "alcotest"
+  "cohttp-lwt-unix"
+  "str"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]

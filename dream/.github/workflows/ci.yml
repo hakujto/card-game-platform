@@ -1,0 +1,19 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: "5.1"
+      - name: Install dependencies
+        run: opam install --deps-only -y .
+      - name: Build
+        run: eval $(opam env) && dune build
+      - name: Run migrations
+        run: eval $(opam env) && ./_build/default/migrate.exe
+      - name: Run tests
+        run: eval $(opam env) && dune test --force
