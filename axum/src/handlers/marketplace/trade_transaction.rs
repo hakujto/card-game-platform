@@ -26,11 +26,11 @@ pub async fn get_trade_transaction(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<TradeTransaction>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(TradeTransaction, "SELECT * FROM trade_transactions WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(TradeTransaction, "SELECT * FROM trade_transactions WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "TradeTransaction not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "TradeTransaction not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn complete_trade_transaction(

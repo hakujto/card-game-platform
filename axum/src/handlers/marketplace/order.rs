@@ -56,11 +56,11 @@ pub async fn get_order(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Order>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(Order, "SELECT * FROM orders WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(Order, "SELECT * FROM orders WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Order not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "Order not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn cancel_order(

@@ -52,11 +52,11 @@ pub async fn get_draft_participant(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<DraftParticipant>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(DraftParticipant, "SELECT * FROM draft_participants WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(DraftParticipant, "SELECT * FROM draft_participants WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "DraftParticipant not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "DraftParticipant not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn pick_card_draft_participant(

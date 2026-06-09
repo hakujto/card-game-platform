@@ -55,11 +55,11 @@ pub async fn get_tournament_round(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<TournamentRound>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(TournamentRound, "SELECT * FROM tournament_rounds WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(TournamentRound, "SELECT * FROM tournament_rounds WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "TournamentRound not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "TournamentRound not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn start_tournament_round(

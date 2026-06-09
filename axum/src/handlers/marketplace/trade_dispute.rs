@@ -52,11 +52,11 @@ pub async fn get_trade_dispute(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<TradeDispute>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(TradeDispute, "SELECT * FROM trade_disputes WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(TradeDispute, "SELECT * FROM trade_disputes WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "TradeDispute not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "TradeDispute not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn escalate_trade_dispute(

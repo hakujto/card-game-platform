@@ -52,11 +52,11 @@ pub async fn get_article_tag(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<ArticleTag>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(ArticleTag, "SELECT * FROM article_tags WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(ArticleTag, "SELECT * FROM article_tags WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "ArticleTag not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "ArticleTag not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn patch_article_tag(

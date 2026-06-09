@@ -26,11 +26,11 @@ pub async fn get_awarded_prize(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<AwardedPrize>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(AwardedPrize, "SELECT * FROM awarded_prizes WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(AwardedPrize, "SELECT * FROM awarded_prizes WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "AwardedPrize not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "AwardedPrize not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn claim_awarded_prize(

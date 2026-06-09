@@ -44,11 +44,11 @@ pub async fn get_crafting_ingredient(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<CraftingIngredient>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(CraftingIngredient, "SELECT * FROM crafting_ingredients WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(CraftingIngredient, "SELECT * FROM crafting_ingredients WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "CraftingIngredient not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "CraftingIngredient not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn delete_crafting_ingredient(

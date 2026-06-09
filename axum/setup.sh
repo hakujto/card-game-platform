@@ -13,6 +13,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export DATABASE_URL=${DATABASE_URL:-sqlite://app.db}
 
 echo "==> Running migrations..."
+rm -f app.db
 touch app.db
 sqlx migrate run --source migrations
 

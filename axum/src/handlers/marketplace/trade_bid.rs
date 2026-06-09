@@ -52,11 +52,11 @@ pub async fn get_trade_bid(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<TradeBid>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(TradeBid, "SELECT * FROM trade_bids WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(TradeBid, "SELECT * FROM trade_bids WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "TradeBid not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "TradeBid not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn outbid_by_trade_bid(

@@ -53,11 +53,11 @@ pub async fn get_deck_card(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<DeckCard>, (StatusCode, String)> {
-    sqlx::query_as_unchecked!(DeckCard, "SELECT * FROM deck_cards WHERE id = $1", id)
+    let row = sqlx::query_as_unchecked!(DeckCard, "SELECT * FROM deck_cards WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "DeckCard not found".to_string()))
-        .map(Json)
+        .ok_or((StatusCode::NOT_FOUND, "DeckCard not found".to_string()))?;
+    Ok(Json(row))
 }
 
 pub async fn patch_deck_card(
