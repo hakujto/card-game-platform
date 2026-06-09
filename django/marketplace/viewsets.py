@@ -88,6 +88,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "payment_method", "player", "coupon"]
     ordering_fields = "__all__"
 
+    def get_object(self):
+        obj = super().get_object()
+        if obj.player_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not own this resource.")
+        return obj
+
     @action(detail=True, methods=["delete"], url_path="cancel")
     def cancel(self, request, pk=None):
         instance = self.get_object()
@@ -98,6 +105,9 @@ class OrderViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="pay")
     def pay(self, request, pk=None):
         instance = self.get_object()
+        if not (instance.status == "Pending"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for pay"})
         payment_ref = request.data.get("payment_ref")
         result = instance.pay(payment_ref)
         from rest_framework.response import Response
@@ -360,6 +370,9 @@ class CouponViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="redeem")
     def redeem(self, request, pk=None):
         instance = self.get_object()
+        if not (instance.is_active is True):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for redeem"})
         result = instance.redeem()
         from rest_framework.response import Response
         return Response(status=204)
@@ -420,6 +433,9 @@ class TradeListingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["delete"], url_path="cancel")
     def cancel(self, request, pk=None):
         instance = self.get_object()
+        if not (instance.status == "Active"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for cancel"})
         result = instance.cancel()
         from rest_framework.response import Response
         return Response(status=204)

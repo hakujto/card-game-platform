@@ -48,7 +48,7 @@ ID_Game=1
 echo && echo "=== PUT card_sets/$ID_CardSet ==="
 curl -s -X PUT "$BASE/card_sets/$ID_CardSet/" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"code\": \"foo_code\", \"release_date\": \"2024-01-01\", \"rotation_date\": null, \"set_type\": \"Core\", \"total_cards\": 1, \"is_rotated\": false, \"description\": \"foo_description\", \"logo_url\": \"https://example.com/foo\"}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"code\": \"fo_$RANDOM\", \"release_date\": \"2024-01-01\", \"rotation_date\": null, \"set_type\": \"Core\", \"total_cards\": 1, \"is_rotated\": false, \"description\": \"foo_description\", \"logo_url\": \"https://example.com/foo\"}" | python3 -m json.tool
 
 echo && echo "=== PUT deck_tags/$ID_DeckTag ==="
 curl -s -X PUT "$BASE/deck_tags/$ID_DeckTag/" \
@@ -58,7 +58,7 @@ curl -s -X PUT "$BASE/deck_tags/$ID_DeckTag/" \
 echo && echo "=== PUT players/$ID_Player ==="
 curl -s -X PUT "$BASE/players/$ID_Player/" \
   -H "Content-Type: application/json" \
-  -d "{\"display_name\": \"foo_display_name\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | python3 -m json.tool
+  -d "{\"display_name\": \"foo_display_name_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | python3 -m json.tool
 
 echo && echo "=== PUT achievements/$ID_Achievement ==="
 curl -s -X PUT "$BASE/achievements/$ID_Achievement/" \
@@ -78,12 +78,12 @@ curl -s -X PUT "$BASE/products/$ID_Product/" \
 echo && echo "=== PUT coupons/$ID_Coupon ==="
 curl -s -X PUT "$BASE/coupons/$ID_Coupon/" \
   -H "Content-Type: application/json" \
-  -d "{\"code\": \"foo_code\", \"discount_type\": \"Percent\", \"discount_value\": 1, \"min_order_value\": \"1.00\", \"max_uses\": null, \"uses_count\": 1, \"valid_from\": \"2024-01-01T00:00:00Z\", \"valid_until\": \"2024-01-01T00:00:01Z\", \"is_active\": true}" | python3 -m json.tool
+  -d "{\"code\": \"foo_code_$RANDOM\", \"discount_type\": \"Percent\", \"discount_value\": 1, \"min_order_value\": \"1.00\", \"max_uses\": null, \"uses_count\": 1, \"valid_from\": \"2024-01-01T00:00:00Z\", \"valid_until\": \"2024-01-01T00:00:01Z\", \"is_active\": true}" | python3 -m json.tool
 
 echo && echo "=== PUT article_tags/$ID_ArticleTag ==="
 curl -s -X PUT "$BASE/article_tags/$ID_ArticleTag/" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug\"}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug_$RANDOM\"}" | python3 -m json.tool
 
 echo && echo "=== PUT cards/$ID_Card ==="
 curl -s -X PUT "$BASE/cards/$ID_Card/" \
@@ -113,7 +113,7 @@ curl -s -X PUT "$BASE/orders/$ID_Order/" \
 echo && echo "=== PUT articles/$ID_Article ==="
 curl -s -X PUT "$BASE/articles/$ID_Article/" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"cover_image_url\": \"https://example.com/foo\", \"status\": \"Draft\", \"article_type\": \"Guide\", \"language\": \"EN\", \"view_count\": 0, \"likes_count\": 0, \"is_featured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featured_deck\": ${ID_Deck:-null}}" | python3 -m json.tool
+  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug_$RANDOM\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"cover_image_url\": \"https://example.com/foo\", \"status\": \"Draft\", \"article_type\": \"Guide\", \"language\": \"EN\", \"view_count\": 0, \"likes_count\": 0, \"is_featured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featured_deck\": ${ID_Deck:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT streams/$ID_Stream ==="
 curl -s -X PUT "$BASE/streams/$ID_Stream/" \

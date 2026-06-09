@@ -209,6 +209,9 @@ class TournamentRegistrationAPITest(APITestCase):
         self.obj = TournamentRegistration.objects.create(tournament=_dep_tournament, player=_dep_player, deck=_dep_deck, seed=1, final_standing=1, points_earned=0, registered_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("tournament_registration-list")
         self.detail_url = reverse("tournament_registration-detail", args=[self.obj.pk])
+        from django.contrib.auth import get_user_model
+        _owner_user, _ = get_user_model().objects.get_or_create(pk=_dep_player.pk, defaults={"username": f"owner_{_dep_player.pk}"})
+        self.client.force_authenticate(user=_owner_user)
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)

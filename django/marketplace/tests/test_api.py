@@ -62,6 +62,9 @@ class OrderAPITest(APITestCase):
         self.obj = Order.objects.create(player=_dep_player, total=0, discount_applied="0.00", tracking_number="test", created_at="2024-01-01T00:00:00Z", paid_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("order-list")
         self.detail_url = reverse("order-detail", args=[self.obj.pk])
+        from django.contrib.auth import get_user_model
+        _owner_user, _ = get_user_model().objects.get_or_create(pk=_dep_player.pk, defaults={"username": f"owner_{_dep_player.pk}"})
+        self.client.force_authenticate(user=_owner_user)
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)
@@ -257,7 +260,7 @@ class CouponAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "code": "test",
+            "code": "test2",
             "discount_value": 1,
             "uses_count": 0,
             "valid_from": "2024-01-01T00:00:00Z",
@@ -516,14 +519,8 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_returns_201(self):
-        from players.models import Player as _PlayerCls
-        _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
-        from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
-        from cards.models import Card as _CardCls
-        _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
-        _dep_trade_listing = TradeListing.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
-        _fresh_trade_transaction = TradeTransaction.objects.create(listing=_dep_trade_listing, buyer=_dep_player, seller=_dep_player, final_price=1, platform_fee="1.00", completed_at="2024-01-01T00:00:00Z")
+        _fresh_trade_listing = TradeListing.objects.create(seller=self.player, card=self.card, asking_price="0.00", auction_start_price="0.00", auction_end_time="2024-01-01T00:00:00Z", quantity=1, created_at="2024-01-01T00:00:00Z")
+        _fresh_trade_transaction = TradeTransaction.objects.create(listing=_fresh_trade_listing, buyer=self.player, seller=self.player, final_price=1, platform_fee="1.00", completed_at="2024-01-01T00:00:00Z")
         data = {
             "reason": "ItemNotReceived",
             "description": "test",

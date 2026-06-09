@@ -146,6 +146,13 @@ class PlayerCollectionViewSet(viewsets.ModelViewSet):
     filterset_fields = ["condition", "acquired_via", "player", "card"]
     ordering_fields = "__all__"
 
+    def get_object(self):
+        obj = super().get_object()
+        if obj.player_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not own this resource.")
+        return obj
+
     @action(detail=True, methods=["post"], url_path="add")
     def add(self, request, pk=None):
         instance = self.get_object()
@@ -198,6 +205,13 @@ class FriendshipViewSet(viewsets.ModelViewSet):
     search_fields = ["status"]
     filterset_fields = ["status", "requester", "receiver"]
     ordering_fields = "__all__"
+
+    def get_object(self):
+        obj = super().get_object()
+        if obj.requester_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not own this resource.")
+        return obj
 
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, pk=None):

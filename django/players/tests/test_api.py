@@ -20,7 +20,7 @@ class PlayerAPITest(APITestCase):
 
     def test_create_returns_201(self):
         data = {
-            "display_name": "test",
+            "display_name": "test2",
             "peak_rating": 1000,
             "createdAt": "2024-01-01T00:00:00Z"
         }
@@ -73,6 +73,9 @@ class PlayerCollectionAPITest(APITestCase):
         self.obj = PlayerCollection.objects.create(player=_dep_player, card=_dep_card, quantity=1, acquired_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("player_collection-list")
         self.detail_url = reverse("player_collection-detail", args=[self.obj.pk])
+        from django.contrib.auth import get_user_model
+        _owner_user, _ = get_user_model().objects.get_or_create(pk=_dep_player.pk, defaults={"username": f"owner_{_dep_player.pk}"})
+        self.client.force_authenticate(user=_owner_user)
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)
@@ -114,6 +117,9 @@ class FriendshipAPITest(APITestCase):
         self.obj = Friendship.objects.create(requester=_dep_player, receiver=_dep_player, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("friendship-list")
         self.detail_url = reverse("friendship-detail", args=[self.obj.pk])
+        from django.contrib.auth import get_user_model
+        _owner_user, _ = get_user_model().objects.get_or_create(pk=_dep_player.pk, defaults={"username": f"owner_{_dep_player.pk}"})
+        self.client.force_authenticate(user=_owner_user)
 
     def test_list_returns_200(self):
         res = self.client.get(self.list_url)

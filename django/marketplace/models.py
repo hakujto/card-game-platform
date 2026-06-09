@@ -22,8 +22,8 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     image_url = models.URLField(max_length=200, null=True, blank=True)
     featured = models.BooleanField(default=False)
-    card = models.OneToOneField("cards.Card", on_delete=models.CASCADE, related_name="shop_product", null=True, blank=True)
-    card_set = models.ForeignKey("cards.CardSet", on_delete=models.CASCADE, related_name="shop_products", null=True, blank=True)
+    card = models.OneToOneField("cards.Card", on_delete=models.SET_NULL, related_name="shop_product", null=True, blank=True)
+    card_set = models.ForeignKey("cards.CardSet", on_delete=models.SET_NULL, related_name="shop_products", null=True, blank=True)
 
     class Meta:
         verbose_name = "Product"
@@ -101,8 +101,8 @@ class Order(models.Model):
     created_at = models.DateTimeField()
     paid_at = models.DateTimeField(null=True, blank=True)
     shipped_at = models.DateTimeField(null=True, blank=True)
-    player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="orders")
-    coupon = models.ForeignKey("Coupon", on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
+    player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="orders")
+    coupon = models.ForeignKey("Coupon", on_delete=models.SET_NULL, related_name="orders", null=True, blank=True)
 
     class Meta:
         verbose_name = "Order"
@@ -178,6 +178,10 @@ class Order(models.Model):
 
     # ── Lifecycle hooks ──────────────────────────────────────────────
 
+    def _hook_assign_currency_default(self, **kwargs):
+        # TODO: implement assign_currency_default
+        pass
+
     def _hook_notify_status_change(self, **kwargs):
         # TODO: implement notify_status_change
         pass
@@ -188,7 +192,7 @@ class OrderItem(models.Model):
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
     foil = models.BooleanField(default=False)
     order = models.ForeignKey("Order", on_delete=models.CASCADE, null=True, blank=True)
-    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="order_items")
+    product = models.ForeignKey("Product", on_delete=models.PROTECT, related_name="order_items")
 
     class Meta:
         verbose_name = "Order Item"
@@ -221,7 +225,7 @@ class CouponDiscountTypeChoices(models.TextChoices):
 
 
 class Coupon(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, unique=True)
     discount_type = models.CharField(max_length=20, choices=CouponDiscountTypeChoices.choices, default=CouponDiscountTypeChoices.PERCENT)
     discount_value = models.DecimalField(max_digits=10, decimal_places=2)
     min_order_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -310,8 +314,8 @@ class TradeListing(models.Model):
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField()
     expires_at = models.DateTimeField(null=True, blank=True)
-    seller = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="trade_listings")
-    card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="trade_listings")
+    seller = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="trade_listings")
+    card = models.ForeignKey("cards.Card", on_delete=models.PROTECT, related_name="trade_listings")
 
     class Meta:
         verbose_name = "Trade Listing"
@@ -376,7 +380,7 @@ class TradeBid(models.Model):
     placed_at = models.DateTimeField()
     is_winning = models.BooleanField(default=False)
     listing = models.ForeignKey("TradeListing", on_delete=models.CASCADE)
-    bidder = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="bids")
+    bidder = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="bids")
 
     class Meta:
         verbose_name = "Trade Bid"
@@ -417,9 +421,9 @@ class TradeTransaction(models.Model):
     platform_fee = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=TradeTransactionStatusChoices.choices, default=TradeTransactionStatusChoices.PENDING)
     completed_at = models.DateTimeField(null=True, blank=True)
-    listing = models.OneToOneField("TradeListing", on_delete=models.CASCADE, related_name="transaction")
-    buyer = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="purchases")
-    seller = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="sales")
+    listing = models.OneToOneField("TradeListing", on_delete=models.PROTECT, related_name="transaction")
+    buyer = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="purchases")
+    seller = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="sales")
 
     class Meta:
         verbose_name = "Trade Transaction"
@@ -527,8 +531,8 @@ class TradeDispute(models.Model):
     opened_at = models.DateTimeField()
     resolved_at = models.DateTimeField(null=True, blank=True)
     transaction = models.OneToOneField("TradeTransaction", on_delete=models.CASCADE, related_name="dispute")
-    opened_by = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="disputes_opened")
-    resolved_by = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="disputes_resolved", null=True, blank=True)
+    opened_by = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="disputes_opened")
+    resolved_by = models.ForeignKey("players.Player", on_delete=models.SET_NULL, related_name="disputes_resolved", null=True, blank=True)
 
     class Meta:
         verbose_name = "Trade Dispute"
@@ -577,6 +581,11 @@ class TradeDispute(models.Model):
 
 
 # ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(pre_save, sender=Order)
+def _order_assign_currency_default(sender, instance, **kwargs):
+    if instance.pk is None:
+        instance._hook_assign_currency_default(**kwargs)
 
 @receiver(post_save, sender=Order)
 def _order_notify_status_change(sender, instance, **kwargs):

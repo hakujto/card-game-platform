@@ -175,7 +175,7 @@ class ArticleAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "title": "test",
-            "slug": "test",
+            "slug": "test2",
             "body": "test",
             "view_count": 0,
             "likes_count": 0,
@@ -265,7 +265,7 @@ class ArticleTagAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "slug": "test"
+            "slug": "test2"
         }
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)

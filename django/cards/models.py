@@ -56,7 +56,7 @@ class Card(models.Model):
     is_banned = models.BooleanField(default=False)
     is_restricted = models.BooleanField(default=False)
     power_level = models.IntegerField(default=1)
-    set = models.ForeignKey("CardSet", on_delete=models.CASCADE, related_name="cards")
+    set = models.ForeignKey("CardSet", on_delete=models.PROTECT, related_name="cards")
 
     class Meta:
         verbose_name = "Card"
@@ -127,6 +127,10 @@ class Card(models.Model):
         # TODO: implement validate_legality
         pass
 
+    def _hook_validate_not_in_use(self, **kwargs):
+        # TODO: implement validate_not_in_use
+        pass
+
 
 class CardSetSetTypeChoices(models.TextChoices):
     CORE = "Core", "Core"
@@ -138,7 +142,7 @@ class CardSetSetTypeChoices(models.TextChoices):
 
 class CardSet(models.Model):
     name = models.CharField(max_length=200)
-    code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10, unique=True)
     release_date = models.DateField()
     rotation_date = models.DateField(null=True, blank=True)
     set_type = models.CharField(max_length=20, choices=CardSetSetTypeChoices.choices, default=CardSetSetTypeChoices.EXPANSION)
@@ -364,7 +368,7 @@ class DeckCard(models.Model):
     quantity = models.IntegerField(default=1)
     is_commander = models.BooleanField(default=False)
     deck = models.ForeignKey("Deck", on_delete=models.CASCADE, related_name="deck_cards")
-    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="deck_cards")
+    card = models.ForeignKey("Card", on_delete=models.PROTECT, related_name="deck_cards")
 
     class Meta:
         verbose_name = "Deck Card"
@@ -401,7 +405,7 @@ class DeckCard(models.Model):
 class DeckSideboardCard(models.Model):
     quantity = models.IntegerField(default=1)
     deck = models.ForeignKey("Deck", on_delete=models.CASCADE)
-    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="+")
+    card = models.ForeignKey("Card", on_delete=models.PROTECT, related_name="+")
 
     class Meta:
         verbose_name = "Deck Sideboard Card"
@@ -472,6 +476,10 @@ class DeckTagAssignment(models.Model):
 @receiver(pre_save, sender=Card)
 def _card_validate_legality(sender, instance, **kwargs):
     instance._hook_validate_legality(**kwargs)
+
+@receiver(pre_delete, sender=Card)
+def _card_validate_not_in_use(sender, instance, **kwargs):
+    instance._hook_validate_not_in_use(**kwargs)
 
 @receiver(post_save, sender=Deck)
 def _deck_recalculate_tournament_legal(sender, instance, **kwargs):

@@ -95,8 +95,8 @@ class Tournament(models.Model):
     location = models.CharField(max_length=300, null=True, blank=True)
     rules_text = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField()
-    season = models.ForeignKey("Season", on_delete=models.CASCADE, related_name="tournaments")
-    organizer = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="organized_tournaments")
+    season = models.ForeignKey("Season", on_delete=models.PROTECT, related_name="tournaments")
+    organizer = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="organized_tournaments")
     judges = models.ManyToManyField("players.Player", through="TournamentJudge", related_name="+")
 
     class Meta:
@@ -173,6 +173,10 @@ class Tournament(models.Model):
         # TODO: implement sync_season_stats
         pass
 
+    def _hook_prevent_delete_if_ongoing(self, **kwargs):
+        # TODO: implement prevent_delete_if_ongoing
+        pass
+
 
 class TournamentJudgeRoleChoices(models.TextChoices):
     HEADJUDGE = "HeadJudge", "Headjudge"
@@ -183,7 +187,7 @@ class TournamentJudgeRoleChoices(models.TextChoices):
 class TournamentJudge(models.Model):
     role = models.CharField(max_length=20, choices=TournamentJudgeRoleChoices.choices, default=TournamentJudgeRoleChoices.JUDGE)
     tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE, related_name="judge_assignments")
-    player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="judge_roles")
+    player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="judge_roles")
 
     class Meta:
         verbose_name = "Tournament Judge"
@@ -218,8 +222,8 @@ class TournamentRegistration(models.Model):
     points_earned = models.IntegerField(default=0)
     registered_at = models.DateTimeField()
     tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE)
-    player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="tournament_registrations")
-    deck = models.ForeignKey("cards.Deck", on_delete=models.CASCADE, related_name="tournament_registrations")
+    player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="tournament_registrations")
+    deck = models.ForeignKey("cards.Deck", on_delete=models.PROTECT, related_name="tournament_registrations")
 
     class Meta:
         verbose_name = "Tournament Registration"
@@ -334,8 +338,8 @@ class Match(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
     result_notes = models.TextField(null=True, blank=True)
     round = models.ForeignKey("TournamentRound", on_delete=models.CASCADE, null=True, blank=True)
-    player1 = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="matches_as_player1")
-    player2 = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="matches_as_player2", null=True, blank=True)
+    player1 = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="matches_as_player1")
+    player2 = models.ForeignKey("players.Player", on_delete=models.SET_NULL, related_name="matches_as_player2", null=True, blank=True)
 
     class Meta:
         verbose_name = "Match"
@@ -420,7 +424,7 @@ class Game(models.Model):
     ended_by = models.CharField(max_length=20, choices=GameEndedByChoices.choices, null=True, blank=True)
     replay_url = models.URLField(max_length=200, null=True, blank=True)
     match = models.ForeignKey("Match", on_delete=models.CASCADE)
-    winner = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="won_games", null=True, blank=True)
+    winner = models.ForeignKey("players.Player", on_delete=models.SET_NULL, related_name="won_games", null=True, blank=True)
 
     class Meta:
         verbose_name = "Game"
@@ -515,8 +519,8 @@ class AwardedPrize(models.Model):
     awarded_at = models.DateTimeField()
     claimed = models.BooleanField(default=False)
     claimed_at = models.DateTimeField(null=True, blank=True)
-    prize = models.ForeignKey("TournamentPrize", on_delete=models.CASCADE, related_name="awarded_prizes")
-    player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="awarded_prizes")
+    prize = models.ForeignKey("TournamentPrize", on_delete=models.PROTECT, related_name="awarded_prizes")
+    player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="awarded_prizes")
 
     class Meta:
         verbose_name = "Awarded Prize"
@@ -553,3 +557,7 @@ class AwardedPrize(models.Model):
 def _tournament_sync_season_stats(sender, instance, **kwargs):
     if not kwargs.get("created"):
         instance._hook_sync_season_stats(**kwargs)
+
+@receiver(pre_delete, sender=Tournament)
+def _tournament_prevent_delete_if_ongoing(sender, instance, **kwargs):
+    instance._hook_prevent_delete_if_ongoing(**kwargs)

@@ -51,7 +51,7 @@ ID_Game=""
 
 ID_CardSet=$(curl -s -X POST "$BASE/card_sets/" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"code\": \"foo_code\", \"release_date\": \"2024-01-01\", \"rotation_date\": null, \"set_type\": \"Core\", \"total_cards\": 1, \"is_rotated\": false, \"description\": \"foo_description\", \"logo_url\": \"https://example.com/foo\"}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"code\": \"fo_$RANDOM\", \"release_date\": \"2024-01-01\", \"rotation_date\": null, \"set_type\": \"Core\", \"total_cards\": 1, \"is_rotated\": false, \"description\": \"foo_description\", \"logo_url\": \"https://example.com/foo\"}" | extract_id)
 echo "CardSet id=$ID_CardSet"
 
 ID_DeckTag=$(curl -s -X POST "$BASE/deck_tags/" \
@@ -61,7 +61,7 @@ echo "DeckTag id=$ID_DeckTag"
 
 ID_Player=$(curl -s -X POST "$BASE/players/" \
   -H "Content-Type: application/json" \
-  -d "{\"display_name\": \"foo_display_name\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | extract_id)
+  -d "{\"display_name\": \"foo_display_name_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | extract_id)
 echo "Player id=$ID_Player"
 
 ID_Achievement=$(curl -s -X POST "$BASE/achievements/" \
@@ -81,12 +81,12 @@ echo "Product id=$ID_Product"
 
 ID_Coupon=$(curl -s -X POST "$BASE/coupons/" \
   -H "Content-Type: application/json" \
-  -d "{\"code\": \"foo_code\", \"discount_type\": \"Percent\", \"discount_value\": 1, \"min_order_value\": \"1.00\", \"max_uses\": null, \"uses_count\": 1, \"valid_from\": \"2024-01-01T00:00:00Z\", \"valid_until\": \"2024-01-01T00:00:01Z\", \"is_active\": true}" | extract_id)
+  -d "{\"code\": \"foo_code_$RANDOM\", \"discount_type\": \"Percent\", \"discount_value\": 1, \"min_order_value\": \"1.00\", \"max_uses\": null, \"uses_count\": 1, \"valid_from\": \"2024-01-01T00:00:00Z\", \"valid_until\": \"2024-01-01T00:00:01Z\", \"is_active\": true}" | extract_id)
 echo "Coupon id=$ID_Coupon"
 
 ID_ArticleTag=$(curl -s -X POST "$BASE/article_tags/" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug\"}" | extract_id)
+  -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug_$RANDOM\"}" | extract_id)
 echo "ArticleTag id=$ID_ArticleTag"
 
 ID_Card=$(curl -s -X POST "$BASE/cards/" \
@@ -116,7 +116,7 @@ echo "Order id=$ID_Order"
 
 ID_Article=$(curl -s -X POST "$BASE/articles/" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"cover_image_url\": \"https://example.com/foo\", \"status\": \"Draft\", \"article_type\": \"Guide\", \"language\": \"EN\", \"view_count\": 0, \"likes_count\": 0, \"is_featured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featured_deck\": ${ID_Deck:-null}}" | extract_id)
+  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug_$RANDOM\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"cover_image_url\": \"https://example.com/foo\", \"status\": \"Draft\", \"article_type\": \"Guide\", \"language\": \"EN\", \"view_count\": 0, \"likes_count\": 0, \"is_featured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featured_deck\": ${ID_Deck:-null}}" | extract_id)
 echo "Article id=$ID_Article"
 
 ID_Stream=$(curl -s -X POST "$BASE/streams/" \

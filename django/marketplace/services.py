@@ -87,6 +87,9 @@ class OrderService:
     def pay(id, payment_ref):
         from .models import Order
         instance = Order.objects.get(pk=id)
+        if not (instance.status == "Pending"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for pay"})
         result = instance.pay(payment_ref)
         instance.save()
         return result
@@ -188,6 +191,9 @@ class CouponService:
     def redeem(id):
         from .models import Coupon
         instance = Coupon.objects.get(pk=id)
+        if not (instance.is_active is True):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for redeem"})
         instance.redeem()
         instance.save()
 
@@ -230,6 +236,9 @@ class TradeListingService:
     def cancel(id):
         from .models import TradeListing
         instance = TradeListing.objects.get(pk=id)
+        if not (instance.status == "Active"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for cancel"})
         instance.cancel()
         instance.save()
 

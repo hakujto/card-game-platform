@@ -24,7 +24,7 @@ class DraftSession(models.Model):
     time_per_pick_seconds = models.IntegerField(default=30)
     created_at = models.DateTimeField()
     completed_at = models.DateTimeField(null=True, blank=True)
-    card_set = models.ForeignKey("cards.CardSet", on_delete=models.CASCADE, related_name="draft_sessions")
+    card_set = models.ForeignKey("cards.CardSet", on_delete=models.PROTECT, related_name="draft_sessions")
 
     class Meta:
         verbose_name = "Draft Session"
@@ -84,7 +84,7 @@ class DraftParticipant(models.Model):
     seat_number = models.IntegerField()
     joined_at = models.DateTimeField()
     session = models.ForeignKey("DraftSession", on_delete=models.CASCADE, null=True, blank=True)
-    player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="draft_sessions")
+    player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="draft_sessions")
 
     class Meta:
         verbose_name = "Draft Participant"
@@ -118,7 +118,7 @@ class DraftPick(models.Model):
     pack_number = models.IntegerField()
     picked_at = models.DateTimeField()
     participant = models.ForeignKey("DraftParticipant", on_delete=models.CASCADE, related_name="picks")
-    card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="draft_picks")
+    card = models.ForeignKey("cards.Card", on_delete=models.PROTECT, related_name="draft_picks")
 
     class Meta:
         verbose_name = "Draft Pick"
@@ -172,7 +172,7 @@ class ArticleLanguageChoices(models.TextChoices):
 
 class Article(models.Model):
     title = models.CharField(max_length=300)
-    slug = models.CharField(max_length=300)
+    slug = models.CharField(max_length=300, unique=True)
     body = models.TextField()
     excerpt = models.TextField(null=True, blank=True)
     cover_image_url = models.URLField(max_length=200, null=True, blank=True)
@@ -185,8 +185,8 @@ class Article(models.Model):
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
-    author = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="articles")
-    featured_deck = models.ForeignKey("cards.Deck", on_delete=models.CASCADE, related_name="articles", null=True, blank=True)
+    author = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="articles")
+    featured_deck = models.ForeignKey("cards.Deck", on_delete=models.SET_NULL, related_name="articles", null=True, blank=True)
     tags = models.ManyToManyField("ArticleTag", through="ArticleTagAssignment")
 
     class Meta:
@@ -260,7 +260,7 @@ class Article(models.Model):
 
 class ArticleTag(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.CharField(max_length=100)
+    slug = models.CharField(max_length=100, unique=True)
 
     class Meta:
         verbose_name = "Article Tag"
@@ -299,8 +299,8 @@ class ArticleComment(models.Model):
     is_hidden = models.BooleanField(default=False)
     created_at = models.DateTimeField()
     article = models.ForeignKey("Article", on_delete=models.CASCADE, null=True, blank=True)
-    author = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="article_comments")
-    parent_comment = models.ForeignKey("ArticleComment", on_delete=models.CASCADE, related_name="replies", null=True, blank=True)
+    author = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="article_comments")
+    parent_comment = models.ForeignKey("ArticleComment", on_delete=models.SET_NULL, related_name="replies", null=True, blank=True)
 
     class Meta:
         verbose_name = "Article Comment"
@@ -360,8 +360,8 @@ class Stream(models.Model):
     actual_start = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     vod_url = models.URLField(max_length=200, null=True, blank=True)
-    tournament = models.ForeignKey("tournaments.Tournament", on_delete=models.CASCADE, related_name="streams", null=True, blank=True)
-    streamer = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="streams")
+    tournament = models.ForeignKey("tournaments.Tournament", on_delete=models.SET_NULL, related_name="streams", null=True, blank=True)
+    streamer = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="streams")
 
     class Meta:
         verbose_name = "Stream"

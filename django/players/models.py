@@ -24,7 +24,7 @@ class PlayerPreferredFormatChoices(models.TextChoices):
 
 
 class Player(models.Model):
-    display_name = models.CharField(max_length=50)
+    display_name = models.CharField(max_length=50, unique=True)
     rank = models.CharField(max_length=20, choices=PlayerRankChoices.choices, default=PlayerRankChoices.BRONZE)
     rating = models.IntegerField(default=1000)
     peak_rating = models.IntegerField(default=1000)
@@ -90,6 +90,10 @@ class Player(models.Model):
             raise ValidationError(errors)
 
     # ── Lifecycle hooks ──────────────────────────────────────────────
+
+    def _hook_initialize_collection(self, **kwargs):
+        # TODO: implement initialize_collection
+        pass
 
     def _hook_update_rank(self, **kwargs):
         # TODO: implement update_rank
@@ -176,7 +180,7 @@ class PlayerCollection(models.Model):
     acquired_at = models.DateTimeField()
     acquired_via = models.CharField(max_length=20, choices=PlayerCollectionAcquiredViaChoices.choices, default=PlayerCollectionAcquiredViaChoices.PURCHASE)
     player = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="collection")
-    card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="player_collections")
+    card = models.ForeignKey("cards.Card", on_delete=models.PROTECT, related_name="player_collections")
 
     class Meta:
         verbose_name = "Player Collection"
@@ -292,7 +296,7 @@ class PlayerAchievement(models.Model):
     progress = models.IntegerField(default=0)
     is_completed = models.BooleanField(default=False)
     player = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="achievement_records")
-    achievement = models.ForeignKey("Achievement", on_delete=models.CASCADE, related_name="player_records")
+    achievement = models.ForeignKey("Achievement", on_delete=models.PROTECT, related_name="player_records")
 
     class Meta:
         verbose_name = "Player Achievement"
@@ -329,7 +333,7 @@ class PlayerAchievement(models.Model):
 class CraftingRecipe(models.Model):
     dust_cost = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    result_card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="crafting_recipes")
+    result_card = models.ForeignKey("cards.Card", on_delete=models.PROTECT, related_name="crafting_recipes")
     required_cards = models.ManyToManyField("cards.Card", through="CraftingIngredient")
 
     class Meta:
@@ -370,7 +374,7 @@ class CraftingRecipe(models.Model):
 class CraftingIngredient(models.Model):
     quantity = models.IntegerField(default=1)
     recipe = models.ForeignKey("CraftingRecipe", on_delete=models.CASCADE, related_name="ingredients")
-    card = models.ForeignKey("cards.Card", on_delete=models.CASCADE, related_name="used_in_recipes")
+    card = models.ForeignKey("cards.Card", on_delete=models.PROTECT, related_name="used_in_recipes")
 
     class Meta:
         verbose_name = "Crafting Ingredient"
@@ -383,6 +387,11 @@ class CraftingIngredient(models.Model):
 
 
 # ── Signal receivers ─────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Player)
+def _player_initialize_collection(sender, instance, **kwargs):
+    if kwargs.get("created"):
+        instance._hook_initialize_collection(**kwargs)
 
 @receiver(post_save, sender=Player)
 def _player_update_rank(sender, instance, **kwargs):

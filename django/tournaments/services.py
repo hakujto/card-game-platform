@@ -259,6 +259,9 @@ class MatchService:
     def concede(id, player_id):
         from .models import Match
         instance = Match.objects.get(pk=id)
+        if not (instance.status == "Active"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for concede"})
         instance.concede(player_id)
         instance.save()
 

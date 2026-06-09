@@ -288,6 +288,13 @@ class TournamentRegistrationViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "tournament", "player", "deck"]
     ordering_fields = "__all__"
 
+    def get_object(self):
+        obj = super().get_object()
+        if obj.player_id != self.request.user.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not own this resource.")
+        return obj
+
     @action(detail=True, methods=["post"], url_path="withdraw")
     def withdraw(self, request, pk=None):
         instance = self.get_object()
@@ -426,6 +433,9 @@ class MatchViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="concede")
     def concede(self, request, pk=None):
         instance = self.get_object()
+        if not (instance.status == "Active"):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"detail": "Guard condition not met for concede"})
         player_id = request.data.get("player_id")
         result = instance.concede(player_id)
         from rest_framework.response import Response

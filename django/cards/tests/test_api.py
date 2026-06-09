@@ -112,7 +112,7 @@ class CardSetAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "code": "test",
+            "code": "test2",
             "release_date": "2024-01-01",
             "rotation_date": None,
             "total_cards": 1
