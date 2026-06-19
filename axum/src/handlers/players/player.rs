@@ -49,6 +49,7 @@ pub async fn create_player(
         payload.display_name, payload.rank, payload.rating, payload.peak_rating, payload.bio, payload.country_code, payload.avatar_url, payload.preferred_format, payload.is_verified, payload.last_active_at, payload.user_id
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: display_name
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -184,6 +185,11 @@ pub async fn update_rating_player(
 
 // ── Lifecycle hooks ──────────────────────────────────────────────────
 #[allow(dead_code)]
+fn hook_initialize_collection(_row: &Player) {
+    // TODO: implement initialize_collection
+}
+
+#[allow(dead_code)]
 fn hook_update_rank(_row: &Player) {
     // TODO: implement update_rank
 }
@@ -212,6 +218,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

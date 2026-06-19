@@ -212,6 +212,11 @@ fn hook_validate_legality(_row: &Card) {
     // TODO: implement validate_legality
 }
 
+#[allow(dead_code)]
+fn hook_validate_not_in_use(_row: &Card) {
+    // TODO: implement validate_not_in_use
+}
+
 pub fn card_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/cards", axum::routing::get(list_card).post(create_card))
@@ -236,6 +241,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

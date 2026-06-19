@@ -50,6 +50,7 @@ pub async fn create_coupon(
         payload.code, payload.discount_type, payload.discount_value, payload.min_order_value, payload.max_uses, payload.uses_count, payload.valid_from, payload.valid_until, payload.is_active
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: code
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -143,6 +144,8 @@ pub async fn redeem_coupon(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Coupon not found".to_string()))?;
+    // @guard: TODO: evaluate guard condition — return 422 if not met
+    // if !(guard_condition) { return Err((StatusCode::UNPROCESSABLE_ENTITY, "Guard condition not met for redeem".to_string())); }
     // TODO: implement redeem business logic
     Ok(StatusCode::OK)
 }
@@ -180,6 +183,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

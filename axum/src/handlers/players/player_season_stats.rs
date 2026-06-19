@@ -88,6 +88,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

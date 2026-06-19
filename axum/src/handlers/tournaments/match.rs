@@ -107,6 +107,8 @@ pub async fn concede_match(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Match not found".to_string()))?;
+    // @guard: TODO: evaluate guard condition — return 422 if not met
+    // if !(guard_condition) { return Err((StatusCode::UNPROCESSABLE_ENTITY, "Guard condition not met for concede".to_string())); }
     // TODO: implement concede business logic
     Ok(StatusCode::OK)
 }
@@ -221,6 +223,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

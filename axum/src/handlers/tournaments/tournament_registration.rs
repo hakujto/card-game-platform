@@ -53,11 +53,16 @@ pub async fn create_tournament_registration(
 pub async fn get_tournament_registration(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
+    headers: axum::http::HeaderMap,
 ) -> Result<Json<TournamentRegistration>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(TournamentRegistration, "SELECT * FROM tournament_registrations WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "TournamentRegistration not found".to_string()))?;
+    let uid = headers.get("x-user-id").and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<i64>().ok());
+    if uid.map(|u| u != row.player_id).unwrap_or(true) {
+        return Err((StatusCode::FORBIDDEN, "You do not own this resource.".to_string()));
+    }
     Ok(Json(row))
 }
 
@@ -117,6 +122,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }
@@ -159,7 +165,7 @@ mod tests {
     async fn test_retrieve_tournament_registration() {
         let pool = setup_pool().await;
         let resp = app(pool).oneshot(
-            Request::builder().uri("/api/tournament_registrations/1").body(Body::empty()).unwrap()
+            Request::builder().header("x-user-id", "1").uri("/api/tournament_registrations/1").body(Body::empty()).unwrap()
         ).await.unwrap();
         assert!(resp.status() == StatusCode::NOT_FOUND || resp.status() == StatusCode::OK);
     }

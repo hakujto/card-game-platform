@@ -297,6 +297,11 @@ fn hook_sync_season_stats(_row: &Tournament) {
     // TODO: implement sync_season_stats
 }
 
+#[allow(dead_code)]
+fn hook_prevent_delete_if_ongoing(_row: &Tournament) {
+    // TODO: implement prevent_delete_if_ongoing
+}
+
 pub fn tournament_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/tournaments", axum::routing::get(list_tournament).post(create_tournament))
@@ -326,6 +331,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

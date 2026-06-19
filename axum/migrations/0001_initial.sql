@@ -1,5 +1,15 @@
 -- Initial migration: create tables
 
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -20,7 +30,7 @@ CREATE TABLE IF NOT EXISTS cards (
 ,    is_banned BOOLEAN NOT NULL DEFAULT 0
 ,    is_restricted BOOLEAN NOT NULL DEFAULT 0
 ,    power_level INTEGER NOT NULL DEFAULT 1
-,    set_id INTEGER NOT NULL
+,    set_id INTEGER NOT NULL REFERENCES card_sets(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS card_sets (
@@ -28,7 +38,7 @@ CREATE TABLE IF NOT EXISTS card_sets (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    name TEXT NOT NULL
-,    code TEXT NOT NULL
+,    code TEXT NOT NULL UNIQUE
 ,    release_date TEXT NOT NULL
 ,    rotation_date TEXT
 ,    set_type TEXT NOT NULL DEFAULT 'Expansion'
@@ -45,7 +55,7 @@ CREATE TABLE IF NOT EXISTS card_rulings (
 ,    ruling_text TEXT NOT NULL
 ,    published_at TEXT NOT NULL
 ,    source TEXT NOT NULL
-,    card_id INTEGER NOT NULL
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS card_abilities (
@@ -56,7 +66,7 @@ CREATE TABLE IF NOT EXISTS card_abilities (
 ,    keyword TEXT
 ,    ability_text TEXT NOT NULL
 ,    timing TEXT
-,    card_id INTEGER NOT NULL
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS decks (
@@ -72,7 +82,7 @@ CREATE TABLE IF NOT EXISTS decks (
 ,    wins INTEGER NOT NULL DEFAULT 0
 ,    losses INTEGER NOT NULL DEFAULT 0
 ,    draws INTEGER NOT NULL DEFAULT 0
-,    player_id INTEGER NOT NULL
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS deck_cards (
@@ -81,8 +91,8 @@ CREATE TABLE IF NOT EXISTS deck_cards (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    quantity INTEGER NOT NULL DEFAULT 1
 ,    is_commander BOOLEAN NOT NULL DEFAULT 0
-,    deck_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS deck_sideboard_cards (
@@ -90,8 +100,8 @@ CREATE TABLE IF NOT EXISTS deck_sideboard_cards (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    quantity INTEGER NOT NULL DEFAULT 1
-,    deck_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS deck_tags (
@@ -106,15 +116,15 @@ CREATE TABLE IF NOT EXISTS deck_tag_assignments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-,    deck_id INTEGER NOT NULL
-,    tag_id INTEGER NOT NULL
+,    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE
+,    tag_id INTEGER NOT NULL REFERENCES deck_tags(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-,    display_name TEXT NOT NULL
+,    display_name TEXT NOT NULL UNIQUE
 ,    rank TEXT NOT NULL DEFAULT 'Bronze'
 ,    rating INTEGER NOT NULL DEFAULT 1000
 ,    peak_rating INTEGER NOT NULL DEFAULT 1000
@@ -124,7 +134,7 @@ CREATE TABLE IF NOT EXISTS players (
 ,    preferred_format TEXT
 ,    is_verified BOOLEAN NOT NULL DEFAULT 0
 ,    last_active_at TEXT
-,    user_id INTEGER
+,    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS player_season_statses (
@@ -137,8 +147,8 @@ CREATE TABLE IF NOT EXISTS player_season_statses (
 ,    tournament_wins INTEGER NOT NULL DEFAULT 0
 ,    highest_rank TEXT
 ,    season_points INTEGER NOT NULL DEFAULT 0
-,    player_id INTEGER NOT NULL
-,    season_id INTEGER NOT NULL
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
+,    season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS player_collections (
@@ -150,8 +160,8 @@ CREATE TABLE IF NOT EXISTS player_collections (
 ,    condition TEXT NOT NULL DEFAULT 'Mint'
 ,    acquired_at TEXT NOT NULL
 ,    acquired_via TEXT NOT NULL DEFAULT 'Purchase'
-,    player_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS friendships (
@@ -159,8 +169,8 @@ CREATE TABLE IF NOT EXISTS friendships (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    status TEXT NOT NULL DEFAULT 'Pending'
-,    requester_id INTEGER NOT NULL
-,    receiver_id INTEGER NOT NULL
+,    requester_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
+,    receiver_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS achievements (
@@ -182,8 +192,8 @@ CREATE TABLE IF NOT EXISTS player_achievements (
 ,    earned_at TEXT NOT NULL
 ,    progress INTEGER NOT NULL DEFAULT 0
 ,    is_completed BOOLEAN NOT NULL DEFAULT 0
-,    player_id INTEGER NOT NULL
-,    achievement_id INTEGER NOT NULL
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE
+,    achievement_id INTEGER NOT NULL REFERENCES achievements(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS crafting_recipes (
@@ -192,7 +202,7 @@ CREATE TABLE IF NOT EXISTS crafting_recipes (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    dust_cost INTEGER NOT NULL
 ,    is_available BOOLEAN NOT NULL DEFAULT 1
-,    result_card_id INTEGER NOT NULL
+,    result_card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS crafting_ingredients (
@@ -200,8 +210,8 @@ CREATE TABLE IF NOT EXISTS crafting_ingredients (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    quantity INTEGER NOT NULL DEFAULT 1
-,    recipe_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    recipe_id INTEGER NOT NULL REFERENCES crafting_recipes(id) ON DELETE CASCADE
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS seasons (
@@ -233,8 +243,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
 ,    is_online BOOLEAN NOT NULL DEFAULT 1
 ,    location TEXT
 ,    rules_text TEXT
-,    season_id INTEGER NOT NULL
-,    organizer_id INTEGER NOT NULL
+,    season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE RESTRICT
+,    organizer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS tournament_judges (
@@ -242,8 +252,8 @@ CREATE TABLE IF NOT EXISTS tournament_judges (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    role TEXT NOT NULL DEFAULT 'Judge'
-,    tournament_id INTEGER NOT NULL
-,    player_id INTEGER NOT NULL
+,    tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS tournament_registrations (
@@ -255,9 +265,9 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
 ,    final_standing INTEGER
 ,    points_earned INTEGER NOT NULL DEFAULT 0
 ,    registered_at TEXT NOT NULL
-,    tournament_id INTEGER NOT NULL
-,    player_id INTEGER NOT NULL
-,    deck_id INTEGER NOT NULL
+,    tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS tournament_rounds (
@@ -269,7 +279,7 @@ CREATE TABLE IF NOT EXISTS tournament_rounds (
 ,    started_at TEXT
 ,    ended_at TEXT
 ,    time_limit_minutes INTEGER NOT NULL DEFAULT 50
-,    tournament_id INTEGER NOT NULL
+,    tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS matches (
@@ -283,9 +293,9 @@ CREATE TABLE IF NOT EXISTS matches (
 ,    started_at TEXT
 ,    ended_at TEXT
 ,    result_notes TEXT
-,    round_id INTEGER NOT NULL
-,    player1_id INTEGER NOT NULL
-,    player2_id INTEGER
+,    round_id INTEGER NOT NULL REFERENCES tournament_rounds(id) ON DELETE CASCADE
+,    player1_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    player2_id INTEGER REFERENCES players(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS games (
@@ -298,8 +308,8 @@ CREATE TABLE IF NOT EXISTS games (
 ,    duration_seconds INTEGER
 ,    ended_by TEXT
 ,    replay_url TEXT
-,    match_id INTEGER NOT NULL
-,    winner_id INTEGER
+,    match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE
+,    winner_id INTEGER REFERENCES players(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS tournament_prizes (
@@ -313,7 +323,7 @@ CREATE TABLE IF NOT EXISTS tournament_prizes (
 ,    description TEXT
 ,    packs_count INTEGER
 ,    season_points INTEGER NOT NULL DEFAULT 0
-,    tournament_id INTEGER NOT NULL
+,    tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS awarded_prizes (
@@ -324,8 +334,8 @@ CREATE TABLE IF NOT EXISTS awarded_prizes (
 ,    awarded_at TEXT NOT NULL
 ,    claimed BOOLEAN NOT NULL DEFAULT 0
 ,    claimed_at TEXT
-,    prize_id INTEGER NOT NULL
-,    player_id INTEGER NOT NULL
+,    prize_id INTEGER NOT NULL REFERENCES tournament_prizes(id) ON DELETE RESTRICT
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -341,8 +351,8 @@ CREATE TABLE IF NOT EXISTS products (
 ,    description TEXT
 ,    image_url TEXT
 ,    featured BOOLEAN NOT NULL DEFAULT 0
-,    card_id INTEGER
-,    card_set_id INTEGER
+,    card_id INTEGER UNIQUE REFERENCES cards(id) ON DELETE SET NULL
+,    card_set_id INTEGER REFERENCES card_sets(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -359,8 +369,8 @@ CREATE TABLE IF NOT EXISTS orders (
 ,    tracking_number TEXT
 ,    paid_at TEXT
 ,    shipped_at TEXT
-,    player_id INTEGER NOT NULL
-,    coupon_id INTEGER
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    coupon_id INTEGER REFERENCES coupons(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -370,15 +380,15 @@ CREATE TABLE IF NOT EXISTS order_items (
 ,    quantity INTEGER NOT NULL
 ,    price_at_purchase REAL NOT NULL
 ,    foil BOOLEAN NOT NULL DEFAULT 0
-,    order_id INTEGER NOT NULL
-,    product_id INTEGER NOT NULL
+,    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE
+,    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS coupons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-,    code TEXT NOT NULL
+,    code TEXT NOT NULL UNIQUE
 ,    discount_type TEXT NOT NULL DEFAULT 'Percent'
 ,    discount_value REAL NOT NULL
 ,    min_order_value REAL NOT NULL DEFAULT 0
@@ -404,8 +414,8 @@ CREATE TABLE IF NOT EXISTS trade_listings (
 ,    quantity INTEGER NOT NULL DEFAULT 1
 ,    description TEXT
 ,    expires_at TEXT
-,    seller_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    seller_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS trade_bids (
@@ -415,8 +425,8 @@ CREATE TABLE IF NOT EXISTS trade_bids (
 ,    amount REAL NOT NULL
 ,    placed_at TEXT NOT NULL
 ,    is_winning BOOLEAN NOT NULL DEFAULT 0
-,    listing_id INTEGER NOT NULL
-,    bidder_id INTEGER NOT NULL
+,    listing_id INTEGER NOT NULL REFERENCES trade_listings(id) ON DELETE CASCADE
+,    bidder_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS trade_transactions (
@@ -427,9 +437,9 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
 ,    platform_fee REAL NOT NULL
 ,    status TEXT NOT NULL DEFAULT 'Pending'
 ,    completed_at TEXT
-,    listing_id INTEGER NOT NULL
-,    buyer_id INTEGER NOT NULL
-,    seller_id INTEGER NOT NULL
+,    listing_id INTEGER NOT NULL UNIQUE REFERENCES trade_listings(id) ON DELETE RESTRICT
+,    buyer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    seller_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS card_price_histories (
@@ -442,7 +452,7 @@ CREATE TABLE IF NOT EXISTS card_price_histories (
 ,    max_price REAL NOT NULL
 ,    volume INTEGER NOT NULL
 ,    foil BOOLEAN NOT NULL DEFAULT 0
-,    card_id INTEGER NOT NULL
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS trade_disputes (
@@ -455,9 +465,9 @@ CREATE TABLE IF NOT EXISTS trade_disputes (
 ,    resolution TEXT
 ,    opened_at TEXT NOT NULL
 ,    resolved_at TEXT
-,    transaction_id INTEGER NOT NULL
-,    opened_by_id INTEGER NOT NULL
-,    resolved_by_id INTEGER
+,    transaction_id INTEGER NOT NULL UNIQUE REFERENCES trade_transactions(id) ON DELETE CASCADE
+,    opened_by_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    resolved_by_id INTEGER REFERENCES players(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS draft_sessions (
@@ -469,7 +479,7 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
 ,    seats INTEGER NOT NULL DEFAULT 8
 ,    time_per_pick_seconds INTEGER NOT NULL DEFAULT 30
 ,    completed_at TEXT
-,    card_set_id INTEGER NOT NULL
+,    card_set_id INTEGER NOT NULL REFERENCES card_sets(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS draft_participants (
@@ -478,8 +488,8 @@ CREATE TABLE IF NOT EXISTS draft_participants (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    seat_number INTEGER NOT NULL
 ,    joined_at TEXT NOT NULL
-,    session_id INTEGER NOT NULL
-,    player_id INTEGER NOT NULL
+,    session_id INTEGER NOT NULL REFERENCES draft_sessions(id) ON DELETE CASCADE
+,    player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS draft_picks (
@@ -489,8 +499,8 @@ CREATE TABLE IF NOT EXISTS draft_picks (
 ,    pick_number INTEGER NOT NULL
 ,    pack_number INTEGER NOT NULL
 ,    picked_at TEXT NOT NULL
-,    participant_id INTEGER NOT NULL
-,    card_id INTEGER NOT NULL
+,    participant_id INTEGER NOT NULL REFERENCES draft_participants(id) ON DELETE CASCADE
+,    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS articles (
@@ -498,7 +508,7 @@ CREATE TABLE IF NOT EXISTS articles (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    title TEXT NOT NULL
-,    slug TEXT NOT NULL
+,    slug TEXT NOT NULL UNIQUE
 ,    body TEXT NOT NULL
 ,    excerpt TEXT
 ,    cover_image_url TEXT
@@ -509,8 +519,8 @@ CREATE TABLE IF NOT EXISTS articles (
 ,    likes_count INTEGER NOT NULL DEFAULT 0
 ,    is_featured BOOLEAN NOT NULL DEFAULT 0
 ,    published_at TEXT
-,    author_id INTEGER NOT NULL
-,    featured_deck_id INTEGER
+,    author_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    featured_deck_id INTEGER REFERENCES decks(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS article_tags (
@@ -518,15 +528,15 @@ CREATE TABLE IF NOT EXISTS article_tags (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    name TEXT NOT NULL
-,    slug TEXT NOT NULL
+,    slug TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS article_tag_assignments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-,    article_id INTEGER NOT NULL
-,    tag_id INTEGER NOT NULL
+,    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE
+,    tag_id INTEGER NOT NULL REFERENCES article_tags(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS article_comments (
@@ -535,9 +545,9 @@ CREATE TABLE IF NOT EXISTS article_comments (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    body TEXT NOT NULL
 ,    is_hidden BOOLEAN NOT NULL DEFAULT 0
-,    article_id INTEGER NOT NULL
-,    author_id INTEGER NOT NULL
-,    parent_comment_id INTEGER
+,    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE
+,    author_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+,    parent_comment_id INTEGER REFERENCES article_comments(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS streams (
@@ -555,6 +565,6 @@ CREATE TABLE IF NOT EXISTS streams (
 ,    actual_start TEXT
 ,    ended_at TEXT
 ,    vod_url TEXT
-,    tournament_id INTEGER
-,    streamer_id INTEGER NOT NULL
+,    tournament_id INTEGER REFERENCES tournaments(id) ON DELETE SET NULL
+,    streamer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );

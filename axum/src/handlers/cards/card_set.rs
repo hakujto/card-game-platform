@@ -49,6 +49,7 @@ pub async fn create_card_set(
         payload.name, payload.code, payload.release_date, payload.rotation_date, payload.set_type, payload.total_cards, payload.is_rotated, payload.description, payload.logo_url
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: code
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -179,6 +180,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

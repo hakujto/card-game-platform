@@ -55,11 +55,16 @@ pub async fn create_order(
 pub async fn get_order(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
+    headers: axum::http::HeaderMap,
 ) -> Result<Json<Order>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Order, "SELECT * FROM orders WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Order not found".to_string()))?;
+    let uid = headers.get("x-user-id").and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<i64>().ok());
+    if uid.map(|u| u != row.player_id).unwrap_or(true) {
+        return Err((StatusCode::FORBIDDEN, "You do not own this resource.".to_string()));
+    }
     Ok(Json(row))
 }
 
@@ -83,6 +88,8 @@ pub async fn pay_order(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Order not found".to_string()))?;
+    // @guard: TODO: evaluate guard condition — return 422 if not met
+    // if !(guard_condition) { return Err((StatusCode::UNPROCESSABLE_ENTITY, "Guard condition not met for pay".to_string())); }
     // TODO: implement pay business logic
     Ok(StatusCode::OK)
 }
@@ -284,6 +291,11 @@ pub async fn transition_order_completed_to_refunded(
 
 // ── Lifecycle hooks ──────────────────────────────────────────────────
 #[allow(dead_code)]
+fn hook_assign_currency_default(_row: &Order) {
+    // TODO: implement assign_currency_default
+}
+
+#[allow(dead_code)]
 fn hook_notify_status_change(_row: &Order) {
     // TODO: implement notify_status_change
 }
@@ -319,6 +331,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }
@@ -361,7 +374,7 @@ mod tests {
     async fn test_retrieve_order() {
         let pool = setup_pool().await;
         let resp = app(pool).oneshot(
-            Request::builder().uri("/api/orders/1").body(Body::empty()).unwrap()
+            Request::builder().header("x-user-id", "1").uri("/api/orders/1").body(Body::empty()).unwrap()
         ).await.unwrap();
         assert!(resp.status() == StatusCode::NOT_FOUND || resp.status() == StatusCode::OK);
     }

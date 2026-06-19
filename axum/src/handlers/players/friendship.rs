@@ -43,18 +43,32 @@ pub async fn create_friendship(
 pub async fn get_friendship(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
+    headers: axum::http::HeaderMap,
 ) -> Result<Json<Friendship>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Friendship, "SELECT * FROM friendships WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Friendship not found".to_string()))?;
+    let uid = headers.get("x-user-id").and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<i64>().ok());
+    if uid.map(|u| u != row.requester_id).unwrap_or(true) {
+        return Err((StatusCode::FORBIDDEN, "You do not own this resource.".to_string()));
+    }
     Ok(Json(row))
 }
 
 pub async fn delete_friendship(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
+    headers: axum::http::HeaderMap,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    let existing = sqlx::query_as_unchecked!(Friendship, "SELECT * FROM friendships WHERE id = $1", id)
+        .fetch_optional(&pool).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Friendship not found".to_string()))?;
+    let uid = headers.get("x-user-id").and_then(|v| v.to_str().ok()).and_then(|s| s.parse::<i64>().ok());
+    if uid.map(|u| u != existing.requester_id).unwrap_or(true) {
+        return Err((StatusCode::FORBIDDEN, "You do not own this resource.".to_string()));
+    }
     let result = sqlx::query_unchecked!("DELETE FROM friendships WHERE id = $1", id)
         .execute(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -120,6 +134,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }
@@ -159,7 +174,7 @@ mod tests {
     async fn test_retrieve_friendship() {
         let pool = setup_pool().await;
         let resp = app(pool).oneshot(
-            Request::builder().uri("/api/friendships/1").body(Body::empty()).unwrap()
+            Request::builder().header("x-user-id", "1").uri("/api/friendships/1").body(Body::empty()).unwrap()
         ).await.unwrap();
         assert!(resp.status() == StatusCode::NOT_FOUND || resp.status() == StatusCode::OK);
     }
@@ -168,7 +183,7 @@ mod tests {
     async fn test_delete_friendship() {
         let pool = setup_pool().await;
         let resp = app(pool).oneshot(
-            Request::builder().method("DELETE").uri("/api/friendships/1").body(Body::empty()).unwrap()
+            Request::builder().method("DELETE").uri("/api/friendships/1").header("x-user-id", "1").body(Body::empty()).unwrap()
         ).await.unwrap();
         assert!(resp.status() == StatusCode::NO_CONTENT || resp.status() == StatusCode::NOT_FOUND);
     }

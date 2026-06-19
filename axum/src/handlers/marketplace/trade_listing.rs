@@ -132,6 +132,8 @@ pub async fn cancel_trade_listing(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "TradeListing not found".to_string()))?;
+    // @guard: TODO: evaluate guard condition — return 422 if not met
+    // if !(guard_condition) { return Err((StatusCode::UNPROCESSABLE_ENTITY, "Guard condition not met for cancel".to_string())); }
     // TODO: implement cancel business logic
     Ok(StatusCode::OK)
 }
@@ -280,6 +282,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }

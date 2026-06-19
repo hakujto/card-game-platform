@@ -49,6 +49,7 @@ pub async fn create_article(
         payload.title, payload.slug, payload.body, payload.excerpt, payload.cover_image_url, payload.status, payload.article_type, payload.language, payload.view_count, payload.likes_count, payload.is_featured, payload.published_at, payload.author_id, payload.featured_deck_id
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: slug
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -273,6 +274,7 @@ mod tests {
 
     async fn setup_pool() -> SqlitePool {
         let pool = SqlitePool::connect(":memory:").await.unwrap();
+        sqlx::query("PRAGMA foreign_keys = OFF").execute(&pool).await.unwrap();
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         pool
     }
