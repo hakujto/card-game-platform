@@ -44,7 +44,7 @@ class CouponApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/coupons', [
-            'code' => 'test',
+            'code' => 'test2',
             'discount_type' => 'Percent',
             'discount_value' => '1.00',
             'min_order_value' => '0.00',

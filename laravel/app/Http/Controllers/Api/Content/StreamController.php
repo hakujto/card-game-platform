@@ -115,6 +115,9 @@ class StreamController extends Controller
     }
     public function transitionScheduledToLive(Stream $stream): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Streamer', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Scheduled -> Live'], 403);
+        }
         try {
             $stream->assertTransition('Live');
         } catch (\InvalidArgumentException $e) {
@@ -135,6 +138,9 @@ class StreamController extends Controller
 
     public function transitionLiveToEnded(Stream $stream): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Streamer', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Live -> Ended'], 403);
+        }
         try {
             $stream->assertTransition('Ended');
         } catch (\InvalidArgumentException $e) {

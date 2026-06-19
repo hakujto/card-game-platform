@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Players\Player;
 use App\Models\Cards\Card;
 
@@ -36,6 +37,16 @@ class TradeListing extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class, 'card_id');
+    }
+
+    public function bids(): HasMany
+    {
+        return $this->hasMany(TradeBid::class, 'listing_id');
+    }
+
+    public function transaction(): HasOne
+    {
+        return $this->hasOne(TradeTransaction::class, 'listing_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────

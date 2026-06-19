@@ -38,7 +38,7 @@ class ArticleTagApiTest extends TestCase
     {
         $response = $this->postJson('/api/article_tags', [
             'name' => 'test',
-            'slug' => 'test',
+            'slug' => 'test2',
         ]);
         $response->assertStatus(201);
     }

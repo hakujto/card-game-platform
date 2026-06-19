@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Tournaments\Season;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class TournamentApiTest extends TestCase
 {
@@ -129,6 +130,8 @@ class TournamentApiTest extends TestCase
     public function test_transition_draft_to_registration(): void
     {
         \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Draft']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/draft-to-registration");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -136,6 +139,8 @@ class TournamentApiTest extends TestCase
     public function test_transition_registration_to_ongoing(): void
     {
         \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Registration']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/registration-to-ongoing");
         $response->assertStatus(200);
     }
@@ -143,6 +148,8 @@ class TournamentApiTest extends TestCase
     public function test_transition_registration_to_cancelled(): void
     {
         \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Registration']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/registration-to-cancelled");
         $response->assertStatus(200);
     }
@@ -150,6 +157,8 @@ class TournamentApiTest extends TestCase
     public function test_transition_ongoing_to_completed(): void
     {
         \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Ongoing']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/ongoing-to-completed");
         $response->assertStatus(200);
     }
@@ -157,6 +166,8 @@ class TournamentApiTest extends TestCase
     public function test_transition_ongoing_to_cancelled(): void
     {
         \DB::table('tournaments')->where('id', $this->entityId)->update(['status' => 'Ongoing']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/tournaments/{$this->entityId}/transitions/ongoing-to-cancelled");
         $response->assertStatus(200);
     }

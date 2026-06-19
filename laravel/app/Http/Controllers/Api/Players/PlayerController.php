@@ -26,7 +26,7 @@ class PlayerController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'display_name' => 'required|string|max:50',
+            'display_name' => 'required|string|max:50|unique:players,display_name',
             'rank' => 'required|string|in:Bronze,Silver,Gold,Platinum,Diamond,Master,Grandmaster|max:20',
             'rating' => 'required|integer',
             'peak_rating' => 'required|integer',

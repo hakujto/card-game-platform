@@ -47,6 +47,9 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResponse
     {
+        if ($order->player_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         return response()->json($order);
     }
 
@@ -59,6 +62,9 @@ class OrderController extends Controller
 
     public function pay(Request $request, Order $order): JsonResponse
     {
+        if (!($order->status === 'Pending')) {
+            return response()->json(['error' => 'Guard condition not met for pay'], 422);
+        }
         $payment_ref = $request->input('payment_ref');
         $result = $order->pay($payment_ref);
         $order->save();
@@ -115,6 +121,9 @@ class OrderController extends Controller
 
     public function transitionPaidToProcessing(Order $order): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Staff'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Paid -> Processing'], 403);
+        }
         try {
             $order->assertTransition('Processing');
         } catch (\InvalidArgumentException $e) {
@@ -127,6 +136,9 @@ class OrderController extends Controller
 
     public function transitionProcessingToShipped(Order $order): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Staff'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Processing -> Shipped'], 403);
+        }
         try {
             $order->assertTransition('Shipped');
         } catch (\InvalidArgumentException $e) {
@@ -147,6 +159,9 @@ class OrderController extends Controller
 
     public function transitionShippedToCompleted(Order $order): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Staff'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Shipped -> Completed'], 403);
+        }
         try {
             $order->assertTransition('Completed');
         } catch (\InvalidArgumentException $e) {
@@ -172,6 +187,9 @@ class OrderController extends Controller
 
     public function transitionPaidToCancelled(Order $order): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Staff'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Paid -> Cancelled'], 403);
+        }
         try {
             $order->assertTransition('Cancelled');
         } catch (\InvalidArgumentException $e) {
@@ -185,6 +203,9 @@ class OrderController extends Controller
 
     public function transitionCompletedToRefunded(Order $order): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Completed -> Refunded'], 403);
+        }
         try {
             $order->assertTransition('Refunded');
         } catch (\InvalidArgumentException $e) {

@@ -8,12 +8,14 @@ use Tests\TestCase;
 use App\Models\Players\Player;
 use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
+use App\Models\User;
 
 class PlayerCollectionApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private int $entityId;
+    private int $ownerId;
 
     private Player $depPlayer;
     private CardSet $auxCardSet;
@@ -22,6 +24,9 @@ class PlayerCollectionApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $owner = User::create(['name' => 'owner', 'email' => 'owner@example.com', 'password' => bcrypt('password')]);
+        $this->ownerId = $owner->id;
+        $this->actingAs($owner);
         $this->depPlayer = Player::create([
             'display_name' => 'test',
             'rank' => 'Bronze',
@@ -59,6 +64,7 @@ class PlayerCollectionApiTest extends TestCase
             'acquired_via' => 'Purchase',
             'player_id' => $this->depPlayer->id,
             'card_id' => $this->depCard->id,
+            'player_id' => $this->ownerId,
         ]);
         $this->entityId = $entity->id;
     }
@@ -79,6 +85,7 @@ class PlayerCollectionApiTest extends TestCase
             'acquired_via' => 'Purchase',
             'player_id' => $this->depPlayer->id,
             'card_id' => $this->depCard->id,
+            'player_id' => $this->ownerId,
         ]);
         $response->assertStatus(201);
     }

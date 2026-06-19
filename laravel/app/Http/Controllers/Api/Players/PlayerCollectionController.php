@@ -36,11 +36,17 @@ class PlayerCollectionController extends Controller
 
     public function show(PlayerCollection $playerCollection): JsonResponse
     {
+        if ($playerCollection->player_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         return response()->json($playerCollection);
     }
 
     public function update(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
+        if ($playerCollection->player_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         $validated = $request->validate([
             'quantity' => 'sometimes|nullable|integer',
             'foil' => 'sometimes|nullable|boolean',
@@ -58,6 +64,9 @@ class PlayerCollectionController extends Controller
 
     public function destroy(PlayerCollection $playerCollection): JsonResponse
     {
+        if ($playerCollection->player_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         $playerCollection->delete();
         return response()->json(null, 204);
     }

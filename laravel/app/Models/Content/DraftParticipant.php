@@ -28,6 +28,11 @@ class DraftParticipant extends Model
         return $this->belongsTo(Player::class, 'player_id');
     }
 
+    public function picks(): HasMany
+    {
+        return $this->hasMany(DraftPick::class, 'participant_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

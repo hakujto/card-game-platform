@@ -24,16 +24,10 @@ return new class extends Migration
             $table->string('location', 300)->nullable();
             $table->text('rules_text')->nullable();
             $table->unsignedBigInteger('season_id');
-            $table->foreign('season_id')->references('id')->on('seasons')->cascadeOnDelete();
+            $table->foreign('season_id')->references('id')->on('seasons')->restrictOnDelete();
             $table->unsignedBigInteger('organizer_id');
-            $table->foreign('organizer_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('organizer_id')->references('id')->on('players')->restrictOnDelete();
             $table->timestamps();
-        });
-
-        Schema::create('tournament_judges_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('tournament_id');
-            $table->unsignedBigInteger('player_id');
-            $table->primary(['tournament_id', 'player_id']);
         });
     }
 

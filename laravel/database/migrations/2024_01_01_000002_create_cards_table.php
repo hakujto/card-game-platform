@@ -27,7 +27,7 @@ return new class extends Migration
             $table->boolean('is_restricted')->default(false);
             $table->integer('power_level')->default(1);
             $table->unsignedBigInteger('set_id');
-            $table->foreign('set_id')->references('id')->on('card_sets')->cascadeOnDelete();
+            $table->foreign('set_id')->references('id')->on('card_sets')->restrictOnDelete();
             $table->timestamps();
         });
     }

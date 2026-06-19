@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('paid_at')->nullable();
             $table->dateTime('shipped_at')->nullable();
             $table->unsignedBigInteger('player_id');
-            $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('player_id')->references('id')->on('players')->restrictOnDelete();
             $table->unsignedBigInteger('coupon_id')->nullable();
             $table->foreign('coupon_id')->references('id')->on('coupons')->nullOnDelete();
             $table->timestamps();

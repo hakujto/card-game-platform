@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tournament_id')->nullable();
             $table->foreign('tournament_id')->references('id')->on('tournaments')->nullOnDelete();
             $table->unsignedBigInteger('streamer_id');
-            $table->foreign('streamer_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('streamer_id')->references('id')->on('players')->restrictOnDelete();
             $table->timestamps();
         });
     }

@@ -26,6 +26,11 @@ class DraftSession extends Model
         return $this->belongsTo(CardSet::class, 'card_set_id');
     }
 
+    public function participants(): HasMany
+    {
+        return $this->hasMany(DraftParticipant::class, 'session_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

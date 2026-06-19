@@ -6,18 +6,23 @@ use App\Models\Marketplace\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class OrderApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private int $entityId;
+    private int $ownerId;
 
     private Player $depPlayer;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $owner = User::create(['name' => 'owner', 'email' => 'owner@example.com', 'password' => bcrypt('password')]);
+        $this->ownerId = $owner->id;
+        $this->actingAs($owner);
         $this->depPlayer = Player::create([
             'display_name' => 'test',
             'rank' => 'Bronze',
@@ -36,6 +41,7 @@ class OrderApiTest extends TestCase
             'paid_at' => '2024-01-01 00:00:00',
             'shipped_at' => null,
             'player_id' => $this->depPlayer->id,
+            'player_id' => $this->ownerId,
         ]);
         $this->entityId = $entity->id;
     }
@@ -58,6 +64,7 @@ class OrderApiTest extends TestCase
             'paid_at' => '2024-01-01 00:00:00',
             'shipped_at' => null,
             'player_id' => $this->depPlayer->id,
+            'player_id' => $this->ownerId,
         ]);
         $response->assertStatus(201);
     }
@@ -112,6 +119,8 @@ class OrderApiTest extends TestCase
     public function test_transition_paid_to_processing(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Paid']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/paid-to-processing");
         $response->assertStatus(200);
     }
@@ -119,6 +128,8 @@ class OrderApiTest extends TestCase
     public function test_transition_processing_to_shipped(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Processing']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/processing-to-shipped");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -126,6 +137,8 @@ class OrderApiTest extends TestCase
     public function test_transition_processing_to_shipped_fails_when_tracking_number_null(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Processing', 'tracking_number' => null]);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/processing-to-shipped");
         $response->assertStatus(422);
     }
@@ -133,6 +146,8 @@ class OrderApiTest extends TestCase
     public function test_transition_shipped_to_completed(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Shipped']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/shipped-to-completed");
         $response->assertStatus(200);
     }
@@ -147,6 +162,8 @@ class OrderApiTest extends TestCase
     public function test_transition_paid_to_cancelled(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Paid']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/paid-to-cancelled");
         $response->assertStatus(200);
     }
@@ -154,6 +171,8 @@ class OrderApiTest extends TestCase
     public function test_transition_completed_to_refunded(): void
     {
         \DB::table('orders')->where('id', $this->entityId)->update(['status' => 'Completed']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/orders/{$this->entityId}/transitions/completed-to-refunded");
         $response->assertStatus(200);
     }

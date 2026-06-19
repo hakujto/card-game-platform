@@ -33,6 +33,11 @@ class ArticleComment extends Model
         return $this->belongsTo(ArticleComment::class, 'parent_comment_id');
     }
 
+    public function replies(): HasMany
+    {
+        return $this->hasMany(ArticleComment::class, 'parent_comment_id');
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function hide(): void

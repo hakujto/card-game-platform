@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('listing_id');
             $table->foreign('listing_id')->references('id')->on('trade_listings')->cascadeOnDelete();
             $table->unsignedBigInteger('bidder_id');
-            $table->foreign('bidder_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('bidder_id')->references('id')->on('players')->restrictOnDelete();
             $table->timestamps();
         });
     }

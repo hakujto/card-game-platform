@@ -98,6 +98,9 @@ class DraftSessionController extends Controller
 
     public function transitionDraftingToAbandoned(DraftSession $draftSession): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Drafting -> Abandoned'], 403);
+        }
         try {
             $draftSession->assertTransition('Abandoned');
         } catch (\InvalidArgumentException $e) {
@@ -111,6 +114,9 @@ class DraftSessionController extends Controller
 
     public function transitionWaitingForPlayersToAbandoned(DraftSession $draftSession): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition WaitingForPlayers -> Abandoned'], 403);
+        }
         try {
             $draftSession->assertTransition('Abandoned');
         } catch (\InvalidArgumentException $e) {

@@ -9,12 +9,14 @@ use App\Models\Tournaments\Season;
 use App\Models\Players\Player;
 use App\Models\Tournaments\Tournament;
 use App\Models\Cards\Deck;
+use App\Models\User;
 
 class TournamentRegistrationApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private int $entityId;
+    private int $ownerId;
 
     private Season $auxSeason;
     private Player $auxPlayer;
@@ -25,6 +27,9 @@ class TournamentRegistrationApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $owner = User::create(['name' => 'owner', 'email' => 'owner@example.com', 'password' => bcrypt('password')]);
+        $this->ownerId = $owner->id;
+        $this->actingAs($owner);
         $this->auxSeason = Season::create([
             'name' => 'test',
             'start_date' => '2024-01-01',
@@ -55,7 +60,7 @@ class TournamentRegistrationApiTest extends TestCase
             'organizer_id' => $this->auxPlayer->id,
         ]);
         $this->depPlayer = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
@@ -83,6 +88,7 @@ class TournamentRegistrationApiTest extends TestCase
             'tournament_id' => $this->depTournament->id,
             'player_id' => $this->depPlayer->id,
             'deck_id' => $this->depDeck->id,
+            'player_id' => $this->ownerId,
         ]);
         $this->entityId = $entity->id;
     }
@@ -104,6 +110,7 @@ class TournamentRegistrationApiTest extends TestCase
             'tournament_id' => $this->depTournament->id,
             'player_id' => $this->depPlayer->id,
             'deck_id' => $this->depDeck->id,
+            'player_id' => $this->ownerId,
         ]);
         $response->assertStatus(201);
     }

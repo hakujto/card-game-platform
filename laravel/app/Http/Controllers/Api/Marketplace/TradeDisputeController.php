@@ -75,6 +75,9 @@ class TradeDisputeController extends Controller
     }
     public function transitionOpenToUnderReview(TradeDispute $tradeDispute): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Moderator'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Open -> UnderReview'], 403);
+        }
         try {
             $tradeDispute->assertTransition('UnderReview');
         } catch (\InvalidArgumentException $e) {
@@ -88,6 +91,9 @@ class TradeDisputeController extends Controller
 
     public function transitionUnderReviewToResolved(TradeDispute $tradeDispute): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Moderator'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition UnderReview -> Resolved'], 403);
+        }
         try {
             $tradeDispute->assertTransition('Resolved');
         } catch (\InvalidArgumentException $e) {
@@ -108,6 +114,9 @@ class TradeDisputeController extends Controller
 
     public function transitionUnderReviewToEscalated(TradeDispute $tradeDispute): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition UnderReview -> Escalated'], 403);
+        }
         try {
             $tradeDispute->assertTransition('Escalated');
         } catch (\InvalidArgumentException $e) {
@@ -121,6 +130,9 @@ class TradeDisputeController extends Controller
 
     public function transitionEscalatedToResolved(TradeDispute $tradeDispute): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Escalated -> Resolved'], 403);
+        }
         try {
             $tradeDispute->assertTransition('Resolved');
         } catch (\InvalidArgumentException $e) {

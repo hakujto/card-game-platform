@@ -144,6 +144,9 @@ class TournamentController extends Controller
     }
     public function transitionDraftToRegistration(Tournament $tournament): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Draft -> Registration'], 403);
+        }
         try {
             $tournament->assertTransition('Registration');
         } catch (\InvalidArgumentException $e) {
@@ -166,6 +169,9 @@ class TournamentController extends Controller
 
     public function transitionRegistrationToOngoing(Tournament $tournament): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Registration -> Ongoing'], 403);
+        }
         try {
             $tournament->assertTransition('Ongoing');
         } catch (\InvalidArgumentException $e) {
@@ -179,6 +185,9 @@ class TournamentController extends Controller
 
     public function transitionRegistrationToCancelled(Tournament $tournament): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Registration -> Cancelled'], 403);
+        }
         try {
             $tournament->assertTransition('Cancelled');
         } catch (\InvalidArgumentException $e) {
@@ -192,6 +201,9 @@ class TournamentController extends Controller
 
     public function transitionOngoingToCompleted(Tournament $tournament): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin', 'Organizer'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Ongoing -> Completed'], 403);
+        }
         try {
             $tournament->assertTransition('Completed');
         } catch (\InvalidArgumentException $e) {
@@ -206,6 +218,9 @@ class TournamentController extends Controller
 
     public function transitionOngoingToCancelled(Tournament $tournament): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Ongoing -> Cancelled'], 403);
+        }
         try {
             $tournament->assertTransition('Cancelled');
         } catch (\InvalidArgumentException $e) {

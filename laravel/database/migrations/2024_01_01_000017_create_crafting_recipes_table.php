@@ -13,14 +13,8 @@ return new class extends Migration
             $table->integer('dust_cost');
             $table->boolean('is_available')->default(true);
             $table->unsignedBigInteger('result_card_id');
-            $table->foreign('result_card_id')->references('id')->on('cards')->cascadeOnDelete();
+            $table->foreign('result_card_id')->references('id')->on('cards')->restrictOnDelete();
             $table->timestamps();
-        });
-
-        Schema::create('crafting_recipe_required_cards_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('crafting_recipe_id');
-            $table->unsignedBigInteger('card_id');
-            $table->primary(['crafting_recipe_id', 'card_id']);
         });
     }
 

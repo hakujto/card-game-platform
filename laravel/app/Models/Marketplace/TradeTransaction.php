@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Players\Player;
 
 class TradeTransaction extends Model
@@ -35,6 +36,11 @@ class TradeTransaction extends Model
     public function seller(): BelongsTo
     {
         return $this->belongsTo(Player::class, 'seller_id');
+    }
+
+    public function dispute(): HasOne
+    {
+        return $this->hasOne(TradeDispute::class, 'transaction_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────

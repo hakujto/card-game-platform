@@ -43,6 +43,9 @@ class TournamentRegistrationController extends Controller
 
     public function show(TournamentRegistration $tournamentRegistration): JsonResponse
     {
+        if ($tournamentRegistration->player_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         return response()->json($tournamentRegistration);
     }
 

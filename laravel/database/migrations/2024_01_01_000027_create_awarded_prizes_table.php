@@ -15,9 +15,9 @@ return new class extends Migration
             $table->boolean('claimed')->default(false);
             $table->dateTime('claimed_at')->nullable();
             $table->unsignedBigInteger('prize_id');
-            $table->foreign('prize_id')->references('id')->on('tournament_prizes')->cascadeOnDelete();
+            $table->foreign('prize_id')->references('id')->on('tournament_prizes')->restrictOnDelete();
             $table->unsignedBigInteger('player_id');
-            $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('player_id')->references('id')->on('players')->restrictOnDelete();
             $table->timestamps();
         });
     }

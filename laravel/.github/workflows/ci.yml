@@ -15,6 +15,7 @@ jobs:
           key: composer-${{ hashFiles('composer.lock') }}
       - run: composer install --no-interaction
       - run: cp .env.example .env
+      - run: sed -i.bak 's/^APP_DEBUG=true/APP_DEBUG=false/' .env && rm -f .env.bak
       - run: php artisan key:generate
       - run: mkdir -p database && touch database/database.sqlite
       - run: echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env

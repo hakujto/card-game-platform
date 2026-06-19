@@ -6,6 +6,7 @@ use App\Models\Content\Stream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class StreamApiTest extends TestCase
 {
@@ -109,6 +110,8 @@ class StreamApiTest extends TestCase
     public function test_transition_scheduled_to_live(): void
     {
         \DB::table('streams')->where('id', $this->entityId)->update(['status' => 'Scheduled']);
+        $user = User::create(['name' => 'Streamer', 'email' => 'Streamer@example.com', 'password' => bcrypt('password'), 'role' => 'Streamer']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/streams/{$this->entityId}/transitions/scheduled-to-live");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -116,6 +119,8 @@ class StreamApiTest extends TestCase
     public function test_transition_live_to_ended(): void
     {
         \DB::table('streams')->where('id', $this->entityId)->update(['status' => 'Live']);
+        $user = User::create(['name' => 'Streamer', 'email' => 'Streamer@example.com', 'password' => bcrypt('password'), 'role' => 'Streamer']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/streams/{$this->entityId}/transitions/live-to-ended");
         $response->assertStatus(200);
     }

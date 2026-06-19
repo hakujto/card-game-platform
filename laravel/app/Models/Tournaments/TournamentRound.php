@@ -25,6 +25,11 @@ class TournamentRound extends Model
         return $this->belongsTo(Tournament::class, 'tournament_id');
     }
 
+    public function matches(): HasMany
+    {
+        return $this->hasMany(MatchRecord::class, 'round_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

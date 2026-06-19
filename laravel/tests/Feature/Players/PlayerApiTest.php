@@ -41,7 +41,7 @@ class PlayerApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/players', [
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1000,

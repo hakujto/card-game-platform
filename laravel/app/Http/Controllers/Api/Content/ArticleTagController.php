@@ -26,7 +26,7 @@ class ArticleTagController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'slug' => 'required|string|max:100',
+            'slug' => 'required|string|max:100|unique:article_tags,slug',
         ]);
         $item = ArticleTag::create($validated);
         return response()->json($item, 201);

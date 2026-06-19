@@ -6,6 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Players\PlayerCollection;
+use App\Models\Players\CraftingRecipe;
+use App\Models\Players\CraftingIngredient;
+use App\Models\Marketplace\Product;
+use App\Models\Marketplace\TradeListing;
+use App\Models\Marketplace\CardPriceHistory;
+use App\Models\Content\DraftPick;
 
 class Card extends Model
 {
@@ -26,6 +34,61 @@ class Card extends Model
     public function set(): BelongsTo
     {
         return $this->belongsTo(CardSet::class, 'set_id');
+    }
+
+    public function rulings(): HasMany
+    {
+        return $this->hasMany(CardRuling::class, 'card_id');
+    }
+
+    public function abilities(): HasMany
+    {
+        return $this->hasMany(CardAbility::class, 'card_id');
+    }
+
+    public function deckCards(): HasMany
+    {
+        return $this->hasMany(DeckCard::class, 'card_id');
+    }
+
+    public function sideboardDecks(): HasMany
+    {
+        return $this->hasMany(DeckSideboardCard::class, 'card_id');
+    }
+
+    public function playerCollections(): HasMany
+    {
+        return $this->hasMany(PlayerCollection::class, 'card_id');
+    }
+
+    public function craftingRecipes(): HasMany
+    {
+        return $this->hasMany(CraftingRecipe::class, 'result_card_id');
+    }
+
+    public function usedInRecipes(): HasMany
+    {
+        return $this->hasMany(CraftingIngredient::class, 'card_id');
+    }
+
+    public function shopProduct(): HasOne
+    {
+        return $this->hasOne(Product::class, 'card_id');
+    }
+
+    public function tradeListings(): HasMany
+    {
+        return $this->hasMany(TradeListing::class, 'card_id');
+    }
+
+    public function priceHistory(): HasMany
+    {
+        return $this->hasMany(CardPriceHistory::class, 'card_id');
+    }
+
+    public function draftPicks(): HasMany
+    {
+        return $this->hasMany(DraftPick::class, 'card_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -116,11 +179,19 @@ class Card extends Model
         static::saving(function (self $model) {
             $model->validateLegality();
         });
+        static::deleting(function (self $model) {
+            $model->validateNotInUse();
+        });
     }
 
     protected function validateLegality(): void
     {
         // TODO: implement validate_legality
+    }
+
+    protected function validateNotInUse(): void
+    {
+        // TODO: implement validate_not_in_use
     }
 
 }

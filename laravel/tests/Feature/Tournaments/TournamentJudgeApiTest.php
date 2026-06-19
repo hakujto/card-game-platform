@@ -53,7 +53,7 @@ class TournamentJudgeApiTest extends TestCase
             'organizer_id' => $this->auxPlayer->id,
         ]);
         $this->depPlayer = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,

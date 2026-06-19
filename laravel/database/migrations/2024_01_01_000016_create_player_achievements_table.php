@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('player_id');
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->unsignedBigInteger('achievement_id');
-            $table->foreign('achievement_id')->references('id')->on('achievements')->cascadeOnDelete();
+            $table->foreign('achievement_id')->references('id')->on('achievements')->restrictOnDelete();
             $table->timestamps();
         });
     }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Players\PlayerSeasonStats;
 
 class Season extends Model
 {
@@ -20,6 +21,16 @@ class Season extends Model
     ];
 
     const FORMAT_VALUES = ['Standard', 'Extended', 'Legacy', 'Vintage', 'Commander', 'Draft'];
+
+    public function playerStats(): HasMany
+    {
+        return $this->hasMany(PlayerSeasonStats::class, 'season_id');
+    }
+
+    public function tournaments(): HasMany
+    {
+        return $this->hasMany(Tournament::class, 'season_id');
+    }
 
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void

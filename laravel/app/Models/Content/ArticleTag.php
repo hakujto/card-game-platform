@@ -13,6 +13,11 @@ class ArticleTag extends Model
 
     protected $fillable = ['name', 'slug'];
 
+    public function articleAssignments(): HasMany
+    {
+        return $this->hasMany(ArticleTagAssignment::class, 'tag_id');
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function rename($new_name): void

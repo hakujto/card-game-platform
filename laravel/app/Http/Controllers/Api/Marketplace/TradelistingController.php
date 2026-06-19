@@ -104,6 +104,9 @@ class TradeListingController extends Controller
 
     public function cancel(Request $request, TradeListing $tradeListing): JsonResponse
     {
+        if (!($tradeListing->status === 'Active')) {
+            return response()->json(['error' => 'Guard condition not met for cancel'], 422);
+        }
         $tradeListing->cancel();
         $tradeListing->save();
         return response()->json(null, 204);
@@ -124,6 +127,9 @@ class TradeListingController extends Controller
     }
     public function transitionPendingToActive(TradeListing $tradeListing): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Seller'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Pending -> Active'], 403);
+        }
         try {
             $tradeListing->assertTransition('Active');
         } catch (\InvalidArgumentException $e) {
@@ -169,6 +175,9 @@ class TradeListingController extends Controller
 
     public function transitionActiveToCancelled(TradeListing $tradeListing): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Seller', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Active -> Cancelled'], 403);
+        }
         try {
             $tradeListing->assertTransition('Cancelled');
         } catch (\InvalidArgumentException $e) {

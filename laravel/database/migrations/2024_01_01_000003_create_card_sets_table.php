@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('card_sets', function (Blueprint $table) {
             $table->id();
             $table->string('name', 200);
-            $table->string('code', 10);
+            $table->string('code', 10)->unique();
             $table->date('release_date');
             $table->date('rotation_date')->nullable();
             $table->string('set_type', 20)->default('Expansion');

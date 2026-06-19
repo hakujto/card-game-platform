@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('status', 20)->default('Pending');
             $table->dateTime('completed_at')->nullable();
             $table->unsignedBigInteger('listing_id');
-            $table->foreign('listing_id')->references('id')->on('trade_listings')->cascadeOnDelete();
+            $table->foreign('listing_id')->references('id')->on('trade_listings')->restrictOnDelete();
             $table->unsignedBigInteger('buyer_id');
-            $table->foreign('buyer_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('buyer_id')->references('id')->on('players')->restrictOnDelete();
             $table->unsignedBigInteger('seller_id');
-            $table->foreign('seller_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('seller_id')->references('id')->on('players')->restrictOnDelete();
             $table->timestamps();
         });
     }

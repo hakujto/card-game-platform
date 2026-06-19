@@ -72,6 +72,9 @@ class MatchRecordController extends Controller
 
     public function concede(Request $request, MatchRecord $matchRecord): JsonResponse
     {
+        if (!($matchRecord->status === 'Active')) {
+            return response()->json(['error' => 'Guard condition not met for concede'], 422);
+        }
         $player_id = $request->input('player_id');
         $matchRecord->concede($player_id);
         $matchRecord->save();
@@ -86,6 +89,9 @@ class MatchRecordController extends Controller
     }
     public function transitionPendingToActive(MatchRecord $matchRecord): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Judge', 'HeadJudge', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Pending -> Active'], 403);
+        }
         try {
             $matchRecord->assertTransition('Active');
         } catch (\InvalidArgumentException $e) {
@@ -98,6 +104,9 @@ class MatchRecordController extends Controller
 
     public function transitionActiveToCompleted(MatchRecord $matchRecord): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Judge', 'HeadJudge', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Active -> Completed'], 403);
+        }
         try {
             $matchRecord->assertTransition('Completed');
         } catch (\InvalidArgumentException $e) {
@@ -111,6 +120,9 @@ class MatchRecordController extends Controller
 
     public function transitionActiveToDraw(MatchRecord $matchRecord): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Judge', 'HeadJudge', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Active -> Draw'], 403);
+        }
         try {
             $matchRecord->assertTransition('Draw');
         } catch (\InvalidArgumentException $e) {
@@ -124,6 +136,9 @@ class MatchRecordController extends Controller
 
     public function transitionPendingToBYE(MatchRecord $matchRecord): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Judge', 'HeadJudge', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Pending -> BYE'], 403);
+        }
         try {
             $matchRecord->assertTransition('BYE');
         } catch (\InvalidArgumentException $e) {

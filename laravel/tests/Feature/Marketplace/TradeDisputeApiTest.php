@@ -10,6 +10,7 @@ use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
 use App\Models\Marketplace\TradeListing;
 use App\Models\Marketplace\TradeTransaction;
+use App\Models\User;
 
 class TradeDisputeApiTest extends TestCase
 {
@@ -75,7 +76,7 @@ class TradeDisputeApiTest extends TestCase
             'seller_id' => $this->auxPlayer->id,
         ]);
         $this->depOpenedBy = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
@@ -131,6 +132,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_open_to_underreview(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Open']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/open-to-underreview");
         $response->assertStatus(200);
     }
@@ -138,6 +141,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_underreview_to_resolved(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-resolved");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -145,6 +150,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_underreview_to_resolved_fails_when_resolution_null(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview', 'resolution' => null]);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-resolved");
         $response->assertStatus(422);
     }
@@ -152,6 +159,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_underreview_to_escalated(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'UnderReview']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/underreview-to-escalated");
         $response->assertStatus(200);
     }
@@ -159,6 +168,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_escalated_to_resolved(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Escalated']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/escalated-to-resolved");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -166,6 +177,8 @@ class TradeDisputeApiTest extends TestCase
     public function test_transition_escalated_to_resolved_fails_when_resolution_null(): void
     {
         \DB::table('trade_disputes')->where('id', $this->entityId)->update(['status' => 'Escalated', 'resolution' => null]);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_disputes/{$this->entityId}/transitions/escalated-to-resolved");
         $response->assertStatus(422);
     }

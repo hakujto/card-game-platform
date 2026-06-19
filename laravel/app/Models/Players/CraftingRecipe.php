@@ -25,7 +25,12 @@ class CraftingRecipe extends Model
 
     public function requiredCardses(): BelongsToMany
     {
-        return $this->belongsToMany(Card::class, 'crafting_recipe_required_cards_pivot', 'crafting_recipe_id', 'card_id');
+        return $this->belongsToMany(Card::class, 'crafting_ingredients', 'crafting_recipe_id', 'card_id')->using(CraftingIngredient::class);
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(CraftingIngredient::class, 'recipe_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────

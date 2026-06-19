@@ -66,7 +66,7 @@ class TradeTransactionApiTest extends TestCase
             'card_id' => $this->auxCard->id,
         ]);
         $this->depBuyer = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
@@ -74,7 +74,7 @@ class TradeTransactionApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $this->depSeller = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test3',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,

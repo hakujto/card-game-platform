@@ -30,11 +30,17 @@ class FriendshipController extends Controller
 
     public function show(Friendship $friendship): JsonResponse
     {
+        if ($friendship->requester_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         return response()->json($friendship);
     }
 
     public function destroy(Friendship $friendship): JsonResponse
     {
+        if ($friendship->requester_id !== auth()->id()) {
+            abort(403, 'You do not own this resource.');
+        }
         $friendship->delete();
         return response()->json(null, 204);
     }

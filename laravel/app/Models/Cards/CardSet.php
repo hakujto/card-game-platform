@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Marketplace\Product;
+use App\Models\Content\DraftSession;
 
 class CardSet extends Model
 {
@@ -20,6 +22,21 @@ class CardSet extends Model
     ];
 
     const SET_TYPE_VALUES = ['Core', 'Expansion', 'Supplemental', 'Masters', 'Draft'];
+
+    public function cards(): HasMany
+    {
+        return $this->hasMany(Card::class, 'set_id');
+    }
+
+    public function shopProducts(): HasMany
+    {
+        return $this->hasMany(Product::class, 'card_set_id');
+    }
+
+    public function draftSessions(): HasMany
+    {
+        return $this->hasMany(DraftSession::class, 'card_set_id');
+    }
 
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void

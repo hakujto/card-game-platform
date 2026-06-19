@@ -18,9 +18,9 @@ return new class extends Migration
             $table->dateTime('ended_at')->nullable();
             $table->text('result_notes')->nullable();
             $table->unsignedBigInteger('round_id')->nullable();
-            $table->foreign('round_id')->references('id')->on('tournament_rounds')->nullOnDelete();
+            $table->foreign('round_id')->references('id')->on('tournament_rounds')->cascadeOnDelete();
             $table->unsignedBigInteger('player1_id');
-            $table->foreign('player1_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('player1_id')->references('id')->on('players')->restrictOnDelete();
             $table->unsignedBigInteger('player2_id')->nullable();
             $table->foreign('player2_id')->references('id')->on('players')->nullOnDelete();
             $table->timestamps();

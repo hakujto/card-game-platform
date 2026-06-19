@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('highest_rank', 20)->nullable();
             $table->integer('season_points')->default(0);
             $table->unsignedBigInteger('player_id')->nullable();
-            $table->foreign('player_id')->references('id')->on('players')->nullOnDelete();
+            $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->unsignedBigInteger('season_id');
             $table->foreign('season_id')->references('id')->on('seasons')->cascadeOnDelete();
             $table->timestamps();

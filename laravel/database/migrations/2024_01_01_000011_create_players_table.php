@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->string('display_name', 50);
+            $table->string('display_name', 50)->unique();
             $table->string('rank', 20)->default('Bronze');
             $table->integer('rating')->default(1000);
             $table->integer('peak_rating')->default(1000);
@@ -22,17 +22,6 @@ return new class extends Migration
             $table->dateTime('last_active_at')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
-        });
-
-        Schema::create('player_achievements_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('player_id');
-            $table->unsignedBigInteger('achievement_id');
-            $table->primary(['player_id', 'achievement_id']);
-        });
-        Schema::create('player_friends_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('left_id');
-            $table->unsignedBigInteger('right_id');
-            $table->primary(['left_id', 'right_id']);
         });
     }
 

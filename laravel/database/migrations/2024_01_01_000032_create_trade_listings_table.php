@@ -22,9 +22,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('expires_at')->nullable();
             $table->unsignedBigInteger('seller_id');
-            $table->foreign('seller_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('seller_id')->references('id')->on('players')->restrictOnDelete();
             $table->unsignedBigInteger('card_id');
-            $table->foreign('card_id')->references('id')->on('cards')->cascadeOnDelete();
+            $table->foreign('card_id')->references('id')->on('cards')->restrictOnDelete();
             $table->timestamps();
         });
     }

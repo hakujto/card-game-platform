@@ -34,6 +34,11 @@ class Order extends Model
         return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {
@@ -128,9 +133,17 @@ class Order extends Model
     protected static function boot(): void
     {
         parent::boot();
+        static::creating(function (self $model) {
+            $model->assignCurrencyDefault();
+        });
         static::updated(function (self $model) {
             $model->notifyStatusChange();
         });
+    }
+
+    protected function assignCurrencyDefault(): void
+    {
+        // TODO: implement assign_currency_default
     }
 
     protected function notifyStatusChange(): void

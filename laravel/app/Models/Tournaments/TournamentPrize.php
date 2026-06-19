@@ -24,6 +24,11 @@ class TournamentPrize extends Model
         return $this->belongsTo(Tournament::class, 'tournament_id');
     }
 
+    public function awardedPrizes(): HasMany
+    {
+        return $this->hasMany(AwardedPrize::class, 'prize_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

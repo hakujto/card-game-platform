@@ -23,6 +23,11 @@ class Coupon extends Model
 
     const DISCOUNT_TYPE_VALUES = ['Percent', 'Fixed'];
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'coupon_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

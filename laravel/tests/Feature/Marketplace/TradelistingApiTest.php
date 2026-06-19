@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\Players\Player;
 use App\Models\Cards\CardSet;
 use App\Models\Cards\Card;
+use App\Models\User;
 
 class TradeListingApiTest extends TestCase
 {
@@ -134,6 +135,8 @@ class TradeListingApiTest extends TestCase
     public function test_transition_pending_to_active(): void
     {
         \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $user = User::create(['name' => 'Seller', 'email' => 'Seller@example.com', 'password' => bcrypt('password'), 'role' => 'Seller']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/pending-to-active");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -155,6 +158,8 @@ class TradeListingApiTest extends TestCase
     public function test_transition_active_to_cancelled(): void
     {
         \DB::table('trade_listings')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $user = User::create(['name' => 'Seller', 'email' => 'Seller@example.com', 'password' => bcrypt('password'), 'role' => 'Seller']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/trade_listings/{$this->entityId}/transitions/active-to-cancelled");
         $response->assertStatus(200);
     }

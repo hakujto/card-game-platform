@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('transaction_id');
             $table->foreign('transaction_id')->references('id')->on('trade_transactions')->cascadeOnDelete();
             $table->unsignedBigInteger('opened_by_id');
-            $table->foreign('opened_by_id')->references('id')->on('players')->cascadeOnDelete();
+            $table->foreign('opened_by_id')->references('id')->on('players')->restrictOnDelete();
             $table->unsignedBigInteger('resolved_by_id')->nullable();
             $table->foreign('resolved_by_id')->references('id')->on('players')->nullOnDelete();
             $table->timestamps();

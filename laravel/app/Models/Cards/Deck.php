@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Players\Player;
+use App\Models\Tournaments\TournamentRegistration;
+use App\Models\Content\Article;
 
 class Deck extends Model
 {
@@ -29,17 +31,42 @@ class Deck extends Model
 
     public function cardses(): BelongsToMany
     {
-        return $this->belongsToMany(Card::class, 'deck_cards_pivot', 'deck_id', 'card_id');
+        return $this->belongsToMany(Card::class, 'deck_cards', 'deck_id', 'card_id')->using(DeckCard::class);
     }
 
     public function sideboardCardses(): BelongsToMany
     {
-        return $this->belongsToMany(Card::class, 'deck_sideboard_cards_pivot', 'deck_id', 'card_id');
+        return $this->belongsToMany(Card::class, 'deck_sideboard_cards', 'deck_id', 'card_id')->using(DeckSideboardCard::class);
     }
 
     public function tagses(): BelongsToMany
     {
-        return $this->belongsToMany(DeckTag::class, 'deck_tags_pivot', 'deck_id', 'deck_tag_id');
+        return $this->belongsToMany(DeckTag::class, 'deck_tag_assignments', 'deck_id', 'deck_tag_id')->using(DeckTagAssignment::class);
+    }
+
+    public function deckCards(): HasMany
+    {
+        return $this->hasMany(DeckCard::class, 'deck_id');
+    }
+
+    public function sideboardCards(): HasMany
+    {
+        return $this->hasMany(DeckSideboardCard::class, 'deck_id');
+    }
+
+    public function tagAssignments(): HasMany
+    {
+        return $this->hasMany(DeckTagAssignment::class, 'deck_id');
+    }
+
+    public function tournamentRegistrations(): HasMany
+    {
+        return $this->hasMany(TournamentRegistration::class, 'deck_id');
+    }
+
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'featured_deck_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────

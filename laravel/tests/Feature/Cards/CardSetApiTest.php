@@ -43,7 +43,7 @@ class CardSetApiTest extends TestCase
     {
         $response = $this->postJson('/api/card_sets', [
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'test2',
             'release_date' => '2024-01-01',
             'rotation_date' => null,
             'set_type' => 'Core',

@@ -23,22 +23,6 @@ return new class extends Migration
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->timestamps();
         });
-
-        Schema::create('deck_cards_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('deck_id');
-            $table->unsignedBigInteger('card_id');
-            $table->primary(['deck_id', 'card_id']);
-        });
-        Schema::create('deck_sideboard_cards_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('deck_id');
-            $table->unsignedBigInteger('card_id');
-            $table->primary(['deck_id', 'card_id']);
-        });
-        Schema::create('deck_tags_pivot', function (Blueprint $table) {
-            $table->unsignedBigInteger('deck_id');
-            $table->unsignedBigInteger('deck_tag_id');
-            $table->primary(['deck_id', 'deck_tag_id']);
-        });
     }
 
     public function down(): void

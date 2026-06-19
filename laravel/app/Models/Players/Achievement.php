@@ -19,6 +19,11 @@ class Achievement extends Model
 
     const RARITY_VALUES = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
+    public function playerRecords(): HasMany
+    {
+        return $this->hasMany(PlayerAchievement::class, 'achievement_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

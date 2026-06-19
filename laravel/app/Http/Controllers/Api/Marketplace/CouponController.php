@@ -25,7 +25,7 @@ class CouponController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:50',
+            'code' => 'required|string|max:50|unique:coupons,code',
             'discount_type' => 'required|string|in:Percent,Fixed|max:20',
             'discount_value' => 'required',
             'min_order_value' => 'required',
@@ -91,6 +91,9 @@ class CouponController extends Controller
 
     public function redeem(Request $request, Coupon $coupon): JsonResponse
     {
+        if (!($coupon->is_active === true)) {
+            return response()->json(['error' => 'Guard condition not met for redeem'], 422);
+        }
         $coupon->redeem();
         $coupon->save();
         return response()->json(null, 204);

@@ -6,6 +6,7 @@ use App\Models\Content\Article;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class ArticleApiTest extends TestCase
 {
@@ -60,7 +61,7 @@ class ArticleApiTest extends TestCase
     {
         $response = $this->postJson('/api/articles', [
             'title' => 'test',
-            'slug' => 'test',
+            'slug' => 'test2',
             'body' => 'test',
             'status' => 'Draft',
             'article_type' => 'Guide',
@@ -113,6 +114,8 @@ class ArticleApiTest extends TestCase
     public function test_transition_draft_to_published(): void
     {
         \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Draft']);
+        $user = User::create(['name' => 'Editor', 'email' => 'Editor@example.com', 'password' => bcrypt('password'), 'role' => 'Editor']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/draft-to-published");
         $this->assertContains($response->status(), [200, 422]);
     }
@@ -120,6 +123,8 @@ class ArticleApiTest extends TestCase
     public function test_transition_published_to_archived(): void
     {
         \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Published']);
+        $user = User::create(['name' => 'Editor', 'email' => 'Editor@example.com', 'password' => bcrypt('password'), 'role' => 'Editor']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/published-to-archived");
         $response->assertStatus(200);
     }
@@ -127,6 +132,8 @@ class ArticleApiTest extends TestCase
     public function test_transition_archived_to_draft(): void
     {
         \DB::table('articles')->where('id', $this->entityId)->update(['status' => 'Archived']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/articles/{$this->entityId}/transitions/archived-to-draft");
         $response->assertStatus(200);
     }

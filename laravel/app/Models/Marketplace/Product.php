@@ -33,6 +33,11 @@ class Product extends Model
         return $this->belongsTo(CardSet::class, 'card_set_id');
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'product_id');
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     public function validateRules(): void
     {

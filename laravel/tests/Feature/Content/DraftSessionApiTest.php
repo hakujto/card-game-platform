@@ -6,6 +6,7 @@ use App\Models\Content\DraftSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Cards\CardSet;
+use App\Models\User;
 
 class DraftSessionApiTest extends TestCase
 {
@@ -101,6 +102,8 @@ class DraftSessionApiTest extends TestCase
     public function test_transition_drafting_to_abandoned(): void
     {
         \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'Drafting']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/drafting-to-abandoned");
         $response->assertStatus(200);
     }
@@ -108,6 +111,8 @@ class DraftSessionApiTest extends TestCase
     public function test_transition_waitingforplayers_to_abandoned(): void
     {
         \DB::table('draft_sessions')->where('id', $this->entityId)->update(['status' => 'WaitingForPlayers']);
+        $user = User::create(['name' => 'Admin', 'email' => 'Admin@example.com', 'password' => bcrypt('password'), 'role' => 'Admin']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/draft_sessions/{$this->entityId}/transitions/waitingforplayers-to-abandoned");
         $response->assertStatus(200);
     }

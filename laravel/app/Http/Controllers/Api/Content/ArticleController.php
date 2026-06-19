@@ -29,7 +29,7 @@ class ArticleController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:300',
-            'slug' => 'required|string|max:300',
+            'slug' => 'required|string|max:300|unique:articles,slug',
             'body' => 'required|string|max:200',
             'excerpt' => 'nullable|string|max:200',
             'cover_image_url' => 'nullable|string|url|max:200',
@@ -135,6 +135,9 @@ class ArticleController extends Controller
     }
     public function transitionDraftToPublished(Article $article): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Editor', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Draft -> Published'], 403);
+        }
         try {
             $article->assertTransition('Published');
         } catch (\InvalidArgumentException $e) {
@@ -158,6 +161,9 @@ class ArticleController extends Controller
 
     public function transitionPublishedToArchived(Article $article): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Editor', 'Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Published -> Archived'], 403);
+        }
         try {
             $article->assertTransition('Archived');
         } catch (\InvalidArgumentException $e) {
@@ -171,6 +177,9 @@ class ArticleController extends Controller
 
     public function transitionArchivedToDraft(Article $article): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['Admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for transition Archived -> Draft'], 403);
+        }
         try {
             $article->assertTransition('Draft');
         } catch (\InvalidArgumentException $e) {

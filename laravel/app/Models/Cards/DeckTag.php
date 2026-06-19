@@ -13,6 +13,11 @@ class DeckTag extends Model
 
     protected $fillable = ['name', 'color'];
 
+    public function deckAssignments(): HasMany
+    {
+        return $this->hasMany(DeckTagAssignment::class, 'tag_id');
+    }
+
     // ── Business operations ──────────────────────────────────────────
 
     public function rename($new_name): void

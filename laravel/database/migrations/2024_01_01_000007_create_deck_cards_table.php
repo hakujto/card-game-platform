@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('deck_id');
             $table->foreign('deck_id')->references('id')->on('decks')->cascadeOnDelete();
             $table->unsignedBigInteger('card_id');
-            $table->foreign('card_id')->references('id')->on('cards')->cascadeOnDelete();
+            $table->foreign('card_id')->references('id')->on('cards')->restrictOnDelete();
             $table->timestamps();
         });
     }

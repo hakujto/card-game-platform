@@ -36,7 +36,17 @@ class Article extends Model
 
     public function tagses(): BelongsToMany
     {
-        return $this->belongsToMany(ArticleTag::class, 'article_tags_pivot', 'article_id', 'article_tag_id');
+        return $this->belongsToMany(ArticleTag::class, 'article_tag_assignments', 'article_id', 'article_tag_id')->using(ArticleTagAssignment::class);
+    }
+
+    public function tagAssignments(): HasMany
+    {
+        return $this->hasMany(ArticleTagAssignment::class, 'article_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ArticleComment::class, 'article_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────

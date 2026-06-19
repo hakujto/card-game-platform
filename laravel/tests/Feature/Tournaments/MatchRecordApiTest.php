@@ -6,6 +6,7 @@ use App\Models\Tournaments\MatchRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class MatchRecordApiTest extends TestCase
 {
@@ -99,6 +100,8 @@ class MatchRecordApiTest extends TestCase
     public function test_transition_pending_to_active(): void
     {
         \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $user = User::create(['name' => 'Judge', 'email' => 'Judge@example.com', 'password' => bcrypt('password'), 'role' => 'Judge']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/pending-to-active");
         $response->assertStatus(200);
     }
@@ -106,6 +109,8 @@ class MatchRecordApiTest extends TestCase
     public function test_transition_active_to_completed(): void
     {
         \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $user = User::create(['name' => 'Judge', 'email' => 'Judge@example.com', 'password' => bcrypt('password'), 'role' => 'Judge']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/active-to-completed");
         $response->assertStatus(200);
     }
@@ -113,6 +118,8 @@ class MatchRecordApiTest extends TestCase
     public function test_transition_active_to_draw(): void
     {
         \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Active']);
+        $user = User::create(['name' => 'Judge', 'email' => 'Judge@example.com', 'password' => bcrypt('password'), 'role' => 'Judge']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/active-to-draw");
         $response->assertStatus(200);
     }
@@ -120,6 +127,8 @@ class MatchRecordApiTest extends TestCase
     public function test_transition_pending_to_bye(): void
     {
         \DB::table('matches')->where('id', $this->entityId)->update(['status' => 'Pending']);
+        $user = User::create(['name' => 'Judge', 'email' => 'Judge@example.com', 'password' => bcrypt('password'), 'role' => 'Judge']);
+        $this->actingAs($user);
         $response = $this->patchJson("/api/matches/{$this->entityId}/transitions/pending-to-bye");
         $response->assertStatus(200);
     }

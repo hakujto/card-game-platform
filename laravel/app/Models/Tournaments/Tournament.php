@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Players\Player;
+use App\Models\Content\Stream;
 
 class Tournament extends Model
 {
@@ -38,7 +39,32 @@ class Tournament extends Model
 
     public function judgeses(): BelongsToMany
     {
-        return $this->belongsToMany(Player::class, 'tournament_judges_pivot', 'tournament_id', 'player_id');
+        return $this->belongsToMany(Player::class, 'tournament_judges', 'tournament_id', 'player_id')->using(TournamentJudge::class);
+    }
+
+    public function judgeAssignments(): HasMany
+    {
+        return $this->hasMany(TournamentJudge::class, 'tournament_id');
+    }
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(TournamentRegistration::class, 'tournament_id');
+    }
+
+    public function rounds(): HasMany
+    {
+        return $this->hasMany(TournamentRound::class, 'tournament_id');
+    }
+
+    public function prizes(): HasMany
+    {
+        return $this->hasMany(TournamentPrize::class, 'tournament_id');
+    }
+
+    public function streams(): HasMany
+    {
+        return $this->hasMany(Stream::class, 'tournament_id');
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -131,11 +157,19 @@ class Tournament extends Model
         static::updated(function (self $model) {
             $model->syncSeasonStats();
         });
+        static::deleting(function (self $model) {
+            $model->preventDeleteIfOngoing();
+        });
     }
 
     protected function syncSeasonStats(): void
     {
         // TODO: implement sync_season_stats
+    }
+
+    protected function preventDeleteIfOngoing(): void
+    {
+        // TODO: implement prevent_delete_if_ongoing
     }
 
 }

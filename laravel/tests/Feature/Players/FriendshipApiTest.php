@@ -6,12 +6,14 @@ use App\Models\Players\Friendship;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\Players\Player;
+use App\Models\User;
 
 class FriendshipApiTest extends TestCase
 {
     use RefreshDatabase;
 
     private int $entityId;
+    private int $ownerId;
 
     private Player $depRequester;
     private Player $depReceiver;
@@ -19,6 +21,9 @@ class FriendshipApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $owner = User::create(['name' => 'owner', 'email' => 'owner@example.com', 'password' => bcrypt('password')]);
+        $this->ownerId = $owner->id;
+        $this->actingAs($owner);
         $this->depRequester = Player::create([
             'display_name' => 'test',
             'rank' => 'Bronze',
@@ -28,7 +33,7 @@ class FriendshipApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $this->depReceiver = Player::create([
-            'display_name' => 'test',
+            'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
             'peak_rating' => 1,
@@ -40,6 +45,7 @@ class FriendshipApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
             'requester_id' => $this->depRequester->id,
             'receiver_id' => $this->depReceiver->id,
+            'requester_id' => $this->ownerId,
         ]);
         $this->entityId = $entity->id;
     }
@@ -57,6 +63,7 @@ class FriendshipApiTest extends TestCase
             'created_at' => '2024-01-01 00:00:00',
             'requester_id' => $this->depRequester->id,
             'receiver_id' => $this->depReceiver->id,
+            'requester_id' => $this->ownerId,
         ]);
         $response->assertStatus(201);
     }
