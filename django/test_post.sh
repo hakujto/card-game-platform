@@ -61,7 +61,7 @@ echo "DeckTag id=$ID_DeckTag"
 
 ID_Player=$(curl -s -X POST "$BASE/players/" \
   -H "Content-Type: application/json" \
-  -d "{\"display_name\": \"foo_display_name_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | extract_id)
+  -d "{\"display_name\": \"foo_display_name_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1, \"peak_rating\": 1, \"bio\": \"foo_bio\", \"country_code\": \"fo\", \"avatar_url\": \"https://example.com/foo\", \"preferred_format\": \"Standard\", \"is_verified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\", \"user_id\": $RANDOM}" | extract_id)
 echo "Player id=$ID_Player"
 
 ID_Achievement=$(curl -s -X POST "$BASE/achievements/" \

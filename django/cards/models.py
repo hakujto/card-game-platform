@@ -294,8 +294,8 @@ class Deck(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE, related_name="decks")
-    cards = models.ManyToManyField("Card", through="DeckCard", related_name="+")
-    sideboard_cards = models.ManyToManyField("Card", through="DeckSideboardCard", related_name="+")
+    cards = models.ManyToManyField("Card", through="DeckCard", related_name="decks")
+    sideboard_cards = models.ManyToManyField("Card", through="DeckSideboardCard", related_name="sideboard_decks")
     tags = models.ManyToManyField("DeckTag", through="DeckTagAssignment")
 
     class Meta:

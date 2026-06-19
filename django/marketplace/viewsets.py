@@ -167,7 +167,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Staff"]:
+            raise PermissionDenied("Insufficient role for transition Paid -> Processing")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Processing" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Processing not allowed"}, status=409)
@@ -184,7 +186,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Staff"]:
+            raise PermissionDenied("Insufficient role for transition Processing -> Shipped")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Shipped" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Shipped not allowed"}, status=409)
@@ -204,7 +208,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Staff"]:
+            raise PermissionDenied("Insufficient role for transition Shipped -> Completed")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Completed" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
@@ -239,7 +245,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Staff"]:
+            raise PermissionDenied("Insufficient role for transition Paid -> Cancelled")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Cancelled" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
@@ -257,7 +265,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin"]:
+            raise PermissionDenied("Insufficient role for transition Completed -> Refunded")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Refunded" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Refunded not allowed"}, status=409)
@@ -459,7 +469,9 @@ class TradeListingViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Seller"]:
+            raise PermissionDenied("Insufficient role for transition Pending -> Active")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Active" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Active not allowed"}, status=409)
@@ -514,7 +526,9 @@ class TradeListingViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Seller", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Active -> Cancelled")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Cancelled" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
@@ -754,7 +768,9 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Moderator"]:
+            raise PermissionDenied("Insufficient role for transition Open -> UnderReview")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "UnderReview" not in allowed:
             return Response({"error": f"Transition {instance.status} -> UnderReview not allowed"}, status=409)
@@ -772,7 +788,9 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Moderator"]:
+            raise PermissionDenied("Insufficient role for transition UnderReview -> Resolved")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Resolved" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Resolved not allowed"}, status=409)
@@ -792,7 +810,9 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin"]:
+            raise PermissionDenied("Insufficient role for transition UnderReview -> Escalated")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Escalated" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Escalated not allowed"}, status=409)
@@ -810,7 +830,9 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin"]:
+            raise PermissionDenied("Insufficient role for transition Escalated -> Resolved")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Resolved" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Resolved not allowed"}, status=409)

@@ -103,6 +103,10 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_draft_to_registration_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="draft_to_registration_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Draft"
         self.obj.name = "test"  # @on: name != null
         self.obj.start_time = "2024-01-01T00:00:00Z"  # @on: start_time != null
@@ -114,6 +118,10 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Registration")
 
     def test_transition_registration_to_ongoing_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="registration_to_ongoing_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Registration"
         self.obj.save()
         url = reverse("tournament-transition-registration-to-ongoing", args=[self.obj.pk])
@@ -123,6 +131,10 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Ongoing")
 
     def test_transition_registration_to_cancelled_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="registration_to_cancelled_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Registration"
         self.obj.save()
         url = reverse("tournament-transition-registration-to-cancelled", args=[self.obj.pk])
@@ -132,6 +144,10 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Cancelled")
 
     def test_transition_ongoing_to_completed_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="ongoing_to_completed_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Ongoing"
         self.obj.save()
         url = reverse("tournament-transition-ongoing-to-completed", args=[self.obj.pk])
@@ -141,6 +157,10 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Completed")
 
     def test_transition_ongoing_to_cancelled_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="ongoing_to_cancelled_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Ongoing"
         self.obj.save()
         url = reverse("tournament-transition-ongoing-to-cancelled", args=[self.obj.pk])
@@ -369,6 +389,10 @@ class MatchAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_pending_to_active_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="pending_to_active_Judge")
+        _role_user.role = "Judge"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Pending"
         self.obj.save()
         url = reverse("match-transition-pending-to-active", args=[self.obj.pk])
@@ -378,6 +402,10 @@ class MatchAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Active")
 
     def test_transition_active_to_completed_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="active_to_completed_Judge")
+        _role_user.role = "Judge"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Active"
         self.obj.save()
         url = reverse("match-transition-active-to-completed", args=[self.obj.pk])
@@ -387,6 +415,10 @@ class MatchAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Completed")
 
     def test_transition_active_to_draw_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="active_to_draw_Judge")
+        _role_user.role = "Judge"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Active"
         self.obj.save()
         url = reverse("match-transition-active-to-draw", args=[self.obj.pk])
@@ -396,6 +428,10 @@ class MatchAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Draw")
 
     def test_transition_pending_to_bye_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="pending_to_bye_Judge")
+        _role_user.role = "Judge"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Pending"
         self.obj.save()
         url = reverse("match-transition-pending-to-bye", args=[self.obj.pk])

@@ -83,7 +83,9 @@ class DraftSessionViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition Drafting -> Abandoned")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Abandoned" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Abandoned not allowed"}, status=409)
@@ -101,7 +103,9 @@ class DraftSessionViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition WaitingForPlayers -> Abandoned")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Abandoned" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Abandoned not allowed"}, status=409)
@@ -289,7 +293,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Editor", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Draft -> Published")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Published" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Published not allowed"}, status=409)
@@ -311,7 +317,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Editor", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Published -> Archived")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Archived" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Archived not allowed"}, status=409)
@@ -329,7 +337,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin"]:
+            raise PermissionDenied("Insufficient role for transition Archived -> Draft")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Draft" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Draft not allowed"}, status=409)
@@ -478,7 +488,9 @@ class StreamViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Streamer", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Scheduled -> Live")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Live" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Live not allowed"}, status=409)
@@ -498,7 +510,9 @@ class StreamViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Streamer", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Live -> Ended")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Ended" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Ended not allowed"}, status=409)

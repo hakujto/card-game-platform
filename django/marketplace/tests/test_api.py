@@ -129,6 +129,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_paid_to_processing_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="paid_to_processing_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Paid"
         self.obj.save()
         url = reverse("order-transition-paid-to-processing", args=[self.obj.pk])
@@ -138,6 +142,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Processing")
 
     def test_transition_processing_to_shipped_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="processing_to_shipped_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Processing"
         self.obj.tracking_number = "test"  # @on: tracking_number != null
         self.obj.save()
@@ -148,6 +156,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Shipped")
 
     def test_transition_processing_to_shipped_fails_when_tracking_number_missing(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="processing_to_shipped_tracking_number_missing_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Processing"
         self.obj.tracking_number = None
         self.obj.save()
@@ -156,6 +168,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_shipped_to_completed_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="shipped_to_completed_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Shipped"
         self.obj.save()
         url = reverse("order-transition-shipped-to-completed", args=[self.obj.pk])
@@ -174,6 +190,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Cancelled")
 
     def test_transition_paid_to_cancelled_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="paid_to_cancelled_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Paid"
         self.obj.save()
         url = reverse("order-transition-paid-to-cancelled", args=[self.obj.pk])
@@ -183,6 +203,10 @@ class OrderAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Cancelled")
 
     def test_transition_completed_to_refunded_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="completed_to_refunded_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Completed"
         self.obj.save()
         url = reverse("order-transition-completed-to-refunded", args=[self.obj.pk])
@@ -359,6 +383,10 @@ class TradeListingAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_pending_to_active_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="pending_to_active_Seller")
+        _role_user.role = "Seller"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Pending"
         self.obj.quantity = 0  # @on: quantity != null
         self.obj.save()
@@ -387,6 +415,10 @@ class TradeListingAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Expired")
 
     def test_transition_active_to_cancelled_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="active_to_cancelled_Seller")
+        _role_user.role = "Seller"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Active"
         self.obj.save()
         url = reverse("trade_listing-transition-active-to-cancelled", args=[self.obj.pk])
@@ -542,6 +574,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_open_to_underreview_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="open_to_underreview_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Open"
         self.obj.save()
         url = reverse("trade_dispute-transition-open-to-underreview", args=[self.obj.pk])
@@ -551,6 +587,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(self.obj.status, "UnderReview")
 
     def test_transition_underreview_to_resolved_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="underreview_to_resolved_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "UnderReview"
         self.obj.resolution = "test"  # @on: resolution != null
         self.obj.save()
@@ -561,6 +601,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Resolved")
 
     def test_transition_underreview_to_resolved_fails_when_resolution_missing(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="underreview_to_resolved_resolution_missing_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "UnderReview"
         self.obj.resolution = None
         self.obj.save()
@@ -569,6 +613,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_underreview_to_escalated_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="underreview_to_escalated_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "UnderReview"
         self.obj.save()
         url = reverse("trade_dispute-transition-underreview-to-escalated", args=[self.obj.pk])
@@ -578,6 +626,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Escalated")
 
     def test_transition_escalated_to_resolved_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="escalated_to_resolved_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Escalated"
         self.obj.resolution = "test"  # @on: resolution != null
         self.obj.save()
@@ -588,6 +640,10 @@ class TradeDisputeAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Resolved")
 
     def test_transition_escalated_to_resolved_fails_when_resolution_missing(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="escalated_to_resolved_resolution_missing_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Escalated"
         self.obj.resolution = None
         self.obj.save()

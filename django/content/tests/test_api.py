@@ -68,6 +68,10 @@ class DraftSessionAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Completed")
 
     def test_transition_drafting_to_abandoned_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="drafting_to_abandoned_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Drafting"
         self.obj.save()
         url = reverse("draft_session-transition-drafting-to-abandoned", args=[self.obj.pk])
@@ -77,6 +81,10 @@ class DraftSessionAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Abandoned")
 
     def test_transition_waitingforplayers_to_abandoned_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="waitingforplayers_to_abandoned_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "WaitingForPlayers"
         self.obj.save()
         url = reverse("draft_session-transition-waitingforplayers-to-abandoned", args=[self.obj.pk])
@@ -214,6 +222,10 @@ class ArticleAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_draft_to_published_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="draft_to_published_Editor")
+        _role_user.role = "Editor"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Draft"
         self.obj.title = "test"  # @on: title != null
         self.obj.body = "test"  # @on: body != null
@@ -225,6 +237,10 @@ class ArticleAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Published")
 
     def test_transition_published_to_archived_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="published_to_archived_Editor")
+        _role_user.role = "Editor"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Published"
         self.obj.save()
         url = reverse("article-transition-published-to-archived", args=[self.obj.pk])
@@ -234,6 +250,10 @@ class ArticleAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Archived")
 
     def test_transition_archived_to_draft_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="archived_to_draft_Admin")
+        _role_user.role = "Admin"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Archived"
         self.obj.save()
         url = reverse("article-transition-archived-to-draft", args=[self.obj.pk])
@@ -403,6 +423,10 @@ class StreamAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transition_scheduled_to_live_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="scheduled_to_live_Streamer")
+        _role_user.role = "Streamer"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Scheduled"
         self.obj.stream_url = "https://example.com"  # @on: stream_url != null
         self.obj.save()
@@ -413,6 +437,10 @@ class StreamAPITest(APITestCase):
         self.assertEqual(self.obj.status, "Live")
 
     def test_transition_live_to_ended_succeeds(self):
+        from django.contrib.auth import get_user_model
+        _role_user = get_user_model().objects.create(username="live_to_ended_Streamer")
+        _role_user.role = "Streamer"
+        self.client.force_authenticate(user=_role_user)
         self.obj.status = "Live"
         self.obj.save()
         url = reverse("stream-transition-live-to-ended", args=[self.obj.pk])

@@ -97,7 +97,7 @@ class Tournament(models.Model):
     created_at = models.DateTimeField()
     season = models.ForeignKey("Season", on_delete=models.PROTECT, related_name="tournaments")
     organizer = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="organized_tournaments")
-    judges = models.ManyToManyField("players.Player", through="TournamentJudge", related_name="+")
+    judges = models.ManyToManyField("players.Player", through="TournamentJudge", related_name="judged_tournaments")
 
     class Meta:
         verbose_name = "Tournament"

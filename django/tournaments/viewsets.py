@@ -128,7 +128,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition Draft -> Registration")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Registration" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Registration not allowed"}, status=409)
@@ -149,7 +151,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition Registration -> Ongoing")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Ongoing" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Ongoing not allowed"}, status=409)
@@ -167,7 +171,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition Registration -> Cancelled")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Cancelled" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
@@ -185,7 +191,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin", "Organizer"]:
+            raise PermissionDenied("Insufficient role for transition Ongoing -> Completed")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Completed" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
@@ -204,7 +212,9 @@ class TournamentViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Admin"]:
+            raise PermissionDenied("Insufficient role for transition Ongoing -> Cancelled")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Cancelled" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Cancelled not allowed"}, status=409)
@@ -453,7 +463,9 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Judge", "HeadJudge", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Pending -> Active")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Active" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Active not allowed"}, status=409)
@@ -470,7 +482,9 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Judge", "HeadJudge", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Active -> Completed")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Completed" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Completed not allowed"}, status=409)
@@ -488,7 +502,9 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Judge", "HeadJudge", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Active -> Draw")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "Draw" not in allowed:
             return Response({"error": f"Transition {instance.status} -> Draw not allowed"}, status=409)
@@ -506,7 +522,9 @@ class MatchViewSet(viewsets.ModelViewSet):
         from rest_framework.response import Response
         from rest_framework.exceptions import ValidationError, PermissionDenied
         from django.core.exceptions import ValidationError as DjangoValidationError
-        instance = self.get_object()
+        instance = self.get_queryset().get(pk=pk)
+        if not hasattr(request.user, "role") or request.user.role not in ["Judge", "HeadJudge", "Admin"]:
+            raise PermissionDenied("Insufficient role for transition Pending -> BYE")
         allowed = instance.ALLOWED_TRANSITIONS.get(instance.status, [])
         if "BYE" not in allowed:
             return Response({"error": f"Transition {instance.status} -> BYE not allowed"}, status=409)
