@@ -102,4 +102,6 @@ let handler_player_achievement (db : (module Caqti_lwt.CONNECTION)) req =
        (* TODO: implement behavior complete *)
        respond_json 204 (`Null))
 
+  (* TODO: @on(is_completed = true) → complete — trigger in PATCH /api/player_achievements/:id/set_is_completed *)
+
   | _ -> respond_json 404 (`String "Not found")

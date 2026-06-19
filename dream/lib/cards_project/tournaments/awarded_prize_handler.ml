@@ -96,4 +96,6 @@ let handler_awarded_prize (db : (module Caqti_lwt.CONNECTION)) req =
        (* TODO: implement behavior claim *)
        respond_json 204 (`Null))
 
+  (* TODO: @on(claimed = true) → claim — trigger in PATCH /api/awarded_prizes/:id/set_claimed *)
+
   | _ -> respond_json 404 (`String "Not found")

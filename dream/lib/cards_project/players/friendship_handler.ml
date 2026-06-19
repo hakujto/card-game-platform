@@ -74,7 +74,18 @@ let handler_friendship (db : (module Caqti_lwt.CONNECTION)) req =
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
         | Ok None -> respond_json 404 (`String "Not found")
         | Ok (Some r) ->
-          let j = Friendship_model.to_yojson (Friendship_model.row_to_t r) in
+          let rec_ = Friendship_model.row_to_t r in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (rec_).requester_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
+          let j = Friendship_model.to_yojson rec_ in
           respond_json 200 (apply_projection_friendship j)))
 
   (* DELETE /api/friendships/:id *)
@@ -82,10 +93,26 @@ let handler_friendship (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some id ->
+       let* existing = Db.find_opt Friendship_model.get_by_id_q id in
+       (match existing with
+        | Error e -> respond_json 500 (`String (Caqti_error.show e))
+        | Ok None -> respond_json 404 (`String "Not found")
+        | Ok (Some existing_row) ->
+          let existing_rec = Friendship_model.row_to_t existing_row in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (existing_rec).requester_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
        let* del = Db.exec Friendship_model.delete_q id in
        (match del with
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
-        | Ok () -> Dream.respond ~status:`No_Content ""))
+        | Ok () -> Dream.respond ~status:`No_Content "")))
 
   (* POST /api/friendships/{id}/accept - behavior accept *)
   | `POST, ["api"; "friendships"; id_str; "_id/accept"] ->

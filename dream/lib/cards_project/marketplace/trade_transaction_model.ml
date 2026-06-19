@@ -13,6 +13,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for TradeTransaction:
+ *   has_one dispute -> TradeDispute via transaction_id
+ *)
+
 (* ── Caqti query definitions for TradeTransaction ── *)
 open Caqti_request.Infix
 

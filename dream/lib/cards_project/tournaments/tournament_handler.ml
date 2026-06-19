@@ -1,6 +1,15 @@
 (* Dream handlers for Tournament *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_sync_season_stats () =
+  (* TODO: implement sync_season_stats *)
+  ()
+
+let hook_prevent_delete_if_ongoing () =
+  (* TODO: implement prevent_delete_if_ongoing *)
+  ()
+
 let apply_projection_tournament (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->

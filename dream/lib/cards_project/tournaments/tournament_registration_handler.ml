@@ -113,7 +113,18 @@ let handler_tournament_registration (db : (module Caqti_lwt.CONNECTION)) req =
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
         | Ok None -> respond_json 404 (`String "Not found")
         | Ok (Some r) ->
-          let j = Tournament_registration_model.to_yojson (Tournament_registration_model.row_to_t r) in
+          let rec_ = Tournament_registration_model.row_to_t r in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (rec_).player_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
+          let j = Tournament_registration_model.to_yojson rec_ in
           respond_json 200 (apply_projection_tournament_registration j)))
 
   (* POST /api/registrations/{id}/withdraw - behavior withdraw *)

@@ -9,6 +9,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for CraftingRecipe:
+ *   has_many ingredients -> CraftingIngredient via recipe_id
+ *)
+
 (* ── Caqti query definitions for CraftingRecipe ── *)
 open Caqti_request.Infix
 

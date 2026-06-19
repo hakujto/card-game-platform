@@ -16,6 +16,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Match:
+ *   has_many games -> Game via match_id
+ *)
+
 (* ── Caqti query definitions for Match ── *)
 open Caqti_request.Infix
 

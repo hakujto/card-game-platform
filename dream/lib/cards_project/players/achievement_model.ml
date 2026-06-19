@@ -12,6 +12,11 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Achievement:
+ *   many_to_many players -> Player through player_achievements
+ *   has_many player_records -> PlayerAchievement via achievement_id
+ *)
+
 (* ── Caqti query definitions for Achievement ── *)
 open Caqti_request.Infix
 

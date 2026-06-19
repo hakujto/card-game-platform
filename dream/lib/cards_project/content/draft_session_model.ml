@@ -12,6 +12,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for DraftSession:
+ *   has_many participants -> DraftParticipant via session_id
+ *)
+
 (* ── Caqti query definitions for DraftSession ── *)
 open Caqti_request.Infix
 

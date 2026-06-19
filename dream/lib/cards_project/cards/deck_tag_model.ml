@@ -8,6 +8,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for DeckTag:
+ *   has_many deck_assignments -> DeckTagAssignment via tag_id
+ *)
+
 (* ── Caqti query definitions for DeckTag ── *)
 open Caqti_request.Infix
 

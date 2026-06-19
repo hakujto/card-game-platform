@@ -16,6 +16,14 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Deck:
+ *   has_many deck_cards -> DeckCard via deck_id
+ *   has_many sideboard_cards -> DeckSideboardCard via deck_id
+ *   has_many tag_assignments -> DeckTagAssignment via deck_id
+ *   has_many tournament_registrations -> TournamentRegistration via deck_id
+ *   has_many articles -> Article via featured_deck_id
+ *)
+
 (* ── Caqti query definitions for Deck ── *)
 open Caqti_request.Infix
 

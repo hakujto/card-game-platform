@@ -1,6 +1,15 @@
 (* Dream handlers for Player *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_initialize_collection () =
+  (* TODO: implement initialize_collection *)
+  ()
+
+let hook_update_rank () =
+  (* TODO: implement update_rank *)
+  ()
+
 let apply_projection_player (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->

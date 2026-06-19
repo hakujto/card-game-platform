@@ -225,6 +225,7 @@ let handler_match (db : (module Caqti_lwt.CONNECTION)) req =
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
        (* TODO: implement behavior record_result *)
+       (* TODO: determine_winner () — @after *)
        respond_json 204 (`Null))
 
   (* POST /api/matches/{id}/finalize - behavior finalize_result *)
@@ -233,6 +234,7 @@ let handler_match (db : (module Caqti_lwt.CONNECTION)) req =
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
        (* TODO: implement behavior finalize_result *)
+       (* TODO: determine_winner () — @after *)
        respond_json 204 (`Null))
 
   (* GET /api/matches/{id}/winner - behavior determine_winner *)
@@ -248,6 +250,7 @@ let handler_match (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* @guard: TODO: evaluate guard condition — return 422 if not met *)
        (* TODO: implement behavior concede *)
        respond_json 204 (`Null))
 

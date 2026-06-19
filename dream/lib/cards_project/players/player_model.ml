@@ -17,6 +17,34 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Player:
+ *   has_many decks -> Deck via player_id
+ *   has_many season_stats -> PlayerSeasonStats via player_id
+ *   has_many collection -> PlayerCollection via player_id
+ *   has_many sent_friend_requests -> Friendship via requester_id
+ *   has_many received_friend_requests -> Friendship via receiver_id
+ *   has_many achievement_records -> PlayerAchievement via player_id
+ *   has_many organized_tournaments -> Tournament via organizer_id
+ *   many_to_many judged_tournaments -> Tournament through tournament_judges
+ *   has_many judge_roles -> TournamentJudge via player_id
+ *   has_many tournament_registrations -> TournamentRegistration via player_id
+ *   has_many matches_as_player1 -> Match via player1_id
+ *   has_many matches_as_player2 -> Match via player2_id
+ *   has_many won_games -> Game via winner_id
+ *   has_many awarded_prizes -> AwardedPrize via player_id
+ *   has_many orders -> Order via player_id
+ *   has_many trade_listings -> TradeListing via seller_id
+ *   has_many bids -> TradeBid via bidder_id
+ *   has_many purchases -> TradeTransaction via buyer_id
+ *   has_many sales -> TradeTransaction via seller_id
+ *   has_many disputes_opened -> TradeDispute via opened_by_id
+ *   has_many disputes_resolved -> TradeDispute via resolved_by_id
+ *   has_many draft_sessions -> DraftParticipant via player_id
+ *   has_many articles -> Article via author_id
+ *   has_many article_comments -> ArticleComment via author_id
+ *   has_many streams -> Stream via streamer_id
+ *)
+
 (* ── Caqti query definitions for Player ── *)
 open Caqti_request.Infix
 

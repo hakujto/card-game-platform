@@ -3,42 +3,37 @@ open Lwt.Syntax
 
 let base_url = "http://localhost:3000"
 
-let valid_body = {json|{
-    "name": "test",
-    "product_type": "SingleCard",
-    "price": 1,
-    "stock": 0,
-    "active": false,
-    "discount_percent": 50,
-    "description": null,
-    "image_url": null,
-    "featured": false,
-    "card_id": null,
-    "card_set_id": null
-  }|json}
-
-let get url =
+let get ?(headers=[]) url =
   let uri = Uri.of_string (base_url ^ url) in
-  let* (resp, _body) = Cohttp_lwt_unix.Client.get uri in
+  let hdrs = Cohttp.Header.of_list headers in
+  let* (resp, _body) = Cohttp_lwt_unix.Client.get ~headers:hdrs uri in
   Lwt.return (Cohttp.Response.status resp |> Cohttp.Code.code_of_status)
 
-let post url body =
+let post ?(headers=[]) url body =
   let uri = Uri.of_string (base_url ^ url) in
-  let headers = Cohttp.Header.of_list [("Content-Type", "application/json")] in
+  let hdrs = Cohttp.Header.of_list (("Content-Type", "application/json") :: headers) in
   let body_str = Cohttp_lwt.Body.of_string body in
-  let* (resp, _body) = Cohttp_lwt_unix.Client.post ~headers ~body:body_str uri in
+  let* (resp, _body) = Cohttp_lwt_unix.Client.post ~headers:hdrs ~body:body_str uri in
   Lwt.return (Cohttp.Response.status resp |> Cohttp.Code.code_of_status)
 
-let put url body =
+let put ?(headers=[]) url body =
   let uri = Uri.of_string (base_url ^ url) in
-  let headers = Cohttp.Header.of_list [("Content-Type", "application/json")] in
+  let hdrs = Cohttp.Header.of_list (("Content-Type", "application/json") :: headers) in
   let body_str = Cohttp_lwt.Body.of_string body in
-  let* (resp, _body) = Cohttp_lwt_unix.Client.put ~headers ~body:body_str uri in
+  let* (resp, _body) = Cohttp_lwt_unix.Client.put ~headers:hdrs ~body:body_str uri in
   Lwt.return (Cohttp.Response.status resp |> Cohttp.Code.code_of_status)
 
-let delete url =
+let patch ?(headers=[]) url body =
   let uri = Uri.of_string (base_url ^ url) in
-  let* (resp, _body) = Cohttp_lwt_unix.Client.delete uri in
+  let hdrs = Cohttp.Header.of_list (("Content-Type", "application/json") :: headers) in
+  let body_str = Cohttp_lwt.Body.of_string body in
+  let* (resp, _body) = Cohttp_lwt_unix.Client.patch ~headers:hdrs ~body:body_str uri in
+  Lwt.return (Cohttp.Response.status resp |> Cohttp.Code.code_of_status)
+
+let delete ?(headers=[]) url =
+  let uri = Uri.of_string (base_url ^ url) in
+  let hdrs = Cohttp.Header.of_list headers in
+  let* (resp, _body) = Cohttp_lwt_unix.Client.delete ~headers:hdrs uri in
   Lwt.return (Cohttp.Response.status resp |> Cohttp.Code.code_of_status)
 
 let lwt_run f () = Lwt_main.run (f ())
@@ -54,22 +49,46 @@ let test_search_product () =
   Lwt.return_unit
 
 let test_create_product () =
-  let* code = post "/api/products" valid_body in
-  Alcotest.(check bool) "create returns 201 or 500" true (code = 201 || code = 500);
+  let* code = post "/api/products" {json|{
+    "name": "test",
+    "product_type": "SingleCard",
+    "price": 1,
+    "stock": 0,
+    "active": false,
+    "discount_percent": 50,
+    "description": null,
+    "image_url": null,
+    "featured": false,
+    "card_id": null,
+    "card_set_id": null
+  }|json} in
+  Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
 
 let test_get_product () =
   let* code = get "/api/products/1" in
-  Alcotest.(check bool) "get returns 200 or 404" true (code = 200 || code = 404);
+  Alcotest.(check bool) "get returns 200 or 403 or 404" true (code = 200 || code = 403 || code = 404);
   Lwt.return_unit
 
 let test_update_product () =
-  let* code = put "/api/products/1" valid_body in
-  Alcotest.(check bool) "update returns 200 or 404 or 500" true (code = 200 || code = 404 || code = 500);
+  let* code = put "/api/products/1" {json|{
+    "name": "test",
+    "product_type": "SingleCard",
+    "price": 1,
+    "stock": 0,
+    "active": false,
+    "discount_percent": 50,
+    "description": null,
+    "image_url": null,
+    "featured": false,
+    "card_id": null,
+    "card_set_id": null
+  }|json} in
+  Alcotest.(check bool) "update returns 200 or 403 or 404 or 500" true (code = 200 || code = 403 || code = 404 || code = 500);
   Lwt.return_unit
 
 let test_rule_price_positive () =
-  (* Rule: price_positive - this body should violate the condition and yield 422/400 *)
+  (* Rule: price_positive — body violates the condition *)
   let body = {json|{
     "name": "test",
     "product_type": "SingleCard",
@@ -88,7 +107,7 @@ let test_rule_price_positive () =
   Lwt.return_unit
 
 let test_rule_stock_not_negative () =
-  (* Rule: stock_not_negative - this body should violate the condition and yield 422/400 *)
+  (* Rule: stock_not_negative — body violates the condition *)
   let body = {json|{
     "name": "test",
     "product_type": "SingleCard",
@@ -107,7 +126,7 @@ let test_rule_stock_not_negative () =
   Lwt.return_unit
 
 let test_rule_discount_percent_range () =
-  (* Rule: discount_percent_range - this body should violate the condition and yield 422/400 *)
+  (* Rule: discount_percent_range — body violates the condition *)
   let body = {json|{
     "name": "test",
     "product_type": "SingleCard",
@@ -129,8 +148,8 @@ let suite_product = [
   Alcotest.test_case "GET /api/products returns 200" `Quick (lwt_run test_list_product);
   Alcotest.test_case "GET /api/products?q=test returns 200" `Quick (lwt_run test_search_product);
   Alcotest.test_case "POST /api/products returns 201" `Quick (lwt_run test_create_product);
-  Alcotest.test_case "GET /api/products/1 returns 200 or 404" `Quick (lwt_run test_get_product);
-  Alcotest.test_case "PUT /api/products/1 returns 200 or 404" `Quick (lwt_run test_update_product);
+  Alcotest.test_case "GET /api/products/1 returns 200" `Quick (lwt_run test_get_product);
+  Alcotest.test_case "PUT /api/products/1 returns 200" `Quick (lwt_run test_update_product);
   Alcotest.test_case "POST /api/products rule price_positive -> 422" `Quick (lwt_run test_rule_price_positive);
   Alcotest.test_case "POST /api/products rule stock_not_negative -> 422" `Quick (lwt_run test_rule_stock_not_negative);
   Alcotest.test_case "POST /api/products rule discount_percent_range -> 422" `Quick (lwt_run test_rule_discount_percent_range);

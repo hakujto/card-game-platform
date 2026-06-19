@@ -1,6 +1,11 @@
 (* Dream handlers for Article *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_update_search_index () =
+  (* TODO: implement update_search_index *)
+  ()
+
 let apply_projection_article (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->

@@ -14,6 +14,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for TournamentPrize:
+ *   has_many awarded_prizes -> AwardedPrize via prize_id
+ *)
+
 (* ── Caqti query definitions for TournamentPrize ── *)
 open Caqti_request.Infix
 

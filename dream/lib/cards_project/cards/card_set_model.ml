@@ -15,6 +15,12 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for CardSet:
+ *   has_many cards -> Card via set_id
+ *   has_many shop_products -> Product via card_set_id
+ *   has_many draft_sessions -> DraftSession via card_set_id
+ *)
+
 (* ── Caqti query definitions for CardSet ── *)
 open Caqti_request.Infix
 

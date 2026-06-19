@@ -23,6 +23,22 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Card:
+ *   has_many rulings -> CardRuling via card_id
+ *   has_many abilities -> CardAbility via card_id
+ *   many_to_many decks -> Deck through deck_cards
+ *   many_to_many sideboard_decks -> Deck through deck_sideboard_cards
+ *   has_many deck_cards -> DeckCard via card_id
+ *   has_many sideboard_decks -> DeckSideboardCard via card_id
+ *   has_many player_collections -> PlayerCollection via card_id
+ *   has_many crafting_recipes -> CraftingRecipe via result_card_id
+ *   has_many used_in_recipes -> CraftingIngredient via card_id
+ *   has_one shop_product -> Product via card_id
+ *   has_many trade_listings -> TradeListing via card_id
+ *   has_many price_history -> CardPriceHistory via card_id
+ *   has_many draft_picks -> DraftPick via card_id
+ *)
+
 (* ── Caqti query definitions for Card ── *)
 open Caqti_request.Infix
 

@@ -15,6 +15,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Coupon:
+ *   has_many orders -> Order via coupon_id
+ *)
+
 (* ── Caqti query definitions for Coupon ── *)
 open Caqti_request.Infix
 

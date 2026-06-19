@@ -12,6 +12,11 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Season:
+ *   has_many player_stats -> PlayerSeasonStats via season_id
+ *   has_many tournaments -> Tournament via season_id
+ *)
+
 (* ── Caqti query definitions for Season ── *)
 open Caqti_request.Infix
 

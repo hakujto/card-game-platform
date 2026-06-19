@@ -8,6 +8,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for ArticleTag:
+ *   has_many article_assignments -> ArticleTagAssignment via tag_id
+ *)
+
 (* ── Caqti query definitions for ArticleTag ── *)
 open Caqti_request.Infix
 

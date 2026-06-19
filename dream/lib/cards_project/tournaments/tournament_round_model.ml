@@ -12,6 +12,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for TournamentRound:
+ *   has_many matches -> Match via round_id
+ *)
+
 (* ── Caqti query definitions for TournamentRound ── *)
 open Caqti_request.Infix
 

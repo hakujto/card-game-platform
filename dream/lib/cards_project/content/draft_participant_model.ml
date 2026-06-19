@@ -10,6 +10,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for DraftParticipant:
+ *   has_many picks -> DraftPick via participant_id
+ *)
+
 (* ── Caqti query definitions for DraftParticipant ── *)
 open Caqti_request.Infix
 

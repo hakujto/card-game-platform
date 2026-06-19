@@ -259,6 +259,7 @@ let handler_trade_listing (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* @guard: TODO: evaluate guard condition — return 422 if not met *)
        (* TODO: implement behavior cancel *)
        respond_json 204 (`Null))
 
@@ -277,5 +278,7 @@ let handler_trade_listing (db : (module Caqti_lwt.CONNECTION)) req =
      | Some _id ->
        (* TODO: implement behavior finalize_auction *)
        respond_json 204 (`Null))
+
+  (* TODO: @on(status = Sold) → finalize_auction — trigger in PATCH /api/trade_listings/:id/set_status *)
 
   | _ -> respond_json 404 (`String "Not found")

@@ -110,7 +110,18 @@ let handler_player_collection (db : (module Caqti_lwt.CONNECTION)) req =
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
         | Ok None -> respond_json 404 (`String "Not found")
         | Ok (Some r) ->
-          let j = Player_collection_model.to_yojson (Player_collection_model.row_to_t r) in
+          let rec_ = Player_collection_model.row_to_t r in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (rec_).player_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
+          let j = Player_collection_model.to_yojson rec_ in
           respond_json 200 (apply_projection_player_collection j)))
 
   (* PATCH /api/player_collections/:id - partial update *)
@@ -118,6 +129,22 @@ let handler_player_collection (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some id ->
+       let* existing = Db.find_opt Player_collection_model.get_by_id_q id in
+       (match existing with
+        | Error e -> respond_json 500 (`String (Caqti_error.show e))
+        | Ok None -> respond_json 404 (`String "Not found")
+        | Ok (Some existing_row) ->
+          let existing_rec = Player_collection_model.row_to_t existing_row in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (existing_rec).player_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
        let* body = Dream.body req in
        (try
           let j = Yojson.Safe.from_string body in
@@ -135,17 +162,33 @@ let handler_player_collection (db : (module Caqti_lwt.CONNECTION)) req =
               | Ok (Some r) ->
                 let j = Player_collection_model.to_yojson (Player_collection_model.row_to_t r) in
                 respond_json 200 (apply_projection_player_collection j)))
-       with _ -> respond_json 400 (`String "Invalid JSON")))
+       with _ -> respond_json 400 (`String "Invalid JSON"))))
 
   (* DELETE /api/player_collections/:id *)
   | `DELETE, ["api"; "player_collections"; id_str] ->
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some id ->
+       let* existing = Db.find_opt Player_collection_model.get_by_id_q id in
+       (match existing with
+        | Error e -> respond_json 500 (`String (Caqti_error.show e))
+        | Ok None -> respond_json 404 (`String "Not found")
+        | Ok (Some existing_row) ->
+          let existing_rec = Player_collection_model.row_to_t existing_row in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (existing_rec).player_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
        let* del = Db.exec Player_collection_model.delete_q id in
        (match del with
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
-        | Ok () -> Dream.respond ~status:`No_Content ""))
+        | Ok () -> Dream.respond ~status:`No_Content "")))
 
   (* POST /api/collection/{id}/add - behavior add *)
   | `POST, ["api"; "player_collections"; id_str; "_id/add"] ->

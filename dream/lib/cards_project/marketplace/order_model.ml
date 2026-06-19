@@ -18,6 +18,10 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Order:
+ *   has_many items -> OrderItem via order_id
+ *)
+
 (* ── Caqti query definitions for Order ── *)
 open Caqti_request.Infix
 

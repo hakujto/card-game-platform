@@ -19,6 +19,11 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for TradeListing:
+ *   has_many bids -> TradeBid via listing_id
+ *   has_one transaction -> TradeTransaction via listing_id
+ *)
+
 (* ── Caqti query definitions for TradeListing ── *)
 open Caqti_request.Infix
 

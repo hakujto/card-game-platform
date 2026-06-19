@@ -1,6 +1,15 @@
 (* Dream handlers for Card *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_validate_legality () =
+  (* TODO: implement validate_legality *)
+  ()
+
+let hook_validate_not_in_use () =
+  (* TODO: implement validate_not_in_use *)
+  ()
+
 (* JSON field helpers *)
 let json_string_opt j key =
   match Yojson.Safe.Util.member key j with

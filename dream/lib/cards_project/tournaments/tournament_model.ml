@@ -21,6 +21,14 @@ type t = {
   updated_at : string;
 } [@@deriving yojson]
 
+(* Reverse relations for Tournament:
+ *   has_many judge_assignments -> TournamentJudge via tournament_id
+ *   has_many registrations -> TournamentRegistration via tournament_id
+ *   has_many rounds -> TournamentRound via tournament_id
+ *   has_many prizes -> TournamentPrize via tournament_id
+ *   has_many streams -> Stream via tournament_id
+ *)
+
 (* ── Caqti query definitions for Tournament ── *)
 open Caqti_request.Infix
 

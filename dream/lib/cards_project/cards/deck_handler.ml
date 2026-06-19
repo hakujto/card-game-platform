@@ -1,6 +1,11 @@
 (* Dream handlers for Deck *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_recalculate_tournament_legal () =
+  (* TODO: implement recalculate_tournament_legal *)
+  ()
+
 let apply_projection_deck (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->

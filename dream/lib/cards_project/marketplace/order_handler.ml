@@ -1,6 +1,15 @@
 (* Dream handlers for Order *)
 open Lwt.Syntax
 
+(* ── Lifecycle hooks ─────────────────────────────────────────────────── *)
+let hook_assign_currency_default () =
+  (* TODO: implement assign_currency_default *)
+  ()
+
+let hook_notify_status_change () =
+  (* TODO: implement notify_status_change *)
+  ()
+
 let apply_projection_order (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->
@@ -121,7 +130,18 @@ let handler_order (db : (module Caqti_lwt.CONNECTION)) req =
         | Error e -> respond_json 500 (`String (Caqti_error.show e))
         | Ok None -> respond_json 404 (`String "Not found")
         | Ok (Some r) ->
-          let j = Order_model.to_yojson (Order_model.row_to_t r) in
+          let rec_ = Order_model.row_to_t r in
+          let owner_ok =
+            match Dream.header req "X-User-Id" with
+            | None -> false
+            | Some uid_str ->
+              (match int_of_string_opt uid_str with
+               | None -> false
+               | Some uid -> (rec_).player_id = uid)
+          in
+          if not owner_ok then respond_json 403 (`String "You do not own this resource.")
+          else
+          let j = Order_model.to_yojson rec_ in
           respond_json 200 (apply_projection_order j)))
 
   (* ── Lifecycle transitions ── *)
@@ -272,6 +292,7 @@ let handler_order (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* @guard: TODO: evaluate guard condition — return 422 if not met *)
        (* TODO: implement behavior pay *)
        respond_json 204 (`Null))
 
@@ -306,5 +327,7 @@ let handler_order (db : (module Caqti_lwt.CONNECTION)) req =
      | Some _id ->
        (* TODO: implement behavior refund *)
        respond_json 204 (`Null))
+
+  (* TODO: @on(status = Shipped) → notify_shipped — trigger in PATCH /api/orders/:id/set_status *)
 
   | _ -> respond_json 404 (`String "Not found")

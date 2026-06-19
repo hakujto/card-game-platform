@@ -162,6 +162,7 @@ let handler_coupon (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* @guard: TODO: evaluate guard condition — return 422 if not met *)
        (* TODO: implement behavior redeem *)
        respond_json 204 (`Null))
 
