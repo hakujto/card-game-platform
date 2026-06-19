@@ -4,8 +4,8 @@ class Game < ApplicationRecord
   enum :winner_side, { player1: 0, player2: 1, draw: 2 }, prefix: :winner_side
   enum :ended_by, { normal: 0, timeout: 1, concession: 2, draw_offer: 3 }, prefix: :ended_by
 
-  belongs_to :match, class_name: 'Match'
-  belongs_to :winner, class_name: 'Player', optional: true
+  belongs_to :match, class_name: 'Match', inverse_of: :games
+  belongs_to :winner, class_name: 'Player', inverse_of: :won_games, optional: true
 
   # Domain invariants — simple rules
   validate :validate_rules

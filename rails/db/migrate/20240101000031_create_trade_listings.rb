@@ -12,8 +12,8 @@ class CreateTradeListings < ActiveRecord::Migration[7.1]
       t.integer :quantity, null: false, default: 1
       t.text :description, null: true
       t.datetime :expires_at, null: true
-      t.references :seller, null: false, foreign_key: { to_table: :players }
-      t.references :card, null: false, foreign_key: { to_table: :cards }
+      t.references :seller, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
+      t.references :card, null: false, foreign_key: { to_table: :cards, on_delete: :restrict }
 
       t.timestamps
     end

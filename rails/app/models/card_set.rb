@@ -3,8 +3,13 @@ class CardSet < ApplicationRecord
 
   enum :set_type, { core: 0, expansion: 1, supplemental: 2, masters: 3, draft: 4 }
 
+  has_many :cards, class_name: 'Card', inverse_of: :set
+  has_many :shop_products, class_name: 'Product', inverse_of: :card_set
+  has_many :draft_sessions, class_name: 'DraftSession', inverse_of: :card_set
+
   validates :name, presence: true, length: { maximum: 200 }
   validates :code, presence: true, length: { maximum: 10 }
+  validates :code, uniqueness: { message: 'code must be unique' }
 
   # Domain invariants — simple rules
   validate :validate_rules

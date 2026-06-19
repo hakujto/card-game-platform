@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Api::Players::Players", type: :request do
   let(:valid_attributes) do
     {
-      display_name: 'test',
+      display_name: 'test2',
       rank: :bronze,
       rating: 1,
       peak_rating: 1,
@@ -30,7 +30,7 @@ RSpec.describe "Api::Players::Players", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/players", params: { player: {
-      display_name: 'test',
+      display_name: 'test2',
       rank: :bronze,
       rating: 1,
       peak_rating: 1,

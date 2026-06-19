@@ -8,7 +8,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
   let(:valid_attributes) do
     {
       title: 'test',
-      slug: 'test',
+      slug: 'test2',
       body: 'test',
       status: :draft,
       article_type: :guide,
@@ -41,7 +41,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
       it "returns 201" do
         post "/api/articles", params: { article: {
       title: 'test',
-      slug: 'test',
+      slug: 'test2',
       body: 'test',
       status: :draft,
       article_type: :guide,
@@ -132,31 +132,52 @@ RSpec.describe "Api::Content::Articles", type: :request do
   describe "PATCH /api/articles/:id/transitions/draft-to-published" do
     let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['draft']) } }
     before { article.update!(title: 'test', body: 'test') }
-    it "transitions to Published" do
+    it "transitions to Published with role Editor" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Editor'))
       patch "/api/articles/#{article.id}/transitions/draft-to-published"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(article.reload.status).to eq('published') if response.status == 200
     end
+
+    it "returns 403 for transition Draft -> Published with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/articles/#{article.id}/transitions/draft-to-published"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/articles/:id/transitions/published-to-archived" do
     let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['published']) } }
-    it "transitions to Archived" do
+    it "transitions to Archived with role Editor" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Editor'))
       patch "/api/articles/#{article.id}/transitions/published-to-archived"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(article.reload.status).to eq('archived') if response.status == 200
     end
+
+    it "returns 403 for transition Published -> Archived with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/articles/#{article.id}/transitions/published-to-archived"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/articles/:id/transitions/archived-to-draft" do
     let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['archived']) } }
-    it "transitions to Draft" do
+    it "transitions to Draft with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/articles/#{article.id}/transitions/archived-to-draft"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(article.reload.status).to eq('draft') if response.status == 200
+    end
+
+    it "returns 403 for transition Archived -> Draft with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/articles/#{article.id}/transitions/archived-to-draft"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

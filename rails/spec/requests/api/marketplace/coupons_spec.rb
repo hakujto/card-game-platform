@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Api::Marketplace::Coupons", type: :request do
   let(:valid_attributes) do
     {
-      code: 'test',
+      code: 'test2',
       discount_type: :fixed,
       discount_value: '1.00',
       min_order_value: '0.00',
@@ -32,7 +32,7 @@ RSpec.describe "Api::Marketplace::Coupons", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/coupons", params: { coupon: {
-      code: 'test',
+      code: 'test2',
       discount_type: :fixed,
       discount_value: '1.00',
       min_order_value: '0.00',

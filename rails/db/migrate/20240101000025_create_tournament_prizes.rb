@@ -8,7 +8,7 @@ class CreateTournamentPrizes < ActiveRecord::Migration[7.1]
       t.text :description, null: true
       t.integer :packs_count, null: true
       t.integer :season_points, null: false, default: 0
-      t.references :tournament, null: false, foreign_key: { to_table: :tournaments }
+      t.references :tournament, null: false, foreign_key: { to_table: :tournaments, on_delete: :cascade }
 
       t.timestamps
     end

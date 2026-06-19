@@ -5,8 +5,8 @@ class CreateAwardedPrizes < ActiveRecord::Migration[7.1]
       t.datetime :awarded_at, null: false
       t.boolean :claimed, null: false, default: false
       t.datetime :claimed_at, null: true
-      t.references :prize, null: false, foreign_key: { to_table: :tournament_prizes }
-      t.references :player, null: false, foreign_key: { to_table: :players }
+      t.references :prize, null: false, foreign_key: { to_table: :tournament_prizes, on_delete: :restrict }
+      t.references :player, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
 
       t.timestamps
     end

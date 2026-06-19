@@ -6,7 +6,7 @@ class CreateDraftSessions < ActiveRecord::Migration[7.1]
       t.integer :seats, null: false, default: 8
       t.integer :time_per_pick_seconds, null: false, default: 30
       t.datetime :completed_at, null: true
-      t.references :card_set, null: false, foreign_key: { to_table: :card_sets }
+      t.references :card_set, null: false, foreign_key: { to_table: :card_sets, on_delete: :restrict }
 
       t.timestamps
     end

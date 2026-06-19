@@ -35,6 +35,9 @@ module Tournaments
 
     def concede(id, player_id)
       instance = Match.find(id)
+      unless instance.status == 'active'
+        raise ArgumentError, "Guard condition not met for concede"
+      end
       instance.concede(player_id)
       instance.save!
     end

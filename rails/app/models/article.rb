@@ -5,12 +5,15 @@ class Article < ApplicationRecord
   enum :article_type, { guide: 0, tierlist: 1, matchup: 2, news: 3, spotlight: 4, decklist: 5 }, prefix: :article_type
   enum :language, { e_n: 0, d_e: 1, f_r: 2, i_t: 3, e_s: 4, j_p: 5, p_t: 6 }, prefix: :language
 
-  belongs_to :author, class_name: 'Player'
-  belongs_to :featured_deck, class_name: 'Deck', optional: true
-  has_many :tags, class_name: 'ArticleTag', through: :article_tag_assignments
+  has_many :tag_assignments, class_name: 'ArticleTagAssignment', inverse_of: :article
+  has_many :comments, class_name: 'ArticleComment', inverse_of: :article
+  belongs_to :author, class_name: 'Player', inverse_of: :articles
+  belongs_to :featured_deck, class_name: 'Deck', inverse_of: :articles, optional: true
+  has_many :tags, class_name: 'ArticleTag', through: :tag_assignments
 
   validates :title, presence: true, length: { maximum: 300 }
   validates :slug, presence: true, length: { maximum: 300 }
+  validates :slug, uniqueness: { message: 'slug must be unique' }
 
   # Domain invariants — simple rules
   validate :validate_rules

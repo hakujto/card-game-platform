@@ -119,41 +119,69 @@ RSpec.describe "Api::Tournaments::Matches", type: :request do
   end
   describe "PATCH /api/matches/:id/transitions/pending-to-active" do
     let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['pending']) } }
-    it "transitions to Active" do
+    it "transitions to Active with role Judge" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Judge'))
       patch "/api/matches/#{match.id}/transitions/pending-to-active"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(match.reload.status).to eq('active') if response.status == 200
     end
+
+    it "returns 403 for transition Pending -> Active with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/matches/#{match.id}/transitions/pending-to-active"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/matches/:id/transitions/active-to-completed" do
     let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['active']) } }
-    it "transitions to Completed" do
+    it "transitions to Completed with role Judge" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Judge'))
       patch "/api/matches/#{match.id}/transitions/active-to-completed"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(match.reload.status).to eq('completed') if response.status == 200
     end
+
+    it "returns 403 for transition Active -> Completed with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/matches/#{match.id}/transitions/active-to-completed"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/matches/:id/transitions/active-to-draw" do
     let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['active']) } }
-    it "transitions to Draw" do
+    it "transitions to Draw with role Judge" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Judge'))
       patch "/api/matches/#{match.id}/transitions/active-to-draw"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(match.reload.status).to eq('draw') if response.status == 200
     end
+
+    it "returns 403 for transition Active -> Draw with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/matches/#{match.id}/transitions/active-to-draw"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/matches/:id/transitions/pending-to-bye" do
     let!(:match) { Match.create!(valid_attributes).tap { |r| r.update_column(:status, Match.statuses['pending']) } }
-    it "transitions to BYE" do
+    it "transitions to BYE with role Judge" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Judge'))
       patch "/api/matches/#{match.id}/transitions/pending-to-bye"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(match.reload.status).to eq('b_y_e') if response.status == 200
+    end
+
+    it "returns 403 for transition Pending -> BYE with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/matches/#{match.id}/transitions/pending-to-bye"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

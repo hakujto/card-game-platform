@@ -3,7 +3,8 @@ class TournamentPrize < ApplicationRecord
 
   enum :prize_type, { currency: 0, cards: 1, booster_packs: 2, trophy: 3, season_points: 4, mixed: 5 }
 
-  belongs_to :tournament, class_name: 'Tournament'
+  has_many :awarded_prizes, class_name: 'AwardedPrize', inverse_of: :prize
+  belongs_to :tournament, class_name: 'Tournament', inverse_of: :prizes
 
   # Domain invariants — simple rules
   validate :validate_rules

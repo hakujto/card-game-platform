@@ -3,9 +3,9 @@ class TournamentRegistration < ApplicationRecord
 
   enum :status, { registered: 0, waitlisted: 1, withdrawn: 2, disqualified: 3 }
 
-  belongs_to :tournament, class_name: 'Tournament'
-  belongs_to :player, class_name: 'Player'
-  belongs_to :deck, class_name: 'Deck'
+  belongs_to :tournament, class_name: 'Tournament', inverse_of: :registrations
+  belongs_to :player, class_name: 'Player', inverse_of: :tournament_registrations
+  belongs_to :deck, class_name: 'Deck', inverse_of: :tournament_registrations
 
   # Domain invariants — simple rules
   validate :validate_rules

@@ -62,6 +62,10 @@ module Api
       end
       # PATCH /api/:id/transitions/open-to-underreview
       def transition_open_to_underreview
+        unless current_user&.role.in?(["Admin", "Moderator"])
+          render json: { error: 'Insufficient role for transition Open -> UnderReview' }, status: :forbidden
+          return
+        end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('under_review')
         @tradeDispute.status = 'under_review'
@@ -79,6 +83,10 @@ module Api
 
       # PATCH /api/:id/transitions/underreview-to-resolved
       def transition_underreview_to_resolved
+        unless current_user&.role.in?(["Admin", "Moderator"])
+          render json: { error: 'Insufficient role for transition UnderReview -> Resolved' }, status: :forbidden
+          return
+        end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('resolved')
         if @tradeDispute.resolution.nil?
@@ -100,6 +108,10 @@ module Api
 
       # PATCH /api/:id/transitions/underreview-to-escalated
       def transition_underreview_to_escalated
+        unless current_user&.role.in?(["Admin"])
+          render json: { error: 'Insufficient role for transition UnderReview -> Escalated' }, status: :forbidden
+          return
+        end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('escalated')
         @tradeDispute.status = 'escalated'
@@ -117,6 +129,10 @@ module Api
 
       # PATCH /api/:id/transitions/escalated-to-resolved
       def transition_escalated_to_resolved
+        unless current_user&.role.in?(["Admin"])
+          render json: { error: 'Insufficient role for transition Escalated -> Resolved' }, status: :forbidden
+          return
+        end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('resolved')
         if @tradeDispute.resolution.nil?

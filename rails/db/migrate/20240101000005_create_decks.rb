@@ -10,7 +10,7 @@ class CreateDecks < ActiveRecord::Migration[7.1]
       t.integer :wins, null: false, default: 0
       t.integer :losses, null: false, default: 0
       t.integer :draws, null: false, default: 0
-      t.references :player, null: false, foreign_key: { to_table: :players }
+      t.references :player, null: false, foreign_key: { to_table: :players, on_delete: :cascade }
 
       t.timestamps
     end

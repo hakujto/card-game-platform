@@ -3,8 +3,8 @@ class Friendship < ApplicationRecord
 
   enum :status, { pending: 0, accepted: 1, blocked: 2 }
 
-  belongs_to :requester, class_name: 'Player'
-  belongs_to :receiver, class_name: 'Player'
+  belongs_to :requester, class_name: 'Player', inverse_of: :sent_friend_requests
+  belongs_to :receiver, class_name: 'Player', inverse_of: :received_friend_requests
 
   def to_s
     status.to_s

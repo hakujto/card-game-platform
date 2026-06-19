@@ -11,8 +11,8 @@ class CreateOrders < ActiveRecord::Migration[7.1]
       t.string :tracking_number, limit: 100, null: true
       t.datetime :paid_at, null: true
       t.datetime :shipped_at, null: true
-      t.references :player, null: false, foreign_key: { to_table: :players }
-      t.references :coupon, null: true, foreign_key: { to_table: :coupons }
+      t.references :player, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
+      t.references :coupon, null: true, foreign_key: { to_table: :coupons, on_delete: :nullify }
 
       t.timestamps
     end

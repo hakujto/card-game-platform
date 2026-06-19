@@ -4,7 +4,7 @@ class CardAbility < ApplicationRecord
   enum :ability_type, { keyword: 0, activated: 1, triggered: 2, static: 3 }, prefix: :ability_type
   enum :timing, { any: 0, sorcery: 1, instant: 2, combat: 3 }, prefix: :timing
 
-  belongs_to :card, class_name: 'Card'
+  belongs_to :card, class_name: 'Card', inverse_of: :abilities
 
   # Domain invariants — IMPLIES rules
   validate :validate_implies

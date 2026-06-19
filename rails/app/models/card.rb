@@ -6,7 +6,18 @@ class Card < ApplicationRecord
   enum :mana_colors, { white: 0, blue: 1, black: 2, red: 3, green: 4, colorless: 5 }, prefix: :mana_colors
   enum :legal_formats, { standard: 0, extended: 1, legacy: 2, vintage: 3, commander: 4, draft: 5 }, prefix: :legal_formats
 
-  belongs_to :set, class_name: 'CardSet'
+  has_many :rulings, class_name: 'CardRuling', inverse_of: :card
+  has_many :abilities, class_name: 'CardAbility', inverse_of: :card
+  has_many :deck_cards, class_name: 'DeckCard', inverse_of: :card
+  has_many :sideboard_decks, class_name: 'DeckSideboardCard', inverse_of: :card
+  has_many :player_collections, class_name: 'PlayerCollection', inverse_of: :card
+  has_many :crafting_recipes, class_name: 'CraftingRecipe', inverse_of: :result_card
+  has_many :used_in_recipes, class_name: 'CraftingIngredient', inverse_of: :card
+  has_one :shop_product, class_name: 'Product', inverse_of: :card
+  has_many :trade_listings, class_name: 'TradeListing', inverse_of: :card
+  has_many :price_history, class_name: 'CardPriceHistory', inverse_of: :card
+  has_many :draft_picks, class_name: 'DraftPick', inverse_of: :card
+  belongs_to :set, class_name: 'CardSet', inverse_of: :cards
 
   validates :name, presence: true, length: { maximum: 200 }
 
@@ -69,8 +80,13 @@ class Card < ApplicationRecord
 
   # Lifecycle hooks
   before_save :validate_legality
+  before_destroy :validate_not_in_use
 
   def validate_legality
     # TODO: implement validate_legality
+  end
+
+  def validate_not_in_use
+    # TODO: implement validate_not_in_use
   end
 end

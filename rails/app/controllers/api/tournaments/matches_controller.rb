@@ -56,6 +56,10 @@ module Api
       # POST /api/matches/:id/concede
       def concede
         @match = Match.find(params[:id])
+        unless @match.status == 'active'
+          render json: { error: 'Guard condition not met for concede' }, status: :unprocessable_entity
+          return
+        end
         player_id = params[:player_id]
         @match.concede(player_id)
         head :no_content
@@ -73,6 +77,10 @@ module Api
       end
       # PATCH /api/:id/transitions/pending-to-active
       def transition_pending_to_active
+        unless current_user&.role.in?(["Judge", "HeadJudge", "Admin"])
+          render json: { error: 'Insufficient role for transition Pending -> Active' }, status: :forbidden
+          return
+        end
         @match = Match.find(params[:id])
         @match.assert_transition!('active')
         @match.status = 'active'
@@ -89,6 +97,10 @@ module Api
 
       # PATCH /api/:id/transitions/active-to-completed
       def transition_active_to_completed
+        unless current_user&.role.in?(["Judge", "HeadJudge", "Admin"])
+          render json: { error: 'Insufficient role for transition Active -> Completed' }, status: :forbidden
+          return
+        end
         @match = Match.find(params[:id])
         @match.assert_transition!('completed')
         @match.status = 'completed'
@@ -106,6 +118,10 @@ module Api
 
       # PATCH /api/:id/transitions/active-to-draw
       def transition_active_to_draw
+        unless current_user&.role.in?(["Judge", "HeadJudge", "Admin"])
+          render json: { error: 'Insufficient role for transition Active -> Draw' }, status: :forbidden
+          return
+        end
         @match = Match.find(params[:id])
         @match.assert_transition!('draw')
         @match.status = 'draw'
@@ -123,6 +139,10 @@ module Api
 
       # PATCH /api/:id/transitions/pending-to-bye
       def transition_pending_to_bye
+        unless current_user&.role.in?(["Judge", "HeadJudge", "Admin"])
+          render json: { error: 'Insufficient role for transition Pending -> BYE' }, status: :forbidden
+          return
+        end
         @match = Match.find(params[:id])
         @match.assert_transition!('b_y_e')
         @match.status = 'b_y_e'

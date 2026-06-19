@@ -122,21 +122,35 @@ RSpec.describe "Api::Content::Streams", type: :request do
   describe "PATCH /api/streams/:id/transitions/scheduled-to-live" do
     let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['scheduled']) } }
     before { stream.update!(stream_url: 'https://example.com') }
-    it "transitions to Live" do
+    it "transitions to Live with role Streamer" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Streamer'))
       patch "/api/streams/#{stream.id}/transitions/scheduled-to-live"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(stream.reload.status).to eq('live') if response.status == 200
     end
+
+    it "returns 403 for transition Scheduled -> Live with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/streams/#{stream.id}/transitions/scheduled-to-live"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/streams/:id/transitions/live-to-ended" do
     let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['live']) } }
-    it "transitions to Ended" do
+    it "transitions to Ended with role Streamer" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Streamer'))
       patch "/api/streams/#{stream.id}/transitions/live-to-ended"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(stream.reload.status).to eq('ended') if response.status == 200
+    end
+
+    it "returns 403 for transition Live -> Ended with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/streams/#{stream.id}/transitions/live-to-ended"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

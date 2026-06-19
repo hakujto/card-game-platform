@@ -100,6 +100,10 @@ module Api
       end
       # PATCH /api/:id/transitions/draft-to-registration
       def transition_draft_to_registration
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition Draft -> Registration' }, status: :forbidden
+          return
+        end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('registration')
         if @tournament.name.nil?
@@ -124,6 +128,10 @@ module Api
 
       # PATCH /api/:id/transitions/registration-to-ongoing
       def transition_registration_to_ongoing
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition Registration -> Ongoing' }, status: :forbidden
+          return
+        end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('ongoing')
         @tournament.status = 'ongoing'
@@ -141,6 +149,10 @@ module Api
 
       # PATCH /api/:id/transitions/registration-to-cancelled
       def transition_registration_to_cancelled
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition Registration -> Cancelled' }, status: :forbidden
+          return
+        end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('cancelled')
         @tournament.status = 'cancelled'
@@ -158,6 +170,10 @@ module Api
 
       # PATCH /api/:id/transitions/ongoing-to-completed
       def transition_ongoing_to_completed
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition Ongoing -> Completed' }, status: :forbidden
+          return
+        end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('completed')
         @tournament.status = 'completed'
@@ -176,6 +192,10 @@ module Api
 
       # PATCH /api/:id/transitions/ongoing-to-cancelled
       def transition_ongoing_to_cancelled
+        unless current_user&.role.in?(["Admin"])
+          render json: { error: 'Insufficient role for transition Ongoing -> Cancelled' }, status: :forbidden
+          return
+        end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('cancelled')
         @tournament.status = 'cancelled'

@@ -3,7 +3,8 @@ class TournamentRound < ApplicationRecord
 
   enum :status, { pending: 0, active: 1, completed: 2 }
 
-  belongs_to :tournament, class_name: 'Tournament'
+  has_many :matches, class_name: 'Match', inverse_of: :round
+  belongs_to :tournament, class_name: 'Tournament', inverse_of: :rounds
 
   # Domain invariants — simple rules
   validate :validate_rules

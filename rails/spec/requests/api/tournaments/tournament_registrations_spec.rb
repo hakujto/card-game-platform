@@ -2,6 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Api::Tournaments::TournamentRegistrations", type: :request do
   before(:each) do
+    @owner = Player.create!({ display_name: 'test2', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner_id = @owner.id
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', id: @owner_id))
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
     @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
     @dep_tournament = Tournament.create!({ name: 'test', status: :draft, format: :standard, tournament_type: :swiss, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
@@ -14,8 +17,8 @@ RSpec.describe "Api::Tournaments::TournamentRegistrations", type: :request do
       points_earned: 1,
       registered_at: Time.now,
       tournament_id: @dep_tournament.id,
-      player_id: @aux_player.id,
-      deck_id: @dep_deck.id
+      deck_id: @dep_deck.id,
+      player_id: @owner_id
     }
   end
 
@@ -34,8 +37,8 @@ RSpec.describe "Api::Tournaments::TournamentRegistrations", type: :request do
       points_earned: 1,
       registered_at: Time.now,
       tournament_id: @dep_tournament.id,
-      player_id: @aux_player.id,
-      deck_id: @dep_deck.id
+      deck_id: @dep_deck.id,
+      player_id: @owner_id
         } }, as: :json
         expect(response).to have_http_status(:created)
       end

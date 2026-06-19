@@ -17,7 +17,7 @@ class CreateCards < ActiveRecord::Migration[7.1]
       t.boolean :is_banned, null: false, default: false
       t.boolean :is_restricted, null: false, default: false
       t.integer :power_level, null: false, default: 1
-      t.references :set, null: false, foreign_key: { to_table: :card_sets }
+      t.references :set, null: false, foreign_key: { to_table: :card_sets, on_delete: :restrict }
 
       t.timestamps
     end

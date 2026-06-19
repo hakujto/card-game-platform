@@ -56,6 +56,10 @@ module Api
       # DELETE /api/trade_listings/:id/cancel
       def cancel
         @tradeListing = TradeListing.find(params[:id])
+        unless @tradeListing.status == 'active'
+          render json: { error: 'Guard condition not met for cancel' }, status: :unprocessable_entity
+          return
+        end
         @tradeListing.cancel()
         head :no_content
       rescue ActiveRecord::RecordNotFound
@@ -81,6 +85,10 @@ module Api
       end
       # PATCH /api/:id/transitions/pending-to-active
       def transition_pending_to_active
+        unless current_user&.role.in?(["Seller"])
+          render json: { error: 'Insufficient role for transition Pending -> Active' }, status: :forbidden
+          return
+        end
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.assert_transition!('active')
         if @tradeListing.quantity.nil?
@@ -135,6 +143,10 @@ module Api
 
       # PATCH /api/:id/transitions/active-to-cancelled
       def transition_active_to_cancelled
+        unless current_user&.role.in?(["Seller", "Admin"])
+          render json: { error: 'Insufficient role for transition Active -> Cancelled' }, status: :forbidden
+          return
+        end
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.assert_transition!('cancelled')
         @tradeListing.status = 'cancelled'

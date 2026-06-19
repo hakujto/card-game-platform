@@ -1,8 +1,8 @@
 class TradeBid < ApplicationRecord
   self.table_name = 'trade_bids'
 
-  belongs_to :listing, class_name: 'TradeListing'
-  belongs_to :bidder, class_name: 'Player'
+  belongs_to :listing, class_name: 'TradeListing', inverse_of: :bids
+  belongs_to :bidder, class_name: 'Player', inverse_of: :bids
 
   # Domain invariants — simple rules
   validate :validate_rules

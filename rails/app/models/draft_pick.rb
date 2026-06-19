@@ -1,8 +1,8 @@
 class DraftPick < ApplicationRecord
   self.table_name = 'draft_picks'
 
-  belongs_to :participant, class_name: 'DraftParticipant'
-  belongs_to :card, class_name: 'Card'
+  belongs_to :participant, class_name: 'DraftParticipant', inverse_of: :picks
+  belongs_to :card, class_name: 'Card', inverse_of: :draft_picks
 
   # Domain invariants — simple rules
   validate :validate_rules

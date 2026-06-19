@@ -1,8 +1,8 @@
 class AwardedPrize < ApplicationRecord
   self.table_name = 'awarded_prizes'
 
-  belongs_to :prize, class_name: 'TournamentPrize'
-  belongs_to :player, class_name: 'Player'
+  belongs_to :prize, class_name: 'TournamentPrize', inverse_of: :awarded_prizes
+  belongs_to :player, class_name: 'Player', inverse_of: :awarded_prizes
 
   # Domain invariants — simple rules
   validate :validate_rules

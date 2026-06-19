@@ -72,6 +72,9 @@ module Api
 
       def set_playerCollection
         @playerCollection = PlayerCollection.find(params[:id])
+        if @playerCollection.player_id != current_user&.id
+          render json: { error: 'You do not own this resource.' }, status: :forbidden and return
+        end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'PlayerCollection not found' }, status: :not_found
       end

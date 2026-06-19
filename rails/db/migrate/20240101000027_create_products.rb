@@ -10,10 +10,11 @@ class CreateProducts < ActiveRecord::Migration[7.1]
       t.text :description, null: true
       t.string :image_url, limit: 200, null: true
       t.boolean :featured, null: false, default: false
-      t.references :card, null: true, foreign_key: { to_table: :cards }
-      t.references :card_set, null: true, foreign_key: { to_table: :card_sets }
+      t.references :card, null: true, foreign_key: { to_table: :cards, on_delete: :nullify }
+      t.references :card_set, null: true, foreign_key: { to_table: :card_sets, on_delete: :nullify }
 
       t.timestamps
     end
+    add_index :products, :card_id, unique: true
   end
 end

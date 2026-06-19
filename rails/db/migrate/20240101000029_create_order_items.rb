@@ -4,8 +4,8 @@ class CreateOrderItems < ActiveRecord::Migration[7.1]
       t.integer :quantity, null: false
       t.decimal :price_at_purchase, precision: 10, scale: 2, null: false
       t.boolean :foil, null: false, default: false
-      t.references :order, null: false, foreign_key: { to_table: :orders }
-      t.references :product, null: false, foreign_key: { to_table: :products }
+      t.references :order, null: false, foreign_key: { to_table: :orders, on_delete: :cascade }
+      t.references :product, null: false, foreign_key: { to_table: :products, on_delete: :restrict }
 
       t.timestamps
     end

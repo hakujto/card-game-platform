@@ -55,6 +55,10 @@ module Api
       # POST /api/coupons/:id/redeem
       def redeem
         @coupon = Coupon.find(params[:id])
+        unless @coupon.is_active == true
+          render json: { error: 'Guard condition not met for redeem' }, status: :unprocessable_entity
+          return
+        end
         @coupon.redeem()
         head :no_content
       rescue ActiveRecord::RecordNotFound

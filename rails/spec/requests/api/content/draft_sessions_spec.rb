@@ -111,21 +111,35 @@ RSpec.describe "Api::Content::DraftSessions", type: :request do
 
   describe "PATCH /api/draft_sessions/:id/transitions/drafting-to-abandoned" do
     let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['drafting']) } }
-    it "transitions to Abandoned" do
+    it "transitions to Abandoned with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/draft_sessions/#{draftSession.id}/transitions/drafting-to-abandoned"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(draftSession.reload.status).to eq('abandoned') if response.status == 200
     end
+
+    it "returns 403 for transition Drafting -> Abandoned with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/draft_sessions/#{draftSession.id}/transitions/drafting-to-abandoned"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" do
     let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['waiting_for_players']) } }
-    it "transitions to Abandoned" do
+    it "transitions to Abandoned with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/draft_sessions/#{draftSession.id}/transitions/waitingforplayers-to-abandoned"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(draftSession.reload.status).to eq('abandoned') if response.status == 200
+    end
+
+    it "returns 403 for transition WaitingForPlayers -> Abandoned with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/draft_sessions/#{draftSession.id}/transitions/waitingforplayers-to-abandoned"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

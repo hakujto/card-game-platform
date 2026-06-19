@@ -61,6 +61,9 @@ module Api
 
       def set_friendship
         @friendship = Friendship.find(params[:id])
+        if @friendship.requester_id != current_user&.id
+          render json: { error: 'You do not own this resource.' }, status: :forbidden and return
+        end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Friendship not found' }, status: :not_found
       end

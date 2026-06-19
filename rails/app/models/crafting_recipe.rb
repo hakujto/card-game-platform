@@ -1,8 +1,9 @@
 class CraftingRecipe < ApplicationRecord
   self.table_name = 'crafting_recipes'
 
-  belongs_to :result_card, class_name: 'Card'
-  has_many :required_cards, class_name: 'Card', through: :crafting_ingredients
+  has_many :ingredients, class_name: 'CraftingIngredient', inverse_of: :recipe
+  belongs_to :result_card, class_name: 'Card', inverse_of: :crafting_recipes
+  has_many :required_cards, class_name: 'Card', through: :ingredients
 
   # Domain invariants — simple rules
   validate :validate_rules

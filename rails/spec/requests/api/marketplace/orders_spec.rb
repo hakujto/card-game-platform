@@ -2,7 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Api::Marketplace::Orders", type: :request do
   before(:each) do
-    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner = Player.create!({ display_name: 'test2', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner_id = @owner.id
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', id: @owner_id))
   end
 
   let(:valid_attributes) do
@@ -12,7 +14,7 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
       discount_applied: '0.00',
       currency: 'xxx',
       created_at: Time.now,
-      player_id: @dep_player.id
+      player_id: @owner_id
     }
   end
 
@@ -32,7 +34,7 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
       discount_applied: '0.00',
       currency: 'xxx',
       created_at: Time.now,
-      player_id: @dep_player.id
+      player_id: @owner_id
         } }, as: :json
         expect(response).to have_http_status(:created)
       end
@@ -124,27 +126,42 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
 
   describe "PATCH /api/orders/:id/transitions/paid-to-processing" do
     let!(:order) { Order.create!(valid_attributes).tap { |r| r.update_column(:status, Order.statuses['paid']) } }
-    it "transitions to Processing" do
+    it "transitions to Processing with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/orders/#{order.id}/transitions/paid-to-processing"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(order.reload.status).to eq('processing') if response.status == 200
+    end
+
+    it "returns 403 for transition Paid -> Processing with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/orders/#{order.id}/transitions/paid-to-processing"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
   describe "PATCH /api/orders/:id/transitions/processing-to-shipped" do
     let!(:order) { Order.create!(valid_attributes).tap { |r| r.update_column(:status, Order.statuses['processing']) } }
     before { order.update!(tracking_number: 'test') }
-    it "transitions to Shipped" do
+    it "transitions to Shipped with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/orders/#{order.id}/transitions/processing-to-shipped"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(order.reload.status).to eq('shipped') if response.status == 200
     end
 
+    it "returns 403 for transition Processing -> Shipped with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/orders/#{order.id}/transitions/processing-to-shipped"
+      expect(response).to have_http_status(:forbidden)
+    end
+
     context "when tracking_number is missing" do
       before { order.update_column(:tracking_number, nil) }
       it "returns 422" do
+        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
         patch "/api/orders/#{order.id}/transitions/processing-to-shipped"
         expect(response).to have_http_status(:unprocessable_content)
       end
@@ -153,11 +170,18 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
 
   describe "PATCH /api/orders/:id/transitions/shipped-to-completed" do
     let!(:order) { Order.create!(valid_attributes).tap { |r| r.update_column(:status, Order.statuses['shipped']) } }
-    it "transitions to Completed" do
+    it "transitions to Completed with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/orders/#{order.id}/transitions/shipped-to-completed"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(order.reload.status).to eq('completed') if response.status == 200
+    end
+
+    it "returns 403 for transition Shipped -> Completed with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/orders/#{order.id}/transitions/shipped-to-completed"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
@@ -173,21 +197,35 @@ RSpec.describe "Api::Marketplace::Orders", type: :request do
 
   describe "PATCH /api/orders/:id/transitions/paid-to-cancelled" do
     let!(:order) { Order.create!(valid_attributes).tap { |r| r.update_column(:status, Order.statuses['paid']) } }
-    it "transitions to Cancelled" do
+    it "transitions to Cancelled with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/orders/#{order.id}/transitions/paid-to-cancelled"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(order.reload.status).to eq('cancelled') if response.status == 200
     end
+
+    it "returns 403 for transition Paid -> Cancelled with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/orders/#{order.id}/transitions/paid-to-cancelled"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/orders/:id/transitions/completed-to-refunded" do
     let!(:order) { Order.create!(valid_attributes).tap { |r| r.update_column(:status, Order.statuses['completed']) } }
-    it "transitions to Refunded" do
+    it "transitions to Refunded with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/orders/#{order.id}/transitions/completed-to-refunded"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(order.reload.status).to eq('refunded') if response.status == 200
+    end
+
+    it "returns 403 for transition Completed -> Refunded with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/orders/#{order.id}/transitions/completed-to-refunded"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

@@ -3,7 +3,10 @@ class Coupon < ApplicationRecord
 
   enum :discount_type, { percent: 0, fixed: 1 }
 
+  has_many :orders, class_name: 'Order', inverse_of: :coupon
+
   validates :code, presence: true, length: { maximum: 50 }
+  validates :code, uniqueness: { message: 'code must be unique' }
 
   # Domain invariants — simple rules
   validate :validate_rules

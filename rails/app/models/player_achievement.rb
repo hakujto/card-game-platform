@@ -1,8 +1,8 @@
 class PlayerAchievement < ApplicationRecord
   self.table_name = 'player_achievements'
 
-  belongs_to :player, class_name: 'Player'
-  belongs_to :achievement, class_name: 'Achievement'
+  belongs_to :player, class_name: 'Player', inverse_of: :achievement_records
+  belongs_to :achievement, class_name: 'Achievement', inverse_of: :player_records
 
   # Domain invariants — simple rules
   validate :validate_rules

@@ -14,8 +14,8 @@ class CreateTournaments < ActiveRecord::Migration[7.1]
       t.boolean :is_online, null: false, default: true
       t.string :location, limit: 300, null: true
       t.text :rules_text, null: true
-      t.references :season, null: false, foreign_key: { to_table: :seasons }
-      t.references :organizer, null: false, foreign_key: { to_table: :players }
+      t.references :season, null: false, foreign_key: { to_table: :seasons, on_delete: :restrict }
+      t.references :organizer, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
 
       t.timestamps
     end

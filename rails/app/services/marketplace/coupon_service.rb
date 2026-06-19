@@ -28,6 +28,9 @@ module Marketplace
 
     def redeem(id)
       instance = Coupon.find(id)
+      unless instance.is_active == true
+        raise ArgumentError, "Guard condition not met for redeem"
+      end
       instance.redeem()
       instance.save!
     end

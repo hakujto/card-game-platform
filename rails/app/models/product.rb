@@ -3,8 +3,9 @@ class Product < ApplicationRecord
 
   enum :product_type, { single_card: 0, booster_pack: 1, bundle: 2, preconstructed_deck: 3, accessory: 4 }
 
-  belongs_to :card, class_name: 'Card', optional: true
-  belongs_to :card_set, class_name: 'CardSet', optional: true
+  has_many :order_items, class_name: 'OrderItem', inverse_of: :product
+  belongs_to :card, class_name: 'Card', inverse_of: :shop_product, optional: true
+  belongs_to :card_set, class_name: 'CardSet', inverse_of: :shop_products, optional: true
 
   validates :name, presence: true, length: { maximum: 200 }
 

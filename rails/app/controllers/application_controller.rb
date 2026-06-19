@@ -3,6 +3,12 @@ class ApplicationController < ActionController::API
 
   private
 
+  def current_user
+    return nil unless request.headers['X-User-Id'].present?
+
+    @current_user ||= User.find_by(id: request.headers['X-User-Id'])
+  end
+
   def not_found(e)
     render json: { error: e.message }, status: :not_found
   end

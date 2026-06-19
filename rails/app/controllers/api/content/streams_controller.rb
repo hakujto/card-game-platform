@@ -72,6 +72,10 @@ module Api
       end
       # PATCH /api/:id/transitions/scheduled-to-live
       def transition_scheduled_to_live
+        unless current_user&.role.in?(["Streamer", "Admin"])
+          render json: { error: 'Insufficient role for transition Scheduled -> Live' }, status: :forbidden
+          return
+        end
         @stream = Stream.find(params[:id])
         @stream.assert_transition!('live')
         if @stream.stream_url.nil?
@@ -93,6 +97,10 @@ module Api
 
       # PATCH /api/:id/transitions/live-to-ended
       def transition_live_to_ended
+        unless current_user&.role.in?(["Streamer", "Admin"])
+          render json: { error: 'Insufficient role for transition Live -> Ended' }, status: :forbidden
+          return
+        end
         @stream = Stream.find(params[:id])
         @stream.assert_transition!('ended')
         @stream.status = 'ended'

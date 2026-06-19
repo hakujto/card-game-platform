@@ -72,27 +72,42 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   end
   describe "PATCH /api/trade_disputes/:id/transitions/open-to-underreview" do
     let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['open']) } }
-    it "transitions to UnderReview" do
+    it "transitions to UnderReview with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/open-to-underreview"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeDispute.reload.status).to eq('under_review') if response.status == 200
+    end
+
+    it "returns 403 for transition Open -> UnderReview with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_disputes/#{tradeDispute.id}/transitions/open-to-underreview"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
   describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-resolved" do
     let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['under_review']) } }
     before { tradeDispute.update!(resolution: 'test') }
-    it "transitions to Resolved" do
+    it "transitions to Resolved with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-resolved"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeDispute.reload.status).to eq('resolved') if response.status == 200
     end
 
+    it "returns 403 for transition UnderReview -> Resolved with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-resolved"
+      expect(response).to have_http_status(:forbidden)
+    end
+
     context "when resolution is missing" do
       before { tradeDispute.update_column(:resolution, nil) }
       it "returns 422" do
+        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
         patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-resolved"
         expect(response).to have_http_status(:unprocessable_content)
       end
@@ -101,27 +116,42 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
 
   describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-escalated" do
     let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['under_review']) } }
-    it "transitions to Escalated" do
+    it "transitions to Escalated with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-escalated"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeDispute.reload.status).to eq('escalated') if response.status == 200
+    end
+
+    it "returns 403 for transition UnderReview -> Escalated with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-escalated"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
   describe "PATCH /api/trade_disputes/:id/transitions/escalated-to-resolved" do
     let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['escalated']) } }
     before { tradeDispute.update!(resolution: 'test') }
-    it "transitions to Resolved" do
+    it "transitions to Resolved with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/escalated-to-resolved"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeDispute.reload.status).to eq('resolved') if response.status == 200
     end
 
+    it "returns 403 for transition Escalated -> Resolved with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_disputes/#{tradeDispute.id}/transitions/escalated-to-resolved"
+      expect(response).to have_http_status(:forbidden)
+    end
+
     context "when resolution is missing" do
       before { tradeDispute.update_column(:resolution, nil) }
       it "returns 422" do
+        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
         patch "/api/trade_disputes/#{tradeDispute.id}/transitions/escalated-to-resolved"
         expect(response).to have_http_status(:unprocessable_content)
       end

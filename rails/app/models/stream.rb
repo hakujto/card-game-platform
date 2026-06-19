@@ -5,8 +5,8 @@ class Stream < ApplicationRecord
   enum :platform, { twitch: 0, you_tube: 1, kick_stream: 2, platform: 3 }, prefix: :platform
   enum :language, { e_n: 0, d_e: 1, f_r: 2, i_t: 3, e_s: 4, j_p: 5, p_t: 6 }, prefix: :language
 
-  belongs_to :tournament, class_name: 'Tournament', optional: true
-  belongs_to :streamer, class_name: 'Player'
+  belongs_to :tournament, class_name: 'Tournament', inverse_of: :streams, optional: true
+  belongs_to :streamer, class_name: 'Player', inverse_of: :streams
 
   validates :title, presence: true, length: { maximum: 300 }
   validates :stream_url, presence: true, length: { maximum: 200 }

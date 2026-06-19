@@ -1,7 +1,7 @@
 class CardPriceHistory < ApplicationRecord
   self.table_name = 'card_price_histories'
 
-  belongs_to :card, class_name: 'Card'
+  belongs_to :card, class_name: 'Card', inverse_of: :price_history
 
   # Domain invariants — simple rules
   validate :validate_rules

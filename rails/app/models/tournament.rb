@@ -5,9 +5,14 @@ class Tournament < ApplicationRecord
   enum :format, { standard: 0, extended: 1, legacy: 2, vintage: 3, commander: 4, draft: 5 }, prefix: :format
   enum :tournament_type, { swiss: 0, single_elimination: 1, double_elimination: 2, round_robin: 3 }, prefix: :tournament_type
 
-  belongs_to :season, class_name: 'Season'
-  belongs_to :organizer, class_name: 'Player'
-  has_many :judges, class_name: 'Player', through: :tournament_judges
+  has_many :judge_assignments, class_name: 'TournamentJudge', inverse_of: :tournament
+  has_many :registrations, class_name: 'TournamentRegistration', inverse_of: :tournament
+  has_many :rounds, class_name: 'TournamentRound', inverse_of: :tournament
+  has_many :prizes, class_name: 'TournamentPrize', inverse_of: :tournament
+  has_many :streams, class_name: 'Stream', inverse_of: :tournament
+  belongs_to :season, class_name: 'Season', inverse_of: :tournaments
+  belongs_to :organizer, class_name: 'Player', inverse_of: :organized_tournaments
+  has_many :judges, class_name: 'Player', through: :judge_assignments, inverse_of: :judged_tournaments
 
   validates :name, presence: true, length: { maximum: 200 }
 
@@ -79,9 +84,14 @@ class Tournament < ApplicationRecord
 
   # Lifecycle hooks
   after_update :sync_season_stats
+  before_destroy :prevent_delete_if_ongoing
 
   def sync_season_stats
     # TODO: implement sync_season_stats
+  end
+
+  def prevent_delete_if_ongoing
+    # TODO: implement prevent_delete_if_ongoing
   end
 
   def as_json(options = {})

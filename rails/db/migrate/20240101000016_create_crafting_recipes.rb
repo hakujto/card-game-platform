@@ -3,7 +3,7 @@ class CreateCraftingRecipes < ActiveRecord::Migration[7.1]
     create_table :crafting_recipes do |t|
       t.integer :dust_cost, null: false
       t.boolean :is_available, null: false, default: true
-      t.references :result_card, null: false, foreign_key: { to_table: :cards }
+      t.references :result_card, null: false, foreign_key: { to_table: :cards, on_delete: :restrict }
 
       t.timestamps
     end

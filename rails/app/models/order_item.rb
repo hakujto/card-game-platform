@@ -1,8 +1,8 @@
 class OrderItem < ApplicationRecord
   self.table_name = 'order_items'
 
-  belongs_to :order, class_name: 'Order'
-  belongs_to :product, class_name: 'Product'
+  belongs_to :order, class_name: 'Order', inverse_of: :items
+  belongs_to :product, class_name: 'Product', inverse_of: :order_items
 
   # Domain invariants — simple rules
   validate :validate_rules

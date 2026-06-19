@@ -15,5 +15,7 @@ class CreatePlayers < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
+    add_index :players, :display_name, unique: true
+    add_index :players, :user_id, unique: true
   end
 end

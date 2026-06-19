@@ -7,11 +7,12 @@ class CreateTradeDisputes < ActiveRecord::Migration[7.1]
       t.text :resolution, null: true
       t.datetime :opened_at, null: false
       t.datetime :resolved_at, null: true
-      t.references :transaction, null: true, foreign_key: { to_table: :trade_transactions }
-      t.references :opened_by, null: false, foreign_key: { to_table: :players }
-      t.references :resolved_by, null: true, foreign_key: { to_table: :players }
+      t.references :transaction, null: true, foreign_key: { to_table: :trade_transactions, on_delete: :cascade }
+      t.references :opened_by, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
+      t.references :resolved_by, null: true, foreign_key: { to_table: :players, on_delete: :nullify }
 
       t.timestamps
     end
+    add_index :trade_disputes, :transaction_id, unique: true
   end
 end

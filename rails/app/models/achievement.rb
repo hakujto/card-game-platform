@@ -3,6 +3,8 @@ class Achievement < ApplicationRecord
 
   enum :rarity, { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4 }
 
+  has_many :player_records, class_name: 'PlayerAchievement', inverse_of: :achievement
+
   validates :name, presence: true, length: { maximum: 200 }
 
   # Domain invariants — simple rules

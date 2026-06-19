@@ -148,51 +148,86 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
     let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['draft']) } }
     before { tournament.update!(name: 'test', start_time: Time.now) }
-    it "transitions to Registration" do
+    it "transitions to Registration with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/draft-to-registration"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tournament.reload.status).to eq('registration') if response.status == 200
     end
+
+    it "returns 403 for transition Draft -> Registration with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/tournaments/#{tournament.id}/transitions/draft-to-registration"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-ongoing" do
     let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
-    it "transitions to Ongoing" do
+    it "transitions to Ongoing with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/registration-to-ongoing"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tournament.reload.status).to eq('ongoing') if response.status == 200
     end
+
+    it "returns 403 for transition Registration -> Ongoing with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/tournaments/#{tournament.id}/transitions/registration-to-ongoing"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-cancelled" do
     let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
-    it "transitions to Cancelled" do
+    it "transitions to Cancelled with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/registration-to-cancelled"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tournament.reload.status).to eq('cancelled') if response.status == 200
     end
+
+    it "returns 403 for transition Registration -> Cancelled with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/tournaments/#{tournament.id}/transitions/registration-to-cancelled"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-completed" do
     let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
-    it "transitions to Completed" do
+    it "transitions to Completed with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-completed"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tournament.reload.status).to eq('completed') if response.status == 200
     end
+
+    it "returns 403 for transition Ongoing -> Completed with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-completed"
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled" do
     let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
-    it "transitions to Cancelled" do
+    it "transitions to Cancelled with role Admin" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-cancelled"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tournament.reload.status).to eq('cancelled') if response.status == 200
+    end
+
+    it "returns 403 for transition Ongoing -> Cancelled with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-cancelled"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

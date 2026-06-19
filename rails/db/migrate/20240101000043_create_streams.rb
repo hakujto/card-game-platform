@@ -12,8 +12,8 @@ class CreateStreams < ActiveRecord::Migration[7.1]
       t.datetime :actual_start, null: true
       t.datetime :ended_at, null: true
       t.string :vod_url, limit: 200, null: true
-      t.references :tournament, null: true, foreign_key: { to_table: :tournaments }
-      t.references :streamer, null: false, foreign_key: { to_table: :players }
+      t.references :tournament, null: true, foreign_key: { to_table: :tournaments, on_delete: :nullify }
+      t.references :streamer, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
 
       t.timestamps
     end

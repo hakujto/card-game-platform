@@ -56,6 +56,9 @@ module Api
 
       def set_tournamentRegistration
         @tournamentRegistration = TournamentRegistration.find(params[:id])
+        if @tournamentRegistration.player_id != current_user&.id
+          render json: { error: 'You do not own this resource.' }, status: :forbidden and return
+        end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'TournamentRegistration not found' }, status: :not_found
       end

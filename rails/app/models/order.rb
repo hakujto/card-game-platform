@@ -4,8 +4,9 @@ class Order < ApplicationRecord
   enum :status, { pending: 0, paid: 1, processing: 2, shipped: 3, completed: 4, cancelled: 5, refunded: 6 }, prefix: :status
   enum :payment_method, { card: 0, pay_pal: 1, crypto: 2, platform_credits: 3 }, prefix: :payment_method
 
-  belongs_to :player, class_name: 'Player'
-  belongs_to :coupon, class_name: 'Coupon', optional: true
+  has_many :items, class_name: 'OrderItem', inverse_of: :order
+  belongs_to :player, class_name: 'Player', inverse_of: :orders
+  belongs_to :coupon, class_name: 'Coupon', inverse_of: :orders, optional: true
 
   validates :currency, presence: true, length: { maximum: 3 }
 
@@ -81,7 +82,12 @@ class Order < ApplicationRecord
   end
 
   # Lifecycle hooks
+  before_create :assign_currency_default
   after_update :notify_status_change
+
+  def assign_currency_default
+    # TODO: implement assign_currency_default
+  end
 
   def notify_status_change
     # TODO: implement notify_status_change

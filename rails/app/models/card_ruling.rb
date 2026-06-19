@@ -1,7 +1,7 @@
 class CardRuling < ApplicationRecord
   self.table_name = 'card_rulings'
 
-  belongs_to :card, class_name: 'Card'
+  belongs_to :card, class_name: 'Card', inverse_of: :rulings
 
   validates :source, presence: true, length: { maximum: 200 }
 

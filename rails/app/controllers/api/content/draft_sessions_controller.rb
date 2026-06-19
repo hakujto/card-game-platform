@@ -95,6 +95,10 @@ module Api
 
       # PATCH /api/:id/transitions/drafting-to-abandoned
       def transition_drafting_to_abandoned
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition Drafting -> Abandoned' }, status: :forbidden
+          return
+        end
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('abandoned')
         @draftSession.status = 'abandoned'
@@ -112,6 +116,10 @@ module Api
 
       # PATCH /api/:id/transitions/waitingforplayers-to-abandoned
       def transition_waitingforplayers_to_abandoned
+        unless current_user&.role.in?(["Admin", "Organizer"])
+          render json: { error: 'Insufficient role for transition WaitingForPlayers -> Abandoned' }, status: :forbidden
+          return
+        end
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('abandoned')
         @draftSession.status = 'abandoned'

@@ -36,6 +36,10 @@ module Api
       # POST /api/orders/:id/pay
       def pay
         @order = Order.find(params[:id])
+        unless @order.status == 'pending'
+          render json: { error: 'Guard condition not met for pay' }, status: :unprocessable_entity
+          return
+        end
         payment_ref = params[:payment_ref]
         result = @order.pay(payment_ref)
         render json: { result: result }
@@ -102,6 +106,10 @@ module Api
 
       # PATCH /api/:id/transitions/paid-to-processing
       def transition_paid_to_processing
+        unless current_user&.role.in?(["Admin", "Staff"])
+          render json: { error: 'Insufficient role for transition Paid -> Processing' }, status: :forbidden
+          return
+        end
         @order = Order.find(params[:id])
         @order.assert_transition!('processing')
         @order.status = 'processing'
@@ -118,6 +126,10 @@ module Api
 
       # PATCH /api/:id/transitions/processing-to-shipped
       def transition_processing_to_shipped
+        unless current_user&.role.in?(["Admin", "Staff"])
+          render json: { error: 'Insufficient role for transition Processing -> Shipped' }, status: :forbidden
+          return
+        end
         @order = Order.find(params[:id])
         @order.assert_transition!('shipped')
         if @order.tracking_number.nil?
@@ -139,6 +151,10 @@ module Api
 
       # PATCH /api/:id/transitions/shipped-to-completed
       def transition_shipped_to_completed
+        unless current_user&.role.in?(["Admin", "Staff"])
+          render json: { error: 'Insufficient role for transition Shipped -> Completed' }, status: :forbidden
+          return
+        end
         @order = Order.find(params[:id])
         @order.assert_transition!('completed')
         @order.status = 'completed'
@@ -172,6 +188,10 @@ module Api
 
       # PATCH /api/:id/transitions/paid-to-cancelled
       def transition_paid_to_cancelled
+        unless current_user&.role.in?(["Admin", "Staff"])
+          render json: { error: 'Insufficient role for transition Paid -> Cancelled' }, status: :forbidden
+          return
+        end
         @order = Order.find(params[:id])
         @order.assert_transition!('cancelled')
         @order.status = 'cancelled'
@@ -189,6 +209,10 @@ module Api
 
       # PATCH /api/:id/transitions/completed-to-refunded
       def transition_completed_to_refunded
+        unless current_user&.role.in?(["Admin"])
+          render json: { error: 'Insufficient role for transition Completed -> Refunded' }, status: :forbidden
+          return
+        end
         @order = Order.find(params[:id])
         @order.assert_transition!('refunded')
         @order.status = 'refunded'
@@ -228,6 +252,9 @@ module Api
 
       def set_order
         @order = Order.find(params[:id])
+        if @order.player_id != current_user&.id
+          render json: { error: 'You do not own this resource.' }, status: :forbidden and return
+        end
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Order not found' }, status: :not_found
       end

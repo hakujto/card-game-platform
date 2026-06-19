@@ -20,6 +20,9 @@ module Marketplace
 
     def pay(id, payment_ref)
       instance = Order.find(id)
+      unless instance.status == 'pending'
+        raise ArgumentError, "Guard condition not met for pay"
+      end
       result = instance.pay(payment_ref)
       instance.save!
       result

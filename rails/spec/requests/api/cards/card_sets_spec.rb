@@ -4,7 +4,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
   let(:valid_attributes) do
     {
       name: 'test',
-      code: 'test',
+      code: 'test2',
       release_date: Date.today,
       set_type: :core,
       total_cards: 1,
@@ -31,7 +31,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
       it "returns 201" do
         post "/api/card_sets", params: { card_set: {
       name: 'test',
-      code: 'test',
+      code: 'test2',
       release_date: Date.today,
       set_type: :core,
       total_cards: 1,

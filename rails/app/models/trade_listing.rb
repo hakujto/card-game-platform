@@ -5,8 +5,10 @@ class TradeListing < ApplicationRecord
   enum :listing_type, { fixed_price: 0, auction: 1, trade_offer: 2 }, prefix: :listing_type
   enum :condition, { mint: 0, near_mint: 1, excellent: 2, good: 3, played: 4 }, prefix: :condition
 
-  belongs_to :seller, class_name: 'Player'
-  belongs_to :card, class_name: 'Card'
+  has_many :bids, class_name: 'TradeBid', inverse_of: :listing
+  has_one :transaction_record, class_name: 'TradeTransaction', foreign_key: :listing_id, inverse_of: :listing
+  belongs_to :seller, class_name: 'Player', inverse_of: :trade_listings
+  belongs_to :card, class_name: 'Card', inverse_of: :trade_listings
 
   # Domain invariants — simple rules
   validate :validate_rules

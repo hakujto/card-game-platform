@@ -6,5 +6,6 @@ class CreateArticleTags < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
+    add_index :article_tags, :slug, unique: true
   end
 end

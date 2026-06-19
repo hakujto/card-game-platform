@@ -26,6 +26,9 @@ module Marketplace
 
     def cancel(id)
       instance = TradeListing.find(id)
+      unless instance.status == 'active'
+        raise ArgumentError, "Guard condition not met for cancel"
+      end
       instance.cancel()
       instance.save!
     end

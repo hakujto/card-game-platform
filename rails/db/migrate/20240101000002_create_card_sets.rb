@@ -13,5 +13,6 @@ class CreateCardSets < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
+    add_index :card_sets, :code, unique: true
   end
 end

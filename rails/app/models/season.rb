@@ -3,6 +3,9 @@ class Season < ApplicationRecord
 
   enum :format, { standard: 0, extended: 1, legacy: 2, vintage: 3, commander: 4, draft: 5 }
 
+  has_many :player_stats, class_name: 'PlayerSeasonStats', inverse_of: :season
+  has_many :tournaments, class_name: 'Tournament', inverse_of: :season
+
   validates :name, presence: true, length: { maximum: 200 }
 
   # Domain invariants — simple rules

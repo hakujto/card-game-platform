@@ -3,9 +3,10 @@ class TradeTransaction < ApplicationRecord
 
   enum :status, { pending: 0, completed: 1, disputed: 2, refunded: 3 }
 
-  belongs_to :listing, class_name: 'TradeListing'
-  belongs_to :buyer, class_name: 'Player'
-  belongs_to :seller, class_name: 'Player'
+  has_one :dispute, class_name: 'TradeDispute', inverse_of: :transaction_record
+  belongs_to :listing, class_name: 'TradeListing', inverse_of: :transaction_record
+  belongs_to :buyer, class_name: 'Player', inverse_of: :purchases
+  belongs_to :seller, class_name: 'Player', inverse_of: :sales
 
   # Domain invariants — simple rules
   validate :validate_rules

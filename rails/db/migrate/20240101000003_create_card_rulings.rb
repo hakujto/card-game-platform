@@ -4,7 +4,7 @@ class CreateCardRulings < ActiveRecord::Migration[7.1]
       t.text :ruling_text, null: false
       t.date :published_at, null: false
       t.string :source, limit: 200, null: false
-      t.references :card, null: false, foreign_key: { to_table: :cards }
+      t.references :card, null: false, foreign_key: { to_table: :cards, on_delete: :cascade }
 
       t.timestamps
     end

@@ -13,10 +13,11 @@ class CreateArticles < ActiveRecord::Migration[7.1]
       t.integer :likes_count, null: false, default: 0
       t.boolean :is_featured, null: false, default: false
       t.datetime :published_at, null: true
-      t.references :author, null: false, foreign_key: { to_table: :players }
-      t.references :featured_deck, null: true, foreign_key: { to_table: :decks }
+      t.references :author, null: false, foreign_key: { to_table: :players, on_delete: :restrict }
+      t.references :featured_deck, null: true, foreign_key: { to_table: :decks, on_delete: :nullify }
 
       t.timestamps
     end
+    add_index :articles, :slug, unique: true
   end
 end

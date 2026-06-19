@@ -119,11 +119,18 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
     let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['pending']) } }
     before { tradeListing.update!(quantity: 1) }
-    it "transitions to Active" do
+    it "transitions to Active with role Seller" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Seller'))
       patch "/api/trade_listings/#{tradeListing.id}/transitions/pending-to-active"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeListing.reload.status).to eq('active') if response.status == 200
+    end
+
+    it "returns 403 for transition Pending -> Active with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/pending-to-active"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
@@ -149,11 +156,18 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
 
   describe "PATCH /api/trade_listings/:id/transitions/active-to-cancelled" do
     let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
-    it "transitions to Cancelled" do
+    it "transitions to Cancelled with role Seller" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Seller'))
       patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-cancelled"
       # If 422: model has rules that require extra fields for this state — set them in before block
       expect([200, 422]).to include(response.status)
       expect(tradeListing.reload.status).to eq('cancelled') if response.status == 200
+    end
+
+    it "returns 403 for transition Active -> Cancelled with insufficient role" do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'guest'))
+      patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-cancelled"
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

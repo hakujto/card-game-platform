@@ -1,8 +1,8 @@
 class DeckCard < ApplicationRecord
   self.table_name = 'deck_cards'
 
-  belongs_to :deck, class_name: 'Deck'
-  belongs_to :card, class_name: 'Card'
+  belongs_to :deck, class_name: 'Deck', inverse_of: :deck_cards
+  belongs_to :card, class_name: 'Card', inverse_of: :deck_cards
 
   # Domain invariants — simple rules
   validate :validate_rules

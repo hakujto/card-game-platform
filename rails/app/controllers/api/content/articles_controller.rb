@@ -89,6 +89,10 @@ module Api
       end
       # PATCH /api/:id/transitions/draft-to-published
       def transition_draft_to_published
+        unless current_user&.role.in?(["Editor", "Admin"])
+          render json: { error: 'Insufficient role for transition Draft -> Published' }, status: :forbidden
+          return
+        end
         @article = Article.find(params[:id])
         @article.assert_transition!('published')
         if @article.title.nil?
@@ -114,6 +118,10 @@ module Api
 
       # PATCH /api/:id/transitions/published-to-archived
       def transition_published_to_archived
+        unless current_user&.role.in?(["Editor", "Admin"])
+          render json: { error: 'Insufficient role for transition Published -> Archived' }, status: :forbidden
+          return
+        end
         @article = Article.find(params[:id])
         @article.assert_transition!('archived')
         @article.status = 'archived'
@@ -131,6 +139,10 @@ module Api
 
       # PATCH /api/:id/transitions/archived-to-draft
       def transition_archived_to_draft
+        unless current_user&.role.in?(["Admin"])
+          render json: { error: 'Insufficient role for transition Archived -> Draft' }, status: :forbidden
+          return
+        end
         @article = Article.find(params[:id])
         @article.assert_transition!('draft')
         @article.status = 'draft'

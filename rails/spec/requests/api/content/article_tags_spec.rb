@@ -4,7 +4,7 @@ RSpec.describe "Api::Content::ArticleTags", type: :request do
   let(:valid_attributes) do
     {
       name: 'test',
-      slug: 'test'
+      slug: 'test2'
     }
   end
 
@@ -27,7 +27,7 @@ RSpec.describe "Api::Content::ArticleTags", type: :request do
       it "returns 201" do
         post "/api/article_tags", params: { article_tag: {
       name: 'test',
-      slug: 'test'
+      slug: 'test2'
         } }, as: :json
         expect(response).to have_http_status(:created)
       end

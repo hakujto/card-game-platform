@@ -2,15 +2,18 @@ require 'rails_helper'
 
 RSpec.describe "Api::Players::Friendships", type: :request do
   before(:each) do
-    @dep_requester = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner = Player.create!({ display_name: 'test2', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner_id = @owner.id
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', id: @owner_id))
+    @dep_receiver = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do
     {
       status: :pending,
       created_at: Time.now,
-      requester_id: @dep_requester.id,
-      receiver_id: @dep_requester.id
+      receiver_id: @dep_receiver.id,
+      requester_id: @owner_id
     }
   end
 
@@ -27,8 +30,8 @@ RSpec.describe "Api::Players::Friendships", type: :request do
         post "/api/friendships", params: { friendship: {
       status: :pending,
       created_at: Time.now,
-      requester_id: @dep_requester.id,
-      receiver_id: @dep_requester.id
+      receiver_id: @dep_receiver.id,
+      requester_id: @owner_id
         } }, as: :json
         expect(response).to have_http_status(:created)
       end

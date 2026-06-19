@@ -1,9 +1,10 @@
 class ArticleComment < ApplicationRecord
   self.table_name = 'article_comments'
 
-  belongs_to :article, class_name: 'Article'
-  belongs_to :author, class_name: 'Player'
-  belongs_to :parent_comment, class_name: 'ArticleComment', optional: true
+  has_many :replies, class_name: 'ArticleComment', inverse_of: :parent_comment
+  belongs_to :article, class_name: 'Article', inverse_of: :comments
+  belongs_to :author, class_name: 'Player', inverse_of: :article_comments
+  belongs_to :parent_comment, class_name: 'ArticleComment', inverse_of: :replies, optional: true
 
   def to_s
     body.to_s
