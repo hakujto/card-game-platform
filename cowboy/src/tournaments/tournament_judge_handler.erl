@@ -59,7 +59,7 @@ delete_resource(Req, State) ->
 params_to_record(Id, Params) ->
     #tournament_judge{
         id         = Id,
-        role       = maps:get(<<"role">>, Params, undefined),
+        role       = maps:get(<<"role">>, Params, <<"Judge">>),
         tournament_id = maps:get(<<"tournament_id">>, Params, undefined),
         player_id  = maps:get(<<"player_id">>, Params, undefined),
         created_at = iso_now(),

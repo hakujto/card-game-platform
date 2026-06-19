@@ -1,5 +1,5 @@
 -module(order_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_player_id/1, find_by_coupon_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, order, 1).
+
+find_by_player_id(FKId) ->
+    F = fun() -> mnesia:match_object(#order{player_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_coupon_id(FKId) ->
+    F = fun() -> mnesia:match_object(#order{coupon_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#order{id = Id, status = Status, total = Total, discount_applied = DiscountApplied, currency = Currency, payment_method = PaymentMethod, payment_reference = PaymentReference, shipping_address = ShippingAddress, tracking_number = TrackingNumber, paid_at = PaidAt, shipped_at = ShippedAt, player_id = PlayerId, coupon_id = CouponId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

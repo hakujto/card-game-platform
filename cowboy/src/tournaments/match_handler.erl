@@ -1,7 +1,7 @@
 -module(match_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_record_result/2, handle_finalize_result/2, handle_determine_winner/2, handle_concede/2, handle_draw/2, handle_transition_pending_to_active/2, handle_transition_active_to_completed/2, handle_transition_active_to_draw/2, handle_transition_pending_to_b_y_e/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_record_result/2, handle_finalize_result/2, handle_determine_winner/2, handle_concede/2, handle_draw/2, handle_transition_pending_to_active/2, handle_transition_active_to_completed/2, handle_transition_active_to_draw/2, handle_transition_pending_to_b_y_e/2, handle_transition_completed_to_active/2, handle_transition_draw_to_active/2, handle_transition_b_y_e_to_active/2]).
 
 -include("records.hrl").
 
@@ -59,9 +59,9 @@ params_to_record(Id, Params) ->
     #match{
         id         = Id,
         table_number = maps:get(<<"table_number">>, Params, undefined),
-        status     = maps:get(<<"status">>, Params, undefined),
-        player1_wins = maps:get(<<"player1_wins">>, Params, undefined),
-        player2_wins = maps:get(<<"player2_wins">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Pending">>),
+        player1_wins = maps:get(<<"player1_wins">>, Params, 0),
+        player2_wins = maps:get(<<"player2_wins">>, Params, 0),
         started_at = maps:get(<<"started_at">>, Params, undefined),
         ended_at   = maps:get(<<"ended_at">>, Params, undefined),
         result_notes = maps:get(<<"result_notes">>, Params, undefined),
@@ -160,8 +160,16 @@ determine_winner_behavior(_Record) ->
 handle_concede(Req0, State) ->
     {ok, Body, Req1} = cowboy_req:read_body(Req0),
     Params = jsone:decode(Body, [{object_format, map}]),
+    case check_guard_concede(State) of
+        false -> reply_422(Req1, [<<"Guard condition not met for concede">>], State);
+        true  ->
     _ = concede_behavior(State, Params),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req1), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req1), State}
+    end.
+
+check_guard_concede(_Record) ->
+    %% TODO: evaluate guard for concede
+    true.
 
 concede_behavior(_Record, _Params) ->
     %% TODO: implement concede(player_id)
@@ -178,31 +186,73 @@ draw_behavior(_Record) ->
 %% ── Lifecycle transitions ────────────────────────────────────────────
 handle_transition_pending_to_active(Req, State) ->
     %% Transition: Pending -> Active
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"judge">>, <<"head_judge">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Pending -> Active">>}), Req), State};
+        true  ->
     ok = match_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Active">>),
     ok = match_store:update_field(maps:get(<<"id">>, State), status, <<"Active">>),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Active">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Active">>}), Req), State}
+    end.
 
 handle_transition_active_to_completed(Req, State) ->
     %% Transition: Active -> Completed
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"judge">>, <<"head_judge">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Active -> Completed">>}), Req), State};
+        true  ->
     ok = match_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Completed">>),
     ok = match_store:update_field(maps:get(<<"id">>, State), status, <<"Completed">>),
     finalize_result_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Completed">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Completed">>}), Req), State}
+    end.
 
 handle_transition_active_to_draw(Req, State) ->
     %% Transition: Active -> Draw
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"judge">>, <<"head_judge">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Active -> Draw">>}), Req), State};
+        true  ->
     ok = match_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Draw">>),
     ok = match_store:update_field(maps:get(<<"id">>, State), status, <<"Draw">>),
     draw_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Draw">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Draw">>}), Req), State}
+    end.
 
 handle_transition_pending_to_b_y_e(Req, State) ->
     %% Transition: Pending -> BYE
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"judge">>, <<"head_judge">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Pending -> BYE">>}), Req), State};
+        true  ->
     ok = match_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"BYE">>),
     ok = match_store:update_field(maps:get(<<"id">>, State), status, <<"BYE">>),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"BYE">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"BYE">>}), Req), State}
+    end.
+
+handle_transition_completed_to_active(Req, State) ->
+    %% Transition: Completed -> Active
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Completed -> Active is not allowed">>}), Req), State}.
+
+handle_transition_draw_to_active(Req, State) ->
+    %% Transition: Draw -> Active
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Draw -> Active is not allowed">>}), Req), State}.
+
+handle_transition_b_y_e_to_active(Req, State) ->
+    %% Transition: BYE -> Active
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition BYE -> Active is not allowed">>}), Req), State}.
 

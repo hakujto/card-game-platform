@@ -89,10 +89,10 @@ params_to_record(Id, Params) ->
         placement_from = maps:get(<<"placement_from">>, Params, undefined),
         placement_to = maps:get(<<"placement_to">>, Params, undefined),
         prize_type = maps:get(<<"prize_type">>, Params, undefined),
-        amount     = maps:get(<<"amount">>, Params, undefined),
+        amount     = maps:get(<<"amount">>, Params, 0),
         description = maps:get(<<"description">>, Params, undefined),
         packs_count = maps:get(<<"packs_count">>, Params, undefined),
-        season_points = maps:get(<<"season_points">>, Params, undefined),
+        season_points = maps:get(<<"season_points">>, Params, 0),
         tournament_id = maps:get(<<"tournament_id">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()

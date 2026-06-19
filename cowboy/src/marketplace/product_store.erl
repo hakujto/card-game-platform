@@ -1,5 +1,5 @@
 -module(product_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, find_by_card_id/1, find_by_card_set_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, product, 1).
+
+find_by_card_id(FKId) ->
+    F = fun() -> mnesia:match_object(#product{card_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_card_set_id(FKId) ->
+    F = fun() -> mnesia:match_object(#product{card_set_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#product{id = Id, name = Name, product_type = ProductType, price = Price, stock = Stock, active = Active, discount_percent = DiscountPercent, description = Description, image_url = ImageUrl, featured = Featured, card_id = CardId, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

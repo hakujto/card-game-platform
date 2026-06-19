@@ -1,5 +1,5 @@
 -module(article_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_author_id/1, find_by_featured_deck_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, article, 1).
+
+find_by_author_id(FKId) ->
+    F = fun() -> mnesia:match_object(#article{author_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_featured_deck_id(FKId) ->
+    F = fun() -> mnesia:match_object(#article{featured_deck_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt = Excerpt, cover_image_url = CoverImageUrl, status = Status, article_type = ArticleType, language = Language, view_count = ViewCount, likes_count = LikesCount, is_featured = IsFeatured, published_at = PublishedAt, author_id = AuthorId, featured_deck_id = FeaturedDeckId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

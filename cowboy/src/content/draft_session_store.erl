@@ -1,5 +1,5 @@
 -module(draft_session_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_card_set_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,11 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, draft_session, 1).
+
+find_by_card_set_id(FKId) ->
+    F = fun() -> mnesia:match_object(#draft_session{card_set_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#draft_session{id = Id, status = Status, draft_type = DraftType, seats = Seats, time_per_pick_seconds = TimePerPickSeconds, completed_at = CompletedAt, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

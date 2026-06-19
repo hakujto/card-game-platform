@@ -10,7 +10,7 @@ valid_params() ->
         <<"condition">> => <<"Mint">>,
         <<"acquired_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"acquired_via">> => <<"Purchase">>,
-        <<"player_id">> => 1,
+        <<"player_id">> => <<"owner-1">>,
         <<"card_id">> => 1
     }.
 
@@ -50,7 +50,7 @@ get_player_collection() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, []}, [], []),
+    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, [{"X-User-Id", "owner-1"}]}, [], []),
     ?assertEqual(200, Code).
 
 update_player_collection() ->
@@ -59,8 +59,9 @@ update_player_collection() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
+    PatchBody = jsone:encode(valid_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(patch,
-        {Url, [], "application/json", Body}, [], []),
+        {Url, [{"X-User-Id", "owner-1"}], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).
 
 delete_player_collection() ->
@@ -69,6 +70,6 @@ delete_player_collection() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    {ok, {{_, Code, _}, _, _}} = httpc:request(delete, {Url, []}, [], []),
+    {ok, {{_, Code, _}, _, _}} = httpc:request(delete, {Url, [{"X-User-Id", "owner-1"}]}, [], []),
     ?assertEqual(204, Code).
 

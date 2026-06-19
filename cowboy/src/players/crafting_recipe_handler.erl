@@ -80,7 +80,7 @@ params_to_record(Id, Params) ->
     #crafting_recipe{
         id         = Id,
         dust_cost  = maps:get(<<"dust_cost">>, Params, undefined),
-        is_available = maps:get(<<"is_available">>, Params, undefined),
+        is_available = maps:get(<<"is_available">>, Params, true),
         result_card_id = maps:get(<<"result_card_id">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()

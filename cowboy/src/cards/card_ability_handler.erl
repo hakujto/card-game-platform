@@ -89,7 +89,7 @@ delete_resource(Req, State) ->
 params_to_record(Id, Params) ->
     #card_ability{
         id         = Id,
-        ability_type = maps:get(<<"ability_type">>, Params, undefined),
+        ability_type = maps:get(<<"ability_type">>, Params, <<"Keyword">>),
         keyword    = maps:get(<<"keyword">>, Params, undefined),
         ability_text = maps:get(<<"ability_text">>, Params, undefined),
         timing     = maps:get(<<"timing">>, Params, undefined),

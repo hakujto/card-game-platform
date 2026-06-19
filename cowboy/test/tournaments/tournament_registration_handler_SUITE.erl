@@ -9,7 +9,7 @@ valid_params() ->
         <<"points_earned">> => 1,
         <<"registered_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"tournament_id">> => 1,
-        <<"player_id">> => 1,
+        <<"player_id">> => <<"owner-1">>,
         <<"deck_id">> => 1
     }.
 
@@ -47,6 +47,6 @@ get_tournament_registration() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, []}, [], []),
+    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, [{"X-User-Id", "owner-1"}]}, [], []),
     ?assertEqual(200, Code).
 

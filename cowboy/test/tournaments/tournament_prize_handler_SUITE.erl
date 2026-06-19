@@ -58,8 +58,9 @@ update_tournament_prize() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
+    PatchBody = jsone:encode(valid_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(put,
-        {Url, [], "application/json", Body}, [], []),
+        {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).
 
 delete_tournament_prize() ->

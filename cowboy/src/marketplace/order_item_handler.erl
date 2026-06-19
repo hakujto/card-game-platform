@@ -63,7 +63,7 @@ params_to_record(Id, Params) ->
         id         = Id,
         quantity   = maps:get(<<"quantity">>, Params, undefined),
         price_at_purchase = maps:get(<<"price_at_purchase">>, Params, undefined),
-        foil       = maps:get(<<"foil">>, Params, undefined),
+        foil       = maps:get(<<"foil">>, Params, false),
         order_id   = maps:get(<<"order_id">>, Params, undefined),
         product_id = maps:get(<<"product_id">>, Params, undefined),
         created_at = iso_now(),

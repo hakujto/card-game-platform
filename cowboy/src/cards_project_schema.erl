@@ -224,3 +224,11 @@ create_tables() ->
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end.
+
+create_unique_indexes() ->
+    mnesia:add_table_index(card_set, code),
+    mnesia:add_table_index(player, display_name),
+    mnesia:add_table_index(coupon, code),
+    mnesia:add_table_index(article, slug),
+    mnesia:add_table_index(article_tag, slug),
+    ok.

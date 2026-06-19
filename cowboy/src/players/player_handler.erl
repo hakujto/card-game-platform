@@ -58,6 +58,7 @@ handle_post(Req0, State) ->
     Id     = player_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = player_store:insert(Record),
+    initialize_collection_hook(Record),
     Resp   = jsone:encode(apply_projection(record_to_map(Record))),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
@@ -86,14 +87,14 @@ params_to_record(Id, Params) ->
     #player{
         id         = Id,
         display_name = maps:get(<<"display_name">>, Params, undefined),
-        rank       = maps:get(<<"rank">>, Params, undefined),
-        rating     = maps:get(<<"rating">>, Params, undefined),
-        peak_rating = maps:get(<<"peak_rating">>, Params, undefined),
+        rank       = maps:get(<<"rank">>, Params, <<"Bronze">>),
+        rating     = maps:get(<<"rating">>, Params, 1000),
+        peak_rating = maps:get(<<"peak_rating">>, Params, 1000),
         bio        = maps:get(<<"bio">>, Params, undefined),
         country_code = maps:get(<<"country_code">>, Params, undefined),
         avatar_url = maps:get(<<"avatar_url">>, Params, undefined),
         preferred_format = maps:get(<<"preferred_format">>, Params, undefined),
-        is_verified = maps:get(<<"is_verified">>, Params, undefined),
+        is_verified = maps:get(<<"is_verified">>, Params, false),
         last_active_at = maps:get(<<"last_active_at">>, Params, undefined),
         user_id    = maps:get(<<"user_id">>, Params, undefined),
         created_at = iso_now(),
@@ -146,6 +147,10 @@ reply_422(Req, Errors, State) ->
     {stop, Req2, State}.
 
 %% ── Lifecycle hooks ──────────────────────────────────────────────────
+initialize_collection_hook(Record) ->
+    %% TODO: implement initialize_collection
+    Record.
+
 update_rank_hook(Record) ->
     %% TODO: implement update_rank
     Record.

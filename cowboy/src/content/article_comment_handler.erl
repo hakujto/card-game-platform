@@ -63,7 +63,7 @@ params_to_record(Id, Params) ->
     #article_comment{
         id         = Id,
         body       = maps:get(<<"body">>, Params, undefined),
-        is_hidden  = maps:get(<<"is_hidden">>, Params, undefined),
+        is_hidden  = maps:get(<<"is_hidden">>, Params, false),
         article_id = maps:get(<<"article_id">>, Params, undefined),
         author_id  = maps:get(<<"author_id">>, Params, undefined),
         parent_comment_id = maps:get(<<"parent_comment_id">>, Params, undefined),

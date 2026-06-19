@@ -1,7 +1,7 @@
 -module(trade_listing_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_patch/2, handle_close/2, handle_extend/2, handle_cancel/2, handle_is_expired/2, handle_finalize_auction/2, handle_transition_pending_to_active/2, handle_transition_active_to_sold/2, handle_transition_active_to_expired/2, handle_transition_active_to_cancelled/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_patch/2, handle_close/2, handle_extend/2, handle_cancel/2, handle_is_expired/2, handle_finalize_auction/2, handle_transition_pending_to_active/2, handle_transition_active_to_sold/2, handle_transition_active_to_expired/2, handle_transition_active_to_cancelled/2, handle_transition_sold_to_active/2, handle_transition_expired_to_active/2]).
 
 -include("records.hrl").
 
@@ -87,15 +87,15 @@ handle_patch(Req0, State) -> handle_put(Req0, State).
 params_to_record(Id, Params) ->
     #trade_listing{
         id         = Id,
-        status     = maps:get(<<"status">>, Params, undefined),
-        listing_type = maps:get(<<"listing_type">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Active">>),
+        listing_type = maps:get(<<"listing_type">>, Params, <<"FixedPrice">>),
         asking_price = maps:get(<<"asking_price">>, Params, undefined),
         auction_start_price = maps:get(<<"auction_start_price">>, Params, undefined),
         auction_current_bid = maps:get(<<"auction_current_bid">>, Params, undefined),
         auction_end_time = maps:get(<<"auction_end_time">>, Params, undefined),
-        foil       = maps:get(<<"foil">>, Params, undefined),
-        condition  = maps:get(<<"condition">>, Params, undefined),
-        quantity   = maps:get(<<"quantity">>, Params, undefined),
+        foil       = maps:get(<<"foil">>, Params, false),
+        condition  = maps:get(<<"condition">>, Params, <<"Mint">>),
+        quantity   = maps:get(<<"quantity">>, Params, 1),
         description = maps:get(<<"description">>, Params, undefined),
         expires_at = maps:get(<<"expires_at">>, Params, undefined),
         seller_id  = maps:get(<<"seller_id">>, Params, undefined),
@@ -200,8 +200,16 @@ extend_behavior(_Record, _Params) ->
     ok.
 
 handle_cancel(Req, State) ->
+    case check_guard_cancel(State) of
+        false -> reply_422(Req, [<<"Guard condition not met for cancel">>], State);
+        true  ->
     _ = cancel_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
+
+check_guard_cancel(_Record) ->
+    %% TODO: evaluate guard for cancel
+    true.
 
 cancel_behavior(_Record) ->
     %% TODO: implement cancel
@@ -235,10 +243,16 @@ check_on_finalize_auction(Record) ->
 handle_transition_pending_to_active(Req, State) ->
     %% Transition: Pending -> Active
     %% @on guard: [{"type":"neq","field":"quantity","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"seller">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Pending -> Active">>}), Req), State};
+        true  ->
     ok = trade_listing_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Active">>),
     ok = trade_listing_store:update_field(maps:get(<<"id">>, State), status, <<"Active">>),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Active">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Active">>}), Req), State}
+    end.
 
 handle_transition_active_to_sold(Req, State) ->
     %% Transition: Active -> Sold
@@ -258,9 +272,27 @@ handle_transition_active_to_expired(Req, State) ->
 
 handle_transition_active_to_cancelled(Req, State) ->
     %% Transition: Active -> Cancelled
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"seller">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Active -> Cancelled">>}), Req), State};
+        true  ->
     ok = trade_listing_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Cancelled">>),
     ok = trade_listing_store:update_field(maps:get(<<"id">>, State), status, <<"Cancelled">>),
     cancel_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}
+    end.
+
+handle_transition_sold_to_active(Req, State) ->
+    %% Transition: Sold -> Active
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Sold -> Active is not allowed">>}), Req), State}.
+
+handle_transition_expired_to_active(Req, State) ->
+    %% Transition: Expired -> Active
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Expired -> Active is not allowed">>}), Req), State}.
 

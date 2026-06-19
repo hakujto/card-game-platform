@@ -84,14 +84,14 @@ params_to_record(Id, Params) ->
     #coupon{
         id         = Id,
         code       = maps:get(<<"code">>, Params, undefined),
-        discount_type = maps:get(<<"discount_type">>, Params, undefined),
+        discount_type = maps:get(<<"discount_type">>, Params, <<"Percent">>),
         discount_value = maps:get(<<"discount_value">>, Params, undefined),
-        min_order_value = maps:get(<<"min_order_value">>, Params, undefined),
+        min_order_value = maps:get(<<"min_order_value">>, Params, 0),
         max_uses   = maps:get(<<"max_uses">>, Params, undefined),
-        uses_count = maps:get(<<"uses_count">>, Params, undefined),
+        uses_count = maps:get(<<"uses_count">>, Params, 0),
         valid_from = maps:get(<<"valid_from">>, Params, undefined),
         valid_until = maps:get(<<"valid_until">>, Params, undefined),
-        is_active  = maps:get(<<"is_active">>, Params, undefined),
+        is_active  = maps:get(<<"is_active">>, Params, true),
         created_at = iso_now(),
         updated_at = iso_now()
     }.
@@ -187,8 +187,16 @@ is_applicable_to_order_behavior(_Record, _Params) ->
     null.
 
 handle_redeem(Req, State) ->
+    case check_guard_redeem(State) of
+        false -> reply_422(Req, [<<"Guard condition not met for redeem">>], State);
+        true  ->
     _ = redeem_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
+
+check_guard_redeem(_Record) ->
+    %% TODO: evaluate guard for redeem
+    true.
 
 redeem_behavior(_Record) ->
     %% TODO: implement redeem

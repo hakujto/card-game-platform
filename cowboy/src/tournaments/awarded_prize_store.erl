@@ -1,5 +1,5 @@
 -module(awarded_prize_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, find_by_prize_id/1, find_by_player_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, awarded_prize, 1).
+
+find_by_prize_id(FKId) ->
+    F = fun() -> mnesia:match_object(#awarded_prize{prize_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_player_id(FKId) ->
+    F = fun() -> mnesia:match_object(#awarded_prize{player_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#awarded_prize{id = Id, final_placement = FinalPlacement, awarded_at = AwardedAt, claimed = Claimed, claimed_at = ClaimedAt, prize_id = PrizeId, player_id = PlayerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

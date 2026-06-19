@@ -1,5 +1,5 @@
 -module(card_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, find_by_set_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,11 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, card, 1).
+
+find_by_set_id(FKId) ->
+    F = fun() -> mnesia:match_object(#card{set_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#card{id = Id, name = Name, card_type = CardType, rarity = Rarity, mana_cost = ManaCost, mana_colors = ManaColors, attack = Attack, defense = Defense, loyalty = Loyalty, description = Description, flavor_text = FlavorText, image_url = ImageUrl, artist_name = ArtistName, legal_formats = LegalFormats, is_banned = IsBanned, is_restricted = IsRestricted, power_level = PowerLevel, set_id = SetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

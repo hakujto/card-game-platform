@@ -59,10 +59,10 @@ params_to_record(Id, Params) ->
     #tournament_round{
         id         = Id,
         round_number = maps:get(<<"round_number">>, Params, undefined),
-        status     = maps:get(<<"status">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Pending">>),
         started_at = maps:get(<<"started_at">>, Params, undefined),
         ended_at   = maps:get(<<"ended_at">>, Params, undefined),
-        time_limit_minutes = maps:get(<<"time_limit_minutes">>, Params, undefined),
+        time_limit_minutes = maps:get(<<"time_limit_minutes">>, Params, 50),
         tournament_id = maps:get(<<"tournament_id">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()

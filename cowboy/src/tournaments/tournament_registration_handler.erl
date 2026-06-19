@@ -37,8 +37,16 @@ handle_get(Req, State) ->
             Body = jsone:encode(lists:map(fun apply_projection/1, All)),
             {Body, Req, State};
         _Id ->
-            Body = jsone:encode(apply_projection(State)),
-            {Body, Req, State}
+            UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
+            OwnerId = maps:get(<<"player_id">>, State, undefined),
+            case UserId =:= OwnerId of
+                false ->
+                    Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
+                    {stop, Req2, State};
+                true ->
+                    Body = jsone:encode(apply_projection(State)),
+                    {Body, Req, State}
+            end
     end.
 
 handle_post(Req0, State) ->
@@ -58,10 +66,10 @@ handle_post(Req0, State) ->
 params_to_record(Id, Params) ->
     #tournament_registration{
         id         = Id,
-        status     = maps:get(<<"status">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Registered">>),
         seed       = maps:get(<<"seed">>, Params, undefined),
         final_standing = maps:get(<<"final_standing">>, Params, undefined),
-        points_earned = maps:get(<<"points_earned">>, Params, undefined),
+        points_earned = maps:get(<<"points_earned">>, Params, 0),
         registered_at = maps:get(<<"registered_at">>, Params, undefined),
         tournament_id = maps:get(<<"tournament_id">>, Params, undefined),
         player_id  = maps:get(<<"player_id">>, Params, undefined),

@@ -1,7 +1,7 @@
 -module(stream_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_go_live/2, handle_end/2, handle_update_viewer_peak/2, handle_duration_minutes/2, handle_transition_scheduled_to_live/2, handle_transition_live_to_ended/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_go_live/2, handle_end/2, handle_update_viewer_peak/2, handle_duration_minutes/2, handle_transition_scheduled_to_live/2, handle_transition_live_to_ended/2, handle_transition_ended_to_live/2]).
 
 -include("records.hrl").
 
@@ -88,11 +88,11 @@ params_to_record(Id, Params) ->
         id         = Id,
         title      = maps:get(<<"title">>, Params, undefined),
         stream_url = maps:get(<<"stream_url">>, Params, undefined),
-        status     = maps:get(<<"status">>, Params, undefined),
-        platform   = maps:get(<<"platform">>, Params, undefined),
-        language   = maps:get(<<"language">>, Params, undefined),
-        is_official = maps:get(<<"is_official">>, Params, undefined),
-        viewer_count_peak = maps:get(<<"viewer_count_peak">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Scheduled">>),
+        platform   = maps:get(<<"platform">>, Params, <<"Twitch">>),
+        language   = maps:get(<<"language">>, Params, <<"EN">>),
+        is_official = maps:get(<<"is_official">>, Params, false),
+        viewer_count_peak = maps:get(<<"viewer_count_peak">>, Params, 0),
         scheduled_start = maps:get(<<"scheduled_start">>, Params, undefined),
         actual_start = maps:get(<<"actual_start">>, Params, undefined),
         ended_at   = maps:get(<<"ended_at">>, Params, undefined),
@@ -219,17 +219,35 @@ duration_minutes_behavior(_Record) ->
 handle_transition_scheduled_to_live(Req, State) ->
     %% Transition: Scheduled -> Live
     %% @on guard: [{"type":"neq","field":"stream_url","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"streamer">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Scheduled -> Live">>}), Req), State};
+        true  ->
     ok = stream_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Live">>),
     ok = stream_store:update_field(maps:get(<<"id">>, State), status, <<"Live">>),
     go_live_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Live">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Live">>}), Req), State}
+    end.
 
 handle_transition_live_to_ended(Req, State) ->
     %% Transition: Live -> Ended
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"streamer">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Live -> Ended">>}), Req), State};
+        true  ->
     ok = stream_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Ended">>),
     ok = stream_store:update_field(maps:get(<<"id">>, State), status, <<"Ended">>),
     end_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Ended">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Ended">>}), Req), State}
+    end.
+
+handle_transition_ended_to_live(Req, State) ->
+    %% Transition: Ended -> Live
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Ended -> Live is not allowed">>}), Req), State}.
 

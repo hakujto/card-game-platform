@@ -59,7 +59,7 @@ delete_resource(Req, State) ->
 params_to_record(Id, Params) ->
     #crafting_ingredient{
         id         = Id,
-        quantity   = maps:get(<<"quantity">>, Params, undefined),
+        quantity   = maps:get(<<"quantity">>, Params, 1),
         recipe_id  = maps:get(<<"recipe_id">>, Params, undefined),
         card_id    = maps:get(<<"card_id">>, Params, undefined),
         created_at = iso_now(),

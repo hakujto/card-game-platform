@@ -85,8 +85,8 @@ params_to_record(Id, Params) ->
         name       = maps:get(<<"name">>, Params, undefined),
         start_date = maps:get(<<"start_date">>, Params, undefined),
         end_date   = maps:get(<<"end_date">>, Params, undefined),
-        format     = maps:get(<<"format">>, Params, undefined),
-        is_active  = maps:get(<<"is_active">>, Params, undefined),
+        format     = maps:get(<<"format">>, Params, <<"Standard">>),
+        is_active  = maps:get(<<"is_active">>, Params, false),
         reward_description = maps:get(<<"reward_description">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()

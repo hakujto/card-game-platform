@@ -59,7 +59,7 @@ params_to_record(Id, Params) ->
         id         = Id,
         amount     = maps:get(<<"amount">>, Params, undefined),
         placed_at  = maps:get(<<"placed_at">>, Params, undefined),
-        is_winning = maps:get(<<"is_winning">>, Params, undefined),
+        is_winning = maps:get(<<"is_winning">>, Params, false),
         listing_id = maps:get(<<"listing_id">>, Params, undefined),
         bidder_id  = maps:get(<<"bidder_id">>, Params, undefined),
         created_at = iso_now(),

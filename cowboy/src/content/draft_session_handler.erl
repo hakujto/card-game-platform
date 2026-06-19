@@ -1,7 +1,7 @@
 -module(draft_session_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_start/2, handle_abandon/2, handle_complete/2, handle_is_full/2, handle_transition_waiting_for_players_to_drafting/2, handle_transition_drafting_to_completed/2, handle_transition_drafting_to_abandoned/2, handle_transition_waiting_for_players_to_abandoned/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_start/2, handle_abandon/2, handle_complete/2, handle_is_full/2, handle_transition_waiting_for_players_to_drafting/2, handle_transition_drafting_to_completed/2, handle_transition_drafting_to_abandoned/2, handle_transition_waiting_for_players_to_abandoned/2, handle_transition_completed_to_drafting/2, handle_transition_abandoned_to_drafting/2]).
 
 -include("records.hrl").
 
@@ -58,10 +58,10 @@ handle_post(Req0, State) ->
 params_to_record(Id, Params) ->
     #draft_session{
         id         = Id,
-        status     = maps:get(<<"status">>, Params, undefined),
-        draft_type = maps:get(<<"draft_type">>, Params, undefined),
-        seats      = maps:get(<<"seats">>, Params, undefined),
-        time_per_pick_seconds = maps:get(<<"time_per_pick_seconds">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"WaitingForPlayers">>),
+        draft_type = maps:get(<<"draft_type">>, Params, <<"Booster">>),
+        seats      = maps:get(<<"seats">>, Params, 8),
+        time_per_pick_seconds = maps:get(<<"time_per_pick_seconds">>, Params, 30),
         completed_at = maps:get(<<"completed_at">>, Params, undefined),
         card_set_id = maps:get(<<"card_set_id">>, Params, undefined),
         created_at = iso_now(),
@@ -170,17 +170,41 @@ handle_transition_drafting_to_completed(Req, State) ->
 
 handle_transition_drafting_to_abandoned(Req, State) ->
     %% Transition: Drafting -> Abandoned
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Drafting -> Abandoned">>}), Req), State};
+        true  ->
     ok = draft_session_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Abandoned">>),
     ok = draft_session_store:update_field(maps:get(<<"id">>, State), status, <<"Abandoned">>),
     abandon_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Abandoned">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Abandoned">>}), Req), State}
+    end.
 
 handle_transition_waiting_for_players_to_abandoned(Req, State) ->
     %% Transition: WaitingForPlayers -> Abandoned
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition WaitingForPlayers -> Abandoned">>}), Req), State};
+        true  ->
     ok = draft_session_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Abandoned">>),
     ok = draft_session_store:update_field(maps:get(<<"id">>, State), status, <<"Abandoned">>),
     abandon_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Abandoned">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Abandoned">>}), Req), State}
+    end.
+
+handle_transition_completed_to_drafting(Req, State) ->
+    %% Transition: Completed -> Drafting
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Completed -> Drafting is not allowed">>}), Req), State}.
+
+handle_transition_abandoned_to_drafting(Req, State) ->
+    %% Transition: Abandoned -> Drafting
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Abandoned -> Drafting is not allowed">>}), Req), State}.
 

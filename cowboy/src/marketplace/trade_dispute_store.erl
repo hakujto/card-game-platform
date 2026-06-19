@@ -1,5 +1,5 @@
 -module(trade_dispute_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_transaction_id/1, find_by_opened_by_id/1, find_by_resolved_by_id/1, delete_by_transaction_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,25 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, trade_dispute, 1).
+
+find_by_transaction_id(FKId) ->
+    F = fun() -> mnesia:match_object(#trade_dispute{transaction_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_opened_by_id(FKId) ->
+    F = fun() -> mnesia:match_object(#trade_dispute{opened_by_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_resolved_by_id(FKId) ->
+    F = fun() -> mnesia:match_object(#trade_dispute{resolved_by_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+delete_by_transaction_id(FKId) ->
+    Records = find_by_transaction_id(FKId),
+    lists:foreach(fun(R) -> delete(maps:get(<<"id">>, R)) end, Records).
 
 record_to_map(#trade_dispute{id = Id, status = Status, reason = Reason, description = Description, resolution = Resolution, opened_at = OpenedAt, resolved_at = ResolvedAt, transaction_id = TransactionId, opened_by_id = OpenedById, resolved_by_id = ResolvedById, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

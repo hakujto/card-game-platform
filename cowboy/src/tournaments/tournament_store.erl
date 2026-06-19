@@ -1,5 +1,5 @@
 -module(tournament_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_season_id/1, find_by_organizer_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, tournament, 1).
+
+find_by_season_id(FKId) ->
+    F = fun() -> mnesia:match_object(#tournament{season_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_organizer_id(FKId) ->
+    F = fun() -> mnesia:match_object(#tournament{organizer_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#tournament{id = Id, name = Name, description = Description, status = Status, format = Format, tournament_type = TournamentType, max_players = MaxPlayers, entry_fee = EntryFee, prize_pool = PrizePool, start_time = StartTime, end_time = EndTime, is_online = IsOnline, location = Location, rules_text = RulesText, season_id = SeasonId, organizer_id = OrganizerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

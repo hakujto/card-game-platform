@@ -1,5 +1,5 @@
 -module(stream_store).
--export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2]).
+-export([all/0, find/1, find_record/1, insert/1, update/1, delete/1, next_id/0, update_field/3, assert_transition/2, find_by_tournament_id/1, find_by_streamer_id/1]).
 
 -include("records.hrl").
 
@@ -39,6 +39,16 @@ delete(Id) ->
 
 next_id() ->
     mnesia:dirty_update_counter(id_seq, stream, 1).
+
+find_by_tournament_id(FKId) ->
+    F = fun() -> mnesia:match_object(#stream{tournament_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
+
+find_by_streamer_id(FKId) ->
+    F = fun() -> mnesia:match_object(#stream{streamer_id = FKId, _ = '_'}) end,
+    {atomic, Records} = mnesia:transaction(F),
+    [record_to_map(R) || R <- Records].
 
 record_to_map(#stream{id = Id, title = Title, stream_url = StreamUrl, status = Status, platform = Platform, language = Language, is_official = IsOfficial, viewer_count_peak = ViewerCountPeak, scheduled_start = ScheduledStart, actual_start = ActualStart, ended_at = EndedAt, vod_url = VodUrl, tournament_id = TournamentId, streamer_id = StreamerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{

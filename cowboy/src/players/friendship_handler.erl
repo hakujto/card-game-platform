@@ -37,8 +37,16 @@ handle_get(Req, State) ->
             Body = jsone:encode(lists:map(fun apply_projection/1, All)),
             {Body, Req, State};
         _Id ->
-            Body = jsone:encode(apply_projection(State)),
-            {Body, Req, State}
+            UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
+            OwnerId = maps:get(<<"requester_id">>, State, undefined),
+            case UserId =:= OwnerId of
+                false ->
+                    Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
+                    {stop, Req2, State};
+                true ->
+                    Body = jsone:encode(apply_projection(State)),
+                    {Body, Req, State}
+            end
     end.
 
 handle_post(Req0, State) ->
@@ -56,13 +64,21 @@ handle_delete(Req, State) ->
     delete_resource(Req, State).
 
 delete_resource(Req, State) ->
-    ok = friendship_store:delete(maps:get(<<"id">>, State)),
-    {true, Req, State}.
+    UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
+    OwnerId = maps:get(<<"requester_id">>, State, undefined),
+    case UserId =:= OwnerId of
+        false ->
+            Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
+            {stop, Req2, State};
+        true ->
+            ok = friendship_store:delete(maps:get(<<"id">>, State)),
+            {true, Req, State}
+    end.
 
 params_to_record(Id, Params) ->
     #friendship{
         id         = Id,
-        status     = maps:get(<<"status">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Pending">>),
         requester_id = maps:get(<<"requester_id">>, Params, undefined),
         receiver_id = maps:get(<<"receiver_id">>, Params, undefined),
         created_at = iso_now(),

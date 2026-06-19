@@ -44,8 +44,16 @@ handle_get(Req, State) ->
             Body = jsone:encode(lists:map(fun apply_projection/1, All)),
             {Body, Req, State};
         _Id ->
-            Body = jsone:encode(apply_projection(State)),
-            {Body, Req, State}
+            UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
+            OwnerId = maps:get(<<"player_id">>, State, undefined),
+            case UserId =:= OwnerId of
+                false ->
+                    Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
+                    {stop, Req2, State};
+                true ->
+                    Body = jsone:encode(apply_projection(State)),
+                    {Body, Req, State}
+            end
     end.
 
 handle_post(Req0, State) ->
@@ -65,6 +73,13 @@ handle_put(Req0, State) ->
     case is_map(State) andalso maps:is_key(<<"id">>, State) of
         false -> {stop, cowboy_req:reply(404, #{}, <<>>, Req0), State};
         true  ->
+    UserId = cowboy_req:header(<<"x-user-id">>, Req0, undefined),
+    OwnerId = maps:get(<<"player_id">>, State, undefined),
+    case UserId =:= OwnerId of
+        false ->
+            Req_own = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req0),
+            {stop, Req_own, State};
+        true ->
     Id = maps:get(<<"id">>, State),
     {ok, ExistingRecord} = player_collection_store:find_record(Id),
     {ok, Body, Req1} = cowboy_req:read_body(Req0),
@@ -74,6 +89,7 @@ handle_put(Req0, State) ->
     Resp = jsone:encode(apply_projection(record_to_map(Updated))),
     Req2 = cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, Updated}
+    end
     end.
 
 handle_patch(Req0, State) -> handle_put(Req0, State).
@@ -82,17 +98,25 @@ handle_delete(Req, State) ->
     delete_resource(Req, State).
 
 delete_resource(Req, State) ->
-    ok = player_collection_store:delete(maps:get(<<"id">>, State)),
-    {true, Req, State}.
+    UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
+    OwnerId = maps:get(<<"player_id">>, State, undefined),
+    case UserId =:= OwnerId of
+        false ->
+            Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
+            {stop, Req2, State};
+        true ->
+            ok = player_collection_store:delete(maps:get(<<"id">>, State)),
+            {true, Req, State}
+    end.
 
 params_to_record(Id, Params) ->
     #player_collection{
         id         = Id,
-        quantity   = maps:get(<<"quantity">>, Params, undefined),
-        foil       = maps:get(<<"foil">>, Params, undefined),
-        condition  = maps:get(<<"condition">>, Params, undefined),
+        quantity   = maps:get(<<"quantity">>, Params, 1),
+        foil       = maps:get(<<"foil">>, Params, false),
+        condition  = maps:get(<<"condition">>, Params, <<"Mint">>),
         acquired_at = maps:get(<<"acquired_at">>, Params, undefined),
-        acquired_via = maps:get(<<"acquired_via">>, Params, undefined),
+        acquired_via = maps:get(<<"acquired_via">>, Params, <<"Purchase">>),
         player_id  = maps:get(<<"player_id">>, Params, undefined),
         card_id    = maps:get(<<"card_id">>, Params, undefined),
         created_at = iso_now(),

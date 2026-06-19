@@ -1,7 +1,7 @@
 -module(article_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_publish/2, handle_archive/2, handle_increment_view/2, handle_like/2, handle_unlike/2, handle_reading_time_minutes/2, handle_transition_draft_to_published/2, handle_transition_published_to_archived/2, handle_transition_archived_to_draft/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_publish/2, handle_archive/2, handle_increment_view/2, handle_like/2, handle_unlike/2, handle_reading_time_minutes/2, handle_transition_draft_to_published/2, handle_transition_published_to_archived/2, handle_transition_archived_to_draft/2, handle_transition_published_to_draft/2]).
 
 -include("records.hrl").
 
@@ -91,12 +91,12 @@ params_to_record(Id, Params) ->
         body       = maps:get(<<"body">>, Params, undefined),
         excerpt    = maps:get(<<"excerpt">>, Params, undefined),
         cover_image_url = maps:get(<<"cover_image_url">>, Params, undefined),
-        status     = maps:get(<<"status">>, Params, undefined),
-        article_type = maps:get(<<"article_type">>, Params, undefined),
-        language   = maps:get(<<"language">>, Params, undefined),
-        view_count = maps:get(<<"view_count">>, Params, undefined),
-        likes_count = maps:get(<<"likes_count">>, Params, undefined),
-        is_featured = maps:get(<<"is_featured">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Draft">>),
+        article_type = maps:get(<<"article_type">>, Params, <<"Guide">>),
+        language   = maps:get(<<"language">>, Params, <<"EN">>),
+        view_count = maps:get(<<"view_count">>, Params, 0),
+        likes_count = maps:get(<<"likes_count">>, Params, 0),
+        is_featured = maps:get(<<"is_featured">>, Params, false),
         published_at = maps:get(<<"published_at">>, Params, undefined),
         author_id  = maps:get(<<"author_id">>, Params, undefined),
         featured_deck_id = maps:get(<<"featured_deck_id">>, Params, undefined),
@@ -236,24 +236,48 @@ reading_time_minutes_behavior(_Record) ->
 handle_transition_draft_to_published(Req, State) ->
     %% Transition: Draft -> Published
     %% @on guard: [{"type":"neq","field":"title","value":"null"},{"type":"neq","field":"body","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"editor">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Draft -> Published">>}), Req), State};
+        true  ->
     ok = article_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Published">>),
     ok = article_store:update_field(maps:get(<<"id">>, State), status, <<"Published">>),
     publish_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Published">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Published">>}), Req), State}
+    end.
 
 handle_transition_published_to_archived(Req, State) ->
     %% Transition: Published -> Archived
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"editor">>, <<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Published -> Archived">>}), Req), State};
+        true  ->
     ok = article_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Archived">>),
     ok = article_store:update_field(maps:get(<<"id">>, State), status, <<"Archived">>),
     archive_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Archived">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Archived">>}), Req), State}
+    end.
 
 handle_transition_archived_to_draft(Req, State) ->
     %% Transition: Archived -> Draft
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Archived -> Draft">>}), Req), State};
+        true  ->
     ok = article_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Draft">>),
     ok = article_store:update_field(maps:get(<<"id">>, State), status, <<"Draft">>),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Draft">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Draft">>}), Req), State}
+    end.
+
+handle_transition_published_to_draft(Req, State) ->
+    %% Transition: Published -> Draft
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Published -> Draft is not allowed">>}), Req), State}.
 

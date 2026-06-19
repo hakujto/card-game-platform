@@ -1,7 +1,7 @@
 -module(trade_dispute_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_escalate/2, handle_resolve/2, handle_close_resolved/2, handle_review/2, handle_transition_open_to_under_review/2, handle_transition_under_review_to_resolved/2, handle_transition_under_review_to_escalated/2, handle_transition_escalated_to_resolved/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_escalate/2, handle_resolve/2, handle_close_resolved/2, handle_review/2, handle_transition_open_to_under_review/2, handle_transition_under_review_to_resolved/2, handle_transition_under_review_to_escalated/2, handle_transition_escalated_to_resolved/2, handle_transition_resolved_to_open/2]).
 
 -include("records.hrl").
 
@@ -57,7 +57,7 @@ handle_post(Req0, State) ->
 params_to_record(Id, Params) ->
     #trade_dispute{
         id         = Id,
-        status     = maps:get(<<"status">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Open">>),
         reason     = maps:get(<<"reason">>, Params, undefined),
         description = maps:get(<<"description">>, Params, undefined),
         resolution = maps:get(<<"resolution">>, Params, undefined),
@@ -143,35 +143,65 @@ review_behavior(_Record) ->
 %% ── Lifecycle transitions ────────────────────────────────────────────
 handle_transition_open_to_under_review(Req, State) ->
     %% Transition: Open -> UnderReview
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Open -> UnderReview">>}), Req), State};
+        true  ->
     ok = trade_dispute_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"UnderReview">>),
     ok = trade_dispute_store:update_field(maps:get(<<"id">>, State), status, <<"UnderReview">>),
     review_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"UnderReview">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"UnderReview">>}), Req), State}
+    end.
 
 handle_transition_under_review_to_resolved(Req, State) ->
     %% Transition: UnderReview -> Resolved
     %% @on guard: [{"type":"neq","field":"resolution","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition UnderReview -> Resolved">>}), Req), State};
+        true  ->
     ok = trade_dispute_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Resolved">>),
     ok = trade_dispute_store:update_field(maps:get(<<"id">>, State), status, <<"Resolved">>),
     close_resolved_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Resolved">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Resolved">>}), Req), State}
+    end.
 
 handle_transition_under_review_to_escalated(Req, State) ->
     %% Transition: UnderReview -> Escalated
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition UnderReview -> Escalated">>}), Req), State};
+        true  ->
     ok = trade_dispute_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Escalated">>),
     ok = trade_dispute_store:update_field(maps:get(<<"id">>, State), status, <<"Escalated">>),
     escalate_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Escalated">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Escalated">>}), Req), State}
+    end.
 
 handle_transition_escalated_to_resolved(Req, State) ->
     %% Transition: Escalated -> Resolved
     %% @on guard: [{"type":"neq","field":"resolution","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Escalated -> Resolved">>}), Req), State};
+        true  ->
     ok = trade_dispute_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Resolved">>),
     ok = trade_dispute_store:update_field(maps:get(<<"id">>, State), status, <<"Resolved">>),
     close_resolved_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Resolved">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Resolved">>}), Req), State}
+    end.
+
+handle_transition_resolved_to_open(Req, State) ->
+    %% Transition: Resolved -> Open
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Resolved -> Open is not allowed">>}), Req), State}.
 

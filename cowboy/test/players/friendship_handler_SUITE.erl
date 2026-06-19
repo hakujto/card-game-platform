@@ -7,7 +7,7 @@ valid_params() ->
     #{
         <<"status">> => <<"Pending">>,
         <<"created_at">> => <<"2024-01-01T00:00:00Z">>,
-        <<"requester_id">> => 1,
+        <<"requester_id">> => <<"owner-1">>,
         <<"receiver_id">> => 1
     }.
 
@@ -46,7 +46,7 @@ get_friendship() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, []}, [], []),
+    {ok, {{_, Code, _}, _, _}} = httpc:request(get, {Url, [{"X-User-Id", "owner-1"}]}, [], []),
     ?assertEqual(200, Code).
 
 delete_friendship() ->
@@ -55,6 +55,6 @@ delete_friendship() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    {ok, {{_, Code, _}, _, _}} = httpc:request(delete, {Url, []}, [], []),
+    {ok, {{_, Code, _}, _, _}} = httpc:request(delete, {Url, [{"X-User-Id", "owner-1"}]}, [], []),
     ?assertEqual(204, Code).
 

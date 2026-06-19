@@ -86,8 +86,8 @@ delete_resource(Req, State) ->
 params_to_record(Id, Params) ->
     #deck_card{
         id         = Id,
-        quantity   = maps:get(<<"quantity">>, Params, undefined),
-        is_commander = maps:get(<<"is_commander">>, Params, undefined),
+        quantity   = maps:get(<<"quantity">>, Params, 1),
+        is_commander = maps:get(<<"is_commander">>, Params, false),
         deck_id    = maps:get(<<"deck_id">>, Params, undefined),
         card_id    = maps:get(<<"card_id">>, Params, undefined),
         created_at = iso_now(),

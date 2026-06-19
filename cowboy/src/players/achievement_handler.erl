@@ -85,9 +85,9 @@ params_to_record(Id, Params) ->
         name       = maps:get(<<"name">>, Params, undefined),
         description = maps:get(<<"description">>, Params, undefined),
         icon_url   = maps:get(<<"icon_url">>, Params, undefined),
-        points     = maps:get(<<"points">>, Params, undefined),
-        rarity     = maps:get(<<"rarity">>, Params, undefined),
-        is_hidden  = maps:get(<<"is_hidden">>, Params, undefined),
+        points     = maps:get(<<"points">>, Params, 10),
+        rarity     = maps:get(<<"rarity">>, Params, <<"Common">>),
+        is_hidden  = maps:get(<<"is_hidden">>, Params, false),
         created_at = iso_now(),
         updated_at = iso_now()
     }.

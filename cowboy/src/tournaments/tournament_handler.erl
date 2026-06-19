@@ -1,7 +1,7 @@
 -module(tournament_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_start/2, handle_cancel/2, handle_complete/2, handle_generate_round/2, handle_calculate_prize_distribution/2, handle_register_player/2, handle_is_full/2, handle_transition_draft_to_registration/2, handle_transition_registration_to_ongoing/2, handle_transition_registration_to_cancelled/2, handle_transition_ongoing_to_completed/2, handle_transition_ongoing_to_cancelled/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_start/2, handle_cancel/2, handle_complete/2, handle_generate_round/2, handle_calculate_prize_distribution/2, handle_register_player/2, handle_is_full/2, handle_transition_draft_to_registration/2, handle_transition_registration_to_ongoing/2, handle_transition_registration_to_cancelled/2, handle_transition_ongoing_to_completed/2, handle_transition_ongoing_to_cancelled/2, handle_transition_completed_to_draft/2, handle_transition_cancelled_to_draft/2]).
 
 -include("records.hrl").
 
@@ -89,15 +89,15 @@ params_to_record(Id, Params) ->
         id         = Id,
         name       = maps:get(<<"name">>, Params, undefined),
         description = maps:get(<<"description">>, Params, undefined),
-        status     = maps:get(<<"status">>, Params, undefined),
-        format     = maps:get(<<"format">>, Params, undefined),
-        tournament_type = maps:get(<<"tournament_type">>, Params, undefined),
+        status     = maps:get(<<"status">>, Params, <<"Draft">>),
+        format     = maps:get(<<"format">>, Params, <<"Standard">>),
+        tournament_type = maps:get(<<"tournament_type">>, Params, <<"Swiss">>),
         max_players = maps:get(<<"max_players">>, Params, undefined),
-        entry_fee  = maps:get(<<"entry_fee">>, Params, undefined),
-        prize_pool = maps:get(<<"prize_pool">>, Params, undefined),
+        entry_fee  = maps:get(<<"entry_fee">>, Params, 0),
+        prize_pool = maps:get(<<"prize_pool">>, Params, 0),
         start_time = maps:get(<<"start_time">>, Params, undefined),
         end_time   = maps:get(<<"end_time">>, Params, undefined),
-        is_online  = maps:get(<<"is_online">>, Params, undefined),
+        is_online  = maps:get(<<"is_online">>, Params, true),
         location   = maps:get(<<"location">>, Params, undefined),
         rules_text = maps:get(<<"rules_text">>, Params, undefined),
         season_id  = maps:get(<<"season_id">>, Params, undefined),
@@ -257,41 +257,83 @@ is_full_behavior(_Record) ->
 handle_transition_draft_to_registration(Req, State) ->
     %% Transition: Draft -> Registration
     %% @on guard: [{"type":"neq","field":"name","value":"null"},{"type":"neq","field":"start_time","value":"null"}]
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Draft -> Registration">>}), Req), State};
+        true  ->
     ok = tournament_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Registration">>),
     ok = tournament_store:update_field(maps:get(<<"id">>, State), status, <<"Registration">>),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Registration">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Registration">>}), Req), State}
+    end.
 
 handle_transition_registration_to_ongoing(Req, State) ->
     %% Transition: Registration -> Ongoing
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Registration -> Ongoing">>}), Req), State};
+        true  ->
     ok = tournament_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Ongoing">>),
     ok = tournament_store:update_field(maps:get(<<"id">>, State), status, <<"Ongoing">>),
     start_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Ongoing">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Ongoing">>}), Req), State}
+    end.
 
 handle_transition_registration_to_cancelled(Req, State) ->
     %% Transition: Registration -> Cancelled
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Registration -> Cancelled">>}), Req), State};
+        true  ->
     ok = tournament_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Cancelled">>),
     ok = tournament_store:update_field(maps:get(<<"id">>, State), status, <<"Cancelled">>),
     cancel_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}
+    end.
 
 handle_transition_ongoing_to_completed(Req, State) ->
     %% Transition: Ongoing -> Completed
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"organizer">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Ongoing -> Completed">>}), Req), State};
+        true  ->
     ok = tournament_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Completed">>),
     ok = tournament_store:update_field(maps:get(<<"id">>, State), status, <<"Completed">>),
     complete_behavior(State),
     calculate_prize_distribution_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Completed">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Completed">>}), Req), State}
+    end.
 
 handle_transition_ongoing_to_cancelled(Req, State) ->
     %% Transition: Ongoing -> Cancelled
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> {false, cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for transition Ongoing -> Cancelled">>}), Req), State};
+        true  ->
     ok = tournament_store:assert_transition(maps:get(<<"status">>, State, undefined), <<"Cancelled">>),
     ok = tournament_store:update_field(maps:get(<<"id">>, State), status, <<"Cancelled">>),
     cancel_behavior(State),
     {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>},
-        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}.
+        jsone:encode(#{<<"state">> => <<"Cancelled">>}), Req), State}
+    end.
+
+handle_transition_completed_to_draft(Req, State) ->
+    %% Transition: Completed -> Draft
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Completed -> Draft is not allowed">>}), Req), State}.
+
+handle_transition_cancelled_to_draft(Req, State) ->
+    %% Transition: Cancelled -> Draft
+    %% @deny: transition is never allowed
+    {true, cowboy_req:reply(409, #{<<"content-type">> => <<"application/json">>},
+        jsone:encode(#{<<"error">> => <<"Transition Cancelled -> Draft is not allowed">>}), Req), State}.
 
