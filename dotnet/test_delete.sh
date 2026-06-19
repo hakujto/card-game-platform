@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BASE="http://localhost:5000/api"
+BASE="http://localhost:8080/api"
 
 ID_CardSet=1
 ID_DeckTag=1
@@ -45,38 +45,11 @@ ID_AwardedPrize=1
 ID_TradeDispute=1
 ID_Game=1
 
-echo && echo "=== DELETE games/$ID_Game ==="
-curl -s -X DELETE "$BASE/games/$ID_Game" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE trade_disputes/$ID_TradeDispute ==="
-curl -s -X DELETE "$BASE/trade_disputes/$ID_TradeDispute" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE awarded_prizes/$ID_AwardedPrize ==="
-curl -s -X DELETE "$BASE/awarded_prizes/$ID_AwardedPrize" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE matches/$ID_Match ==="
-curl -s -X DELETE "$BASE/matches/$ID_Match" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE draft_picks/$ID_DraftPick ==="
-curl -s -X DELETE "$BASE/draft_picks/$ID_DraftPick" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE trade_transactions/$ID_TradeTransaction ==="
-curl -s -X DELETE "$BASE/trade_transactions/$ID_TradeTransaction" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE trade_bids/$ID_TradeBid ==="
-curl -s -X DELETE "$BASE/trade_bids/$ID_TradeBid" -o /dev/null -w "HTTP %{http_code}\n"
-
 echo && echo "=== DELETE crafting_ingredients/$ID_CraftingIngredient ==="
 curl -s -X DELETE "$BASE/crafting_ingredients/$ID_CraftingIngredient" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE tournament_prizes/$ID_TournamentPrize ==="
 curl -s -X DELETE "$BASE/tournament_prizes/$ID_TournamentPrize" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE tournament_rounds/$ID_TournamentRound ==="
-curl -s -X DELETE "$BASE/tournament_rounds/$ID_TournamentRound" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE tournament_registrations/$ID_TournamentRegistration ==="
-curl -s -X DELETE "$BASE/tournament_registrations/$ID_TournamentRegistration" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE tournament_judges/$ID_TournamentJudge ==="
 curl -s -X DELETE "$BASE/tournament_judges/$ID_TournamentJudge" -o /dev/null -w "HTTP %{http_code}\n"
@@ -99,20 +72,8 @@ curl -s -X DELETE "$BASE/deck_sideboard_cards/$ID_DeckSideboardCard" -o /dev/nul
 echo && echo "=== DELETE deck_cards/$ID_DeckCard ==="
 curl -s -X DELETE "$BASE/deck_cards/$ID_DeckCard" -o /dev/null -w "HTTP %{http_code}\n"
 
-echo && echo "=== DELETE draft_participants/$ID_DraftParticipant ==="
-curl -s -X DELETE "$BASE/draft_participants/$ID_DraftParticipant" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE card_price_histories/$ID_CardPriceHistory ==="
-curl -s -X DELETE "$BASE/card_price_histories/$ID_CardPriceHistory" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE trade_listings/$ID_TradeListing ==="
-curl -s -X DELETE "$BASE/trade_listings/$ID_TradeListing" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE crafting_recipes/$ID_CraftingRecipe ==="
-curl -s -X DELETE "$BASE/crafting_recipes/$ID_CraftingRecipe" -o /dev/null -w "HTTP %{http_code}\n"
-
 echo && echo "=== DELETE player_collections/$ID_PlayerCollection ==="
-curl -s -X DELETE "$BASE/player_collections/$ID_PlayerCollection" -o /dev/null -w "HTTP %{http_code}\n"
+curl -s -X DELETE -H "X-User-Id: 1" "$BASE/player_collections/$ID_PlayerCollection" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE card_abilities/$ID_CardAbility ==="
 curl -s -X DELETE "$BASE/card_abilities/$ID_CardAbility" -o /dev/null -w "HTTP %{http_code}\n"
@@ -120,56 +81,14 @@ curl -s -X DELETE "$BASE/card_abilities/$ID_CardAbility" -o /dev/null -w "HTTP %
 echo && echo "=== DELETE card_rulings/$ID_CardRuling ==="
 curl -s -X DELETE "$BASE/card_rulings/$ID_CardRuling" -o /dev/null -w "HTTP %{http_code}\n"
 
-echo && echo "=== DELETE tournaments/$ID_Tournament ==="
-curl -s -X DELETE "$BASE/tournaments/$ID_Tournament" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE player_season_statses/$ID_PlayerSeasonStats ==="
-curl -s -X DELETE "$BASE/player_season_statses/$ID_PlayerSeasonStats" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE player_achievements/$ID_PlayerAchievement ==="
-curl -s -X DELETE "$BASE/player_achievements/$ID_PlayerAchievement" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE streams/$ID_Stream ==="
-curl -s -X DELETE "$BASE/streams/$ID_Stream" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE articles/$ID_Article ==="
-curl -s -X DELETE "$BASE/articles/$ID_Article" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE orders/$ID_Order ==="
-curl -s -X DELETE "$BASE/orders/$ID_Order" -o /dev/null -w "HTTP %{http_code}\n"
-
 echo && echo "=== DELETE friendships/$ID_Friendship ==="
-curl -s -X DELETE "$BASE/friendships/$ID_Friendship" -o /dev/null -w "HTTP %{http_code}\n"
+curl -s -X DELETE -H "X-User-Id: 1" "$BASE/friendships/$ID_Friendship" -o /dev/null -w "HTTP %{http_code}\n"
 
 echo && echo "=== DELETE decks/$ID_Deck ==="
 curl -s -X DELETE "$BASE/decks/$ID_Deck" -o /dev/null -w "HTTP %{http_code}\n"
 
-echo && echo "=== DELETE draft_sessions/$ID_DraftSession ==="
-curl -s -X DELETE "$BASE/draft_sessions/$ID_DraftSession" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE cards/$ID_Card ==="
-curl -s -X DELETE "$BASE/cards/$ID_Card" -o /dev/null -w "HTTP %{http_code}\n"
-
 echo && echo "=== DELETE article_tags/$ID_ArticleTag ==="
 curl -s -X DELETE "$BASE/article_tags/$ID_ArticleTag" -o /dev/null -w "HTTP %{http_code}\n"
 
-echo && echo "=== DELETE coupons/$ID_Coupon ==="
-curl -s -X DELETE "$BASE/coupons/$ID_Coupon" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE products/$ID_Product ==="
-curl -s -X DELETE "$BASE/products/$ID_Product" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE seasons/$ID_Season ==="
-curl -s -X DELETE "$BASE/seasons/$ID_Season" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE achievements/$ID_Achievement ==="
-curl -s -X DELETE "$BASE/achievements/$ID_Achievement" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE players/$ID_Player ==="
-curl -s -X DELETE "$BASE/players/$ID_Player" -o /dev/null -w "HTTP %{http_code}\n"
-
 echo && echo "=== DELETE deck_tags/$ID_DeckTag ==="
 curl -s -X DELETE "$BASE/deck_tags/$ID_DeckTag" -o /dev/null -w "HTTP %{http_code}\n"
-
-echo && echo "=== DELETE card_sets/$ID_CardSet ==="
-curl -s -X DELETE "$BASE/card_sets/$ID_CardSet" -o /dev/null -w "HTTP %{http_code}\n"

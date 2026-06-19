@@ -45,10 +45,13 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
     }
 
     private readonly HttpClient _client;
+    private readonly HttpClient _ownerClient;
 
     public PlayerCollectionApiTests(TestFactory factory)
     {
         _client = factory.CreateClient();
+        _ownerClient = factory.CreateClient();
+        _ownerClient.DefaultRequestHeaders.Add("X-User-Id", "1");
     }
 
     [Fact]
@@ -73,7 +76,7 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
     [Fact]
     public async Task Show_Returns200Or404()
     {
-        var response = await _client.GetAsync("/api/player_collections/1");
+        var response = await _ownerClient.GetAsync("/api/player_collections/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -82,7 +85,7 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
     public async Task Update_Returns200Or404()
     {
         var payload = new { Quantity = 1 };
-        var response = await _client.PatchAsJsonAsync("/api/player_collections/1", payload);
+        var response = await _ownerClient.PatchAsJsonAsync("/api/player_collections/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -90,9 +93,17 @@ public class PlayerCollectionApiTests : IClassFixture<PlayerCollectionApiTests.T
     [Fact]
     public async Task Delete_Returns204Or404()
     {
-        var response = await _client.DeleteAsync("/api/player_collections/1");
+        var response = await _ownerClient.DeleteAsync("/api/player_collections/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.NoContent ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task OwnGuard_Returns403ForNonOwner()
+    {
+        var response = await _client.GetAsync("/api/player_collections/1");
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
     [Fact]

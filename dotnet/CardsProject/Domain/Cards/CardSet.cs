@@ -1,3 +1,5 @@
+using CardsProject.Domain.Marketplace;
+using CardsProject.Domain.Content;
 using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Cards;
@@ -24,6 +26,10 @@ public class CardSet : IValidatableObject
     public bool IsRotated { get; set; } = false;
     public string? Description { get; set; }
     public string? LogoUrl { get; set; }
+
+    public ICollection<Card> Cards { get; set; } = new List<Card>();
+    public ICollection<CardsProject.Domain.Marketplace.Product> ShopProducts { get; set; } = new List<CardsProject.Domain.Marketplace.Product>();
+    public ICollection<CardsProject.Domain.Content.DraftSession> DraftSessions { get; set; } = new List<CardsProject.Domain.Content.DraftSession>();
 
     // Business operations
 

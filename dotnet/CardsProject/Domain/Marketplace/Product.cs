@@ -34,6 +34,8 @@ public class Product : IValidatableObject
     [ForeignKey(nameof(CardSetId))]
     public CardSet? CardSet { get; set; }
 
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
     // Business operations
 
     public void Activate()

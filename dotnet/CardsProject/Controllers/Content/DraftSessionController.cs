@@ -110,7 +110,7 @@ public class DraftSessionController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/drafting-to-abandoned")]
     public async Task<IActionResult> TransitionDraftingToAbandoned(int id)
     {
@@ -120,7 +120,7 @@ public class DraftSessionController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/waitingforplayers-to-abandoned")]
     public async Task<IActionResult> TransitionWaitingForPlayersToAbandoned(int id)
     {

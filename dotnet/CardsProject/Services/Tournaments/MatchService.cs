@@ -103,6 +103,8 @@ public class MatchService
     {
         var entity = await _db.Matches.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("Match not found: " + id);
+        if (!(entity.Status == MatchStatusType.Active))
+            throw new ArgumentException("Guard condition not met for concede");
         entity.Concede(playerId);
         await _db.SaveChangesAsync();
         return true;

@@ -48,6 +48,8 @@ public class TradeListingController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TradeListingDto dto)
     {
+        var existing = await _svc.GetByIdAsync(id);
+        if (existing is null) return NotFound();
         try
         {
             var entity = await _svc.UpdateAsync(id, dto);
@@ -148,7 +150,7 @@ public class TradeListingController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Seller")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Seller,Admin")]
     [HttpPatch("{id:int}/transitions/active-to-cancelled")]
     public async Task<IActionResult> TransitionActiveToCancelled(int id)
     {

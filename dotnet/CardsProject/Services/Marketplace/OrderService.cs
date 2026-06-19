@@ -91,6 +91,8 @@ public class OrderService
     {
         var entity = await _db.Orders.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("Order not found: " + id);
+        if (!(entity.Status == OrderStatusType.Pending))
+            throw new ArgumentException("Guard condition not met for pay");
         var result = entity.Pay(paymentRef);
         await _db.SaveChangesAsync();
         return result;

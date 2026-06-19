@@ -50,6 +50,8 @@ public class Order : IValidatableObject
     [ForeignKey(nameof(CouponId))]
     public Coupon? Coupon { get; set; }
 
+    public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+
     // Business operations
 
     public void Cancel()
@@ -117,6 +119,10 @@ public class Order : IValidatableObject
     }
 
     // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void AssignCurrencyDefault()
+    {
+        // TODO: implement assign_currency_default
+    }
     public void NotifyStatusChange()
     {
         // TODO: implement notify_status_change

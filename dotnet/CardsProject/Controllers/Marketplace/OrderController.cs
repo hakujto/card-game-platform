@@ -41,6 +41,10 @@ public class OrderController : ControllerBase
     {
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
+        var userId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+        if (entity.PlayerId.ToString() != userId)
+            return StatusCode(403, new { error = "You do not own this resource." });
         return Ok(entity);
     }
 
@@ -127,7 +131,7 @@ public class OrderController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Staff")]
     [HttpPatch("{id:int}/transitions/paid-to-processing")]
     public async Task<IActionResult> TransitionPaidToProcessing(int id)
     {
@@ -137,7 +141,7 @@ public class OrderController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Staff")]
     [HttpPatch("{id:int}/transitions/processing-to-shipped")]
     public async Task<IActionResult> TransitionProcessingToShipped(int id)
     {
@@ -147,7 +151,7 @@ public class OrderController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Staff")]
     [HttpPatch("{id:int}/transitions/shipped-to-completed")]
     public async Task<IActionResult> TransitionShippedToCompleted(int id)
     {
@@ -166,7 +170,7 @@ public class OrderController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Staff")]
     [HttpPatch("{id:int}/transitions/paid-to-cancelled")]
     public async Task<IActionResult> TransitionPaidToCancelled(int id)
     {

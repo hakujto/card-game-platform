@@ -29,6 +29,8 @@ public class TournamentPrize : IValidatableObject
     [ForeignKey(nameof(TournamentId))]
     public Tournament? Tournament { get; set; }
 
+    public ICollection<AwardedPrize> AwardedPrizes { get; set; } = new List<AwardedPrize>();
+
     // Business operations
 
     public bool AppliesToPlacement(int placement)

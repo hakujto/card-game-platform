@@ -45,7 +45,9 @@ public class CardSetService
         Validate(entity);
         ValidateEntity(entity);
         _db.CardSets.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -64,7 +66,9 @@ public class CardSetService
         if (dto.LogoUrl is not null) entity.LogoUrl = dto.LogoUrl;
         Validate(entity);
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 

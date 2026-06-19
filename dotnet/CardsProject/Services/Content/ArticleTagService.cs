@@ -37,7 +37,9 @@ public class ArticleTagService
         if (dto.Slug is not null) entity.Slug = dto.Slug;
         ValidateEntity(entity);
         _db.ArticleTags.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -48,7 +50,9 @@ public class ArticleTagService
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Slug is not null) entity.Slug = dto.Slug;
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 

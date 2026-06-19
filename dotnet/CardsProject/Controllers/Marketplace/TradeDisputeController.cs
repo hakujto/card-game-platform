@@ -93,7 +93,7 @@ public class TradeDisputeController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Moderator")]
     [HttpPatch("{id:int}/transitions/open-to-underreview")]
     public async Task<IActionResult> TransitionOpenToUnderReview(int id)
     {
@@ -103,7 +103,7 @@ public class TradeDisputeController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Moderator")]
     [HttpPatch("{id:int}/transitions/underreview-to-resolved")]
     public async Task<IActionResult> TransitionUnderReviewToResolved(int id)
     {

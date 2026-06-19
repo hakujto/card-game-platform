@@ -37,6 +37,8 @@ public class DraftSession : IValidatableObject
     [ForeignKey(nameof(CardSetId))]
     public CardSet? CardSet { get; set; }
 
+    public ICollection<DraftParticipant> Participants { get; set; } = new List<DraftParticipant>();
+
     // Business operations
 
     public void Start()

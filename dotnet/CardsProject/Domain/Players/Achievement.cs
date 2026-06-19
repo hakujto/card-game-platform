@@ -22,6 +22,8 @@ public class Achievement : IValidatableObject
     public AchievementRarityType Rarity { get; set; }
     public bool IsHidden { get; set; } = false;
 
+    public ICollection<PlayerAchievement> PlayerRecords { get; set; } = new List<PlayerAchievement>();
+
     // Business operations
 
     public int PointValue(int multiplier)

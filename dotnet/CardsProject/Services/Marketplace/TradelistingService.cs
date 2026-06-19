@@ -107,6 +107,8 @@ public class TradeListingService
     {
         var entity = await _db.TradeListings.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("TradeListing not found: " + id);
+        if (!(entity.Status == TradeListingStatusType.Active))
+            throw new ArgumentException("Guard condition not met for cancel");
         entity.Cancel();
         await _db.SaveChangesAsync();
         return true;

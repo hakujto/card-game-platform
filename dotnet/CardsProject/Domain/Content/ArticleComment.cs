@@ -23,6 +23,8 @@ public class ArticleComment
     [ForeignKey(nameof(ParentCommentId))]
     public ArticleComment? ParentComment { get; set; }
 
+    public ICollection<ArticleComment> Replies { get; set; } = new List<ArticleComment>();
+
     // Business operations
 
     public void Hide()

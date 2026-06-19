@@ -22,6 +22,8 @@ public class Coupon : IValidatableObject
     public DateTime? ValidUntil { get; set; } = null;
     public bool IsActive { get; set; } = true;
 
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
+
     // Business operations
 
     public bool IsValid()

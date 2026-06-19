@@ -38,6 +38,8 @@ public class Match : IValidatableObject
     [ForeignKey(nameof(Player2Id))]
     public Player? Player2 { get; set; }
 
+    public ICollection<Game> Games { get; set; } = new List<Game>();
+
     // Business operations
 
     public void RecordResult(int p1Wins, int p2Wins)

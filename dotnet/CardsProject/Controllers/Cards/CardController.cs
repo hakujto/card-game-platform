@@ -46,6 +46,8 @@ public class CardController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] CardDto dto)
     {
+        var existing = await _svc.GetByIdAsync(id);
+        if (existing is null) return NotFound();
         try
         {
             var entity = await _svc.UpdateAsync(id, dto);

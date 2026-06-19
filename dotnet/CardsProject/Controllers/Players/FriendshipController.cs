@@ -39,12 +39,22 @@ public class FriendshipController : ControllerBase
     {
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
+        var userId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+        if (entity.RequesterId.ToString() != userId)
+            return StatusCode(403, new { error = "You do not own this resource." });
         return Ok(entity);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var entity = await _svc.GetByIdAsync(id);
+        if (entity is null) return NotFound();
+        var userId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+        if (entity.RequesterId.ToString() != userId)
+            return StatusCode(403, new { error = "You do not own this resource." });
         var deleted = await _svc.DeleteAsync(id);
         if (!deleted) return NotFound();
         return NoContent();

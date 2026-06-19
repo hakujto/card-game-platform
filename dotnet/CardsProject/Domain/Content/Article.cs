@@ -63,7 +63,8 @@ public class Article : IValidatableObject
     [ForeignKey(nameof(FeaturedDeckId))]
     public Deck? FeaturedDeck { get; set; }
 
-    public ICollection<ArticleTag> Tags { get; set; } = new List<ArticleTag>();
+    public ICollection<ArticleTagAssignment> TagAssignments { get; set; } = new List<ArticleTagAssignment>();
+    public ICollection<ArticleComment> Comments { get; set; } = new List<ArticleComment>();
 
     // Business operations
 

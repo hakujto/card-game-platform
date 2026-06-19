@@ -1,3 +1,6 @@
+using CardsProject.Domain.Players;
+using CardsProject.Domain.Marketplace;
+using CardsProject.Domain.Content;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
@@ -67,6 +70,18 @@ public class Card : IValidatableObject
     [ForeignKey(nameof(SetId))]
     public CardSet? Set { get; set; }
 
+    public ICollection<CardRuling> Rulings { get; set; } = new List<CardRuling>();
+    public ICollection<CardAbility> Abilities { get; set; } = new List<CardAbility>();
+    public ICollection<DeckCard> DeckCards { get; set; } = new List<DeckCard>();
+    public ICollection<DeckSideboardCard> SideboardDecks { get; set; } = new List<DeckSideboardCard>();
+    public ICollection<CardsProject.Domain.Players.PlayerCollection> PlayerCollections { get; set; } = new List<CardsProject.Domain.Players.PlayerCollection>();
+    public ICollection<CardsProject.Domain.Players.CraftingRecipe> CraftingRecipes { get; set; } = new List<CardsProject.Domain.Players.CraftingRecipe>();
+    public ICollection<CardsProject.Domain.Players.CraftingIngredient> UsedInRecipes { get; set; } = new List<CardsProject.Domain.Players.CraftingIngredient>();
+    public CardsProject.Domain.Marketplace.Product? ShopProduct { get; set; }
+    public ICollection<CardsProject.Domain.Marketplace.TradeListing> TradeListings { get; set; } = new List<CardsProject.Domain.Marketplace.TradeListing>();
+    public ICollection<CardsProject.Domain.Marketplace.CardPriceHistory> PriceHistory { get; set; } = new List<CardsProject.Domain.Marketplace.CardPriceHistory>();
+    public ICollection<CardsProject.Domain.Content.DraftPick> DraftPicks { get; set; } = new List<CardsProject.Domain.Content.DraftPick>();
+
     // Business operations
 
     public void Ban()
@@ -122,5 +137,9 @@ public class Card : IValidatableObject
     public void ValidateLegality()
     {
         // TODO: implement validate_legality
+    }
+    public void ValidateNotInUse()
+    {
+        // TODO: implement validate_not_in_use
     }
 }

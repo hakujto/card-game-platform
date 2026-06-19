@@ -45,6 +45,8 @@ public class ArticleTagAssignmentController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var entity = await _svc.GetByIdAsync(id);
+        if (entity is null) return NotFound();
         var deleted = await _svc.DeleteAsync(id);
         if (!deleted) return NotFound();
         return NoContent();

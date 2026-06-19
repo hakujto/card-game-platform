@@ -39,6 +39,10 @@ public class TournamentRegistrationController : ControllerBase
     {
         var entity = await _svc.GetByIdAsync(id);
         if (entity is null) return NotFound();
+        var userId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? HttpContext.Request.Headers["X-User-Id"].FirstOrDefault();
+        if (entity.PlayerId.ToString() != userId)
+            return StatusCode(403, new { error = "You do not own this resource." });
         return Ok(entity);
     }
 

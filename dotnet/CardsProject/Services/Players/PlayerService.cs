@@ -47,7 +47,9 @@ public class PlayerService
         if (dto.UserId is not null) entity.UserId = dto.UserId;
         ValidateEntity(entity);
         _db.Players.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -68,7 +70,9 @@ public class PlayerService
         if (dto.LastActiveAt is not null) entity.LastActiveAt = dto.LastActiveAt.Value;
         if (dto.UserId is not null) entity.UserId = dto.UserId;
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 

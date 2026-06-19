@@ -1,4 +1,6 @@
 using CardsProject.Domain.Players;
+using CardsProject.Domain.Tournaments;
+using CardsProject.Domain.Content;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -47,9 +49,11 @@ public class Deck : IValidatableObject
     [ForeignKey(nameof(PlayerId))]
     public Player? Player { get; set; }
 
-    public ICollection<Card> Cards { get; set; } = new List<Card>();
-    public ICollection<Card> SideboardCards { get; set; } = new List<Card>();
-    public ICollection<DeckTag> Tags { get; set; } = new List<DeckTag>();
+    public ICollection<DeckCard> DeckCards { get; set; } = new List<DeckCard>();
+    public ICollection<DeckSideboardCard> SideboardCards { get; set; } = new List<DeckSideboardCard>();
+    public ICollection<DeckTagAssignment> TagAssignments { get; set; } = new List<DeckTagAssignment>();
+    public ICollection<CardsProject.Domain.Tournaments.TournamentRegistration> TournamentRegistrations { get; set; } = new List<CardsProject.Domain.Tournaments.TournamentRegistration>();
+    public ICollection<CardsProject.Domain.Content.Article> Articles { get; set; } = new List<CardsProject.Domain.Content.Article>();
 
     // Business operations
 

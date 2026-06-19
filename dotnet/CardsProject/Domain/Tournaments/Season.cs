@@ -1,3 +1,4 @@
+using CardsProject.Domain.Players;
 using System.ComponentModel.DataAnnotations;
 
 namespace CardsProject.Domain.Tournaments;
@@ -22,6 +23,9 @@ public class Season : IValidatableObject
     public SeasonFormatType Format { get; set; }
     public bool IsActive { get; set; } = false;
     public string? RewardDescription { get; set; }
+
+    public ICollection<CardsProject.Domain.Players.PlayerSeasonStats> PlayerStats { get; set; } = new List<CardsProject.Domain.Players.PlayerSeasonStats>();
+    public ICollection<Tournament> Tournaments { get; set; } = new List<Tournament>();
 
     // Business operations
 

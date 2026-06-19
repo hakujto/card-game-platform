@@ -45,10 +45,13 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
     }
 
     private readonly HttpClient _client;
+    private readonly HttpClient _ownerClient;
 
     public TournamentRegistrationApiTests(TestFactory factory)
     {
         _client = factory.CreateClient();
+        _ownerClient = factory.CreateClient();
+        _ownerClient.DefaultRequestHeaders.Add("X-User-Id", "1");
     }
 
     [Fact]
@@ -73,9 +76,17 @@ public class TournamentRegistrationApiTests : IClassFixture<TournamentRegistrati
     [Fact]
     public async Task Show_Returns200Or404()
     {
-        var response = await _client.GetAsync("/api/tournament_registrations/1");
+        var response = await _ownerClient.GetAsync("/api/tournament_registrations/1");
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+    [Fact]
+    public async Task OwnGuard_Returns403ForNonOwner()
+    {
+        var response = await _client.GetAsync("/api/tournament_registrations/1");
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
     [Fact]

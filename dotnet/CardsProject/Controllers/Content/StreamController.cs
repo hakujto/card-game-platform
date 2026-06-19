@@ -50,6 +50,8 @@ public class StreamController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] StreamDto dto)
     {
+        var existing = await _svc.GetByIdAsync(id);
+        if (existing is null) return NotFound();
         try
         {
             var entity = await _svc.UpdateAsync(id, dto);
@@ -110,7 +112,7 @@ public class StreamController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer,Admin")]
     [HttpPatch("{id:int}/transitions/scheduled-to-live")]
     public async Task<IActionResult> TransitionScheduledToLive(int id)
     {
@@ -120,7 +122,7 @@ public class StreamController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Streamer,Admin")]
     [HttpPatch("{id:int}/transitions/live-to-ended")]
     public async Task<IActionResult> TransitionLiveToEnded(int id)
     {

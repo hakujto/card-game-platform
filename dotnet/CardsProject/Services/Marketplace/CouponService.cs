@@ -45,7 +45,9 @@ public class CouponService
         Validate(entity);
         ValidateEntity(entity);
         _db.Coupons.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -64,7 +66,9 @@ public class CouponService
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
         Validate(entity);
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -97,6 +101,8 @@ public class CouponService
     {
         var entity = await _db.Coupons.FindAsync(id);
         if (entity is null) throw new KeyNotFoundException("Coupon not found: " + id);
+        if (!(entity.IsActive == true))
+            throw new ArgumentException("Guard condition not met for redeem");
         entity.Redeem();
         await _db.SaveChangesAsync();
         return true;

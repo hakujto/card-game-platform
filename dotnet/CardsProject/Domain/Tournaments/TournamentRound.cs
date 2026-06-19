@@ -27,6 +27,8 @@ public class TournamentRound : IValidatableObject
     [ForeignKey(nameof(TournamentId))]
     public Tournament? Tournament { get; set; }
 
+    public ICollection<Match> Matches { get; set; } = new List<Match>();
+
     // Business operations
 
     public void Start()

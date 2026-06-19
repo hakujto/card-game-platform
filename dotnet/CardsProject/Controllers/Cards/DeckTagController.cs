@@ -45,6 +45,8 @@ public class DeckTagController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] DeckTagDto dto)
     {
+        var existing = await _svc.GetByIdAsync(id);
+        if (existing is null) return NotFound();
         try
         {
             var entity = await _svc.UpdateAsync(id, dto);
@@ -59,6 +61,8 @@ public class DeckTagController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var entity = await _svc.GetByIdAsync(id);
+        if (entity is null) return NotFound();
         var deleted = await _svc.DeleteAsync(id);
         if (!deleted) return NotFound();
         return NoContent();

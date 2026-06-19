@@ -1,4 +1,8 @@
 using CardsProject.Infrastructure;
+using CardsProject.Domain.Cards;
+using CardsProject.Domain.Tournaments;
+using CardsProject.Domain.Marketplace;
+using CardsProject.Domain.Content;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -48,8 +52,30 @@ public class Player : IValidatableObject
     [ForeignKey(nameof(UserId))]
     public ApplicationUser? User { get; set; }
 
-    public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
-    public ICollection<Player> Friends { get; set; } = new List<Player>();
+    public ICollection<CardsProject.Domain.Cards.Deck> Decks { get; set; } = new List<CardsProject.Domain.Cards.Deck>();
+    public ICollection<PlayerSeasonStats> SeasonStats { get; set; } = new List<PlayerSeasonStats>();
+    public ICollection<PlayerCollection> Collection { get; set; } = new List<PlayerCollection>();
+    public ICollection<Friendship> SentFriendRequests { get; set; } = new List<Friendship>();
+    public ICollection<Friendship> ReceivedFriendRequests { get; set; } = new List<Friendship>();
+    public ICollection<PlayerAchievement> AchievementRecords { get; set; } = new List<PlayerAchievement>();
+    public ICollection<CardsProject.Domain.Tournaments.Tournament> OrganizedTournaments { get; set; } = new List<CardsProject.Domain.Tournaments.Tournament>();
+    public ICollection<CardsProject.Domain.Tournaments.TournamentJudge> JudgeRoles { get; set; } = new List<CardsProject.Domain.Tournaments.TournamentJudge>();
+    public ICollection<CardsProject.Domain.Tournaments.TournamentRegistration> TournamentRegistrations { get; set; } = new List<CardsProject.Domain.Tournaments.TournamentRegistration>();
+    public ICollection<CardsProject.Domain.Tournaments.Match> MatchesAsPlayer1 { get; set; } = new List<CardsProject.Domain.Tournaments.Match>();
+    public ICollection<CardsProject.Domain.Tournaments.Match> MatchesAsPlayer2 { get; set; } = new List<CardsProject.Domain.Tournaments.Match>();
+    public ICollection<CardsProject.Domain.Tournaments.Game> WonGames { get; set; } = new List<CardsProject.Domain.Tournaments.Game>();
+    public ICollection<CardsProject.Domain.Tournaments.AwardedPrize> AwardedPrizes { get; set; } = new List<CardsProject.Domain.Tournaments.AwardedPrize>();
+    public ICollection<CardsProject.Domain.Marketplace.Order> Orders { get; set; } = new List<CardsProject.Domain.Marketplace.Order>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeListing> TradeListings { get; set; } = new List<CardsProject.Domain.Marketplace.TradeListing>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeBid> Bids { get; set; } = new List<CardsProject.Domain.Marketplace.TradeBid>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeTransaction> Purchases { get; set; } = new List<CardsProject.Domain.Marketplace.TradeTransaction>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeTransaction> Sales { get; set; } = new List<CardsProject.Domain.Marketplace.TradeTransaction>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeDispute> DisputesOpened { get; set; } = new List<CardsProject.Domain.Marketplace.TradeDispute>();
+    public ICollection<CardsProject.Domain.Marketplace.TradeDispute> DisputesResolved { get; set; } = new List<CardsProject.Domain.Marketplace.TradeDispute>();
+    public ICollection<CardsProject.Domain.Content.DraftParticipant> DraftSessions { get; set; } = new List<CardsProject.Domain.Content.DraftParticipant>();
+    public ICollection<CardsProject.Domain.Content.Article> Articles { get; set; } = new List<CardsProject.Domain.Content.Article>();
+    public ICollection<CardsProject.Domain.Content.ArticleComment> ArticleComments { get; set; } = new List<CardsProject.Domain.Content.ArticleComment>();
+    public ICollection<CardsProject.Domain.Content.Stream> Streams { get; set; } = new List<CardsProject.Domain.Content.Stream>();
 
     // Business operations
 
@@ -103,6 +129,10 @@ public class Player : IValidatableObject
     }
 
     // ── Lifecycle hooks (call from AppDbContext.SaveChangesAsync override) ───
+    public void InitializeCollection()
+    {
+        // TODO: implement initialize_collection
+    }
     public void UpdateRank()
     {
         // TODO: implement update_rank

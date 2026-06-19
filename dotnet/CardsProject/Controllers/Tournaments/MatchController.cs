@@ -107,7 +107,7 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge,HeadJudge,Admin")]
     [HttpPatch("{id:int}/transitions/pending-to-active")]
     public async Task<IActionResult> TransitionPendingToActive(int id)
     {
@@ -117,7 +117,7 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge,HeadJudge,Admin")]
     [HttpPatch("{id:int}/transitions/active-to-completed")]
     public async Task<IActionResult> TransitionActiveToCompleted(int id)
     {
@@ -127,7 +127,7 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge,HeadJudge,Admin")]
     [HttpPatch("{id:int}/transitions/active-to-draw")]
     public async Task<IActionResult> TransitionActiveToDraw(int id)
     {
@@ -137,7 +137,7 @@ public class MatchController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Judge,HeadJudge,Admin")]
     [HttpPatch("{id:int}/transitions/pending-to-bye")]
     public async Task<IActionResult> TransitionPendingToBYE(int id)
     {

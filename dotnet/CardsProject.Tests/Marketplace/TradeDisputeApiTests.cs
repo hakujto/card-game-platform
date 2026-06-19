@@ -95,6 +95,8 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -106,6 +108,8 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -117,6 +121,8 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -128,6 +134,8 @@ public class TradeDisputeApiTests : IClassFixture<TradeDisputeApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 

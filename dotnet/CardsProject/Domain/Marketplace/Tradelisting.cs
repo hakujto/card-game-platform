@@ -58,6 +58,9 @@ public class TradeListing : IValidatableObject
     [ForeignKey(nameof(CardId))]
     public Card? Card { get; set; }
 
+    public ICollection<TradeBid> Bids { get; set; } = new List<TradeBid>();
+    public TradeTransaction? Transaction { get; set; }
+
     // Business operations
 
     public void Close()

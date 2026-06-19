@@ -20,6 +20,8 @@ public class DraftParticipant : IValidatableObject
     [ForeignKey(nameof(PlayerId))]
     public Player? Player { get; set; }
 
+    public ICollection<DraftPick> Picks { get; set; } = new List<DraftPick>();
+
     // Business operations
 
     public void PickCard(int cardId, int packNumber)

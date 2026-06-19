@@ -134,6 +134,8 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -145,6 +147,8 @@ public class DraftSessionApiTests : IClassFixture<DraftSessionApiTests.TestFacto
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 

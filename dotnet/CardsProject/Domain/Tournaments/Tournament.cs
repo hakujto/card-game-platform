@@ -1,4 +1,5 @@
 using CardsProject.Domain.Players;
+using CardsProject.Domain.Content;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -61,7 +62,11 @@ public class Tournament : IValidatableObject
     [ForeignKey(nameof(OrganizerId))]
     public Player? Organizer { get; set; }
 
-    public ICollection<Player> Judges { get; set; } = new List<Player>();
+    public ICollection<TournamentJudge> JudgeAssignments { get; set; } = new List<TournamentJudge>();
+    public ICollection<TournamentRegistration> Registrations { get; set; } = new List<TournamentRegistration>();
+    public ICollection<TournamentRound> Rounds { get; set; } = new List<TournamentRound>();
+    public ICollection<TournamentPrize> Prizes { get; set; } = new List<TournamentPrize>();
+    public ICollection<CardsProject.Domain.Content.Stream> Streams { get; set; } = new List<CardsProject.Domain.Content.Stream>();
 
     // Business operations
 
@@ -131,5 +136,9 @@ public class Tournament : IValidatableObject
     public void SyncSeasonStats()
     {
         // TODO: implement sync_season_stats
+    }
+    public void PreventDeleteIfOngoing()
+    {
+        // TODO: implement prevent_delete_if_ongoing
     }
 }

@@ -7,6 +7,8 @@ public class ArticleTag
     public string Name { get; set; } = "";
     public string Slug { get; set; } = "";
 
+    public ICollection<ArticleTagAssignment> ArticleAssignments { get; set; } = new List<ArticleTagAssignment>();
+
     // Business operations
 
     public void Rename(string newName)

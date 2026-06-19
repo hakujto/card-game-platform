@@ -15,7 +15,7 @@ public class CraftingRecipe : IValidatableObject
     [ForeignKey(nameof(ResultCardId))]
     public Card? ResultCard { get; set; }
 
-    public ICollection<Card> RequiredCards { get; set; } = new List<Card>();
+    public ICollection<CraftingIngredient> Ingredients { get; set; } = new List<CraftingIngredient>();
 
     // Business operations
 

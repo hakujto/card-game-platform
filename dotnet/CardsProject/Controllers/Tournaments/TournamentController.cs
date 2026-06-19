@@ -49,6 +49,8 @@ public class TournamentController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] TournamentDto dto)
     {
+        var existing = await _svc.GetByIdAsync(id);
+        if (existing is null) return NotFound();
         try
         {
             var entity = await _svc.UpdateAsync(id, dto);
@@ -146,7 +148,7 @@ public class TournamentController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/draft-to-registration")]
     public async Task<IActionResult> TransitionDraftToRegistration(int id)
     {
@@ -156,7 +158,7 @@ public class TournamentController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/registration-to-ongoing")]
     public async Task<IActionResult> TransitionRegistrationToOngoing(int id)
     {
@@ -166,7 +168,7 @@ public class TournamentController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/registration-to-cancelled")]
     public async Task<IActionResult> TransitionRegistrationToCancelled(int id)
     {
@@ -176,7 +178,7 @@ public class TournamentController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,Organizer")]
     [HttpPatch("{id:int}/transitions/ongoing-to-completed")]
     public async Task<IActionResult> TransitionOngoingToCompleted(int id)
     {

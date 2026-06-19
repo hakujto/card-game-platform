@@ -7,6 +7,8 @@ public class DeckTag
     public string Name { get; set; } = "";
     public string? Color { get; set; }
 
+    public ICollection<DeckTagAssignment> DeckAssignments { get; set; } = new List<DeckTagAssignment>();
+
     // Business operations
 
     public void Rename(string newName)

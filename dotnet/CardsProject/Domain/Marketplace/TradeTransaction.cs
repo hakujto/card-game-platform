@@ -33,6 +33,8 @@ public class TradeTransaction : IValidatableObject
     [ForeignKey(nameof(SellerId))]
     public Player? Seller { get; set; }
 
+    public TradeDispute? Dispute { get; set; }
+
     // Business operations
 
     public void Complete()

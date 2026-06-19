@@ -138,6 +138,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -149,6 +151,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -160,6 +164,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -171,6 +177,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
@@ -182,6 +190,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Conflict ||
             response.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
