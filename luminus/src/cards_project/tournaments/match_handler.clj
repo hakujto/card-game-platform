@@ -113,45 +113,57 @@
     (svc/draw! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 
-  (PATCH "/api/matches/:id/transitions/pending-to-active" [id]
-    (try
-      (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/matches/:id/transitions/pending-to-active" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Judge" "HeadJudge" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Pending -> Active"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/matches/:id/transitions/active-to-completed" [id]
-    (try
-      (let [record (svc/transition-active-to-completed! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/matches/:id/transitions/active-to-completed" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Judge" "HeadJudge" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Active -> Completed"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-active-to-completed! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/matches/:id/transitions/active-to-draw" [id]
-    (try
-      (let [record (svc/transition-active-to-draw! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/matches/:id/transitions/active-to-draw" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Judge" "HeadJudge" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Active -> Draw"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-active-to-draw! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/matches/:id/transitions/pending-to-bye" [id]
-    (try
-      (let [record (svc/transition-pending-to-b-y-e! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/matches/:id/transitions/pending-to-bye" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Judge" "HeadJudge" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Pending -> BYE"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-pending-to-b-y-e! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/matches/:id/transitions/completed-to-active" [id]
     (try

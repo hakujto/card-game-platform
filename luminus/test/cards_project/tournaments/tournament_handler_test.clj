@@ -92,33 +92,73 @@
 )
 
 (deftest test-transition-draft-to-registration
-  (testing "PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration"
-    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/draft-to-registration"))]
+  (testing "PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/draft-to-registration")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-draft-to-registration-forbidden
+  (testing "PATCH /api/tournaments/1/transitions/draft-to-registration without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/draft-to-registration")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-registration-to-ongoing
-  (testing "PATCH /api/tournaments/1/transitions/registration-to-ongoing transitions Registration -> Ongoing"
-    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/registration-to-ongoing"))]
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-ongoing transitions Registration -> Ongoing with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/registration-to-ongoing")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-registration-to-ongoing-forbidden
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-ongoing without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/registration-to-ongoing")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-registration-to-cancelled
-  (testing "PATCH /api/tournaments/1/transitions/registration-to-cancelled transitions Registration -> Cancelled"
-    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/registration-to-cancelled"))]
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-cancelled transitions Registration -> Cancelled with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/registration-to-cancelled")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-registration-to-cancelled-forbidden
+  (testing "PATCH /api/tournaments/1/transitions/registration-to-cancelled without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/registration-to-cancelled")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-ongoing-to-completed
-  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-completed transitions Ongoing -> Completed"
-    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-completed"))]
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-completed transitions Ongoing -> Completed with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-completed")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-ongoing-to-completed-forbidden
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-completed without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-completed")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-ongoing-to-cancelled
-  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled transitions Ongoing -> Cancelled"
-    (let [resp (app (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-cancelled"))]
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled transitions Ongoing -> Cancelled with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-cancelled")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-ongoing-to-cancelled-forbidden
+  (testing "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1/transitions/ongoing-to-cancelled")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-completed-to-draft

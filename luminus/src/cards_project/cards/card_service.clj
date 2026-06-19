@@ -85,3 +85,7 @@
   ; TODO: implement validate_legality
   record)
 
+(defn- validate-not-in-use-hook! [record]
+  ; TODO: implement validate_not_in_use
+  record)
+

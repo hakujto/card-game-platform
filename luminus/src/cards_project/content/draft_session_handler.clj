@@ -120,25 +120,31 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/draft_sessions/:id/transitions/drafting-to-abandoned" [id]
-    (try
-      (let [record (svc/transition-drafting-to-abandoned! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/draft_sessions/:id/transitions/drafting-to-abandoned" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Drafting -> Abandoned"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-drafting-to-abandoned! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" [id]
-    (try
-      (let [record (svc/transition-waiting-for-players-to-abandoned! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition WaitingForPlayers -> Abandoned"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-waiting-for-players-to-abandoned! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/draft_sessions/:id/transitions/completed-to-drafting" [id]
     (try

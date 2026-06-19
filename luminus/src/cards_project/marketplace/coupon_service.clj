@@ -41,7 +41,9 @@
 (defn redeem!
   [id]
   (if-let [record (queries/get-coupon-by-id db-spec {:id id})]
-    (redeem-behavior! id)
+    (if (not (= (get record :is_active) true))
+      (throw (ex-info "Guard condition not met for redeem" {:status 422}))
+      (redeem-behavior! id))
     (throw (ex-info "Coupon not found" {:id id}))))
 
 (defn deactivate!

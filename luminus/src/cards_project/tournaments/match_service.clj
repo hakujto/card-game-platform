@@ -126,7 +126,9 @@
 (defn concede!
   [id player-id]
   (if-let [record (queries/get-match-by-id db-spec {:id id})]
-    (concede-behavior! id player-id)
+    (if (not (= (get record :status) "Active"))
+      (throw (ex-info "Guard condition not met for concede" {:status 422}))
+      (concede-behavior! id player-id))
     (throw (ex-info "Match not found" {:id id}))))
 
 (defn draw!

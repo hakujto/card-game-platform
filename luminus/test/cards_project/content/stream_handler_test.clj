@@ -78,15 +78,31 @@
 )
 
 (deftest test-transition-scheduled-to-live
-  (testing "PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live"
-    (let [resp (app (mock/request :patch "/api/streams/1/transitions/scheduled-to-live"))]
+  (testing "PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live with role Streamer"
+    (let [resp (app (-> (mock/request :patch "/api/streams/1/transitions/scheduled-to-live")
+                     (mock/header "x-user-role" "Streamer")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-scheduled-to-live-forbidden
+  (testing "PATCH /api/streams/1/transitions/scheduled-to-live without role Streamer is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/streams/1/transitions/scheduled-to-live")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-live-to-ended
-  (testing "PATCH /api/streams/1/transitions/live-to-ended transitions Live -> Ended"
-    (let [resp (app (mock/request :patch "/api/streams/1/transitions/live-to-ended"))]
+  (testing "PATCH /api/streams/1/transitions/live-to-ended transitions Live -> Ended with role Streamer"
+    (let [resp (app (-> (mock/request :patch "/api/streams/1/transitions/live-to-ended")
+                     (mock/header "x-user-role" "Streamer")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-live-to-ended-forbidden
+  (testing "PATCH /api/streams/1/transitions/live-to-ended without role Streamer is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/streams/1/transitions/live-to-ended")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-ended-to-live

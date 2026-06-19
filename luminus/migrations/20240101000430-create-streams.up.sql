@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS streams (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title VARCHAR NOT NULL,
+  stream_url VARCHAR NOT NULL,
+  status VARCHAR NOT NULL DEFAULT 'Scheduled',
+  platform VARCHAR NOT NULL DEFAULT 'Twitch',
+  language VARCHAR NOT NULL DEFAULT 'EN',
+  is_official BOOLEAN NOT NULL DEFAULT 0,
+  viewer_count_peak INTEGER NOT NULL DEFAULT 0,
+  scheduled_start DATETIME NOT NULL,
+  actual_start DATETIME,
+  ended_at DATETIME,
+  vod_url VARCHAR,
+  tournament_id INTEGER REFERENCES tournaments(id) ON DELETE SET NULL,
+  streamer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

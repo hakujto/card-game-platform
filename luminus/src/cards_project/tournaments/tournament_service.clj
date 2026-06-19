@@ -168,3 +168,7 @@
   ; TODO: implement sync_season_stats
   record)
 
+(defn- prevent-delete-if-ongoing-hook! [record]
+  ; TODO: implement prevent_delete_if_ongoing
+  record)
+

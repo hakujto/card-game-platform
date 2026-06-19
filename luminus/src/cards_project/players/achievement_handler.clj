@@ -70,7 +70,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/achievements/:id" [id :as {params :body}]
+  (PUT "/api/achievements/:id" [id :as {params :body :as req}]
     (try
       (let [kw (achievement-kw-params params)]
         (validate-achievement-rules! kw)
@@ -84,7 +84,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/achievements/:id" [id :as {params :body}]
+  (PATCH "/api/achievements/:id" [id :as {params :body :as req}]
     (try
       (let [kw (achievement-kw-params params)]
         (validate-achievement-rules! kw)

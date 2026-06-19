@@ -54,14 +54,22 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (GET "/api/friendships/:id" [id]
+  (GET "/api/friendships/:id" [id :as req]
     (if-let [record (queries/get-friendship-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response (apply-projection-friendship record))
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:requester_id record)) uid)
+          (resp/response (apply-projection-friendship record))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (DELETE "/api/friendships/:id" [id]
-    (queries/delete-friendship! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
+  (DELETE "/api/friendships/:id" [id :as req]
+    (if-let [record (queries/get-friendship-by-id db-spec {:id (Integer/parseInt id)})]
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:requester_id record)) uid)
+          (do (queries/delete-friendship! db-spec {:id (Integer/parseInt id)})
+              (-> (resp/response nil) (resp/status 204)))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
+      (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (POST "/api/friendships/:id/accept" [id]
     (svc/accept! (Integer/parseInt id))

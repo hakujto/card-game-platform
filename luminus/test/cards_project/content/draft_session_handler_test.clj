@@ -78,15 +78,31 @@
 )
 
 (deftest test-transition-drafting-to-abandoned
-  (testing "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned transitions Drafting -> Abandoned"
-    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/drafting-to-abandoned"))]
+  (testing "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned transitions Drafting -> Abandoned with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/draft_sessions/1/transitions/drafting-to-abandoned")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-drafting-to-abandoned-forbidden
+  (testing "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/draft_sessions/1/transitions/drafting-to-abandoned")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-waiting-for-players-to-abandoned
-  (testing "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned transitions WaitingForPlayers -> Abandoned"
-    (let [resp (app (mock/request :patch "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned"))]
+  (testing "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned transitions WaitingForPlayers -> Abandoned with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-waiting-for-players-to-abandoned-forbidden
+  (testing "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-completed-to-drafting

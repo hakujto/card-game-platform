@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :code "test"
+(def valid-params {   :code (str "test-" (System/currentTimeMillis))
    :discount-type "Percent"
    :discount-value 1
    :min-order-value "0.00"
@@ -36,9 +36,10 @@
 
 (deftest test-update-coupon
   (testing "PUT /api/coupons/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/coupons/1")
+    (let [update-params (merge valid-params {   :code (str "test-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/coupons/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404} (:status resp)))))
 )
 

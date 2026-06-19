@@ -77,7 +77,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/deck_cards/:id" [id :as {params :body}]
+  (PATCH "/api/deck_cards/:id" [id :as {params :body :as req}]
     (try
       (let [kw (deck-card-kw-params params)]
         (validate-deck-card-rules! kw)

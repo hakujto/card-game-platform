@@ -86,7 +86,7 @@
       (resp/response (apply-projection-tournament record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/tournaments/:id" [id :as {params :body}]
+  (PUT "/api/tournaments/:id" [id :as {params :body :as req}]
     (try
       (let [kw (tournament-kw-params params)]
         (validate-tournament-rules! kw)
@@ -101,7 +101,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/tournaments/:id" [id :as {params :body}]
+  (PATCH "/api/tournaments/:id" [id :as {params :body :as req}]
     (try
       (let [kw (tournament-kw-params params)]
         (validate-tournament-rules! kw)
@@ -148,55 +148,70 @@
     (let [result (svc/is-full! (Integer/parseInt id))]
       (resp/response {:result result})))
 
-  (PATCH "/api/tournaments/:id/transitions/draft-to-registration" [id]
-    (try
-      (let [record (svc/transition-draft-to-registration! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/tournaments/:id/transitions/draft-to-registration" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Draft -> Registration"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-draft-to-registration! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/tournaments/:id/transitions/registration-to-ongoing" [id]
-    (try
-      (let [record (svc/transition-registration-to-ongoing! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/tournaments/:id/transitions/registration-to-ongoing" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Registration -> Ongoing"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-registration-to-ongoing! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/tournaments/:id/transitions/registration-to-cancelled" [id]
-    (try
-      (let [record (svc/transition-registration-to-cancelled! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/tournaments/:id/transitions/registration-to-cancelled" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Registration -> Cancelled"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-registration-to-cancelled! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/tournaments/:id/transitions/ongoing-to-completed" [id]
-    (try
-      (let [record (svc/transition-ongoing-to-completed! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/tournaments/:id/transitions/ongoing-to-completed" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Organizer"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Ongoing -> Completed"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-ongoing-to-completed! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/tournaments/:id/transitions/ongoing-to-cancelled" [id]
-    (try
-      (let [record (svc/transition-ongoing-to-cancelled! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/tournaments/:id/transitions/ongoing-to-cancelled" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Ongoing -> Cancelled"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-ongoing-to-cancelled! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/tournaments/:id/transitions/completed-to-draft" [id]
     (try

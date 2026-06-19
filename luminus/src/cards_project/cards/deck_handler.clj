@@ -86,7 +86,7 @@
       (resp/response (apply-projection-deck record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/decks/:id" [id :as {params :body}]
+  (PUT "/api/decks/:id" [id :as {params :body :as req}]
     (try
       (let [kw (deck-kw-params params)]
         (validate-deck-rules! kw)
@@ -101,7 +101,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/decks/:id" [id :as {params :body}]
+  (PATCH "/api/decks/:id" [id :as {params :body :as req}]
     (try
       (let [kw (deck-kw-params params)]
         (validate-deck-rules! kw)

@@ -78,9 +78,12 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (GET "/api/tournament_registrations/:id" [id]
+  (GET "/api/tournament_registrations/:id" [id :as req]
     (if-let [record (queries/get-tournament-registration-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response (apply-projection-tournament-registration record))
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:player_id record)) uid)
+          (resp/response (apply-projection-tournament-registration record))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
 

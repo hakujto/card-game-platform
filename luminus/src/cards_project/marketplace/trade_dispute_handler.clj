@@ -90,45 +90,57 @@
     (svc/review! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 
-  (PATCH "/api/trade_disputes/:id/transitions/open-to-underreview" [id]
-    (try
-      (let [record (svc/transition-open-to-under-review! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_disputes/:id/transitions/open-to-underreview" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Open -> UnderReview"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-open-to-under-review! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-resolved" [id]
-    (try
-      (let [record (svc/transition-under-review-to-resolved! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-resolved" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition UnderReview -> Resolved"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-under-review-to-resolved! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-escalated" [id]
-    (try
-      (let [record (svc/transition-under-review-to-escalated! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_disputes/:id/transitions/underreview-to-escalated" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition UnderReview -> Escalated"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-under-review-to-escalated! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/trade_disputes/:id/transitions/escalated-to-resolved" [id]
-    (try
-      (let [record (svc/transition-escalated-to-resolved! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_disputes/:id/transitions/escalated-to-resolved" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Escalated -> Resolved"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-escalated-to-resolved! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/trade_disputes/:id/transitions/resolved-to-open" [id]
     (try

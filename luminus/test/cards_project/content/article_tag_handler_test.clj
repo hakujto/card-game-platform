@@ -5,7 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :name "test"
-   :slug "test"})
+   :slug (str "test-" (System/currentTimeMillis))})
 
 (deftest test-list-article-tags
   (testing "GET /api/article_tags returns 200"
@@ -29,9 +29,10 @@
 
 (deftest test-update-article-tag
   (testing "PUT /api/article_tags/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/article_tags/1")
+    (let [update-params (merge valid-params {   :slug (str "test-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/article_tags/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404} (:status resp)))))
 )
 

@@ -69,7 +69,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/crafting_recipes/:id" [id :as {params :body}]
+  (PUT "/api/crafting_recipes/:id" [id :as {params :body :as req}]
     (try
       (let [kw (crafting-recipe-kw-params params)]
         (validate-crafting-recipe-rules! kw)
@@ -83,7 +83,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/crafting_recipes/:id" [id :as {params :body}]
+  (PATCH "/api/crafting_recipes/:id" [id :as {params :body :as req}]
     (try
       (let [kw (crafting-recipe-kw-params params)]
         (validate-crafting-recipe-rules! kw)

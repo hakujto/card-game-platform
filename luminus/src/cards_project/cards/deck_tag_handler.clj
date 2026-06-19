@@ -56,7 +56,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/deck_tags/:id" [id :as {params :body}]
+  (PATCH "/api/deck_tags/:id" [id :as {params :body :as req}]
     (try
       (let [int-id (Integer/parseInt id)]
         (update-deck-tag! int-id params)

@@ -78,7 +78,7 @@
       (resp/response (apply-projection-player record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/players/:id" [id :as {params :body}]
+  (PATCH "/api/players/:id" [id :as {params :body :as req}]
     (try
       (let [kw (player-kw-params params)]
         (validate-player-rules! kw)

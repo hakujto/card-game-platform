@@ -152,7 +152,9 @@
 (defn pay!
   [id payment-ref]
   (if-let [record (queries/get-order-by-id db-spec {:id id})]
-    (pay-behavior! id payment-ref)
+    (if (not (= (get record :status) "Pending"))
+      (throw (ex-info "Guard condition not met for pay" {:status 422}))
+      (pay-behavior! id payment-ref))
     (throw (ex-info "Order not found" {:id id}))))
 
 (defn process-payment!
@@ -180,6 +182,10 @@
     (throw (ex-info "Order not found" {:id id}))))
 
 ; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- assign-currency-default-hook! [record]
+  ; TODO: implement assign_currency_default
+  record)
+
 (defn- notify-status-change-hook! [record]
   ; TODO: implement notify_status_change
   record)

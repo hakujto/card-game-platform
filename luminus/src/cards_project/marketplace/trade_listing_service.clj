@@ -113,7 +113,9 @@
 (defn cancel!
   [id]
   (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
-    (cancel-behavior! id)
+    (if (not (= (get record :status) "Active"))
+      (throw (ex-info "Guard condition not met for cancel" {:status 422}))
+      (cancel-behavior! id))
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn is-expired!

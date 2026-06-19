@@ -82,9 +82,12 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (GET "/api/orders/:id" [id]
+  (GET "/api/orders/:id" [id :as req]
     (if-let [record (queries/get-order-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response (apply-projection-order record))
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:player_id record)) uid)
+          (resp/response (apply-projection-order record))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
 
@@ -126,35 +129,44 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/orders/:id/transitions/paid-to-processing" [id]
-    (try
-      (let [record (svc/transition-paid-to-processing! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/orders/:id/transitions/paid-to-processing" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Staff"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Paid -> Processing"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-paid-to-processing! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/orders/:id/transitions/processing-to-shipped" [id]
-    (try
-      (let [record (svc/transition-processing-to-shipped! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/orders/:id/transitions/processing-to-shipped" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Staff"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Processing -> Shipped"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-processing-to-shipped! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/orders/:id/transitions/shipped-to-completed" [id]
-    (try
-      (let [record (svc/transition-shipped-to-completed! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/orders/:id/transitions/shipped-to-completed" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Staff"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Shipped -> Completed"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-shipped-to-completed! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/orders/:id/transitions/pending-to-cancelled" [id]
     (try
@@ -166,25 +178,31 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/orders/:id/transitions/paid-to-cancelled" [id]
-    (try
-      (let [record (svc/transition-paid-to-cancelled! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/orders/:id/transitions/paid-to-cancelled" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin" "Staff"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Paid -> Cancelled"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-paid-to-cancelled! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/orders/:id/transitions/completed-to-refunded" [id]
-    (try
-      (let [record (svc/transition-completed-to-refunded! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/orders/:id/transitions/completed-to-refunded" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Completed -> Refunded"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-completed-to-refunded! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/orders/:id/transitions/refunded-to-completed" [id]
     (try

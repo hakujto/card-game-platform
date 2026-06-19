@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS card_sets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR NOT NULL,
-  code VARCHAR NOT NULL,
+  code VARCHAR NOT NULL UNIQUE,
   release_date DATE NOT NULL,
   rotation_date DATE,
   set_type VARCHAR NOT NULL DEFAULT 'Expansion',

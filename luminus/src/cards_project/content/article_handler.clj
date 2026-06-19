@@ -84,7 +84,7 @@
       (resp/response (apply-projection-article record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/articles/:id" [id :as {params :body}]
+  (PUT "/api/articles/:id" [id :as {params :body :as req}]
     (try
       (let [kw (article-kw-params params)]
         (validate-article-rules! kw)
@@ -99,7 +99,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/articles/:id" [id :as {params :body}]
+  (PATCH "/api/articles/:id" [id :as {params :body :as req}]
     (try
       (let [kw (article-kw-params params)]
         (validate-article-rules! kw)
@@ -139,35 +139,44 @@
     (let [result (svc/reading-time-minutes! (Integer/parseInt id))]
       (resp/response {:result result})))
 
-  (PATCH "/api/articles/:id/transitions/draft-to-published" [id]
-    (try
-      (let [record (svc/transition-draft-to-published! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/articles/:id/transitions/draft-to-published" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Editor" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Draft -> Published"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-draft-to-published! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/articles/:id/transitions/published-to-archived" [id]
-    (try
-      (let [record (svc/transition-published-to-archived! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/articles/:id/transitions/published-to-archived" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Editor" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Published -> Archived"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-published-to-archived! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/articles/:id/transitions/archived-to-draft" [id]
-    (try
-      (let [record (svc/transition-archived-to-draft! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/articles/:id/transitions/archived-to-draft" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Archived -> Draft"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-archived-to-draft! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/articles/:id/transitions/published-to-draft" [id]
     (try

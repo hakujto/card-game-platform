@@ -81,6 +81,10 @@
     (throw (ex-info "Player not found" {:id id}))))
 
 ; ── Lifecycle hooks ─────────────────────────────────────────────────
+(defn- initialize-collection-hook! [record]
+  ; TODO: implement initialize_collection
+  record)
+
 (defn- update-rank-hook! [record]
   ; TODO: implement update_rank
   record)

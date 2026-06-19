@@ -84,7 +84,7 @@
       (resp/response (apply-projection-stream record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/streams/:id" [id :as {params :body}]
+  (PUT "/api/streams/:id" [id :as {params :body :as req}]
     (try
       (let [kw (stream-kw-params params)]
         (validate-stream-rules! kw)
@@ -99,7 +99,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/streams/:id" [id :as {params :body}]
+  (PATCH "/api/streams/:id" [id :as {params :body :as req}]
     (try
       (let [kw (stream-kw-params params)]
         (validate-stream-rules! kw)
@@ -133,25 +133,31 @@
     (let [result (svc/duration-minutes! (Integer/parseInt id))]
       (resp/response {:result result})))
 
-  (PATCH "/api/streams/:id/transitions/scheduled-to-live" [id]
-    (try
-      (let [record (svc/transition-scheduled-to-live! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/streams/:id/transitions/scheduled-to-live" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Streamer" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Scheduled -> Live"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-scheduled-to-live! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
-  (PATCH "/api/streams/:id/transitions/live-to-ended" [id]
-    (try
-      (let [record (svc/transition-live-to-ended! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/streams/:id/transitions/live-to-ended" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Streamer" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Live -> Ended"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-live-to-ended! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/streams/:id/transitions/ended-to-live" [id]
     (try

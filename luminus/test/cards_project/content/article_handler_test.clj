@@ -5,7 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :title "test"
-   :slug "test"
+   :slug (str "test-" (System/currentTimeMillis))
    :body "test"
    :status "Published"
    :article-type "Guide"
@@ -40,9 +40,10 @@
 
 (deftest test-update-article
   (testing "PUT /api/articles/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/articles/1")
+    (let [update-params (merge valid-params {   :slug (str "test-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/articles/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404 500} (:status resp)))))
 )
 
@@ -81,21 +82,45 @@
 )
 
 (deftest test-transition-draft-to-published
-  (testing "PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published"
-    (let [resp (app (mock/request :patch "/api/articles/1/transitions/draft-to-published"))]
+  (testing "PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published with role Editor"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/draft-to-published")
+                     (mock/header "x-user-role" "Editor")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-draft-to-published-forbidden
+  (testing "PATCH /api/articles/1/transitions/draft-to-published without role Editor is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/draft-to-published")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-published-to-archived
-  (testing "PATCH /api/articles/1/transitions/published-to-archived transitions Published -> Archived"
-    (let [resp (app (mock/request :patch "/api/articles/1/transitions/published-to-archived"))]
+  (testing "PATCH /api/articles/1/transitions/published-to-archived transitions Published -> Archived with role Editor"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/published-to-archived")
+                     (mock/header "x-user-role" "Editor")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-published-to-archived-forbidden
+  (testing "PATCH /api/articles/1/transitions/published-to-archived without role Editor is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/published-to-archived")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-archived-to-draft
-  (testing "PATCH /api/articles/1/transitions/archived-to-draft transitions Archived -> Draft"
-    (let [resp (app (mock/request :patch "/api/articles/1/transitions/archived-to-draft"))]
+  (testing "PATCH /api/articles/1/transitions/archived-to-draft transitions Archived -> Draft with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/archived-to-draft")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-archived-to-draft-forbidden
+  (testing "PATCH /api/articles/1/transitions/archived-to-draft without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1/transitions/archived-to-draft")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-published-to-draft

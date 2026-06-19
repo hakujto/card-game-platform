@@ -69,7 +69,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/deck_sideboard_cards/:id" [id :as {params :body}]
+  (PATCH "/api/deck_sideboard_cards/:id" [id :as {params :body :as req}]
     (try
       (let [kw (deck-sideboard-card-kw-params params)]
         (validate-deck-sideboard-card-rules! kw)

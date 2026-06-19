@@ -80,9 +80,17 @@
 )
 
 (deftest test-transition-pending-to-active
-  (testing "PATCH /api/trade_listings/1/transitions/pending-to-active transitions Pending -> Active"
-    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/pending-to-active"))]
+  (testing "PATCH /api/trade_listings/1/transitions/pending-to-active transitions Pending -> Active with role Seller"
+    (let [resp (app (-> (mock/request :patch "/api/trade_listings/1/transitions/pending-to-active")
+                     (mock/header "x-user-role" "Seller")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-pending-to-active-forbidden
+  (testing "PATCH /api/trade_listings/1/transitions/pending-to-active without role Seller is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_listings/1/transitions/pending-to-active")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-active-to-sold
@@ -98,9 +106,17 @@
 )
 
 (deftest test-transition-active-to-cancelled
-  (testing "PATCH /api/trade_listings/1/transitions/active-to-cancelled transitions Active -> Cancelled"
-    (let [resp (app (mock/request :patch "/api/trade_listings/1/transitions/active-to-cancelled"))]
+  (testing "PATCH /api/trade_listings/1/transitions/active-to-cancelled transitions Active -> Cancelled with role Seller"
+    (let [resp (app (-> (mock/request :patch "/api/trade_listings/1/transitions/active-to-cancelled")
+                     (mock/header "x-user-role" "Seller")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-cancelled-forbidden
+  (testing "PATCH /api/trade_listings/1/transitions/active-to-cancelled without role Seller is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_listings/1/transitions/active-to-cancelled")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-sold-to-active

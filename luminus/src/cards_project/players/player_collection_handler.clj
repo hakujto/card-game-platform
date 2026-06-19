@@ -68,28 +68,41 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (GET "/api/player_collections/:id" [id]
+  (GET "/api/player_collections/:id" [id :as req]
     (if-let [record (queries/get-player-collection-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response (apply-projection-player-collection record))
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:player_id record)) uid)
+          (resp/response (apply-projection-player-collection record))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/player_collections/:id" [id :as {params :body}]
+  (PATCH "/api/player_collections/:id" [id :as {params :body :as req}]
     (try
-      (let [kw (player-collection-kw-params params)]
-        (validate-player-collection-rules! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-player-collection! int-id params)
-          (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
-            (resp/response (apply-projection-player-collection record))
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
+      (if-let [existing (queries/get-player-collection-by-id db-spec {:id (Integer/parseInt id)})]
+        (let [uid (get-in req [:headers "x-user-id"])]
+          (if (not= (str (:player_id existing)) uid)
+            (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))
+            (let [kw (player-collection-kw-params params)]
+              (validate-player-collection-rules! kw)
+              (let [int-id (Integer/parseInt id)]
+                (update-player-collection! int-id params)
+                (if-let [record (queries/get-player-collection-by-id db-spec {:id int-id})]
+                  (resp/response (apply-projection-player-collection record))
+                  (-> (resp/response {:error "Not found"}) (resp/status 404)))))))
+        (-> (resp/response {:error "Not found"}) (resp/status 404)))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (DELETE "/api/player_collections/:id" [id]
-    (queries/delete-player-collection! db-spec {:id (Integer/parseInt id)})
-    (-> (resp/response nil) (resp/status 204)))
+  (DELETE "/api/player_collections/:id" [id :as req]
+    (if-let [record (queries/get-player-collection-by-id db-spec {:id (Integer/parseInt id)})]
+      (let [uid (get-in req [:headers "x-user-id"])]
+        (if (= (str (:player_id record)) uid)
+          (do (queries/delete-player-collection! db-spec {:id (Integer/parseInt id)})
+              (-> (resp/response nil) (resp/status 204)))
+          (-> (resp/response {:error "You do not own this resource."}) (resp/status 403))))
+      (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (POST "/api/player_collections/:id/add" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

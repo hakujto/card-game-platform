@@ -56,7 +56,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/article_tags/:id" [id :as {params :body}]
+  (PATCH "/api/article_tags/:id" [id :as {params :body :as req}]
     (try
       (let [int-id (Integer/parseInt id)]
         (update-article-tag! int-id params)

@@ -80,7 +80,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/card_sets/:id" [id :as {params :body}]
+  (PUT "/api/card_sets/:id" [id :as {params :body :as req}]
     (try
       (let [kw (card-set-kw-params params)]
         (validate-card-set-rules! kw)
@@ -95,7 +95,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/card_sets/:id" [id :as {params :body}]
+  (PATCH "/api/card_sets/:id" [id :as {params :body :as req}]
     (try
       (let [kw (card-set-kw-params params)]
         (validate-card-set-rules! kw)

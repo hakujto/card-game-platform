@@ -9,8 +9,9 @@
    :condition "Mint"
    :acquired-at "2024-01-01T00:00:00"
    :acquired-via "Purchase"
-   :player-id 1
+   :player-id "owner-1"
    :card-id 1})
+(def owner-id "owner-1")
 
 (deftest test-list-player-collections
   (testing "GET /api/player_collections returns 200"
@@ -28,22 +29,25 @@
 
 (deftest test-get-player-collection
   (testing "GET /api/player_collections/1 returns 200 or 404"
-    (let [resp (app (mock/request :get "/api/player_collections/1"))]
-      (is (#{200 404} (:status resp)))))
+    (let [resp (app (-> (mock/request :get "/api/player_collections/1")
+                     (mock/header "X-User-Id" owner-id)))]
+      (is (#{200 403 404} (:status resp)))))
 )
 
 (deftest test-update-player-collection
   (testing "PUT /api/player_collections/1 returns 200 or 404"
     (let [resp (app (-> (mock/request :put "/api/player_collections/1")
                      (mock/content-type "application/json")
+                     (mock/header "X-User-Id" owner-id)
                      (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
+      (is (#{200 403 404 500} (:status resp)))))
 )
 
 (deftest test-delete-player-collection
   (testing "DELETE /api/player_collections/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/player_collections/1"))]
-      (is (#{204 404} (:status resp)))))
+    (let [resp (app (-> (mock/request :delete "/api/player_collections/1")
+                     (mock/header "X-User-Id" owner-id)))]
+      (is (#{204 403 404} (:status resp)))))
 )
 
 ; Simple rule violated → 422

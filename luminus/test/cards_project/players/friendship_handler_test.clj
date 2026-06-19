@@ -6,8 +6,9 @@
 
 (def valid-params {   :status "Pending"
    :created-at "2024-01-01T00:00:00"
-   :requester-id 1
+   :requester-id "owner-1"
    :receiver-id 1})
+(def owner-id "owner-1")
 
 (deftest test-list-friendships
   (testing "GET /api/friendships returns 200"
@@ -25,13 +26,15 @@
 
 (deftest test-get-friendship
   (testing "GET /api/friendships/1 returns 200 or 404"
-    (let [resp (app (mock/request :get "/api/friendships/1"))]
-      (is (#{200 404} (:status resp)))))
+    (let [resp (app (-> (mock/request :get "/api/friendships/1")
+                     (mock/header "X-User-Id" owner-id)))]
+      (is (#{200 403 404} (:status resp)))))
 )
 
 (deftest test-delete-friendship
   (testing "DELETE /api/friendships/1 returns 204 or 404"
-    (let [resp (app (mock/request :delete "/api/friendships/1"))]
-      (is (#{204 404} (:status resp)))))
+    (let [resp (app (-> (mock/request :delete "/api/friendships/1")
+                     (mock/header "X-User-Id" owner-id)))]
+      (is (#{204 403 404} (:status resp)))))
 )
 

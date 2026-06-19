@@ -5,7 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :ability-type "Keyword"
-   :keyword 1
+   :keyword "test"
    :ability-text "test"
    :card-id 1})
 

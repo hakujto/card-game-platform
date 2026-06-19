@@ -84,7 +84,7 @@
       (resp/response (apply-projection-trade-listing record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PATCH "/api/trade_listings/:id" [id :as {params :body}]
+  (PATCH "/api/trade_listings/:id" [id :as {params :body :as req}]
     (try
       (let [kw (trade-listing-kw-params params)]
         (validate-trade-listing-rules! kw)
@@ -122,15 +122,18 @@
     (svc/finalize-auction! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 
-  (PATCH "/api/trade_listings/:id/transitions/pending-to-active" [id]
-    (try
-      (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_listings/:id/transitions/pending-to-active" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Seller"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Pending -> Active"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-pending-to-active! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/trade_listings/:id/transitions/active-to-sold" [id]
     (try
@@ -152,15 +155,18 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/trade_listings/:id/transitions/active-to-cancelled" [id]
-    (try
-      (let [record (svc/transition-active-to-cancelled! (Integer/parseInt id))]
-        (resp/response record))
-      (catch clojure.lang.ExceptionInfo e
-        (let [status (get (ex-data e) :status 500)]
-          (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
+  (PATCH "/api/trade_listings/:id/transitions/active-to-cancelled" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"Seller" "Admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for transition Active -> Cancelled"}) (resp/status 403))
+        (try
+          (let [record (svc/transition-active-to-cancelled! (Integer/parseInt id))]
+            (resp/response record))
+          (catch clojure.lang.ExceptionInfo e
+            (let [status (get (ex-data e) :status 500)]
+              (-> (resp/response {:error (.getMessage e)}) (resp/status status))))
+          (catch Exception e
+            (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))))
 
   (PATCH "/api/trade_listings/:id/transitions/sold-to-active" [id]
     (try

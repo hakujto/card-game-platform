@@ -73,7 +73,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/tournament_prizes/:id" [id :as {params :body}]
+  (PUT "/api/tournament_prizes/:id" [id :as {params :body :as req}]
     (try
       (let [kw (tournament-prize-kw-params params)]
         (validate-tournament-prize-rules! kw)
@@ -87,7 +87,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/tournament_prizes/:id" [id :as {params :body}]
+  (PATCH "/api/tournament_prizes/:id" [id :as {params :body :as req}]
     (try
       (let [kw (tournament-prize-kw-params params)]
         (validate-tournament-prize-rules! kw)

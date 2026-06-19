@@ -68,7 +68,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/card_abilities/:id" [id :as {params :body}]
+  (PUT "/api/card_abilities/:id" [id :as {params :body :as req}]
     (try
       (let [kw (card-ability-kw-params params)]
         (validate-card-ability-implies! kw)
@@ -82,7 +82,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/card_abilities/:id" [id :as {params :body}]
+  (PATCH "/api/card_abilities/:id" [id :as {params :body :as req}]
     (try
       (let [kw (card-ability-kw-params params)]
         (validate-card-ability-implies! kw)

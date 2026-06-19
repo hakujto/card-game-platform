@@ -5,7 +5,7 @@
             [cheshire.core :as json]))
 
 (def valid-params {   :name "test"
-   :code "test"
+   :code (str (subs "test" 0 4) "-" (mod (System/currentTimeMillis) 100000))
    :release-date "2024-01-01"
    :rotation-date "2024-01-02"
    :set-type "Core"
@@ -34,9 +34,10 @@
 
 (deftest test-update-card-set
   (testing "PUT /api/card_sets/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/card_sets/1")
+    (let [update-params (merge valid-params {   :code (str (subs "test" 0 4) "-" (mod (System/currentTimeMillis) 100000))})
+          resp (app (-> (mock/request :put "/api/card_sets/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404} (:status resp)))))
 )
 

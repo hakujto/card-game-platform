@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS trade_disputes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status VARCHAR NOT NULL DEFAULT 'Open',
+  reason VARCHAR NOT NULL,
+  description TEXT NOT NULL,
+  resolution TEXT,
+  opened_at DATETIME NOT NULL,
+  resolved_at DATETIME,
+  transaction_id INTEGER NOT NULL UNIQUE REFERENCES trade_transactions(id) ON DELETE CASCADE,
+  opened_by_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
+  resolved_by_id INTEGER REFERENCES players(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

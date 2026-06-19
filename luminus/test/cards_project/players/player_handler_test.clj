@@ -4,7 +4,7 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :display-name 1
+(def valid-params {   :display-name (str "test-" (System/currentTimeMillis))
    :rank "Bronze"
    :rating 0
    :peak-rating 0
@@ -33,9 +33,10 @@
 
 (deftest test-update-player
   (testing "PUT /api/players/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/players/1")
+    (let [update-params (merge valid-params {   :display-name (str "test-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/players/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404} (:status resp)))))
 )
 

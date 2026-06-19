@@ -82,7 +82,7 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/coupons/:id" [id :as {params :body}]
+  (PUT "/api/coupons/:id" [id :as {params :body :as req}]
     (try
       (let [kw (coupon-kw-params params)]
         (validate-coupon-rules! kw)
@@ -97,7 +97,7 @@
       (catch Exception e
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
-  (PATCH "/api/coupons/:id" [id :as {params :body}]
+  (PATCH "/api/coupons/:id" [id :as {params :body :as req}]
     (try
       (let [kw (coupon-kw-params params)]
         (validate-coupon-rules! kw)

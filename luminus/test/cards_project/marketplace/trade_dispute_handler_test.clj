@@ -44,27 +44,59 @@
 )
 
 (deftest test-transition-open-to-under-review
-  (testing "PATCH /api/trade_disputes/1/transitions/open-to-underreview transitions Open -> UnderReview"
-    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/open-to-underreview"))]
+  (testing "PATCH /api/trade_disputes/1/transitions/open-to-underreview transitions Open -> UnderReview with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/open-to-underreview")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-open-to-under-review-forbidden
+  (testing "PATCH /api/trade_disputes/1/transitions/open-to-underreview without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/open-to-underreview")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-under-review-to-resolved
-  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-resolved transitions UnderReview -> Resolved"
-    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-resolved"))]
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-resolved transitions UnderReview -> Resolved with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-resolved")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-under-review-to-resolved-forbidden
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-resolved without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-resolved")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-under-review-to-escalated
-  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-escalated transitions UnderReview -> Escalated"
-    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-escalated"))]
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-escalated transitions UnderReview -> Escalated with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-escalated")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-under-review-to-escalated-forbidden
+  (testing "PATCH /api/trade_disputes/1/transitions/underreview-to-escalated without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/underreview-to-escalated")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-escalated-to-resolved
-  (testing "PATCH /api/trade_disputes/1/transitions/escalated-to-resolved transitions Escalated -> Resolved"
-    (let [resp (app (mock/request :patch "/api/trade_disputes/1/transitions/escalated-to-resolved"))]
+  (testing "PATCH /api/trade_disputes/1/transitions/escalated-to-resolved transitions Escalated -> Resolved with role Admin"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/escalated-to-resolved")
+                     (mock/header "x-user-role" "Admin")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-escalated-to-resolved-forbidden
+  (testing "PATCH /api/trade_disputes/1/transitions/escalated-to-resolved without role Admin is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/trade_disputes/1/transitions/escalated-to-resolved")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-resolved-to-open

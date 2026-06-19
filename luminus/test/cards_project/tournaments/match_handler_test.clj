@@ -90,27 +90,59 @@
 )
 
 (deftest test-transition-pending-to-active
-  (testing "PATCH /api/matches/1/transitions/pending-to-active transitions Pending -> Active"
-    (let [resp (app (mock/request :patch "/api/matches/1/transitions/pending-to-active"))]
+  (testing "PATCH /api/matches/1/transitions/pending-to-active transitions Pending -> Active with role Judge"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/pending-to-active")
+                     (mock/header "x-user-role" "Judge")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-pending-to-active-forbidden
+  (testing "PATCH /api/matches/1/transitions/pending-to-active without role Judge is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/pending-to-active")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-active-to-completed
-  (testing "PATCH /api/matches/1/transitions/active-to-completed transitions Active -> Completed"
-    (let [resp (app (mock/request :patch "/api/matches/1/transitions/active-to-completed"))]
+  (testing "PATCH /api/matches/1/transitions/active-to-completed transitions Active -> Completed with role Judge"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/active-to-completed")
+                     (mock/header "x-user-role" "Judge")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-active-to-completed-forbidden
+  (testing "PATCH /api/matches/1/transitions/active-to-completed without role Judge is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/active-to-completed")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-active-to-draw
-  (testing "PATCH /api/matches/1/transitions/active-to-draw transitions Active -> Draw"
-    (let [resp (app (mock/request :patch "/api/matches/1/transitions/active-to-draw"))]
+  (testing "PATCH /api/matches/1/transitions/active-to-draw transitions Active -> Draw with role Judge"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/active-to-draw")
+                     (mock/header "x-user-role" "Judge")))]
       (is (#{200 409 422 404 500} (:status resp)))))
 )
 
+(deftest test-transition-active-to-draw-forbidden
+  (testing "PATCH /api/matches/1/transitions/active-to-draw without role Judge is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/active-to-draw")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
+)
+
 (deftest test-transition-pending-to-b-y-e
-  (testing "PATCH /api/matches/1/transitions/pending-to-bye transitions Pending -> BYE"
-    (let [resp (app (mock/request :patch "/api/matches/1/transitions/pending-to-bye"))]
+  (testing "PATCH /api/matches/1/transitions/pending-to-bye transitions Pending -> BYE with role Judge"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/pending-to-bye")
+                     (mock/header "x-user-role" "Judge")))]
       (is (#{200 409 422 404 500} (:status resp)))))
+)
+
+(deftest test-transition-pending-to-b-y-e-forbidden
+  (testing "PATCH /api/matches/1/transitions/pending-to-bye without role Judge is forbidden"
+    (let [resp (app (-> (mock/request :patch "/api/matches/1/transitions/pending-to-bye")
+                     (mock/header "x-user-role" "anonymous")))]
+      (is (= 403 (:status resp)))))
 )
 
 (deftest test-transition-completed-to-active

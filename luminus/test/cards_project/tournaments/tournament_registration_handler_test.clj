@@ -10,8 +10,9 @@
    :points-earned 0
    :registered-at "2024-01-01T00:00:00"
    :tournament-id 1
-   :player-id 1
+   :player-id "owner-1"
    :deck-id 1})
+(def owner-id "owner-1")
 
 (deftest test-list-tournament-registrations
   (testing "GET /api/tournament_registrations returns 200"
@@ -29,8 +30,9 @@
 
 (deftest test-get-tournament-registration
   (testing "GET /api/tournament_registrations/1 returns 200 or 404"
-    (let [resp (app (mock/request :get "/api/tournament_registrations/1"))]
-      (is (#{200 404} (:status resp)))))
+    (let [resp (app (-> (mock/request :get "/api/tournament_registrations/1")
+                     (mock/header "X-User-Id" owner-id)))]
+      (is (#{200 403 404} (:status resp)))))
 )
 
 ; Simple rule violated → 422

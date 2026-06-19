@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status VARCHAR NOT NULL DEFAULT 'Pending',
+  total DECIMAL NOT NULL DEFAULT 0,
+  discount_applied DECIMAL NOT NULL DEFAULT 0,
+  currency VARCHAR NOT NULL DEFAULT 'USD',
+  payment_method VARCHAR,
+  payment_reference VARCHAR,
+  shipping_address TEXT,
+  tracking_number VARCHAR,
+  paid_at DATETIME,
+  shipped_at DATETIME,
+  player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
+  coupon_id INTEGER REFERENCES coupons(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
