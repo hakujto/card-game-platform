@@ -171,6 +171,11 @@ func (h *DraftSessionHandler) TransitionDraftingToAbandoned(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionDraftingToAbandoned := []string{"Admin", "Organizer"}
+	roleOkTransitionDraftingToAbandoned := false
+	for _, r := range allowedRolesTransitionDraftingToAbandoned { if r == userRole { roleOkTransitionDraftingToAbandoned = true; break } }
+	if !roleOkTransitionDraftingToAbandoned { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Drafting -> Abandoned"}); return }
 	if err := row.AssertTransition("Abandoned"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -189,6 +194,11 @@ func (h *DraftSessionHandler) TransitionWaitingForPlayersToAbandoned(c *gin.Cont
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "DraftSession"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionWaitingForPlayersToAbandoned := []string{"Admin", "Organizer"}
+	roleOkTransitionWaitingForPlayersToAbandoned := false
+	for _, r := range allowedRolesTransitionWaitingForPlayersToAbandoned { if r == userRole { roleOkTransitionWaitingForPlayersToAbandoned = true; break } }
+	if !roleOkTransitionWaitingForPlayersToAbandoned { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition WaitingForPlayers -> Abandoned"}); return }
 	if err := row.AssertTransition("Abandoned"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

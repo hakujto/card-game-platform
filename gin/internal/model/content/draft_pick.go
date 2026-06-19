@@ -42,8 +42,8 @@ type DraftPick struct {
 	PickNumber int `gorm:"column:pick_number;not null"`
 	PackNumber int `gorm:"column:pack_number;not null"`
 	PickedAt string `gorm:"column:picked_at;not null"`
-	ParticipantID uint `gorm:"column:participant_id"`
-	CardID uint `gorm:"column:card_id"`
+	ParticipantID uint `gorm:"column:participant_id;constraint:OnDelete:CASCADE"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *DraftPick) ToResponse() DraftPickResponse {

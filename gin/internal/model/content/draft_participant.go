@@ -38,8 +38,9 @@ type DraftParticipant struct {
 	gorm.Model
 	SeatNumber int `gorm:"column:seat_number;not null"`
 	JoinedAt string `gorm:"column:joined_at;not null"`
-	SessionID uint `gorm:"column:session_id"`
-	PlayerID uint `gorm:"column:player_id"`
+	SessionID uint `gorm:"column:session_id;constraint:OnDelete:CASCADE"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:RESTRICT"`
+	Picks []DraftPick `gorm:"foreignKey:ParticipantID"`
 }
 
 func (m *DraftParticipant) ToResponse() DraftParticipantResponse {

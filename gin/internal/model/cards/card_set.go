@@ -61,7 +61,7 @@ type CardSetResponse struct {
 type CardSet struct {
 	gorm.Model
 	Name string `gorm:"column:name;not null"`
-	Code string `gorm:"column:code;not null"`
+	Code string `gorm:"column:code;not null;uniqueIndex"`
 	ReleaseDate string `gorm:"column:release_date;not null"`
 	RotationDate *string `gorm:"column:rotation_date"`
 	SetType CardSetSetTypeType `gorm:"column:set_type;not null;default:'Expansion'"`
@@ -69,6 +69,7 @@ type CardSet struct {
 	IsRotated bool `gorm:"column:is_rotated;default:false"`
 	Description *string `gorm:"column:description;type:text"`
 	LogoUrl *string `gorm:"column:logo_url"`
+	Cards []Card `gorm:"foreignKey:SetID"`
 }
 
 func (m *CardSet) ToResponse() CardSetResponse {

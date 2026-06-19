@@ -145,6 +145,9 @@ func (h *CouponHandler) Redeem(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Coupon"); return }
 		handler.DbError(c, err); return
 	}
+	if !(row.IsActive) {
+		handler.UnprocessableError(c, "Guard condition not met for redeem"); return
+	}
 	err := row.Redeem()
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)

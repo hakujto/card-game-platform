@@ -39,7 +39,7 @@ type CardRuling struct {
 	RulingText string `gorm:"column:ruling_text;type:text;not null"`
 	PublishedAt string `gorm:"column:published_at;not null"`
 	Source string `gorm:"column:source;not null"`
-	CardID uint `gorm:"column:card_id"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *CardRuling) ToResponse() CardRulingResponse {

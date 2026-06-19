@@ -59,7 +59,7 @@ type CardAbility struct {
 	Keyword *string `gorm:"column:keyword"`
 	AbilityText string `gorm:"column:ability_text;type:text;not null"`
 	Timing *CardAbilityTimingType `gorm:"column:timing"`
-	CardID uint `gorm:"column:card_id"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *CardAbility) ToResponse() CardAbilityResponse {

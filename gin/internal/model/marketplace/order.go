@@ -90,8 +90,9 @@ type Order struct {
 	TrackingNumber *string `gorm:"column:tracking_number"`
 	PaidAt *string `gorm:"column:paid_at"`
 	ShippedAt *string `gorm:"column:shipped_at"`
-	PlayerID uint `gorm:"column:player_id"`
-	CouponID *uint `gorm:"column:coupon_id"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:RESTRICT"`
+	CouponID *uint `gorm:"column:coupon_id;constraint:OnDelete:SET NULL"`
+	Items []OrderItem `gorm:"foreignKey:OrderID"`
 }
 
 func (m *Order) ToResponse() OrderResponse {

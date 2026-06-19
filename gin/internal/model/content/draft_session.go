@@ -62,7 +62,8 @@ type DraftSession struct {
 	Seats int `gorm:"column:seats;not null;default:8"`
 	TimePerPickSeconds int `gorm:"column:time_per_pick_seconds;not null;default:30"`
 	CompletedAt *string `gorm:"column:completed_at"`
-	CardSetID uint `gorm:"column:card_set_id"`
+	CardSetID uint `gorm:"column:card_set_id;constraint:OnDelete:RESTRICT"`
+	Participants []DraftParticipant `gorm:"foreignKey:SessionID"`
 }
 
 func (m *DraftSession) ToResponse() DraftSessionResponse {

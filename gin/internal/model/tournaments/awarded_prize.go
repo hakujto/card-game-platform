@@ -46,8 +46,8 @@ type AwardedPrize struct {
 	AwardedAt string `gorm:"column:awarded_at;not null"`
 	Claimed bool `gorm:"column:claimed;default:false"`
 	ClaimedAt *string `gorm:"column:claimed_at"`
-	PrizeID uint `gorm:"column:prize_id"`
-	PlayerID uint `gorm:"column:player_id"`
+	PrizeID uint `gorm:"column:prize_id;constraint:OnDelete:RESTRICT"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *AwardedPrize) ToResponse() AwardedPrizeResponse {

@@ -42,8 +42,8 @@ type PlayerAchievement struct {
 	EarnedAt string `gorm:"column:earned_at;not null"`
 	Progress int `gorm:"column:progress;not null;default:0"`
 	IsCompleted bool `gorm:"column:is_completed;default:false"`
-	PlayerID uint `gorm:"column:player_id"`
-	AchievementID uint `gorm:"column:achievement_id"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:CASCADE"`
+	AchievementID uint `gorm:"column:achievement_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *PlayerAchievement) ToResponse() PlayerAchievementResponse {

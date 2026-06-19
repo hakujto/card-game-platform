@@ -33,8 +33,8 @@ type CraftingIngredientResponse struct {
 type CraftingIngredient struct {
 	gorm.Model
 	Quantity int `gorm:"column:quantity;not null;default:1"`
-	RecipeID uint `gorm:"column:recipe_id"`
-	CardID uint `gorm:"column:card_id"`
+	RecipeID uint `gorm:"column:recipe_id;constraint:OnDelete:CASCADE"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *CraftingIngredient) ToResponse() CraftingIngredientResponse {

@@ -23,6 +23,14 @@ func setupTournamentRegistrationDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Season{}, &model.Tournament{}, &model.TournamentJudge{}, &model.TournamentRegistration{}, &model.TournamentRound{}, &model.Match{}, &model.Game{}, &model.TournamentPrize{}, &model.AwardedPrize{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Id"); v != "" {
+			var uid uint
+			fmt.Sscan(v, &uid)
+			c.Set("user_id", uid)
+		}
+		c.Next()
+	})
 	h := handler_app.NewTournamentRegistrationHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
@@ -80,6 +88,7 @@ func TestTournamentRegistration_Get(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/tournament_registrations/"+id, nil)
+	req.Header.Set("X-User-Id", fmt.Sprintf("%v", depPlayer2ID))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }

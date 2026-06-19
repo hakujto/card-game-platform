@@ -178,6 +178,11 @@ func (h *StreamHandler) TransitionScheduledToLive(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionScheduledToLive := []string{"Streamer", "Admin"}
+	roleOkTransitionScheduledToLive := false
+	for _, r := range allowedRolesTransitionScheduledToLive { if r == userRole { roleOkTransitionScheduledToLive = true; break } }
+	if !roleOkTransitionScheduledToLive { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Scheduled -> Live"}); return }
 	if err := row.AssertTransition("Live"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -199,6 +204,11 @@ func (h *StreamHandler) TransitionLiveToEnded(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Stream"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionLiveToEnded := []string{"Streamer", "Admin"}
+	roleOkTransitionLiveToEnded := false
+	for _, r := range allowedRolesTransitionLiveToEnded { if r == userRole { roleOkTransitionLiveToEnded = true; break } }
+	if !roleOkTransitionLiveToEnded { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Live -> Ended"}); return }
 	if err := row.AssertTransition("Ended"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

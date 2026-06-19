@@ -35,8 +35,8 @@ type CraftingRecipe struct {
 	gorm.Model
 	DustCost int `gorm:"column:dust_cost;not null"`
 	IsAvailable bool `gorm:"column:is_available;default:true"`
-	ResultCardID uint `gorm:"column:result_card_id"`
-	RequiredCardsIDs []uint `gorm:"serializer:json;column:required_cards_ids"`
+	ResultCardID uint `gorm:"column:result_card_id;constraint:OnDelete:RESTRICT"`
+	Ingredients []CraftingIngredient `gorm:"foreignKey:RecipeID"`
 }
 
 func (m *CraftingRecipe) ToResponse() CraftingRecipeResponse {

@@ -202,6 +202,10 @@ func (h *PlayerHandler) UpdateRating(c *gin.Context) {
 }
 
 // ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *PlayerHandler) hookInitializeCollection(row *model.Player) {
+	// TODO: implement initialize_collection
+}
+
 func (h *PlayerHandler) hookUpdateRank(row *model.Player) {
 	// TODO: implement update_rank
 }

@@ -41,8 +41,8 @@ type FriendshipResponse struct {
 type Friendship struct {
 	gorm.Model
 	Status FriendshipStatusType `gorm:"column:status;not null;default:'Pending'"`
-	RequesterID uint `gorm:"column:requester_id"`
-	ReceiverID uint `gorm:"column:receiver_id"`
+	RequesterID uint `gorm:"column:requester_id;constraint:OnDelete:CASCADE"`
+	ReceiverID uint `gorm:"column:receiver_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *Friendship) ToResponse() FriendshipResponse {

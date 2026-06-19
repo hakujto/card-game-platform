@@ -52,7 +52,7 @@ type CardPriceHistory struct {
 	MaxPrice types.Decimal `gorm:"column:max_price;type:decimal(10,2);not null"`
 	Volume int `gorm:"column:volume;not null"`
 	Foil bool `gorm:"column:foil;default:false"`
-	CardID uint `gorm:"column:card_id"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *CardPriceHistory) ToResponse() CardPriceHistoryResponse {

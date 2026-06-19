@@ -78,7 +78,7 @@ type PlayerResponse struct {
 
 type Player struct {
 	gorm.Model
-	DisplayName string `gorm:"column:display_name;not null"`
+	DisplayName string `gorm:"column:display_name;not null;uniqueIndex"`
 	Rank PlayerRankType `gorm:"column:rank;not null;default:'Bronze'"`
 	Rating int `gorm:"column:rating;not null;default:1000"`
 	PeakRating int `gorm:"column:peak_rating;not null;default:1000"`
@@ -88,9 +88,12 @@ type Player struct {
 	PreferredFormat *PlayerPreferredFormatType `gorm:"column:preferred_format"`
 	IsVerified bool `gorm:"column:is_verified;default:false"`
 	LastActiveAt *string `gorm:"column:last_active_at"`
-	UserID uint `gorm:"column:user_id"`
-	AchievementsIDs []uint `gorm:"serializer:json;column:achievements_ids"`
-	FriendsIDs []uint `gorm:"serializer:json;column:friends_ids"`
+	UserID uint `gorm:"column:user_id;unique;constraint:OnDelete:CASCADE"`
+	SeasonStats []PlayerSeasonStats `gorm:"foreignKey:PlayerID"`
+	Collection []PlayerCollection `gorm:"foreignKey:PlayerID"`
+	SentFriendRequests []Friendship `gorm:"foreignKey:RequesterID"`
+	ReceivedFriendRequests []Friendship `gorm:"foreignKey:ReceiverID"`
+	AchievementRecords []PlayerAchievement `gorm:"foreignKey:PlayerID"`
 }
 
 func (m *Player) ToResponse() PlayerResponse {

@@ -58,9 +58,10 @@ type TradeTransaction struct {
 	PlatformFee types.Decimal `gorm:"column:platform_fee;type:decimal(10,2);not null"`
 	Status TradeTransactionStatusType `gorm:"column:status;not null;default:'Pending'"`
 	CompletedAt *string `gorm:"column:completed_at"`
-	ListingID uint `gorm:"column:listing_id"`
-	BuyerID uint `gorm:"column:buyer_id"`
-	SellerID uint `gorm:"column:seller_id"`
+	ListingID uint `gorm:"column:listing_id;unique;constraint:OnDelete:RESTRICT"`
+	BuyerID uint `gorm:"column:buyer_id;constraint:OnDelete:RESTRICT"`
+	SellerID uint `gorm:"column:seller_id;constraint:OnDelete:RESTRICT"`
+	Dispute *TradeDispute `gorm:"foreignKey:TransactionID"`
 }
 
 func (m *TradeTransaction) ToResponse() TradeTransactionResponse {

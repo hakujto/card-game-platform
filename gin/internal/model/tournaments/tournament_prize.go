@@ -66,7 +66,8 @@ type TournamentPrize struct {
 	Description *string `gorm:"column:description;type:text"`
 	PacksCount *int `gorm:"column:packs_count"`
 	SeasonPoints int `gorm:"column:season_points;not null;default:0"`
-	TournamentID uint `gorm:"column:tournament_id"`
+	TournamentID uint `gorm:"column:tournament_id;constraint:OnDelete:CASCADE"`
+	AwardedPrizes []AwardedPrize `gorm:"foreignKey:PrizeID"`
 }
 
 func (m *TournamentPrize) ToResponse() TournamentPrizeResponse {

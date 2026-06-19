@@ -58,7 +58,7 @@ type CouponResponse struct {
 
 type Coupon struct {
 	gorm.Model
-	Code string `gorm:"column:code;not null"`
+	Code string `gorm:"column:code;not null;uniqueIndex"`
 	DiscountType CouponDiscountTypeType `gorm:"column:discount_type;not null;default:'Percent'"`
 	DiscountValue types.Decimal `gorm:"column:discount_value;type:decimal(10,2);not null"`
 	MinOrderValue types.Decimal `gorm:"column:min_order_value;type:decimal(10,2);not null;default:0"`
@@ -67,6 +67,7 @@ type Coupon struct {
 	ValidFrom string `gorm:"column:valid_from;not null"`
 	ValidUntil string `gorm:"column:valid_until;not null"`
 	IsActive bool `gorm:"column:is_active;default:true"`
+	Orders []Order `gorm:"foreignKey:CouponID"`
 }
 
 func (m *Coupon) ToResponse() CouponResponse {

@@ -144,6 +144,11 @@ func (h *TradeDisputeHandler) TransitionOpenToUnderReview(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionOpenToUnderReview := []string{"Admin", "Moderator"}
+	roleOkTransitionOpenToUnderReview := false
+	for _, r := range allowedRolesTransitionOpenToUnderReview { if r == userRole { roleOkTransitionOpenToUnderReview = true; break } }
+	if !roleOkTransitionOpenToUnderReview { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Open -> UnderReview"}); return }
 	if err := row.AssertTransition("UnderReview"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -162,6 +167,11 @@ func (h *TradeDisputeHandler) TransitionUnderReviewToResolved(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionUnderReviewToResolved := []string{"Admin", "Moderator"}
+	roleOkTransitionUnderReviewToResolved := false
+	for _, r := range allowedRolesTransitionUnderReviewToResolved { if r == userRole { roleOkTransitionUnderReviewToResolved = true; break } }
+	if !roleOkTransitionUnderReviewToResolved { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition UnderReview -> Resolved"}); return }
 	if err := row.AssertTransition("Resolved"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -183,6 +193,11 @@ func (h *TradeDisputeHandler) TransitionUnderReviewToEscalated(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionUnderReviewToEscalated := []string{"Admin"}
+	roleOkTransitionUnderReviewToEscalated := false
+	for _, r := range allowedRolesTransitionUnderReviewToEscalated { if r == userRole { roleOkTransitionUnderReviewToEscalated = true; break } }
+	if !roleOkTransitionUnderReviewToEscalated { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition UnderReview -> Escalated"}); return }
 	if err := row.AssertTransition("Escalated"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -201,6 +216,11 @@ func (h *TradeDisputeHandler) TransitionEscalatedToResolved(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeDispute"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionEscalatedToResolved := []string{"Admin"}
+	roleOkTransitionEscalatedToResolved := false
+	for _, r := range allowedRolesTransitionEscalatedToResolved { if r == userRole { roleOkTransitionEscalatedToResolved = true; break } }
+	if !roleOkTransitionEscalatedToResolved { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Escalated -> Resolved"}); return }
 	if err := row.AssertTransition("Resolved"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

@@ -23,6 +23,14 @@ func setupFriendshipDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Player{}, &model.PlayerSeasonStats{}, &model.PlayerCollection{}, &model.Friendship{}, &model.Achievement{}, &model.PlayerAchievement{}, &model.CraftingRecipe{}, &model.CraftingIngredient{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Id"); v != "" {
+			var uid uint
+			fmt.Sscan(v, &uid)
+			c.Set("user_id", uid)
+		}
+		c.Next()
+	})
 	h := handler_app.NewFriendshipHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewPlayerHandler(db).RegisterRoutes(r)
@@ -67,6 +75,7 @@ func TestFriendship_Get(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/friendships/"+id, nil)
+	req.Header.Set("X-User-Id", "1")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -80,6 +89,7 @@ func TestFriendship_Delete(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/friendships/"+id, nil)
+	req.Header.Set("X-User-Id", "1")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }

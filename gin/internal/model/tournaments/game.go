@@ -69,8 +69,8 @@ type Game struct {
 	DurationSeconds *int `gorm:"column:duration_seconds"`
 	EndedBy *GameEndedByType `gorm:"column:ended_by"`
 	ReplayUrl *string `gorm:"column:replay_url"`
-	MatchID uint `gorm:"column:match_id"`
-	WinnerID *uint `gorm:"column:winner_id"`
+	MatchID uint `gorm:"column:match_id;constraint:OnDelete:CASCADE"`
+	WinnerID *uint `gorm:"column:winner_id;constraint:OnDelete:SET NULL"`
 }
 
 func (m *Game) ToResponse() GameResponse {

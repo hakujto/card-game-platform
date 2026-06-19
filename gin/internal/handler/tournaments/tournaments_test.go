@@ -23,6 +23,12 @@ func setupTournamentDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Season{}, &model.Tournament{}, &model.TournamentJudge{}, &model.TournamentRegistration{}, &model.TournamentRound{}, &model.Match{}, &model.Game{}, &model.TournamentPrize{}, &model.AwardedPrize{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewTournamentHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
@@ -113,7 +119,7 @@ func TestTournament_Transition_Draft_To_Registration(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/draft-to-registration", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTournament_Transition_Registration_To_Ongoing(t *testing.T) {
@@ -128,7 +134,7 @@ func TestTournament_Transition_Registration_To_Ongoing(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/registration-to-ongoing", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTournament_Transition_Registration_To_Cancelled(t *testing.T) {
@@ -143,7 +149,7 @@ func TestTournament_Transition_Registration_To_Cancelled(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/registration-to-cancelled", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTournament_Transition_Ongoing_To_Completed(t *testing.T) {
@@ -158,7 +164,7 @@ func TestTournament_Transition_Ongoing_To_Completed(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/ongoing-to-completed", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTournament_Transition_Ongoing_To_Cancelled(t *testing.T) {
@@ -173,7 +179,7 @@ func TestTournament_Transition_Ongoing_To_Cancelled(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/ongoing-to-cancelled", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTournament_Transition_Completed_To_Draft(t *testing.T) {

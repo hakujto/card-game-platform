@@ -34,8 +34,8 @@ type DeckSideboardCardResponse struct {
 type DeckSideboardCard struct {
 	gorm.Model
 	Quantity int `gorm:"column:quantity;not null;default:1"`
-	DeckID uint `gorm:"column:deck_id"`
-	CardID uint `gorm:"column:card_id"`
+	DeckID uint `gorm:"column:deck_id;constraint:OnDelete:CASCADE"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *DeckSideboardCard) ToResponse() DeckSideboardCardResponse {

@@ -76,8 +76,9 @@ type Product struct {
 	Description *string `gorm:"column:description;type:text"`
 	ImageUrl *string `gorm:"column:image_url"`
 	Featured bool `gorm:"column:featured;default:false"`
-	CardID *uint `gorm:"column:card_id"`
-	CardSetID *uint `gorm:"column:card_set_id"`
+	CardID *uint `gorm:"column:card_id;unique;constraint:OnDelete:SET NULL"`
+	CardSetID *uint `gorm:"column:card_set_id;constraint:OnDelete:SET NULL"`
+	OrderItems []OrderItem `gorm:"foreignKey:ProductID"`
 }
 
 func (m *Product) ToResponse() ProductResponse {

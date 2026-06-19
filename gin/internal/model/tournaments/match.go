@@ -70,9 +70,10 @@ type Match struct {
 	StartedAt *string `gorm:"column:started_at"`
 	EndedAt *string `gorm:"column:ended_at"`
 	ResultNotes *string `gorm:"column:result_notes;type:text"`
-	RoundID uint `gorm:"column:round_id"`
-	Player1ID uint `gorm:"column:player1_id"`
-	Player2ID *uint `gorm:"column:player2_id"`
+	RoundID uint `gorm:"column:round_id;constraint:OnDelete:CASCADE"`
+	Player1ID uint `gorm:"column:player1_id;constraint:OnDelete:RESTRICT"`
+	Player2ID *uint `gorm:"column:player2_id;constraint:OnDelete:SET NULL"`
+	Games []Game `gorm:"foreignKey:MatchID"`
 }
 
 func (m *Match) ToResponse() MatchResponse {

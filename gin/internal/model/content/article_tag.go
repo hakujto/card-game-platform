@@ -31,7 +31,8 @@ type ArticleTagResponse struct {
 type ArticleTag struct {
 	gorm.Model
 	Name string `gorm:"column:name;not null"`
-	Slug string `gorm:"column:slug;not null"`
+	Slug string `gorm:"column:slug;not null;uniqueIndex"`
+	ArticleAssignments []ArticleTagAssignment `gorm:"foreignKey:TagID"`
 }
 
 func (m *ArticleTag) ToResponse() ArticleTagResponse {

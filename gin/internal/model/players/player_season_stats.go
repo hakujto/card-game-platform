@@ -65,8 +65,8 @@ type PlayerSeasonStats struct {
 	TournamentWins int `gorm:"column:tournament_wins;not null;default:0"`
 	HighestRank *PlayerSeasonStatsHighestRankType `gorm:"column:highest_rank"`
 	SeasonPoints int `gorm:"column:season_points;not null;default:0"`
-	PlayerID uint `gorm:"column:player_id"`
-	SeasonID uint `gorm:"column:season_id"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:CASCADE"`
+	SeasonID uint `gorm:"column:season_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *PlayerSeasonStats) ToResponse() PlayerSeasonStatsResponse {

@@ -43,8 +43,8 @@ type TradeBid struct {
 	Amount types.Decimal `gorm:"column:amount;type:decimal(10,2);not null"`
 	PlacedAt string `gorm:"column:placed_at;not null"`
 	IsWinning bool `gorm:"column:is_winning;default:false"`
-	ListingID uint `gorm:"column:listing_id"`
-	BidderID uint `gorm:"column:bidder_id"`
+	ListingID uint `gorm:"column:listing_id;constraint:OnDelete:CASCADE"`
+	BidderID uint `gorm:"column:bidder_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *TradeBid) ToResponse() TradeBidResponse {

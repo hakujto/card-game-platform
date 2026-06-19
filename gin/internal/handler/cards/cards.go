@@ -227,6 +227,10 @@ func (h *CardHandler) hookValidateLegality(row *model.Card) {
 	// TODO: implement validate_legality
 }
 
+func (h *CardHandler) hookValidateNotInUse(row *model.Card) {
+	// TODO: implement validate_not_in_use
+}
+
 // ── Validation rules ─────────────────────────────────────────────
 func validateCard(req *model.CardCreateRequest) []string {
 	var errs []string

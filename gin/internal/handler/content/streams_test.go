@@ -23,6 +23,12 @@ func setupStreamDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.DraftSession{}, &model.DraftParticipant{}, &model.DraftPick{}, &model.Article{}, &model.ArticleTag{}, &model.ArticleTagAssignment{}, &model.ArticleComment{}, &model.Stream{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewStreamHandler(db)
 	h.RegisterRoutes(r)
 	return db, r
@@ -104,7 +110,7 @@ func TestStream_Transition_Scheduled_To_Live(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/streams/"+id+"/transitions/scheduled-to-live", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestStream_Transition_Live_To_Ended(t *testing.T) {
@@ -117,7 +123,7 @@ func TestStream_Transition_Live_To_Ended(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/streams/"+id+"/transitions/live-to-ended", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestStream_Transition_Ended_To_Live(t *testing.T) {

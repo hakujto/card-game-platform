@@ -84,6 +84,11 @@ func (h *OrderHandler) Get(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	uidRaw, _ := c.Get("user_id")
+	uid, _ := uidRaw.(uint)
+	if row.PlayerID != uid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not own this resource."}); return
+	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
@@ -106,6 +111,9 @@ func (h *OrderHandler) Pay(c *gin.Context) {
 	if err := h.db.First(&row, id).Error; err != nil {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
+	}
+	if !(row.Status == model.OrderStatusType_Pending) {
+		handler.UnprocessableError(c, "Guard condition not met for pay"); return
 	}
 	var body map[string]interface{}
 	_ = c.ShouldBindJSON(&body)
@@ -226,6 +234,11 @@ func (h *OrderHandler) TransitionPaidToProcessing(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPaidToProcessing := []string{"Admin", "Staff"}
+	roleOkTransitionPaidToProcessing := false
+	for _, r := range allowedRolesTransitionPaidToProcessing { if r == userRole { roleOkTransitionPaidToProcessing = true; break } }
+	if !roleOkTransitionPaidToProcessing { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Paid -> Processing"}); return }
 	if err := row.AssertTransition("Processing"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -243,6 +256,11 @@ func (h *OrderHandler) TransitionProcessingToShipped(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionProcessingToShipped := []string{"Admin", "Staff"}
+	roleOkTransitionProcessingToShipped := false
+	for _, r := range allowedRolesTransitionProcessingToShipped { if r == userRole { roleOkTransitionProcessingToShipped = true; break } }
+	if !roleOkTransitionProcessingToShipped { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Processing -> Shipped"}); return }
 	if err := row.AssertTransition("Shipped"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -264,6 +282,11 @@ func (h *OrderHandler) TransitionShippedToCompleted(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionShippedToCompleted := []string{"Admin", "Staff"}
+	roleOkTransitionShippedToCompleted := false
+	for _, r := range allowedRolesTransitionShippedToCompleted { if r == userRole { roleOkTransitionShippedToCompleted = true; break } }
+	if !roleOkTransitionShippedToCompleted { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Shipped -> Completed"}); return }
 	if err := row.AssertTransition("Completed"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -299,6 +322,11 @@ func (h *OrderHandler) TransitionPaidToCancelled(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPaidToCancelled := []string{"Admin", "Staff"}
+	roleOkTransitionPaidToCancelled := false
+	for _, r := range allowedRolesTransitionPaidToCancelled { if r == userRole { roleOkTransitionPaidToCancelled = true; break } }
+	if !roleOkTransitionPaidToCancelled { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Paid -> Cancelled"}); return }
 	if err := row.AssertTransition("Cancelled"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -317,6 +345,11 @@ func (h *OrderHandler) TransitionCompletedToRefunded(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Order"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionCompletedToRefunded := []string{"Admin"}
+	roleOkTransitionCompletedToRefunded := false
+	for _, r := range allowedRolesTransitionCompletedToRefunded { if r == userRole { roleOkTransitionCompletedToRefunded = true; break } }
+	if !roleOkTransitionCompletedToRefunded { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Completed -> Refunded"}); return }
 	if err := row.AssertTransition("Refunded"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -351,6 +384,10 @@ func (h *OrderHandler) TransitionCompletedToCancelled(c *gin.Context) {
 }
 
 // ── Lifecycle hooks ──────────────────────────────────────────────────
+func (h *OrderHandler) hookAssignCurrencyDefault(row *model.Order) {
+	// TODO: implement assign_currency_default
+}
+
 func (h *OrderHandler) hookNotifyStatusChange(row *model.Order) {
 	// TODO: implement notify_status_change
 }

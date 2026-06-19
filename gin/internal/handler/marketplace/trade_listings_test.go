@@ -23,6 +23,12 @@ func setupTradeListingDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewTradeListingHandler(db)
 	h.RegisterRoutes(r)
 	return db, r
@@ -120,7 +126,7 @@ func TestTradeListing_Transition_Pending_To_Active(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/pending-to-active", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeListing_Transition_Active_To_Sold(t *testing.T) {
@@ -171,7 +177,7 @@ func TestTradeListing_Transition_Active_To_Cancelled(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/active-to-cancelled", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeListing_Transition_Sold_To_Active(t *testing.T) {

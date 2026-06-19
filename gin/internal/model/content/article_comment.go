@@ -41,9 +41,10 @@ type ArticleComment struct {
 	gorm.Model
 	Body string `gorm:"column:body;type:text;not null"`
 	IsHidden bool `gorm:"column:is_hidden;default:false"`
-	ArticleID uint `gorm:"column:article_id"`
-	AuthorID uint `gorm:"column:author_id"`
-	ParentCommentID *uint `gorm:"column:parent_comment_id"`
+	ArticleID uint `gorm:"column:article_id;constraint:OnDelete:CASCADE"`
+	AuthorID uint `gorm:"column:author_id;constraint:OnDelete:RESTRICT"`
+	ParentCommentID *uint `gorm:"column:parent_comment_id;constraint:OnDelete:SET NULL"`
+	Replies []ArticleComment `gorm:"foreignKey:ParentCommentID"`
 }
 
 func (m *ArticleComment) ToResponse() ArticleCommentResponse {

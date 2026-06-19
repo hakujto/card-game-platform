@@ -130,7 +130,11 @@ type Card struct {
 	IsBanned bool `gorm:"column:is_banned;default:false"`
 	IsRestricted bool `gorm:"column:is_restricted;default:false"`
 	PowerLevel int `gorm:"column:power_level;not null;default:1"`
-	SetID uint `gorm:"column:set_id"`
+	SetID uint `gorm:"column:set_id;constraint:OnDelete:RESTRICT"`
+	Rulings []CardRuling `gorm:"foreignKey:CardID"`
+	Abilities []CardAbility `gorm:"foreignKey:CardID"`
+	DeckCards []DeckCard `gorm:"foreignKey:CardID"`
+	SideboardDecks []DeckSideboardCard `gorm:"foreignKey:CardID"`
 }
 
 func (m *Card) ToResponse() CardResponse {

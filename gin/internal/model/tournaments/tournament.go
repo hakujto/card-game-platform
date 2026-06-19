@@ -110,9 +110,12 @@ type Tournament struct {
 	IsOnline bool `gorm:"column:is_online;default:true"`
 	Location *string `gorm:"column:location"`
 	RulesText *string `gorm:"column:rules_text;type:text"`
-	SeasonID uint `gorm:"column:season_id"`
-	OrganizerID uint `gorm:"column:organizer_id"`
-	JudgesIDs []uint `gorm:"serializer:json;column:judges_ids"`
+	SeasonID uint `gorm:"column:season_id;constraint:OnDelete:RESTRICT"`
+	OrganizerID uint `gorm:"column:organizer_id;constraint:OnDelete:RESTRICT"`
+	JudgeAssignments []TournamentJudge `gorm:"foreignKey:TournamentID"`
+	Registrations []TournamentRegistration `gorm:"foreignKey:TournamentID"`
+	Rounds []TournamentRound `gorm:"foreignKey:TournamentID"`
+	Prizes []TournamentPrize `gorm:"foreignKey:TournamentID"`
 }
 
 func (m *Tournament) ToResponse() TournamentResponse {

@@ -61,12 +61,27 @@ func (h *FriendshipHandler) Get(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Friendship"); return }
 		handler.DbError(c, err); return
 	}
+	uidRaw, _ := c.Get("user_id")
+	uid, _ := uidRaw.(uint)
+	if row.RequesterID != uid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not own this resource."}); return
+	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 
 func (h *FriendshipHandler) Delete(c *gin.Context) {
 	id, ok := handler.ParseID(c); if !ok { return }
-	if err := h.db.Delete(&model.Friendship{}, id).Error; err != nil {
+	var row model.Friendship
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Friendship"); return }
+		handler.DbError(c, err); return
+	}
+	uidRaw, _ := c.Get("user_id")
+	uid, _ := uidRaw.(uint)
+	if row.RequesterID != uid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not own this resource."}); return
+	}
+	if err := h.db.Delete(&row).Error; err != nil {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Friendship"); return }
 		handler.DbError(c, err); return
 	}

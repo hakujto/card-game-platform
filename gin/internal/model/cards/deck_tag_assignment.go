@@ -29,8 +29,8 @@ type DeckTagAssignmentResponse struct {
 
 type DeckTagAssignment struct {
 	gorm.Model
-	DeckID uint `gorm:"column:deck_id"`
-	TagID uint `gorm:"column:tag_id"`
+	DeckID uint `gorm:"column:deck_id;constraint:OnDelete:CASCADE"`
+	TagID uint `gorm:"column:tag_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *DeckTagAssignment) ToResponse() DeckTagAssignmentResponse {

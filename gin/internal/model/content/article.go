@@ -95,7 +95,7 @@ type ArticleResponse struct {
 type Article struct {
 	gorm.Model
 	Title string `gorm:"column:title;not null"`
-	Slug string `gorm:"column:slug;not null"`
+	Slug string `gorm:"column:slug;not null;uniqueIndex"`
 	Body string `gorm:"column:body;type:text;not null"`
 	Excerpt *string `gorm:"column:excerpt;type:text"`
 	CoverImageUrl *string `gorm:"column:cover_image_url"`
@@ -106,9 +106,10 @@ type Article struct {
 	LikesCount int `gorm:"column:likes_count;not null;default:0"`
 	IsFeatured bool `gorm:"column:is_featured;default:false"`
 	PublishedAt *string `gorm:"column:published_at"`
-	AuthorID uint `gorm:"column:author_id"`
-	FeaturedDeckID *uint `gorm:"column:featured_deck_id"`
-	TagsIDs []uint `gorm:"serializer:json;column:tags_ids"`
+	AuthorID uint `gorm:"column:author_id;constraint:OnDelete:RESTRICT"`
+	FeaturedDeckID *uint `gorm:"column:featured_deck_id;constraint:OnDelete:SET NULL"`
+	TagAssignments []ArticleTagAssignment `gorm:"foreignKey:ArticleID"`
+	Comments []ArticleComment `gorm:"foreignKey:ArticleID"`
 }
 
 func (m *Article) ToResponse() ArticleResponse {

@@ -100,8 +100,8 @@ type Stream struct {
 	ActualStart *string `gorm:"column:actual_start"`
 	EndedAt *string `gorm:"column:ended_at"`
 	VodUrl *string `gorm:"column:vod_url"`
-	TournamentID *uint `gorm:"column:tournament_id"`
-	StreamerID uint `gorm:"column:streamer_id"`
+	TournamentID *uint `gorm:"column:tournament_id;constraint:OnDelete:SET NULL"`
+	StreamerID uint `gorm:"column:streamer_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *Stream) ToResponse() StreamResponse {

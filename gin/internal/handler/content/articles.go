@@ -202,6 +202,11 @@ func (h *ArticleHandler) TransitionDraftToPublished(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionDraftToPublished := []string{"Editor", "Admin"}
+	roleOkTransitionDraftToPublished := false
+	for _, r := range allowedRolesTransitionDraftToPublished { if r == userRole { roleOkTransitionDraftToPublished = true; break } }
+	if !roleOkTransitionDraftToPublished { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Draft -> Published"}); return }
 	if err := row.AssertTransition("Published"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -226,6 +231,11 @@ func (h *ArticleHandler) TransitionPublishedToArchived(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPublishedToArchived := []string{"Editor", "Admin"}
+	roleOkTransitionPublishedToArchived := false
+	for _, r := range allowedRolesTransitionPublishedToArchived { if r == userRole { roleOkTransitionPublishedToArchived = true; break } }
+	if !roleOkTransitionPublishedToArchived { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Published -> Archived"}); return }
 	if err := row.AssertTransition("Archived"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -244,6 +254,11 @@ func (h *ArticleHandler) TransitionArchivedToDraft(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionArchivedToDraft := []string{"Admin"}
+	roleOkTransitionArchivedToDraft := false
+	for _, r := range allowedRolesTransitionArchivedToDraft { if r == userRole { roleOkTransitionArchivedToDraft = true; break } }
+	if !roleOkTransitionArchivedToDraft { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Archived -> Draft"}); return }
 	if err := row.AssertTransition("Draft"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

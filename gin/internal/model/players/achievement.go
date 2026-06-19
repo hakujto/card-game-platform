@@ -57,6 +57,7 @@ type Achievement struct {
 	Points int `gorm:"column:points;not null;default:10"`
 	Rarity AchievementRarityType `gorm:"column:rarity;not null;default:'Common'"`
 	IsHidden bool `gorm:"column:is_hidden;default:false"`
+	PlayerRecords []PlayerAchievement `gorm:"foreignKey:AchievementID"`
 }
 
 func (m *Achievement) ToResponse() AchievementResponse {

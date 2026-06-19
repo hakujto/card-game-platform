@@ -83,10 +83,10 @@ type Deck struct {
 	Wins int `gorm:"column:wins;not null;default:0"`
 	Losses int `gorm:"column:losses;not null;default:0"`
 	Draws int `gorm:"column:draws;not null;default:0"`
-	PlayerID uint `gorm:"column:player_id"`
-	CardsIDs []uint `gorm:"serializer:json;column:cards_ids"`
-	SideboardCardsIDs []uint `gorm:"serializer:json;column:sideboard_cards_ids"`
-	TagsIDs []uint `gorm:"serializer:json;column:tags_ids"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:CASCADE"`
+	DeckCards []DeckCard `gorm:"foreignKey:DeckID"`
+	SideboardCards []DeckSideboardCard `gorm:"foreignKey:DeckID"`
+	TagAssignments []DeckTagAssignment `gorm:"foreignKey:DeckID"`
 }
 
 func (m *Deck) ToResponse() DeckResponse {

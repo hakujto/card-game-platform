@@ -73,9 +73,9 @@ type TradeDispute struct {
 	Resolution *string `gorm:"column:resolution;type:text"`
 	OpenedAt string `gorm:"column:opened_at;not null"`
 	ResolvedAt *string `gorm:"column:resolved_at"`
-	TransactionID uint `gorm:"column:transaction_id"`
-	OpenedByID uint `gorm:"column:opened_by_id"`
-	ResolvedByID *uint `gorm:"column:resolved_by_id"`
+	TransactionID uint `gorm:"column:transaction_id;unique;constraint:OnDelete:CASCADE"`
+	OpenedByID uint `gorm:"column:opened_by_id;constraint:OnDelete:RESTRICT"`
+	ResolvedByID *uint `gorm:"column:resolved_by_id;constraint:OnDelete:SET NULL"`
 }
 
 func (m *TradeDispute) ToResponse() TradeDisputeResponse {

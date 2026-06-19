@@ -38,8 +38,8 @@ type DeckCard struct {
 	gorm.Model
 	Quantity int `gorm:"column:quantity;not null;default:1"`
 	IsCommander bool `gorm:"column:is_commander;default:false"`
-	DeckID uint `gorm:"column:deck_id"`
-	CardID uint `gorm:"column:card_id"`
+	DeckID uint `gorm:"column:deck_id;constraint:OnDelete:CASCADE"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *DeckCard) ToResponse() DeckCardResponse {

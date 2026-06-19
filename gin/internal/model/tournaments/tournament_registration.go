@@ -61,9 +61,9 @@ type TournamentRegistration struct {
 	FinalStanding *int `gorm:"column:final_standing"`
 	PointsEarned int `gorm:"column:points_earned;not null;default:0"`
 	RegisteredAt string `gorm:"column:registered_at;not null"`
-	TournamentID uint `gorm:"column:tournament_id"`
-	PlayerID uint `gorm:"column:player_id"`
-	DeckID uint `gorm:"column:deck_id"`
+	TournamentID uint `gorm:"column:tournament_id;constraint:OnDelete:CASCADE"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:RESTRICT"`
+	DeckID uint `gorm:"column:deck_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *TournamentRegistration) ToResponse() TournamentRegistrationResponse {

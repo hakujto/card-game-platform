@@ -29,8 +29,8 @@ type ArticleTagAssignmentResponse struct {
 
 type ArticleTagAssignment struct {
 	gorm.Model
-	ArticleID uint `gorm:"column:article_id"`
-	TagID uint `gorm:"column:tag_id"`
+	ArticleID uint `gorm:"column:article_id;constraint:OnDelete:CASCADE"`
+	TagID uint `gorm:"column:tag_id;constraint:OnDelete:CASCADE"`
 }
 
 func (m *ArticleTagAssignment) ToResponse() ArticleTagAssignmentResponse {

@@ -58,6 +58,7 @@ type Season struct {
 	Format SeasonFormatType `gorm:"column:format;not null;default:'Standard'"`
 	IsActive bool `gorm:"column:is_active;default:false"`
 	RewardDescription *string `gorm:"column:reward_description;type:text"`
+	Tournaments []Tournament `gorm:"foreignKey:SeasonID"`
 }
 
 func (m *Season) ToResponse() SeasonResponse {

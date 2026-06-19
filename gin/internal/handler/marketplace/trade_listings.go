@@ -149,6 +149,9 @@ func (h *TradeListingHandler) Cancel(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
+	if !(row.Status == model.TradeListingStatusType_Active) {
+		handler.UnprocessableError(c, "Guard condition not met for cancel"); return
+	}
 	err := row.Cancel()
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
@@ -207,6 +210,11 @@ func (h *TradeListingHandler) TransitionPendingToActive(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPendingToActive := []string{"Seller"}
+	roleOkTransitionPendingToActive := false
+	for _, r := range allowedRolesTransitionPendingToActive { if r == userRole { roleOkTransitionPendingToActive = true; break } }
+	if !roleOkTransitionPendingToActive { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Pending -> Active"}); return }
 	if err := row.AssertTransition("Active"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -263,6 +271,11 @@ func (h *TradeListingHandler) TransitionActiveToCancelled(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TradeListing"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionActiveToCancelled := []string{"Seller", "Admin"}
+	roleOkTransitionActiveToCancelled := false
+	for _, r := range allowedRolesTransitionActiveToCancelled { if r == userRole { roleOkTransitionActiveToCancelled = true; break } }
+	if !roleOkTransitionActiveToCancelled { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Active -> Cancelled"}); return }
 	if err := row.AssertTransition("Cancelled"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

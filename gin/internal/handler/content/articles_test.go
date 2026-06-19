@@ -23,6 +23,12 @@ func setupArticleDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.DraftSession{}, &model.DraftParticipant{}, &model.DraftPick{}, &model.Article{}, &model.ArticleTag{}, &model.ArticleTagAssignment{}, &model.ArticleComment{}, &model.Stream{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewArticleHandler(db)
 	h.RegisterRoutes(r)
 	return db, r
@@ -104,7 +110,7 @@ func TestArticle_Transition_Draft_To_Published(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/articles/"+id+"/transitions/draft-to-published", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestArticle_Transition_Published_To_Archived(t *testing.T) {
@@ -117,7 +123,7 @@ func TestArticle_Transition_Published_To_Archived(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/articles/"+id+"/transitions/published-to-archived", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestArticle_Transition_Archived_To_Draft(t *testing.T) {
@@ -130,7 +136,7 @@ func TestArticle_Transition_Archived_To_Draft(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/articles/"+id+"/transitions/archived-to-draft", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestArticle_Transition_Published_To_Draft(t *testing.T) {

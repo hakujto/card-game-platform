@@ -232,6 +232,11 @@ func (h *TournamentHandler) TransitionDraftToRegistration(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionDraftToRegistration := []string{"Admin", "Organizer"}
+	roleOkTransitionDraftToRegistration := false
+	for _, r := range allowedRolesTransitionDraftToRegistration { if r == userRole { roleOkTransitionDraftToRegistration = true; break } }
+	if !roleOkTransitionDraftToRegistration { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Draft -> Registration"}); return }
 	if err := row.AssertTransition("Registration"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -255,6 +260,11 @@ func (h *TournamentHandler) TransitionRegistrationToOngoing(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionRegistrationToOngoing := []string{"Admin", "Organizer"}
+	roleOkTransitionRegistrationToOngoing := false
+	for _, r := range allowedRolesTransitionRegistrationToOngoing { if r == userRole { roleOkTransitionRegistrationToOngoing = true; break } }
+	if !roleOkTransitionRegistrationToOngoing { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Registration -> Ongoing"}); return }
 	if err := row.AssertTransition("Ongoing"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -273,6 +283,11 @@ func (h *TournamentHandler) TransitionRegistrationToCancelled(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionRegistrationToCancelled := []string{"Admin", "Organizer"}
+	roleOkTransitionRegistrationToCancelled := false
+	for _, r := range allowedRolesTransitionRegistrationToCancelled { if r == userRole { roleOkTransitionRegistrationToCancelled = true; break } }
+	if !roleOkTransitionRegistrationToCancelled { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Registration -> Cancelled"}); return }
 	if err := row.AssertTransition("Cancelled"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -291,6 +306,11 @@ func (h *TournamentHandler) TransitionOngoingToCompleted(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionOngoingToCompleted := []string{"Admin", "Organizer"}
+	roleOkTransitionOngoingToCompleted := false
+	for _, r := range allowedRolesTransitionOngoingToCompleted { if r == userRole { roleOkTransitionOngoingToCompleted = true; break } }
+	if !roleOkTransitionOngoingToCompleted { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Ongoing -> Completed"}); return }
 	if err := row.AssertTransition("Completed"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -310,6 +330,11 @@ func (h *TournamentHandler) TransitionOngoingToCancelled(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Tournament"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionOngoingToCancelled := []string{"Admin"}
+	roleOkTransitionOngoingToCancelled := false
+	for _, r := range allowedRolesTransitionOngoingToCancelled { if r == userRole { roleOkTransitionOngoingToCancelled = true; break } }
+	if !roleOkTransitionOngoingToCancelled { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Ongoing -> Cancelled"}); return }
 	if err := row.AssertTransition("Cancelled"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -346,6 +371,10 @@ func (h *TournamentHandler) TransitionCancelledToDraft(c *gin.Context) {
 // ── Lifecycle hooks ──────────────────────────────────────────────────
 func (h *TournamentHandler) hookSyncSeasonStats(row *model.Tournament) {
 	// TODO: implement sync_season_stats
+}
+
+func (h *TournamentHandler) hookPreventDeleteIfOngoing(row *model.Tournament) {
+	// TODO: implement prevent_delete_if_ongoing
 }
 
 // ── Validation rules ─────────────────────────────────────────────

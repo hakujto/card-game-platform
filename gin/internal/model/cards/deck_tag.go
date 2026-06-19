@@ -32,6 +32,7 @@ type DeckTag struct {
 	gorm.Model
 	Name string `gorm:"column:name;not null"`
 	Color *string `gorm:"column:color"`
+	DeckAssignments []DeckTagAssignment `gorm:"foreignKey:TagID"`
 }
 
 func (m *DeckTag) ToResponse() DeckTagResponse {

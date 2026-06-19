@@ -142,6 +142,9 @@ func (h *MatchHandler) Concede(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
 		handler.DbError(c, err); return
 	}
+	if !(row.Status == model.MatchStatusType_Active) {
+		handler.UnprocessableError(c, "Guard condition not met for concede"); return
+	}
 	var body map[string]interface{}
 	_ = c.ShouldBindJSON(&body)
 	playerId := func() int {
@@ -175,6 +178,11 @@ func (h *MatchHandler) TransitionPendingToActive(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPendingToActive := []string{"Judge", "HeadJudge", "Admin"}
+	roleOkTransitionPendingToActive := false
+	for _, r := range allowedRolesTransitionPendingToActive { if r == userRole { roleOkTransitionPendingToActive = true; break } }
+	if !roleOkTransitionPendingToActive { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Pending -> Active"}); return }
 	if err := row.AssertTransition("Active"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -192,6 +200,11 @@ func (h *MatchHandler) TransitionActiveToCompleted(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionActiveToCompleted := []string{"Judge", "HeadJudge", "Admin"}
+	roleOkTransitionActiveToCompleted := false
+	for _, r := range allowedRolesTransitionActiveToCompleted { if r == userRole { roleOkTransitionActiveToCompleted = true; break } }
+	if !roleOkTransitionActiveToCompleted { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Active -> Completed"}); return }
 	if err := row.AssertTransition("Completed"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -210,6 +223,11 @@ func (h *MatchHandler) TransitionActiveToDraw(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionActiveToDraw := []string{"Judge", "HeadJudge", "Admin"}
+	roleOkTransitionActiveToDraw := false
+	for _, r := range allowedRolesTransitionActiveToDraw { if r == userRole { roleOkTransitionActiveToDraw = true; break } }
+	if !roleOkTransitionActiveToDraw { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Active -> Draw"}); return }
 	if err := row.AssertTransition("Draw"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}
@@ -228,6 +246,11 @@ func (h *MatchHandler) TransitionPendingToBYE(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Match"); return }
 		handler.DbError(c, err); return
 	}
+	userRole, _ := c.Get("user_role")
+	allowedRolesTransitionPendingToBYE := []string{"Judge", "HeadJudge", "Admin"}
+	roleOkTransitionPendingToBYE := false
+	for _, r := range allowedRolesTransitionPendingToBYE { if r == userRole { roleOkTransitionPendingToBYE = true; break } }
+	if !roleOkTransitionPendingToBYE { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for transition Pending -> BYE"}); return }
 	if err := row.AssertTransition("BYE"); err != nil {
 		handler.ConflictError(c, err.Error()); return
 	}

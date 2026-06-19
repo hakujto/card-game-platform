@@ -23,6 +23,12 @@ func setupMatchDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Season{}, &model.Tournament{}, &model.TournamentJudge{}, &model.TournamentRegistration{}, &model.TournamentRound{}, &model.Match{}, &model.Game{}, &model.TournamentPrize{}, &model.AwardedPrize{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewMatchHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewSeasonHandler(db).RegisterRoutes(r)
@@ -101,7 +107,7 @@ func TestMatch_Transition_Pending_To_Active(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/pending-to-active", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestMatch_Transition_Active_To_Completed(t *testing.T) {
@@ -120,7 +126,7 @@ func TestMatch_Transition_Active_To_Completed(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/active-to-completed", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestMatch_Transition_Active_To_Draw(t *testing.T) {
@@ -139,7 +145,7 @@ func TestMatch_Transition_Active_To_Draw(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/active-to-draw", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestMatch_Transition_Pending_To_BYE(t *testing.T) {
@@ -158,7 +164,7 @@ func TestMatch_Transition_Pending_To_BYE(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/matches/"+id+"/transitions/pending-to-bye", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestMatch_Transition_Completed_To_Active(t *testing.T) {

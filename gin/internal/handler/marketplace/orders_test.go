@@ -23,6 +23,20 @@ func setupOrderDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Id"); v != "" {
+			var uid uint
+			fmt.Sscan(v, &uid)
+			c.Set("user_id", uid)
+		}
+		c.Next()
+	})
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewOrderHandler(db)
 	h.RegisterRoutes(r)
 	return db, r
@@ -66,6 +80,7 @@ func TestOrder_Get(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/orders/"+id, nil)
+	req.Header.Set("X-User-Id", fmt.Sprintf("%v", depPlayer2ID))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -106,7 +121,7 @@ func TestOrder_Transition_Paid_To_Processing(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-processing", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestOrder_Transition_Processing_To_Shipped(t *testing.T) {
@@ -119,7 +134,7 @@ func TestOrder_Transition_Processing_To_Shipped(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestOrder_Transition_Processing_To_Shipped_On_TrackingNumber_Violated(t *testing.T) {
@@ -131,6 +146,7 @@ func TestOrder_Transition_Processing_To_Shipped_On_TrackingNumber_Violated(t *te
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
+	req.Header.Set("X-User-Role", "Admin")
 	r.ServeHTTP(w, req)
 	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
 }
@@ -145,7 +161,7 @@ func TestOrder_Transition_Shipped_To_Completed(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/shipped-to-completed", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestOrder_Transition_Pending_To_Cancelled(t *testing.T) {
@@ -171,7 +187,7 @@ func TestOrder_Transition_Paid_To_Cancelled(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-cancelled", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestOrder_Transition_Completed_To_Refunded(t *testing.T) {
@@ -184,7 +200,7 @@ func TestOrder_Transition_Completed_To_Refunded(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/completed-to-refunded", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestOrder_Transition_Refunded_To_Completed(t *testing.T) {

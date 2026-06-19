@@ -23,6 +23,14 @@ func setupPlayerCollectionDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Player{}, &model.PlayerSeasonStats{}, &model.PlayerCollection{}, &model.Friendship{}, &model.Achievement{}, &model.PlayerAchievement{}, &model.CraftingRecipe{}, &model.CraftingIngredient{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Id"); v != "" {
+			var uid uint
+			fmt.Sscan(v, &uid)
+			c.Set("user_id", uid)
+		}
+		c.Next()
+	})
 	h := handler_app.NewPlayerCollectionHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewPlayerHandler(db).RegisterRoutes(r)
@@ -75,6 +83,7 @@ func TestPlayerCollection_Get(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/player_collections/"+id, nil)
+	req.Header.Set("X-User-Id", fmt.Sprintf("%v", depPlayer2ID))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -95,6 +104,7 @@ func TestPlayerCollection_Update(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/player_collections/"+id, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-Id", fmt.Sprintf("%v", depPlayer3ID))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -112,6 +122,7 @@ func TestPlayerCollection_Delete(t *testing.T) {
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", "/api/player_collections/"+id, nil)
+	req.Header.Set("X-User-Id", fmt.Sprintf("%v", depPlayer4ID))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNoContent, w.Code)
 }

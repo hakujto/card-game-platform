@@ -41,8 +41,8 @@ type TournamentJudgeResponse struct {
 type TournamentJudge struct {
 	gorm.Model
 	Role TournamentJudgeRoleType `gorm:"column:role;not null;default:'Judge'"`
-	TournamentID uint `gorm:"column:tournament_id"`
-	PlayerID uint `gorm:"column:player_id"`
+	TournamentID uint `gorm:"column:tournament_id;constraint:OnDelete:CASCADE"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *TournamentJudge) ToResponse() TournamentJudgeResponse {

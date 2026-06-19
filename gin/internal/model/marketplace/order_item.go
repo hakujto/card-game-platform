@@ -43,8 +43,8 @@ type OrderItem struct {
 	Quantity int `gorm:"column:quantity;not null"`
 	PriceAtPurchase types.Decimal `gorm:"column:price_at_purchase;type:decimal(10,2);not null"`
 	Foil bool `gorm:"column:foil;default:false"`
-	OrderID uint `gorm:"column:order_id"`
-	ProductID uint `gorm:"column:product_id"`
+	OrderID uint `gorm:"column:order_id;constraint:OnDelete:CASCADE"`
+	ProductID uint `gorm:"column:product_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *OrderItem) ToResponse() OrderItemResponse {

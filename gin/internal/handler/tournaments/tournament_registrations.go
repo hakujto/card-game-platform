@@ -68,6 +68,11 @@ func (h *TournamentRegistrationHandler) Get(c *gin.Context) {
 		if handler.IsRecordNotFound(err) { handler.NotFound(c, "TournamentRegistration"); return }
 		handler.DbError(c, err); return
 	}
+	uidRaw, _ := c.Get("user_id")
+	uid, _ := uidRaw.(uint)
+	if row.PlayerID != uid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not own this resource."}); return
+	}
 	c.JSON(http.StatusOK, row.ToResponse())
 }
 

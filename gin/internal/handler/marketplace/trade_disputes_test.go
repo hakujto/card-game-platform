@@ -23,6 +23,12 @@ func setupTradeDisputeDB(t *testing.T) (*gorm.DB, *gin.Engine) {
 	db.AutoMigrate(&model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Coupon{}, &model.TradeListing{}, &model.TradeBid{}, &model.TradeTransaction{}, &model.CardPriceHistory{}, &model.TradeDispute{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		if v := c.GetHeader("X-User-Role"); v != "" {
+			c.Set("user_role", v)
+		}
+		c.Next()
+	})
 	h := handler_app.NewTradeDisputeHandler(db)
 	h.RegisterRoutes(r)
 	handler_app.NewTradeListingHandler(db).RegisterRoutes(r)
@@ -106,7 +112,7 @@ func TestTradeDispute_Transition_Open_To_UnderReview(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/open-to-underreview", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeDispute_Transition_UnderReview_To_Resolved(t *testing.T) {
@@ -127,7 +133,7 @@ func TestTradeDispute_Transition_UnderReview_To_Resolved(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-resolved", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeDispute_Transition_UnderReview_To_Resolved_On_Resolution_Violated(t *testing.T) {
@@ -147,6 +153,7 @@ func TestTradeDispute_Transition_UnderReview_To_Resolved_On_Resolution_Violated(
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-resolved", nil)
+	req.Header.Set("X-User-Role", "Admin")
 	r.ServeHTTP(w, req)
 	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
 }
@@ -169,7 +176,7 @@ func TestTradeDispute_Transition_UnderReview_To_Escalated(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/underreview-to-escalated", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeDispute_Transition_Escalated_To_Resolved(t *testing.T) {
@@ -190,7 +197,7 @@ func TestTradeDispute_Transition_Escalated_To_Resolved(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/escalated-to-resolved", nil)
 	r.ServeHTTP(w, req)
-	assert.True(t, w.Code == http.StatusOK || w.Code == http.StatusConflict || w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusNotFound)
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestTradeDispute_Transition_Escalated_To_Resolved_On_Resolution_Violated(t *testing.T) {
@@ -210,6 +217,7 @@ func TestTradeDispute_Transition_Escalated_To_Resolved_On_Resolution_Violated(t 
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_disputes/"+id+"/transitions/escalated-to-resolved", nil)
+	req.Header.Set("X-User-Role", "Admin")
 	r.ServeHTTP(w, req)
 	assert.True(t, w.Code == http.StatusUnprocessableEntity || w.Code == http.StatusConflict)
 }

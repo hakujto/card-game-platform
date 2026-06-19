@@ -100,8 +100,10 @@ type TradeListing struct {
 	Quantity int `gorm:"column:quantity;not null;default:1"`
 	Description *string `gorm:"column:description;type:text"`
 	ExpiresAt *string `gorm:"column:expires_at"`
-	SellerID uint `gorm:"column:seller_id"`
-	CardID uint `gorm:"column:card_id"`
+	SellerID uint `gorm:"column:seller_id;constraint:OnDelete:RESTRICT"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
+	Bids []TradeBid `gorm:"foreignKey:ListingID"`
+	Transaction *TradeTransaction `gorm:"foreignKey:ListingID"`
 }
 
 func (m *TradeListing) ToResponse() TradeListingResponse {

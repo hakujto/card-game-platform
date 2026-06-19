@@ -68,8 +68,8 @@ type PlayerCollection struct {
 	Condition PlayerCollectionConditionType `gorm:"column:condition;not null;default:'Mint'"`
 	AcquiredAt string `gorm:"column:acquired_at;not null"`
 	AcquiredVia PlayerCollectionAcquiredViaType `gorm:"column:acquired_via;not null;default:'Purchase'"`
-	PlayerID uint `gorm:"column:player_id"`
-	CardID uint `gorm:"column:card_id"`
+	PlayerID uint `gorm:"column:player_id;constraint:OnDelete:CASCADE"`
+	CardID uint `gorm:"column:card_id;constraint:OnDelete:RESTRICT"`
 }
 
 func (m *PlayerCollection) ToResponse() PlayerCollectionResponse {

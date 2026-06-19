@@ -54,7 +54,8 @@ type TournamentRound struct {
 	StartedAt *string `gorm:"column:started_at"`
 	EndedAt *string `gorm:"column:ended_at"`
 	TimeLimitMinutes int `gorm:"column:time_limit_minutes;not null;default:50"`
-	TournamentID uint `gorm:"column:tournament_id"`
+	TournamentID uint `gorm:"column:tournament_id;constraint:OnDelete:CASCADE"`
+	Matches []Match `gorm:"foreignKey:RoundID"`
 }
 
 func (m *TournamentRound) ToResponse() TournamentRoundResponse {
