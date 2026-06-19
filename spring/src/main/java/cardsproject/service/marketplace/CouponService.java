@@ -75,6 +75,8 @@ public class CouponService {
     public void redeem(Long id) {
         Coupon entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Coupon not found: " + id));
+        if (!(Boolean.TRUE.equals(entity.getIsActive())))
+            throw new IllegalStateException("Guard condition not met for redeem");
         entity.redeem();
         repository.save(entity);
     }

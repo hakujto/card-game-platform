@@ -15,6 +15,7 @@ public class CardRuling {
     private LocalDate publishedAt;
     private String source = "";
 
+    // @ManyToOne -> Card, onDelete=CASCADE, relatedName=rulings
     @Column(name = "card_id")
     private Long cardId;
 

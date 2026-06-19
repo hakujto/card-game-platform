@@ -29,15 +29,15 @@ public class DeckTagAssignmentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DeckTagAssignment> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "DeckTagAssignment not found")));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "DeckTagAssignment not found"));
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

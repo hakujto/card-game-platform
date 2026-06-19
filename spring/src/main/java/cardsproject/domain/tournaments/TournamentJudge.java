@@ -13,8 +13,10 @@ public class TournamentJudge {
     @Enumerated(EnumType.STRING)
     private TournamentJudgeRoleType role;
 
+    // @ManyToOne -> Tournament, onDelete=CASCADE, relatedName=judge_assignments
     @Column(name = "tournament_id")
     private Long tournamentId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=judge_roles, via=players
     @Column(name = "player_id")
     private Long playerId;
 

@@ -12,8 +12,10 @@ public class DeckSideboardCard {
 
     private Integer quantity = 1;
 
+    // @ManyToOne -> Deck, onDelete=CASCADE, relatedName=sideboard_cards
     @Column(name = "deck_id")
     private Long deckId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=sideboard_decks
     @Column(name = "card_id")
     private Long cardId;
 

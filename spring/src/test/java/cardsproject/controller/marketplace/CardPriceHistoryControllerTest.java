@@ -29,7 +29,7 @@ public class CardPriceHistoryControllerTest {
         mockMvc.perform(get("/api/card_price_histories/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
 }

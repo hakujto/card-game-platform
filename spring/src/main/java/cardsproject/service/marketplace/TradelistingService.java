@@ -80,6 +80,8 @@ public class TradeListingService {
     public void cancel(Long id) {
         TradeListing entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("TradeListing not found: " + id));
+        if (!(TradeListingStatusType.ACTIVE.equals(entity.getStatus())))
+            throw new IllegalStateException("Guard condition not met for cancel");
         entity.cancel();
         repository.save(entity);
     }

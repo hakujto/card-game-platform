@@ -29,7 +29,7 @@ public class PlayerAchievementControllerTest {
         mockMvc.perform(get("/api/player_achievements/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
 }

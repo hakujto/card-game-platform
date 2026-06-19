@@ -17,8 +17,10 @@ public class PlayerAchievement {
     private Integer progress = 0;
     private Boolean isCompleted = false;
 
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=achievement_records
     @Column(name = "player_id")
     private Long playerId;
+    // @ManyToOne -> Achievement, onDelete=PROTECT, relatedName=player_records
     @Column(name = "achievement_id")
     private Long achievementId;
 

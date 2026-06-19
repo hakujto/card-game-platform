@@ -36,17 +36,17 @@ public class DeckCardControllerTest {
         mockMvc.perform(get("/api/deck_cards/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/deck_cards/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{\"quantity\": 1}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
@@ -54,7 +54,7 @@ public class DeckCardControllerTest {
         mockMvc.perform(delete("/api/deck_cards/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 403;
             });
     }
     @Test

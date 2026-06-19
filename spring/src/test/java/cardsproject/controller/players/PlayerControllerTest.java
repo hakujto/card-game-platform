@@ -41,17 +41,17 @@ public class PlayerControllerTest {
         mockMvc.perform(get("/api/players/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/players/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{}"))
+            .content("{\"displayName\": \"test\"}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test

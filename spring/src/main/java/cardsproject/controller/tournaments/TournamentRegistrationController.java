@@ -29,10 +29,14 @@ public class TournamentRegistrationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentRegistration> show(@PathVariable Long id) {
-        return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> show(@PathVariable Long id) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
+        String currentUserId = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!String.valueOf(entity.getPlayerId()).equals(currentUserId)) {
+            return ResponseEntity.status(403).body(java.util.Map.of("error", "Forbidden"));
+        }
+            return ResponseEntity.ok(entity);
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "TournamentRegistration not found")));
     }
 
 

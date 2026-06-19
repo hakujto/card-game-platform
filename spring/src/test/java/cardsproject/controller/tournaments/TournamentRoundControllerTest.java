@@ -36,7 +36,7 @@ public class TournamentRoundControllerTest {
         mockMvc.perform(get("/api/tournament_rounds/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test

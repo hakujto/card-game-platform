@@ -29,30 +29,30 @@ public class DeckController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Deck> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Deck not found")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Deck> update(@PathVariable Long id, @Valid @RequestBody Deck entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Deck entity) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Deck not found"));
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Deck> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Deck not found")));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Deck not found"));
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

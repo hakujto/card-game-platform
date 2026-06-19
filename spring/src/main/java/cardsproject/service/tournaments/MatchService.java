@@ -78,6 +78,8 @@ public class MatchService {
     public void concede(Long id, Integer playerId) {
         Match entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Match not found: " + id));
+        if (!(MatchStatusType.ACTIVE.equals(entity.getStatus())))
+            throw new IllegalStateException("Guard condition not met for concede");
         entity.concede(playerId);
         repository.save(entity);
     }

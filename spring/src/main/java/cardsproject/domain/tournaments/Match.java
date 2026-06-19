@@ -22,10 +22,13 @@ public class Match {
     private LocalDateTime endedAt;
     private String resultNotes;
 
+    // @ManyToOne -> TournamentRound, onDelete=CASCADE, relatedName=matches
     @Column(name = "round_id")
     private Long roundId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=matches_as_player1, via=players
     @Column(name = "player1_id")
     private Long player1Id;
+    // @ManyToOne -> Player, onDelete=SET_NULL, relatedName=matches_as_player2, via=players
     @Column(name = "player2_id")
     private Long player2Id;
 

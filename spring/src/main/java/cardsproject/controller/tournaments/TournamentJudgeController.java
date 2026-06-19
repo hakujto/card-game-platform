@@ -29,10 +29,10 @@ public class TournamentJudgeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentJudge> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "TournamentJudge not found")));
     }
 
 

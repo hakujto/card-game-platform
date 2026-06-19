@@ -12,6 +12,7 @@ public class CardSet {
     private Long id;
 
     private String name = "";
+    @Column(unique = true)
     private String code = "";
     private LocalDate releaseDate;
     private LocalDate rotationDate;

@@ -19,6 +19,7 @@ public class CardPriceHistory {
     private Integer volume = 0;
     private Boolean foil = false;
 
+    // @ManyToOne -> Card, onDelete=CASCADE, relatedName=price_history, via=cards
     @Column(name = "card_id")
     private Long cardId;
 

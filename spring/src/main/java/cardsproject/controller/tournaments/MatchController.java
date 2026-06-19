@@ -29,10 +29,10 @@ public class MatchController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Match> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Match not found")));
     }
 
 
@@ -95,7 +95,7 @@ public class MatchController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/pending-to-active")
     public ResponseEntity<?> transitionPendingToActive(@PathVariable Long id) {
         try {
@@ -109,7 +109,7 @@ public class MatchController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/active-to-completed")
     public ResponseEntity<?> transitionActiveToCompleted(@PathVariable Long id) {
         try {
@@ -123,7 +123,7 @@ public class MatchController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/active-to-draw")
     public ResponseEntity<?> transitionActiveToDraw(@PathVariable Long id) {
         try {
@@ -137,7 +137,7 @@ public class MatchController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/pending-to-bye")
     public ResponseEntity<?> transitionPendingToBYE(@PathVariable Long id) {
         try {

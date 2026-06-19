@@ -22,6 +22,7 @@ public class DraftSession {
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
 
+    // @ManyToOne -> CardSet, onDelete=PROTECT, relatedName=draft_sessions, via=cards
     @Column(name = "card_set_id")
     private Long cardSetId;
 

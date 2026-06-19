@@ -29,25 +29,25 @@ public class TournamentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tournament> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Tournament not found")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Tournament> update(@PathVariable Long id, @Valid @RequestBody Tournament entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Tournament entity) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Tournament not found"));
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Tournament> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Tournament not found")));
     }
 
 
@@ -133,7 +133,7 @@ public class TournamentController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/draft-to-registration")
     public ResponseEntity<?> transitionDraftToRegistration(@PathVariable Long id) {
         try {
@@ -147,7 +147,7 @@ public class TournamentController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/registration-to-ongoing")
     public ResponseEntity<?> transitionRegistrationToOngoing(@PathVariable Long id) {
         try {
@@ -161,7 +161,7 @@ public class TournamentController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/registration-to-cancelled")
     public ResponseEntity<?> transitionRegistrationToCancelled(@PathVariable Long id) {
         try {
@@ -175,7 +175,7 @@ public class TournamentController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/ongoing-to-completed")
     public ResponseEntity<?> transitionOngoingToCompleted(@PathVariable Long id) {
         try {

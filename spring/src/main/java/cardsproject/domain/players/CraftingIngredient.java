@@ -12,8 +12,10 @@ public class CraftingIngredient {
 
     private Integer quantity = 1;
 
+    // @ManyToOne -> CraftingRecipe, onDelete=CASCADE, relatedName=ingredients
     @Column(name = "recipe_id")
     private Long recipeId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=used_in_recipes, via=cards
     @Column(name = "card_id")
     private Long cardId;
 

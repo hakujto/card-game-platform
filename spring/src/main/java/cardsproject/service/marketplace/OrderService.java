@@ -65,6 +65,8 @@ public class OrderService {
     public Boolean pay(Long id, String paymentRef) {
         Order entity = repository.findById(id)
             .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+        if (!(OrderStatusType.PENDING.equals(entity.getStatus())))
+            throw new IllegalStateException("Guard condition not met for pay");
         Boolean result = entity.pay(paymentRef);
         repository.save(entity);
         return result;

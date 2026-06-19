@@ -12,6 +12,7 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String code = "";
     @Enumerated(EnumType.STRING)
     private CouponDiscountTypeType discountType;

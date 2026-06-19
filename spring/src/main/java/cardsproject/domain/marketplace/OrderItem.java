@@ -15,8 +15,10 @@ public class OrderItem {
     private BigDecimal priceAtPurchase = BigDecimal.ZERO;
     private Boolean foil = false;
 
+    // @ManyToOne -> Order, onDelete=CASCADE, relatedName=items
     @Column(name = "order_id")
     private Long orderId;
+    // @ManyToOne -> Product, onDelete=PROTECT, relatedName=order_items
     @Column(name = "product_id")
     private Long productId;
 

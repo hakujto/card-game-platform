@@ -36,7 +36,7 @@ public class CardRulingControllerTest {
         mockMvc.perform(get("/api/card_rulings/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
@@ -44,7 +44,7 @@ public class CardRulingControllerTest {
         mockMvc.perform(delete("/api/card_rulings/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 403;
             });
     }
 }

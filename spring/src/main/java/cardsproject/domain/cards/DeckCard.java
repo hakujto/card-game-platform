@@ -14,8 +14,10 @@ public class DeckCard {
     private Integer quantity = 1;
     private Boolean isCommander = false;
 
+    // @ManyToOne -> Deck, onDelete=CASCADE, relatedName=deck_cards
     @Column(name = "deck_id")
     private Long deckId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=deck_cards
     @Column(name = "card_id")
     private Long cardId;
 

@@ -16,8 +16,10 @@ public class DraftParticipant {
     private Integer seatNumber = 0;
     private LocalDateTime joinedAt;
 
+    // @ManyToOne -> DraftSession, onDelete=CASCADE, relatedName=participants
     @Column(name = "session_id")
     private Long sessionId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=draft_sessions, via=players
     @Column(name = "player_id")
     private Long playerId;
 

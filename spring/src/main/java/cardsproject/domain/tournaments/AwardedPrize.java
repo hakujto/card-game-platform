@@ -18,8 +18,10 @@ public class AwardedPrize {
     private Boolean claimed = false;
     private LocalDateTime claimedAt;
 
+    // @ManyToOne -> TournamentPrize, onDelete=PROTECT, relatedName=awarded_prizes
     @Column(name = "prize_id")
     private Long prizeId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=awarded_prizes, via=players
     @Column(name = "player_id")
     private Long playerId;
 

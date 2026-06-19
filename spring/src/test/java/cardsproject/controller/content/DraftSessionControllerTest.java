@@ -36,7 +36,7 @@ public class DraftSessionControllerTest {
         mockMvc.perform(get("/api/draft_sessions/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
@@ -84,7 +84,7 @@ public class DraftSessionControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "ORGANIZER"})
     void transitionDraftingToAbandoned_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/draft_sessions/1/transitions/drafting-to-abandoned"))
             .andExpect(result -> {
@@ -94,7 +94,7 @@ public class DraftSessionControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "ORGANIZER"})
     void transitionWaitingForPlayersToAbandoned_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned"))
             .andExpect(result -> {

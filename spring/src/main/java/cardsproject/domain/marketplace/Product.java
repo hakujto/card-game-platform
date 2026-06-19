@@ -22,8 +22,10 @@ public class Product {
     private String imageUrl;
     private Boolean featured = false;
 
+    // @OneToOne -> Card, onDelete=SET_NULL, relatedName=shop_product, via=cards
     @Column(name = "card_id")
     private Long cardId;
+    // @ManyToOne -> CardSet, onDelete=SET_NULL, relatedName=shop_products, via=cards
     @Column(name = "card_set_id")
     private Long cardSetId;
 

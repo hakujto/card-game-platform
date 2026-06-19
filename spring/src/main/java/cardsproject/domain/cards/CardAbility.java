@@ -17,6 +17,7 @@ public class CardAbility {
     @Enumerated(EnumType.STRING)
     private CardAbilityTimingType timing;
 
+    // @ManyToOne -> Card, onDelete=CASCADE, relatedName=abilities
     @Column(name = "card_id")
     private Long cardId;
 

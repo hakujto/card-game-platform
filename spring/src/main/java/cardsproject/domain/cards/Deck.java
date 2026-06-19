@@ -27,12 +27,13 @@ public class Deck {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=decks, via=players
     @Column(name = "player_id")
     private Long playerId;
 
-    // M2M: cards managed via join table
-    // M2M: sideboard_cards managed via join table
-    // M2M: tags managed via join table
+    // M2M: cards -> Card, represented via DeckCard entity (through model); no direct field here
+    // M2M: sideboard_cards -> Card, represented via DeckSideboardCard entity (through model); no direct field here
+    // M2M: tags -> DeckTag, represented via DeckTagAssignment entity (through model); no direct field here
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

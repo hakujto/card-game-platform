@@ -28,8 +28,10 @@ public class Stream {
     private LocalDateTime endedAt;
     private String vodUrl;
 
+    // @ManyToOne -> Tournament, onDelete=SET_NULL, relatedName=streams, via=tournaments
     @Column(name = "tournament_id")
     private Long tournamentId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=streams, via=players
     @Column(name = "streamer_id")
     private Long streamerId;
 

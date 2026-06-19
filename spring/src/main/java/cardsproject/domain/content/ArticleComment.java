@@ -17,10 +17,13 @@ public class ArticleComment {
     private Boolean isHidden = false;
     private LocalDateTime createdAt;
 
+    // @ManyToOne -> Article, onDelete=CASCADE, relatedName=comments
     @Column(name = "article_id")
     private Long articleId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=article_comments, via=players
     @Column(name = "author_id")
     private Long authorId;
+    // @ManyToOne -> ArticleComment, onDelete=SET_NULL, relatedName=replies
     @Column(name = "parent_comment_id")
     private Long parentCommentId;
 

@@ -11,8 +11,10 @@ public class DeckTagAssignment {
     private Long id;
 
 
+    // @ManyToOne -> Deck, onDelete=CASCADE, relatedName=tag_assignments
     @Column(name = "deck_id")
     private Long deckId;
+    // @ManyToOne -> DeckTag, onDelete=CASCADE, relatedName=deck_assignments
     @Column(name = "tag_id")
     private Long tagId;
 

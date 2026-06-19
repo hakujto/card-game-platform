@@ -18,8 +18,10 @@ public class TradeBid {
     private LocalDateTime placedAt;
     private Boolean isWinning = false;
 
+    // @ManyToOne -> TradeListing, onDelete=CASCADE, relatedName=bids
     @Column(name = "listing_id")
     private Long listingId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=bids, via=players
     @Column(name = "bidder_id")
     private Long bidderId;
 

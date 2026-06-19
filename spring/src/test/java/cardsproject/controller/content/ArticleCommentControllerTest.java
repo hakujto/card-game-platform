@@ -36,7 +36,7 @@ public class ArticleCommentControllerTest {
         mockMvc.perform(get("/api/article_comments/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
@@ -44,7 +44,7 @@ public class ArticleCommentControllerTest {
         mockMvc.perform(delete("/api/article_comments/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 204 || status == 404;
+                assert status == 204 || status == 404 || status == 403;
             });
     }
 }

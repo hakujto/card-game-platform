@@ -29,25 +29,25 @@ public class StreamController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Stream> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Stream not found")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Stream> update(@PathVariable Long id, @Valid @RequestBody Stream entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Stream entity) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Stream not found"));
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Stream> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Stream not found")));
     }
 
 
@@ -98,7 +98,7 @@ public class StreamController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/scheduled-to-live")
     public ResponseEntity<?> transitionScheduledToLive(@PathVariable Long id) {
         try {
@@ -112,7 +112,7 @@ public class StreamController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_STREAMER', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/live-to-ended")
     public ResponseEntity<?> transitionLiveToEnded(@PathVariable Long id) {
         try {

@@ -32,6 +32,7 @@ public class Card {
     private Boolean isRestricted = false;
     private Integer powerLevel = 1;
 
+    // @ManyToOne -> CardSet, onDelete=PROTECT, relatedName=cards
     @Column(name = "set_id")
     private Long setId;
 
@@ -125,5 +126,9 @@ public class Card {
     @PreUpdate
     public void validateLegality() {
         // TODO: implement validate_legality
+    }
+    @PreRemove
+    public void validateNotInUse() {
+        // TODO: implement validate_not_in_use
     }
 }

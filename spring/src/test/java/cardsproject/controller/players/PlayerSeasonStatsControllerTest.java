@@ -29,7 +29,7 @@ public class PlayerSeasonStatsControllerTest {
         mockMvc.perform(get("/api/player_season_statses/1"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
 }

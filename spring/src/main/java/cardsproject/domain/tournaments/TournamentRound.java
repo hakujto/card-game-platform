@@ -20,6 +20,7 @@ public class TournamentRound {
     private LocalDateTime endedAt;
     private Integer timeLimitMinutes = 50;
 
+    // @ManyToOne -> Tournament, onDelete=CASCADE, relatedName=rounds
     @Column(name = "tournament_id")
     private Long tournamentId;
 

@@ -19,8 +19,10 @@ public class Game {
     private GameEndedByType endedBy;
     private String replayUrl;
 
+    // @ManyToOne -> Match, onDelete=CASCADE, relatedName=games
     @Column(name = "match_id")
     private Long matchId;
+    // @ManyToOne -> Player, onDelete=SET_NULL, relatedName=won_games, via=players
     @Column(name = "winner_id")
     private Long winnerId;
 

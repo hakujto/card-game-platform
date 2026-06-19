@@ -22,10 +22,13 @@ public class TradeDispute {
     private LocalDateTime openedAt;
     private LocalDateTime resolvedAt;
 
+    // @OneToOne -> TradeTransaction, onDelete=CASCADE, relatedName=dispute
     @Column(name = "transaction_id")
     private Long transactionId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=disputes_opened, via=players
     @Column(name = "opened_by_id")
     private Long openedById;
+    // @ManyToOne -> Player, onDelete=SET_NULL, relatedName=disputes_resolved, via=players
     @Column(name = "resolved_by_id")
     private Long resolvedById;
 

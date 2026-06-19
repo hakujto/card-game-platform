@@ -29,18 +29,18 @@ public class TradeListingController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TradeListing> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "TradeListing not found")));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TradeListing> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "TradeListing not found")));
     }
 
 
@@ -143,7 +143,7 @@ public class TradeListingController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_SELLER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_SELLER', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/active-to-cancelled")
     public ResponseEntity<?> transitionActiveToCancelled(@PathVariable Long id) {
         try {

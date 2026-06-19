@@ -11,8 +11,10 @@ public class ArticleTagAssignment {
     private Long id;
 
 
+    // @ManyToOne -> Article, onDelete=CASCADE, relatedName=tag_assignments
     @Column(name = "article_id")
     private Long articleId;
+    // @ManyToOne -> ArticleTag, onDelete=CASCADE, relatedName=article_assignments
     @Column(name = "tag_id")
     private Long tagId;
 

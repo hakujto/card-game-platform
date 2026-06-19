@@ -20,10 +20,13 @@ public class TournamentRegistration {
     private Integer pointsEarned = 0;
     private LocalDateTime registeredAt;
 
+    // @ManyToOne -> Tournament, onDelete=CASCADE, relatedName=registrations
     @Column(name = "tournament_id")
     private Long tournamentId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=tournament_registrations, via=players
     @Column(name = "player_id")
     private Long playerId;
+    // @ManyToOne -> Deck, onDelete=PROTECT, relatedName=tournament_registrations, via=cards
     @Column(name = "deck_id")
     private Long deckId;
 

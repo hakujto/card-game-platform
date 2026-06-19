@@ -29,25 +29,38 @@ public class PlayerCollectionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlayerCollection> show(@PathVariable Long id) {
-        return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> show(@PathVariable Long id) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
+        String currentUserId = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!String.valueOf(entity.getPlayerId()).equals(currentUserId)) {
+            return ResponseEntity.status(403).body(java.util.Map.of("error", "Forbidden"));
+        }
+            return ResponseEntity.ok(entity);
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "PlayerCollection not found")));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PlayerCollection> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
+        String currentUserId = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!String.valueOf(entity.getPlayerId()).equals(currentUserId)) {
+            return ResponseEntity.status(403).body(java.util.Map.of("error", "Forbidden"));
+        }
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "PlayerCollection not found")));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
+        String currentUserId = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!String.valueOf(entity.getPlayerId()).equals(currentUserId)) {
+            return ResponseEntity.status(403).body(java.util.Map.of("error", "Forbidden"));
+        }
+            service.delete(id);
+            return ResponseEntity.noContent().build();
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "PlayerCollection not found")));
     }
 
 

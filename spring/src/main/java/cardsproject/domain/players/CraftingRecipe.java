@@ -13,10 +13,11 @@ public class CraftingRecipe {
     private Integer dustCost = 0;
     private Boolean isAvailable = true;
 
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=crafting_recipes, via=cards
     @Column(name = "result_card_id")
     private Long resultCardId;
 
-    // M2M: required_cards managed via join table
+    // M2M: required_cards -> Card, represented via CraftingIngredient entity (through model); no direct field here
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

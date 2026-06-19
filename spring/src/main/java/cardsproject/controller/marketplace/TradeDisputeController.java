@@ -29,10 +29,10 @@ public class TradeDisputeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TradeDispute> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "TradeDispute not found")));
     }
 
 
@@ -84,7 +84,7 @@ public class TradeDisputeController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PatchMapping("/{id}/transitions/open-to-underreview")
     public ResponseEntity<?> transitionOpenToUnderReview(@PathVariable Long id) {
         try {
@@ -98,7 +98,7 @@ public class TradeDisputeController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PatchMapping("/{id}/transitions/underreview-to-resolved")
     public ResponseEntity<?> transitionUnderReviewToResolved(@PathVariable Long id) {
         try {

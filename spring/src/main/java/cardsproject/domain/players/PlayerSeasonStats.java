@@ -18,8 +18,10 @@ public class PlayerSeasonStats {
     private PlayerSeasonStatsHighestRankType highestRank;
     private Integer seasonPoints = 0;
 
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=season_stats
     @Column(name = "player_id")
     private Long playerId;
+    // @ManyToOne -> Season, onDelete=CASCADE, relatedName=player_stats, via=tournaments
     @Column(name = "season_id")
     private Long seasonId;
 

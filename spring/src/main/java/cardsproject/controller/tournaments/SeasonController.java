@@ -29,25 +29,25 @@ public class SeasonController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Season> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Season not found")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Season> update(@PathVariable Long id, @Valid @RequestBody Season entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Season entity) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Season not found"));
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Season> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Season not found")));
     }
 
 

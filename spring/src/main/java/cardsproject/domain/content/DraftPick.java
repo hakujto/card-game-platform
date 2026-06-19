@@ -17,8 +17,10 @@ public class DraftPick {
     private Integer packNumber = 0;
     private LocalDateTime pickedAt;
 
+    // @ManyToOne -> DraftParticipant, onDelete=CASCADE, relatedName=picks
     @Column(name = "participant_id")
     private Long participantId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=draft_picks, via=cards
     @Column(name = "card_id")
     private Long cardId;
 

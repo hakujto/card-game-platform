@@ -11,6 +11,7 @@ public class ArticleTag {
     private Long id;
 
     private String name = "";
+    @Column(unique = true)
     private String slug = "";
 
     public Long getId() { return id; }

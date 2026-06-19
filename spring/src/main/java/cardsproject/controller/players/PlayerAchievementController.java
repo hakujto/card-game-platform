@@ -24,10 +24,10 @@ public class PlayerAchievementController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlayerAchievement> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "PlayerAchievement not found")));
     }
 
 

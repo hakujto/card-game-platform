@@ -28,8 +28,10 @@ public class Order {
     private LocalDateTime paidAt;
     private LocalDateTime shippedAt;
 
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=orders, via=players
     @Column(name = "player_id")
     private Long playerId;
+    // @ManyToOne -> Coupon, onDelete=SET_NULL, relatedName=orders
     @Column(name = "coupon_id")
     private Long couponId;
 
@@ -127,6 +129,10 @@ public class Order {
     }
 
     // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PrePersist
+    public void assignCurrencyDefault() {
+        // TODO: implement assign_currency_default
+    }
     @PostUpdate
     public void notifyStatusChange() {
         // TODO: implement notify_status_change

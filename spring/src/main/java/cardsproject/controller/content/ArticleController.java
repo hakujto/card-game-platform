@@ -29,25 +29,25 @@ public class ArticleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Article> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Article not found")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Article> update(@PathVariable Long id, @Valid @RequestBody Article entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Article entity) {
+        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Article not found"));
         entity.setId(id);
         return ResponseEntity.ok(service.save(entity));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Article> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
-        return service.findById(id).map(entity -> {
+    public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
+        return service.findById(id).<ResponseEntity<?>>map(entity -> {
             service.applyPatch(entity, patch);
             return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+        }).orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Article not found")));
     }
 
 
@@ -122,7 +122,7 @@ public class ArticleController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/draft-to-published")
     public ResponseEntity<?> transitionDraftToPublished(@PathVariable Long id) {
         try {
@@ -136,7 +136,7 @@ public class ArticleController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
     @PatchMapping("/{id}/transitions/published-to-archived")
     public ResponseEntity<?> transitionPublishedToArchived(@PathVariable Long id) {
         try {

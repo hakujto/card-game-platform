@@ -14,6 +14,7 @@ public class Article {
     private Long id;
 
     private String title = "";
+    @Column(unique = true)
     private String slug = "";
     private String body = "";
     private String excerpt;
@@ -31,12 +32,14 @@ public class Article {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=articles, via=players
     @Column(name = "author_id")
     private Long authorId;
+    // @ManyToOne -> Deck, onDelete=SET_NULL, relatedName=articles, via=cards
     @Column(name = "featured_deck_id")
     private Long featuredDeckId;
 
-    // M2M: tags managed via join table
+    // M2M: tags -> ArticleTag, represented via ArticleTagAssignment entity (through model); no direct field here
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

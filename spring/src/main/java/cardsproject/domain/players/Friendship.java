@@ -17,8 +17,10 @@ public class Friendship {
     private FriendshipStatusType status;
     private LocalDateTime createdAt;
 
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=sent_friend_requests
     @Column(name = "requester_id")
     private Long requesterId;
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=received_friend_requests
     @Column(name = "receiver_id")
     private Long receiverId;
 

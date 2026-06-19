@@ -13,6 +13,7 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String displayName = "";
     @Enumerated(EnumType.STRING)
     private PlayerRankType rank;
@@ -27,11 +28,12 @@ public class Player {
     private LocalDateTime createdAt;
     private LocalDateTime lastActiveAt;
 
+    // @OneToOne -> User, onDelete=CASCADE, relatedName=player_profile
     @Column(name = "user_id")
     private Long userId;
 
-    // M2M: achievements managed via join table
-    // M2M: friends managed via join table
+    // M2M: achievements -> Achievement, represented via PlayerAchievement entity (through model); no direct field here
+    // M2M: friends -> Player, represented via Friendship entity (through model); no direct field here
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -112,6 +114,10 @@ public class Player {
     }
 
     // ── Lifecycle hooks ──────────────────────────────────────────────
+    @PostPersist
+    public void initializeCollection() {
+        // TODO: implement initialize_collection
+    }
     @PostUpdate
     public void updateRank() {
         // TODO: implement update_rank

@@ -30,8 +30,10 @@ public class TradeListing {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
 
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=trade_listings, via=players
     @Column(name = "seller_id")
     private Long sellerId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=trade_listings, via=cards
     @Column(name = "card_id")
     private Long cardId;
 

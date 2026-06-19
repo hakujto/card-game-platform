@@ -32,12 +32,14 @@ public class Tournament {
     private String rulesText;
     private LocalDateTime createdAt;
 
+    // @ManyToOne -> Season, onDelete=PROTECT, relatedName=tournaments
     @Column(name = "season_id")
     private Long seasonId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=organized_tournaments, via=players
     @Column(name = "organizer_id")
     private Long organizerId;
 
-    // M2M: judges managed via join table
+    // M2M: judges -> Player, represented via TournamentJudge entity (through model); no direct field here
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -144,5 +146,9 @@ public class Tournament {
     @PostUpdate
     public void syncSeasonStats() {
         // TODO: implement sync_season_stats
+    }
+    @PreRemove
+    public void preventDeleteIfOngoing() {
+        // TODO: implement prevent_delete_if_ongoing
     }
 }

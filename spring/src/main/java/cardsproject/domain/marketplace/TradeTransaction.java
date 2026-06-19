@@ -20,10 +20,13 @@ public class TradeTransaction {
     private TradeTransactionStatusType status;
     private LocalDateTime completedAt;
 
+    // @OneToOne -> TradeListing, onDelete=PROTECT, relatedName=transaction
     @Column(name = "listing_id")
     private Long listingId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=purchases, via=players
     @Column(name = "buyer_id")
     private Long buyerId;
+    // @ManyToOne -> Player, onDelete=PROTECT, relatedName=sales, via=players
     @Column(name = "seller_id")
     private Long sellerId;
 

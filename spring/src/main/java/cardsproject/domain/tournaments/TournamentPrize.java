@@ -20,6 +20,7 @@ public class TournamentPrize {
     private Integer packsCount;
     private Integer seasonPoints = 0;
 
+    // @ManyToOne -> Tournament, onDelete=CASCADE, relatedName=prizes
     @Column(name = "tournament_id")
     private Long tournamentId;
 

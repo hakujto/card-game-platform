@@ -21,8 +21,10 @@ public class PlayerCollection {
     @Enumerated(EnumType.STRING)
     private PlayerCollectionAcquiredViaType acquiredVia;
 
+    // @ManyToOne -> Player, onDelete=CASCADE, relatedName=collection
     @Column(name = "player_id")
     private Long playerId;
+    // @ManyToOne -> Card, onDelete=PROTECT, relatedName=player_collections, via=cards
     @Column(name = "card_id")
     private Long cardId;
 

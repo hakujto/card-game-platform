@@ -29,10 +29,10 @@ public class DraftSessionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DraftSession> show(@PathVariable Long id) {
+    public ResponseEntity<?> show(@PathVariable Long id) {
         return service.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .<ResponseEntity<?>>map(ResponseEntity::ok)
+            .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "DraftSession not found")));
     }
 
 
@@ -109,7 +109,7 @@ public class DraftSessionController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/drafting-to-abandoned")
     public ResponseEntity<?> transitionDraftingToAbandoned(@PathVariable Long id) {
         try {
@@ -123,7 +123,7 @@ public class DraftSessionController {
         }
     }
 
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ORGANIZER')")
     @PatchMapping("/{id}/transitions/waitingforplayers-to-abandoned")
     public ResponseEntity<?> transitionWaitingForPlayersToAbandoned(@PathVariable Long id) {
         try {

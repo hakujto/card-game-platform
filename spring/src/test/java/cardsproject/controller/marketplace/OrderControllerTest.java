@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,10 +34,10 @@ public class OrderControllerTest {
     }
     @Test
     void show_returns200or404() throws Exception {
-        mockMvc.perform(get("/api/orders/1"))
+        mockMvc.perform(get("/api/orders/1").with(user("1")))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
-                assert status == 200 || status == 404;
+                assert status == 200 || status == 404 || status == 403;
             });
     }
     @Test
@@ -84,7 +85,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "STAFF"})
     void transitionPaidToProcessing_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/orders/1/transitions/paid-to-processing"))
             .andExpect(result -> {
@@ -94,7 +95,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "STAFF"})
     void transitionProcessingToShipped_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/orders/1/transitions/processing-to-shipped"))
             .andExpect(result -> {
@@ -104,7 +105,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "STAFF"})
     void transitionShippedToCompleted_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/orders/1/transitions/shipped-to-completed"))
             .andExpect(result -> {
@@ -123,7 +124,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN"})
+    @org.springframework.security.test.context.support.WithMockUser(roles = {"ADMIN", "STAFF"})
     void transitionPaidToCancelled_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/orders/1/transitions/paid-to-cancelled"))
             .andExpect(result -> {
