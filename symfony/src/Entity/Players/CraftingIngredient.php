@@ -22,11 +22,11 @@ class CraftingIngredient
     private int $quantity = 1;
 
     #[ORM\ManyToOne(targetEntity: CraftingRecipe::class, inversedBy: 'ingredients')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?CraftingRecipe $recipe = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'used_in_recipes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'usedInRecipes')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
 
     public function getId(): ?int

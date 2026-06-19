@@ -24,12 +24,12 @@ class DeckCard
     #[Groups(['deckCard:read', 'deckCard:write'])]
     private bool $isCommander = false;
 
-    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'deck_cards')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'deckCards')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Deck $deck = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'deck_cards')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'deckCards')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
 
     public function getId(): ?int

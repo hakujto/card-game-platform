@@ -25,14 +25,25 @@ class TournamentJudgeApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxSeason = new Season();
+        $this->auxSeason->setName('test');
+        $this->auxSeason->setStartDate(new \DateTime('2024-01-01'));
+        $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test3');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
+        $this->depTournament->setName('test');
+        $this->depTournament->setMaxPlayers(1);
+        $this->depTournament->setStartTime(new \DateTime('2024-01-01'));
+        $this->depTournament->setCreatedAt(new \DateTime('2024-01-01'));
         $this->depTournament->setSeason($this->auxSeason);
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
         $this->depPlayer = new Player();
+        $this->depPlayer->setDisplayName('test5');
+        $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);
 
         $entity = new TournamentJudge();

@@ -113,6 +113,11 @@ class TradeDisputeController extends AbstractController
     #[Route('/{id}/transitions/open-to-underreview', name: 'tradeDispute_transitionOpenToUnderReview', methods: ['PATCH'])]
     public function transitionOpenToUnderReview(TradeDispute $tradeDispute): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
+            return $this->json(['error' => 'Insufficient role for transition Open -> UnderReview'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionOpenToUnderReview($tradeDispute->getId());
             return $this->json($result);
@@ -126,6 +131,11 @@ class TradeDisputeController extends AbstractController
     #[Route('/{id}/transitions/underreview-to-resolved', name: 'tradeDispute_transitionUnderReviewToResolved', methods: ['PATCH'])]
     public function transitionUnderReviewToResolved(TradeDispute $tradeDispute): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_MODERATOR'])) {
+            return $this->json(['error' => 'Insufficient role for transition UnderReview -> Resolved'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionUnderReviewToResolved($tradeDispute->getId());
             return $this->json($result);
@@ -139,6 +149,11 @@ class TradeDisputeController extends AbstractController
     #[Route('/{id}/transitions/underreview-to-escalated', name: 'tradeDispute_transitionUnderReviewToEscalated', methods: ['PATCH'])]
     public function transitionUnderReviewToEscalated(TradeDispute $tradeDispute): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition UnderReview -> Escalated'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionUnderReviewToEscalated($tradeDispute->getId());
             return $this->json($result);
@@ -152,6 +167,11 @@ class TradeDisputeController extends AbstractController
     #[Route('/{id}/transitions/escalated-to-resolved', name: 'tradeDispute_transitionEscalatedToResolved', methods: ['PATCH'])]
     public function transitionEscalatedToResolved(TradeDispute $tradeDispute): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Escalated -> Resolved'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionEscalatedToResolved($tradeDispute->getId());
             return $this->json($result);

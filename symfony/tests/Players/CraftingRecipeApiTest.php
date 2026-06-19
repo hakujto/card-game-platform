@@ -22,8 +22,16 @@ class CraftingRecipeApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test2');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depResultCard = new Card();
+        $this->depResultCard->setName('test');
+        $this->depResultCard->setManaColors('test');
+        $this->depResultCard->setDescription('test');
+        $this->depResultCard->setLegalFormats('test');
         $this->depResultCard->setSet($this->auxCardSet);
         $this->em->persist($this->depResultCard);
 

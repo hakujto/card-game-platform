@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tournaments\Season;
 use App\Entity\Players\Player;
+use App\Entity\User;
 
 class TournamentApiTest extends WebTestCase
 {
@@ -22,8 +23,13 @@ class TournamentApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depSeason = new Season();
+        $this->depSeason->setName('test');
+        $this->depSeason->setStartDate(new \DateTime('2024-01-01'));
+        $this->depSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->depSeason);
         $this->depOrganizer = new Player();
+        $this->depOrganizer->setDisplayName('test3');
+        $this->depOrganizer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depOrganizer);
 
         $entity = new Tournament();
@@ -121,6 +127,14 @@ class TournamentApiTest extends WebTestCase
     }
     public function testTransitionDraftToRegistrationSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('draftToRegistration@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Draft');
         $entity->setName('test'); // @on: name != null
@@ -133,8 +147,29 @@ class TournamentApiTest extends WebTestCase
         $this->assertEquals('Registration', $data['status'] ?? null);
     }
 
+    public function testTransitionDraftToRegistrationDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('draftToRegistration.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/draft-to-registration');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionRegistrationToOngoingSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('registrationToOngoing@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Registration');
         $this->em->flush();
@@ -145,8 +180,29 @@ class TournamentApiTest extends WebTestCase
         $this->assertEquals('Ongoing', $data['status'] ?? null);
     }
 
+    public function testTransitionRegistrationToOngoingDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('registrationToOngoing.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/registration-to-ongoing');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionRegistrationToCancelledSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('registrationToCancelled@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Registration');
         $this->em->flush();
@@ -157,8 +213,29 @@ class TournamentApiTest extends WebTestCase
         $this->assertEquals('Cancelled', $data['status'] ?? null);
     }
 
+    public function testTransitionRegistrationToCancelledDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('registrationToCancelled.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/registration-to-cancelled');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionOngoingToCompletedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('ongoingToCompleted@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Ongoing');
         $this->em->flush();
@@ -169,8 +246,29 @@ class TournamentApiTest extends WebTestCase
         $this->assertEquals('Completed', $data['status'] ?? null);
     }
 
+    public function testTransitionOngoingToCompletedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('ongoingToCompleted.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/ongoing-to-completed');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionOngoingToCancelledSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('ongoingToCancelled@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Tournament::class, $this->entityId);
         $entity->setStatus('Ongoing');
         $this->em->flush();
@@ -179,6 +277,19 @@ class TournamentApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Cancelled', $data['status'] ?? null);
+    }
+
+    public function testTransitionOngoingToCancelledDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('ongoingToCancelled.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/tournaments/' . $this->entityId . '/transitions/ongoing-to-cancelled');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionCompletedToDraftIsDenied(): void

@@ -160,6 +160,11 @@ class StreamController extends AbstractController
     #[Route('/{id}/transitions/scheduled-to-live', name: 'stream_transitionScheduledToLive', methods: ['PATCH'])]
     public function transitionScheduledToLive(Stream $stream): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_STREAMER', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Scheduled -> Live'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionScheduledToLive($stream->getId());
             return $this->json($result);
@@ -173,6 +178,11 @@ class StreamController extends AbstractController
     #[Route('/{id}/transitions/live-to-ended', name: 'stream_transitionLiveToEnded', methods: ['PATCH'])]
     public function transitionLiveToEnded(Stream $stream): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_STREAMER', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Live -> Ended'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionLiveToEnded($stream->getId());
             return $this->json($result);

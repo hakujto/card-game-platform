@@ -21,12 +21,12 @@ class TournamentJudge
     #[Groups(['tournamentJudge:read', 'tournamentJudge:write'])]
     private string $role = 'Judge';
 
-    #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'judge_assignments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'judgeAssignments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Tournament $tournament = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'judge_roles')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'judgeRoles')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player = null;
 
     public function getId(): ?int

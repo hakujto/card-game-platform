@@ -27,17 +27,31 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxSeason = new Season();
+        $this->auxSeason->setName('test');
+        $this->auxSeason->setStartDate(new \DateTime('2024-01-01'));
+        $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test3');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->auxTournament = new Tournament();
+        $this->auxTournament->setName('test');
+        $this->auxTournament->setMaxPlayers(1);
+        $this->auxTournament->setStartTime(new \DateTime('2024-01-01'));
+        $this->auxTournament->setCreatedAt(new \DateTime('2024-01-01'));
         $this->auxTournament->setSeason($this->auxSeason);
         $this->auxTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->auxTournament);
         $this->depPrize = new TournamentPrize();
+        $this->depPrize->setPlacementFrom(1);
+        $this->depPrize->setPlacementTo(1);
+        $this->depPrize->setPrizeType('test');
         $this->depPrize->setTournament($this->auxTournament);
         $this->em->persist($this->depPrize);
         $this->depPlayer = new Player();
+        $this->depPlayer->setDisplayName('test6');
+        $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);
 
         $entity = new AwardedPrize();

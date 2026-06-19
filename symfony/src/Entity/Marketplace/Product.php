@@ -5,6 +5,8 @@ namespace App\Entity\Marketplace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Marketplace\ProductRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Cards\Card;
 use App\Entity\Cards\CardSet;
 
@@ -54,13 +56,21 @@ class Product
     #[Groups(['product:read', 'product:write'])]
     private bool $featured = false;
 
-    #[ORM\OneToOne(targetEntity: Card::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\OneToOne(targetEntity: Card::class, inversedBy: 'shopProduct')]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'SET NULL')]
     private ?Card $card = null;
 
-    #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'shop_products')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'shopProducts')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?CardSet $cardSet = null;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
+    private Collection $orderItems;
+
+    public function __construct()
+    {
+        $this->orderItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -198,6 +208,11 @@ class Product
     {
         $this->cardSet = $cardSet;
         return $this;
+    }
+
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

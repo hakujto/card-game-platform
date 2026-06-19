@@ -5,6 +5,9 @@ namespace App\Entity\Tournaments;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Tournaments\SeasonRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Players\PlayerSeasonStats;
 
 #[ORM\Entity(repositoryClass: SeasonRepository::class)]
 #[ORM\Table(name: 'season')]
@@ -39,6 +42,18 @@ class Season
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups(['season:read', 'season:write'])]
     private ?string $rewardDescription = null;
+
+    #[ORM\OneToMany(mappedBy: 'season', targetEntity: PlayerSeasonStats::class)]
+    private Collection $playerStats;
+
+    #[ORM\OneToMany(mappedBy: 'season', targetEntity: Tournament::class)]
+    private Collection $tournaments;
+
+    public function __construct()
+    {
+        $this->playerStats = new ArrayCollection();
+        $this->tournaments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -109,6 +124,16 @@ class Season
     {
         $this->rewardDescription = $rewardDescription;
         return $this;
+    }
+
+    public function getPlayerStats(): Collection
+    {
+        return $this->playerStats;
+    }
+
+    public function getTournaments(): Collection
+    {
+        return $this->tournaments;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

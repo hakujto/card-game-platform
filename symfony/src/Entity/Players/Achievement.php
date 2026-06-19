@@ -5,6 +5,8 @@ namespace App\Entity\Players;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Players\AchievementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: AchievementRepository::class)]
 #[ORM\Table(name: 'achievement')]
@@ -39,6 +41,14 @@ class Achievement
     #[ORM\Column(type: 'boolean')]
     #[Groups(['achievement:read', 'achievement:write'])]
     private bool $isHidden = false;
+
+    #[ORM\OneToMany(mappedBy: 'achievement', targetEntity: PlayerAchievement::class)]
+    private Collection $playerRecords;
+
+    public function __construct()
+    {
+        $this->playerRecords = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -109,6 +119,11 @@ class Achievement
     {
         $this->isHidden = $isHidden;
         return $this;
+    }
+
+    public function getPlayerRecords(): Collection
+    {
+        return $this->playerRecords;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

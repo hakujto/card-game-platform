@@ -20,6 +20,8 @@ class OrderItemApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depProduct = new Product();
+        $this->depProduct->setName('test');
+        $this->depProduct->setPrice('0.00');
         $this->em->persist($this->depProduct);
 
         $entity = new OrderItem();

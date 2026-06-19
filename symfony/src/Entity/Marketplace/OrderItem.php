@@ -29,11 +29,11 @@ class OrderItem
     private bool $foil = false;
 
     #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'items')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Order $order = null;
 
-    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'order_items')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Product $product = null;
 
     public function getId(): ?int

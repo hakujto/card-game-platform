@@ -6,6 +6,7 @@ use App\Entity\Content\Article;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
+use App\Entity\User;
 
 class ArticleApiTest extends WebTestCase
 {
@@ -20,6 +21,8 @@ class ArticleApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depAuthor = new Player();
+        $this->depAuthor->setDisplayName('test2');
+        $this->depAuthor->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depAuthor);
 
         $entity = new Article();
@@ -54,7 +57,7 @@ class ArticleApiTest extends WebTestCase
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'title' => 'test',
-            'slug' => 'test',
+            'slug' => 'test2',
             'body' => 'test',
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'updatedAt' => '2024-01-01T00:00:00+00:00',
@@ -108,6 +111,14 @@ class ArticleApiTest extends WebTestCase
     }
     public function testTransitionDraftToPublishedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('draftToPublished@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_EDITOR', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Draft');
         $entity->setTitle('test'); // @on: title != null
@@ -120,8 +131,29 @@ class ArticleApiTest extends WebTestCase
         $this->assertEquals('Published', $data['status'] ?? null);
     }
 
+    public function testTransitionDraftToPublishedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('draftToPublished.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/draft-to-published');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionPublishedToArchivedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('publishedToArchived@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_EDITOR', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Published');
         $this->em->flush();
@@ -132,8 +164,29 @@ class ArticleApiTest extends WebTestCase
         $this->assertEquals('Archived', $data['status'] ?? null);
     }
 
+    public function testTransitionPublishedToArchivedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('publishedToArchived.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/published-to-archived');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionArchivedToDraftSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('archivedToDraft@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Article::class, $this->entityId);
         $entity->setStatus('Archived');
         $this->em->flush();
@@ -142,6 +195,19 @@ class ArticleApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Draft', $data['status'] ?? null);
+    }
+
+    public function testTransitionArchivedToDraftDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('archivedToDraft.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/articles/' . $this->entityId . '/transitions/archived-to-draft');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionPublishedToDraftIsDenied(): void

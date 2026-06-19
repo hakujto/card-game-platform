@@ -22,8 +22,12 @@ class PlayerAchievementApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depPlayer = new Player();
+        $this->depPlayer->setDisplayName('test2');
+        $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);
         $this->depAchievement = new Achievement();
+        $this->depAchievement->setName('test');
+        $this->depAchievement->setDescription('test');
         $this->em->persist($this->depAchievement);
 
         $entity = new PlayerAchievement();

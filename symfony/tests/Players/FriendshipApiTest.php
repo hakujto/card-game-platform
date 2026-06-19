@@ -6,13 +6,15 @@ use App\Entity\Players\Friendship;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
+use App\Entity\User;
 
 class FriendshipApiTest extends WebTestCase
 {
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Player $depRequester;
+    private User $ownerUser;
+    private Player $ownerModel;
     private Player $depReceiver;
 
     protected function setUp(): void
@@ -20,15 +22,27 @@ class FriendshipApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->depRequester = new Player();
-        $this->em->persist($this->depRequester);
+        $this->ownerUser = new User();
+        $this->ownerUser->setEmail('owner@example.com');
+        $this->ownerUser->setPassword('test');
+        $this->em->persist($this->ownerUser);
+        $this->ownerModel = new Player();
+        $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setDisplayName('test1');
+        $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->em->persist($this->ownerModel);
+        $this->em->flush();
+        $this->client->loginUser($this->ownerUser);
+
         $this->depReceiver = new Player();
+        $this->depReceiver->setDisplayName('test2');
+        $this->depReceiver->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depReceiver);
 
         $entity = new Friendship();
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
-        $entity->setRequester($this->depRequester);
         $entity->setReceiver($this->depReceiver);
+        $entity->setRequester($this->ownerModel);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -47,8 +61,8 @@ class FriendshipApiTest extends WebTestCase
         $this->client->request('POST', '/api/friendships', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'createdAt' => '2024-01-01T00:00:00+00:00',
-            'requester' => (int) $this->depRequester->getId(),
             'receiver' => (int) $this->depReceiver->getId(),
+            'requester' => (int) $this->ownerModel->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);

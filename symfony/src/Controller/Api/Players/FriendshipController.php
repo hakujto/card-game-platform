@@ -58,12 +58,20 @@ class FriendshipController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Friendship $friendship): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $friendship->getRequester()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         return $this->json($friendship, context: ['groups' => ['friendship:read']]);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(Friendship $friendship): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $friendship->getRequester()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         $this->repository->remove($friendship, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

@@ -5,9 +5,15 @@ namespace App\Entity\Cards;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Cards\CardSetRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Marketplace\Product;
+use App\Entity\Content\DraftSession;
 
 #[ORM\Entity(repositoryClass: CardSetRepository::class)]
 #[ORM\Table(name: 'card_set')]
+#[UniqueEntity(fields: ['code'], message: 'code must be unique')]
 class CardSet
 {
     #[ORM\Id]
@@ -20,7 +26,7 @@ class CardSet
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private string $name = '';
 
-    #[ORM\Column(type: 'string', length: 10)]
+    #[ORM\Column(type: 'string', length: 10, unique: true)]
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private string $code = '';
 
@@ -51,6 +57,22 @@ class CardSet
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
     #[Groups(['cardSet:read', 'cardSet:write'])]
     private ?string $logoUrl = null;
+
+    #[ORM\OneToMany(mappedBy: 'set', targetEntity: Card::class)]
+    private Collection $cards;
+
+    #[ORM\OneToMany(mappedBy: 'cardSet', targetEntity: Product::class)]
+    private Collection $shopProducts;
+
+    #[ORM\OneToMany(mappedBy: 'cardSet', targetEntity: DraftSession::class)]
+    private Collection $draftSessions;
+
+    public function __construct()
+    {
+        $this->cards = new ArrayCollection();
+        $this->shopProducts = new ArrayCollection();
+        $this->draftSessions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -154,6 +176,21 @@ class CardSet
     {
         $this->logoUrl = $logoUrl;
         return $this;
+    }
+
+    public function getCards(): Collection
+    {
+        return $this->cards;
+    }
+
+    public function getShopProducts(): Collection
+    {
+        return $this->shopProducts;
+    }
+
+    public function getDraftSessions(): Collection
+    {
+        return $this->draftSessions;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

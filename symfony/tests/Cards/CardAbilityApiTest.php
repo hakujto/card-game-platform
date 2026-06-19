@@ -22,8 +22,16 @@ class CardAbilityApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test2');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setName('test');
+        $this->depCard->setManaColors('test');
+        $this->depCard->setDescription('test');
+        $this->depCard->setLegalFormats('test');
         $this->depCard->setSet($this->auxCardSet);
         $this->em->persist($this->depCard);
 

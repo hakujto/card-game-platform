@@ -20,6 +20,10 @@ class CardApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depSet = new CardSet();
+        $this->depSet->setName('test');
+        $this->depSet->setCode('test2');
+        $this->depSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->depSet->setTotalCards(1);
         $this->em->persist($this->depSet);
 
         $entity = new Card();

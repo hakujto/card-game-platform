@@ -36,6 +36,8 @@ class OrderService
     {
         $entity = $this->repository->find($id);
         if (!$entity) throw new \RuntimeException('Order not found: ' . $id);
+        if (!($entity->getStatus() === 'Pending'))
+            throw new \RuntimeException('Guard condition not met for pay');
         $result = $entity->pay($paymentRef);
         $this->repository->save($entity, flush: true);
         return $result;
@@ -103,7 +105,6 @@ class OrderService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionPaidToProcessing(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -117,7 +118,6 @@ class OrderService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionProcessingToShipped(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -135,7 +135,6 @@ class OrderService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionShippedToCompleted(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -163,7 +162,6 @@ class OrderService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionPaidToCancelled(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -178,7 +176,6 @@ class OrderService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function transitionCompletedToRefunded(int $id): object
     {
         $entity = $this->repository->find($id);

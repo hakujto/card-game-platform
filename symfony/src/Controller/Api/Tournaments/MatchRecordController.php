@@ -107,6 +107,9 @@ class MatchRecordController extends AbstractController
     public function concede(MatchRecord $matchRecord, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (!($matchRecord->getStatus() === 'Active')) {
+            return $this->json(['error' => 'Guard condition not met for concede'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $matchRecord->concede($data['playerId'] ?? null);
         $this->repository->save($matchRecord, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -122,6 +125,11 @@ class MatchRecordController extends AbstractController
     #[Route('/{id}/transitions/pending-to-active', name: 'matchRecord_transitionPendingToActive', methods: ['PATCH'])]
     public function transitionPendingToActive(MatchRecord $matchRecord): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Pending -> Active'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPendingToActive($matchRecord->getId());
             return $this->json($result);
@@ -135,6 +143,11 @@ class MatchRecordController extends AbstractController
     #[Route('/{id}/transitions/active-to-completed', name: 'matchRecord_transitionActiveToCompleted', methods: ['PATCH'])]
     public function transitionActiveToCompleted(MatchRecord $matchRecord): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Active -> Completed'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionActiveToCompleted($matchRecord->getId());
             return $this->json($result);
@@ -148,6 +161,11 @@ class MatchRecordController extends AbstractController
     #[Route('/{id}/transitions/active-to-draw', name: 'matchRecord_transitionActiveToDraw', methods: ['PATCH'])]
     public function transitionActiveToDraw(MatchRecord $matchRecord): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Active -> Draw'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionActiveToDraw($matchRecord->getId());
             return $this->json($result);
@@ -161,6 +179,11 @@ class MatchRecordController extends AbstractController
     #[Route('/{id}/transitions/pending-to-bye', name: 'matchRecord_transitionPendingToBYE', methods: ['PATCH'])]
     public function transitionPendingToBYE(MatchRecord $matchRecord): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Pending -> BYE'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPendingToBYE($matchRecord->getId());
             return $this->json($result);

@@ -33,7 +33,7 @@ class CardAbility
     private ?string $timing = null;
 
     #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'abilities')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Card $card = null;
 
     public function getId(): ?int

@@ -44,7 +44,7 @@ class PlayerApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'displayName' => 'test',
+            'displayName' => 'test2',
             'createdAt' => '2024-01-01T00:00:00+00:00',
         ])
         );

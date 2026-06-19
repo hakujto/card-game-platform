@@ -44,16 +44,16 @@ class TradeDispute
     #[Groups(['tradeDispute:read', 'tradeDispute:write'])]
     private ?\DateTimeInterface $resolvedAt = null;
 
-    #[ORM\OneToOne(targetEntity: TradeTransaction::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\OneToOne(targetEntity: TradeTransaction::class, inversedBy: 'dispute')]
+    #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'CASCADE')]
     private ?TradeTransaction $transaction = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'disputes_opened')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'disputesOpened')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $openedBy = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'disputes_resolved')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'disputesResolved')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Player $resolvedBy = null;
 
     public function getId(): ?int

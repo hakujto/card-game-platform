@@ -26,12 +26,12 @@ class Friendship
     #[Groups(['friendship:read', 'friendship:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'sent_friend_requests')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'sentFriendRequests')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Player $requester = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'received_friend_requests')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'receivedFriendRequests')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Player $receiver = null;
 
     public function getId(): ?int

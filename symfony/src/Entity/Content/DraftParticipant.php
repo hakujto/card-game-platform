@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\DraftParticipantRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: DraftParticipantRepository::class)]
@@ -28,12 +30,20 @@ class DraftParticipant
     private ?\DateTimeInterface $joinedAt = null;
 
     #[ORM\ManyToOne(targetEntity: DraftSession::class, inversedBy: 'participants')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?DraftSession $session = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'draft_sessions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'draftSessions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player = null;
+
+    #[ORM\OneToMany(mappedBy: 'participant', targetEntity: DraftPick::class)]
+    private Collection $picks;
+
+    public function __construct()
+    {
+        $this->picks = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -94,6 +104,11 @@ class DraftParticipant
     {
         $this->player = $player;
         return $this;
+    }
+
+    public function getPicks(): Collection
+    {
+        return $this->picks;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

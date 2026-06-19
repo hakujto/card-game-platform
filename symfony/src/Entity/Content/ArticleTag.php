@@ -5,9 +5,13 @@ namespace App\Entity\Content;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Content\ArticleTagRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: ArticleTagRepository::class)]
 #[ORM\Table(name: 'article_tag')]
+#[UniqueEntity(fields: ['slug'], message: 'slug must be unique')]
 class ArticleTag
 {
     #[ORM\Id]
@@ -20,9 +24,17 @@ class ArticleTag
     #[Groups(['articleTag:read', 'articleTag:write'])]
     private string $name = '';
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, unique: true)]
     #[Groups(['articleTag:read', 'articleTag:write'])]
     private string $slug = '';
+
+    #[ORM\OneToMany(mappedBy: 'tag', targetEntity: ArticleTagAssignment::class)]
+    private Collection $articleAssignments;
+
+    public function __construct()
+    {
+        $this->articleAssignments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -49,6 +61,11 @@ class ArticleTag
     {
         $this->slug = $slug;
         return $this;
+    }
+
+    public function getArticleAssignments(): Collection
+    {
+        return $this->articleAssignments;
     }
 
     // ── Business operations ──────────────────────────────────────────

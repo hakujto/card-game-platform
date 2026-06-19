@@ -72,7 +72,6 @@ class ArticleService
         $this->repository->save($entity, flush: true);
         return $result;
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_EDITOR'])]
     public function transitionDraftToPublished(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -93,7 +92,6 @@ class ArticleService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_EDITOR'])]
     public function transitionPublishedToArchived(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -108,7 +106,6 @@ class ArticleService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function transitionArchivedToDraft(int $id): object
     {
         $entity = $this->repository->find($id);

@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
+use App\Entity\User;
 
 class TradeListingApiTest extends WebTestCase
 {
@@ -24,10 +25,20 @@ class TradeListingApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depSeller = new Player();
+        $this->depSeller->setDisplayName('test2');
+        $this->depSeller->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depSeller);
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test3');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setName('test');
+        $this->depCard->setManaColors('test');
+        $this->depCard->setDescription('test');
+        $this->depCard->setLegalFormats('test');
         $this->depCard->setSet($this->auxCardSet);
         $this->em->persist($this->depCard);
 
@@ -111,6 +122,14 @@ class TradeListingApiTest extends WebTestCase
     }
     public function testTransitionPendingToActiveSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('pendingToActive@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_SELLER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Pending');
         $entity->setQuantity(1); // @on: quantity != null
@@ -120,6 +139,19 @@ class TradeListingApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Active', $data['status'] ?? null);
+    }
+
+    public function testTransitionPendingToActiveDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('pendingToActive.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/pending-to-active');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionActiveToSoldSucceeds(): void
@@ -148,6 +180,14 @@ class TradeListingApiTest extends WebTestCase
 
     public function testTransitionActiveToCancelledSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('activeToCancelled@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_SELLER', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeListing::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -156,6 +196,19 @@ class TradeListingApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Cancelled', $data['status'] ?? null);
+    }
+
+    public function testTransitionActiveToCancelledDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('activeToCancelled.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId . '/transitions/active-to-cancelled');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionSoldToActiveIsDenied(): void

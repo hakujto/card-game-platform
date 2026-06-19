@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\DraftSessionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Cards\CardSet;
 
 #[ORM\Entity(repositoryClass: DraftSessionRepository::class)]
@@ -44,9 +46,17 @@ class DraftSession
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private ?\DateTimeInterface $completedAt = null;
 
-    #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'draft_sessions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'draftSessions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?CardSet $cardSet = null;
+
+    #[ORM\OneToMany(mappedBy: 'session', targetEntity: DraftParticipant::class)]
+    private Collection $participants;
+
+    public function __construct()
+    {
+        $this->participants = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -134,6 +144,11 @@ class DraftSession
     {
         $this->cardSet = $cardSet;
         return $this;
+    }
+
+    public function getParticipants(): Collection
+    {
+        return $this->participants;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

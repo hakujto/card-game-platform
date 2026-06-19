@@ -67,11 +67,11 @@ class Stream
     private ?string $vodUrl = null;
 
     #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'streams')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Tournament $tournament = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'streams')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $streamer = null;
 
     public function getId(): ?int

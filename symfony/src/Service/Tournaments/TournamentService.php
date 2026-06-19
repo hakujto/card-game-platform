@@ -81,7 +81,6 @@ class TournamentService
         $this->repository->save($entity, flush: true);
         return $result;
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionDraftToRegistration(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -101,7 +100,6 @@ class TournamentService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionRegistrationToOngoing(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -116,7 +114,6 @@ class TournamentService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionRegistrationToCancelled(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -131,7 +128,6 @@ class TournamentService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionOngoingToCompleted(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -147,7 +143,6 @@ class TournamentService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function transitionOngoingToCancelled(int $id): object
     {
         $entity = $this->repository->find($id);

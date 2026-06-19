@@ -47,7 +47,7 @@ class CardSetApiTest extends WebTestCase
         $this->client->request('POST', '/api/card_sets', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'test2',
             'releaseDate' => '2024-01-01',
             'totalCards' => 1,
         ])

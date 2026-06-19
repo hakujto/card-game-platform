@@ -35,17 +35,20 @@ class TradeTransaction
     #[Groups(['tradeTransaction:read', 'tradeTransaction:write'])]
     private ?\DateTimeInterface $completedAt = null;
 
-    #[ORM\OneToOne(targetEntity: TradeListing::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\OneToOne(targetEntity: TradeListing::class, inversedBy: 'transaction')]
+    #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'RESTRICT')]
     private ?TradeListing $listing = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'purchases')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $buyer = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'sales')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $seller = null;
+
+    #[ORM\OneToOne(mappedBy: 'transaction', targetEntity: TradeDispute::class)]
+    private ?TradeDispute $dispute = null;
 
     public function getId(): ?int
     {
@@ -145,6 +148,11 @@ class TradeTransaction
     {
         $this->seller = $seller;
         return $this;
+    }
+
+    public function getDispute(): ?TradeDispute
+    {
+        return $this->dispute;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

@@ -16,12 +16,12 @@ class DeckTagAssignment
     #[Groups(['deckTagAssignment:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'tag_assignments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'tagAssignments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Deck $deck = null;
 
-    #[ORM\ManyToOne(targetEntity: DeckTag::class, inversedBy: 'deck_assignments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: DeckTag::class, inversedBy: 'deckAssignments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?DeckTag $tag = null;
 
     public function getId(): ?int

@@ -20,6 +20,9 @@ class PlayerSeasonStatsApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depSeason = new Season();
+        $this->depSeason->setName('test');
+        $this->depSeason->setStartDate(new \DateTime('2024-01-01'));
+        $this->depSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->depSeason);
 
         $entity = new PlayerSeasonStats();

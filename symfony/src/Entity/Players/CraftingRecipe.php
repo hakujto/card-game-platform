@@ -27,17 +27,16 @@ class CraftingRecipe
     #[Groups(['craftingRecipe:read', 'craftingRecipe:write'])]
     private bool $isAvailable = true;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'crafting_recipes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'craftingRecipes')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $resultCard = null;
 
-    #[ORM\ManyToMany(targetEntity: Card::class)]
-    #[ORM\JoinTable(name: 'crafting_recipe_required_cards_m2m')]
-    private Collection $requiredCards;
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: CraftingIngredient::class)]
+    private Collection $ingredients;
 
     public function __construct()
     {
-        $this->requiredCards = new ArrayCollection();
+        $this->ingredients = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -84,23 +83,9 @@ class CraftingRecipe
         return $this;
     }
 
-    public function getRequiredCards(): Collection
+    public function getIngredients(): Collection
     {
-        return $this->requiredCards;
-    }
-
-    public function addRequiredCards(Card $item): static
-    {
-        if (!$this->requiredCards->contains($item)) {
-            $this->requiredCards->add($item);
-        }
-        return $this;
-    }
-
-    public function removeRequiredCards(Card $item): static
-    {
-        $this->requiredCards->removeElement($item);
-        return $this;
+        return $this->ingredients;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

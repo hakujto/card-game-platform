@@ -16,12 +16,12 @@ class ArticleTagAssignment
     #[Groups(['articleTagAssignment:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'tag_assignments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'tagAssignments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Article $article = null;
 
-    #[ORM\ManyToOne(targetEntity: ArticleTag::class, inversedBy: 'article_assignments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: ArticleTag::class, inversedBy: 'articleAssignments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ArticleTag $tag = null;
 
     public function getId(): ?int

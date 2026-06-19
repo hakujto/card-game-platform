@@ -6,6 +6,7 @@ use App\Entity\Content\DraftSession;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Cards\CardSet;
+use App\Entity\User;
 
 class DraftSessionApiTest extends WebTestCase
 {
@@ -20,6 +21,10 @@ class DraftSessionApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depCardSet = new CardSet();
+        $this->depCardSet->setName('test');
+        $this->depCardSet->setCode('test2');
+        $this->depCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->depCardSet->setTotalCards(1);
         $this->em->persist($this->depCardSet);
 
         $entity = new DraftSession();
@@ -108,6 +113,14 @@ class DraftSessionApiTest extends WebTestCase
 
     public function testTransitionDraftingToAbandonedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('draftingToAbandoned@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('Drafting');
         $this->em->flush();
@@ -118,8 +131,29 @@ class DraftSessionApiTest extends WebTestCase
         $this->assertEquals('Abandoned', $data['status'] ?? null);
     }
 
+    public function testTransitionDraftingToAbandonedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('draftingToAbandoned.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/draft_sessions/' . $this->entityId . '/transitions/drafting-to-abandoned');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionWaitingForPlayersToAbandonedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('waitingForPlayersToAbandoned@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_ORGANIZER']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(DraftSession::class, $this->entityId);
         $entity->setStatus('WaitingForPlayers');
         $this->em->flush();
@@ -128,6 +162,19 @@ class DraftSessionApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Abandoned', $data['status'] ?? null);
+    }
+
+    public function testTransitionWaitingForPlayersToAbandonedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('waitingForPlayersToAbandoned.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/draft_sessions/' . $this->entityId . '/transitions/waitingforplayers-to-abandoned');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionCompletedToDraftingIsDenied(): void

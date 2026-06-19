@@ -150,6 +150,9 @@ class TradeListingController extends AbstractController
     #[Route('/{id}/cancel', name: 'cancel', methods: ['DELETE'])]
     public function cancel(TradeListing $tradeListing): JsonResponse
     {
+        if (!($tradeListing->getStatus() === 'Active')) {
+            return $this->json(['error' => 'Guard condition not met for cancel'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $tradeListing->cancel();
         $this->repository->save($tradeListing, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -173,6 +176,11 @@ class TradeListingController extends AbstractController
     #[Route('/{id}/transitions/pending-to-active', name: 'tradeListing_transitionPendingToActive', methods: ['PATCH'])]
     public function transitionPendingToActive(TradeListing $tradeListing): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_SELLER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Pending -> Active'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPendingToActive($tradeListing->getId());
             return $this->json($result);
@@ -212,6 +220,11 @@ class TradeListingController extends AbstractController
     #[Route('/{id}/transitions/active-to-cancelled', name: 'tradeListing_transitionActiveToCancelled', methods: ['PATCH'])]
     public function transitionActiveToCancelled(TradeListing $tradeListing): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_SELLER', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Active -> Cancelled'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionActiveToCancelled($tradeListing->getId());
             return $this->json($result);

@@ -5,16 +5,18 @@ namespace App\Tests\Players;
 use App\Entity\Players\PlayerCollection;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Players\Player;
 use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
+use App\Entity\User;
+use App\Entity\Players\Player;
 
 class PlayerCollectionApiTest extends WebTestCase
 {
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Player $depPlayer;
+    private User $ownerUser;
+    private Player $ownerModel;
     private CardSet $auxCardSet;
     private Card $depCard;
 
@@ -23,18 +25,36 @@ class PlayerCollectionApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->depPlayer = new Player();
-        $this->em->persist($this->depPlayer);
+        $this->ownerUser = new User();
+        $this->ownerUser->setEmail('owner@example.com');
+        $this->ownerUser->setPassword('test');
+        $this->em->persist($this->ownerUser);
+        $this->ownerModel = new Player();
+        $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setDisplayName('test1');
+        $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->em->persist($this->ownerModel);
+        $this->em->flush();
+        $this->client->loginUser($this->ownerUser);
+
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test2');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setName('test');
+        $this->depCard->setManaColors('test');
+        $this->depCard->setDescription('test');
+        $this->depCard->setLegalFormats('test');
         $this->depCard->setSet($this->auxCardSet);
         $this->em->persist($this->depCard);
 
         $entity = new PlayerCollection();
         $entity->setAcquiredAt(new \DateTime('2024-01-01'));
-        $entity->setPlayer($this->depPlayer);
         $entity->setCard($this->depCard);
+        $entity->setPlayer($this->ownerModel);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -53,8 +73,8 @@ class PlayerCollectionApiTest extends WebTestCase
         $this->client->request('POST', '/api/player_collections', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'acquiredAt' => '2024-01-01T00:00:00+00:00',
-            'player' => (int) $this->depPlayer->getId(),
             'card' => (int) $this->depCard->getId(),
+            'player' => (int) $this->ownerModel->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);

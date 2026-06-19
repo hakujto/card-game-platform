@@ -9,6 +9,7 @@ use App\Repository\Tournaments\TournamentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
+use App\Entity\Content\Stream;
 
 #[ORM\Entity(repositoryClass: TournamentRepository::class)]
 #[ORM\Table(name: 'tournament')]
@@ -81,20 +82,35 @@ class Tournament
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Season::class, inversedBy: 'tournaments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Season $season = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'organized_tournaments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'organizedTournaments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $organizer = null;
 
-    #[ORM\ManyToMany(targetEntity: Player::class)]
-    #[ORM\JoinTable(name: 'tournament_judges_m2m')]
-    private Collection $judges;
+    #[ORM\OneToMany(mappedBy: 'tournament', targetEntity: TournamentJudge::class)]
+    private Collection $judgeAssignments;
+
+    #[ORM\OneToMany(mappedBy: 'tournament', targetEntity: TournamentRegistration::class)]
+    private Collection $registrations;
+
+    #[ORM\OneToMany(mappedBy: 'tournament', targetEntity: TournamentRound::class)]
+    private Collection $rounds;
+
+    #[ORM\OneToMany(mappedBy: 'tournament', targetEntity: TournamentPrize::class)]
+    private Collection $prizes;
+
+    #[ORM\OneToMany(mappedBy: 'tournament', targetEntity: Stream::class)]
+    private Collection $streams;
 
     public function __construct()
     {
-        $this->judges = new ArrayCollection();
+        $this->judgeAssignments = new ArrayCollection();
+        $this->registrations = new ArrayCollection();
+        $this->rounds = new ArrayCollection();
+        $this->prizes = new ArrayCollection();
+        $this->streams = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -290,23 +306,29 @@ class Tournament
         return $this;
     }
 
-    public function getJudges(): Collection
+    public function getJudgeAssignments(): Collection
     {
-        return $this->judges;
+        return $this->judgeAssignments;
     }
 
-    public function addJudges(Player $item): static
+    public function getRegistrations(): Collection
     {
-        if (!$this->judges->contains($item)) {
-            $this->judges->add($item);
-        }
-        return $this;
+        return $this->registrations;
     }
 
-    public function removeJudges(Player $item): static
+    public function getRounds(): Collection
     {
-        $this->judges->removeElement($item);
-        return $this;
+        return $this->rounds;
+    }
+
+    public function getPrizes(): Collection
+    {
+        return $this->prizes;
+    }
+
+    public function getStreams(): Collection
+    {
+        return $this->streams;
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -396,6 +418,12 @@ class Tournament
     public function syncSeasonStats(): void
     {
         // TODO: implement sync_season_stats
+    }
+
+    #[ORM\PreRemove]
+    public function preventDeleteIfOngoing(): void
+    {
+        // TODO: implement prevent_delete_if_ongoing
     }
 
 }

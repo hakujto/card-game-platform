@@ -22,6 +22,8 @@ class GameApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depMatch = new MatchRecord();
         $this->depMatch->setPlayer1($this->auxPlayer);

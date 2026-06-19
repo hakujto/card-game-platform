@@ -27,17 +27,30 @@ class TradeBidApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test3');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->auxCard = new Card();
+        $this->auxCard->setName('test');
+        $this->auxCard->setManaColors('test');
+        $this->auxCard->setDescription('test');
+        $this->auxCard->setLegalFormats('test');
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
         $this->depListing = new TradeListing();
+        $this->depListing->setCreatedAt(new \DateTime('2024-01-01'));
         $this->depListing->setSeller($this->auxPlayer);
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
         $this->depBidder = new Player();
+        $this->depBidder->setDisplayName('test6');
+        $this->depBidder->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depBidder);
 
         $entity = new TradeBid();

@@ -26,13 +26,25 @@ class DraftPickApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depParticipant = new DraftParticipant();
+        $this->depParticipant->setSeatNumber(1);
+        $this->depParticipant->setJoinedAt(new \DateTime('2024-01-01'));
         $this->depParticipant->setPlayer($this->auxPlayer);
         $this->em->persist($this->depParticipant);
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test4');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setName('test');
+        $this->depCard->setManaColors('test');
+        $this->depCard->setDescription('test');
+        $this->depCard->setLegalFormats('test');
         $this->depCard->setSet($this->auxCardSet);
         $this->em->persist($this->depCard);
 

@@ -5,6 +5,8 @@ namespace App\Entity\Tournaments;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Tournaments\TournamentPrizeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: TournamentPrizeRepository::class)]
 #[ORM\Table(name: 'tournament_prize')]
@@ -45,8 +47,16 @@ class TournamentPrize
     private int $seasonPoints = 0;
 
     #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'prizes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Tournament $tournament = null;
+
+    #[ORM\OneToMany(mappedBy: 'prize', targetEntity: AwardedPrize::class)]
+    private Collection $awardedPrizes;
+
+    public function __construct()
+    {
+        $this->awardedPrizes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -145,6 +155,11 @@ class TournamentPrize
     {
         $this->tournament = $tournament;
         return $this;
+    }
+
+    public function getAwardedPrizes(): Collection
+    {
+        return $this->awardedPrizes;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

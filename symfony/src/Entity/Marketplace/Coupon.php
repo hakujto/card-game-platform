@@ -5,9 +5,13 @@ namespace App\Entity\Marketplace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Marketplace\CouponRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CouponRepository::class)]
 #[ORM\Table(name: 'coupon')]
+#[UniqueEntity(fields: ['code'], message: 'code must be unique')]
 class Coupon
 {
     #[ORM\Id]
@@ -16,7 +20,7 @@ class Coupon
     #[Groups(['coupon:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, unique: true)]
     #[Groups(['coupon:read', 'coupon:write'])]
     private string $code = '';
 
@@ -51,6 +55,14 @@ class Coupon
     #[ORM\Column(type: 'boolean')]
     #[Groups(['coupon:read', 'coupon:write'])]
     private bool $isActive = true;
+
+    #[ORM\OneToMany(mappedBy: 'coupon', targetEntity: Order::class)]
+    private Collection $orders;
+
+    public function __construct()
+    {
+        $this->orders = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -154,6 +166,11 @@ class Coupon
     {
         $this->isActive = $isActive;
         return $this;
+    }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

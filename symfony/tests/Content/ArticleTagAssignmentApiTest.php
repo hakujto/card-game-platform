@@ -24,11 +24,20 @@ class ArticleTagAssignmentApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depArticle = new Article();
+        $this->depArticle->setTitle('test');
+        $this->depArticle->setSlug('test3');
+        $this->depArticle->setBody('test');
+        $this->depArticle->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->depArticle->setUpdatedAt(new \DateTime('2024-01-01'));
         $this->depArticle->setAuthor($this->auxPlayer);
         $this->em->persist($this->depArticle);
         $this->depTag = new ArticleTag();
+        $this->depTag->setName('test');
+        $this->depTag->setSlug('test4');
         $this->em->persist($this->depTag);
 
         $entity = new ArticleTagAssignment();

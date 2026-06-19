@@ -5,6 +5,7 @@ namespace App\Tests\Marketplace;
 use App\Entity\Marketplace\Order;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\User;
 use App\Entity\Players\Player;
 
 class OrderApiTest extends WebTestCase
@@ -12,19 +13,29 @@ class OrderApiTest extends WebTestCase
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
-    private Player $depPlayer;
+    private User $ownerUser;
+    private Player $ownerModel;
 
     protected function setUp(): void
     {
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->depPlayer = new Player();
-        $this->em->persist($this->depPlayer);
+        $this->ownerUser = new User();
+        $this->ownerUser->setEmail('owner@example.com');
+        $this->ownerUser->setPassword('test');
+        $this->em->persist($this->ownerUser);
+        $this->ownerModel = new Player();
+        $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setDisplayName('test1');
+        $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->em->persist($this->ownerModel);
+        $this->em->flush();
+        $this->client->loginUser($this->ownerUser);
 
         $entity = new Order();
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
-        $entity->setPlayer($this->depPlayer);
+        $entity->setPlayer($this->ownerModel);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -43,7 +54,7 @@ class OrderApiTest extends WebTestCase
         $this->client->request('POST', '/api/orders', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'createdAt' => '2024-01-01T00:00:00+00:00',
-            'player' => (int) $this->depPlayer->getId(),
+            'player' => (int) $this->ownerModel->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);
@@ -116,6 +127,14 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPaidToProcessingSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('paidToProcessing@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_STAFF']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Paid');
         $this->em->flush();
@@ -126,8 +145,29 @@ class OrderApiTest extends WebTestCase
         $this->assertEquals('Processing', $data['status'] ?? null);
     }
 
+    public function testTransitionPaidToProcessingDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('paidToProcessing.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/paid-to-processing');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionProcessingToShippedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('processingToShipped@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_STAFF']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Processing');
         $entity->setTrackingNumber('test'); // @on: tracking_number != null
@@ -139,8 +179,29 @@ class OrderApiTest extends WebTestCase
         $this->assertEquals('Shipped', $data['status'] ?? null);
     }
 
+    public function testTransitionProcessingToShippedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('processingToShipped.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/processing-to-shipped');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionProcessingToShippedFailsWhenTrackingNumberMissing(): void
     {
+        $user = new User();
+        $user->setEmail('processingToShipped.missingTrackingNumber@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_STAFF']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Processing');
         $this->em->flush();
@@ -151,6 +212,14 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionShippedToCompletedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('shippedToCompleted@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_STAFF']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Shipped');
         $this->em->flush();
@@ -159,6 +228,19 @@ class OrderApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Completed', $data['status'] ?? null);
+    }
+
+    public function testTransitionShippedToCompletedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('shippedToCompleted.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/shipped-to-completed');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionPendingToCancelledSucceeds(): void
@@ -175,6 +257,14 @@ class OrderApiTest extends WebTestCase
 
     public function testTransitionPaidToCancelledSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('paidToCancelled@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_STAFF']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Paid');
         $this->em->flush();
@@ -185,8 +275,29 @@ class OrderApiTest extends WebTestCase
         $this->assertEquals('Cancelled', $data['status'] ?? null);
     }
 
+    public function testTransitionPaidToCancelledDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('paidToCancelled.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/paid-to-cancelled');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionCompletedToRefundedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('completedToRefunded@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Order::class, $this->entityId);
         $entity->setStatus('Completed');
         $this->em->flush();
@@ -195,6 +306,19 @@ class OrderApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Refunded', $data['status'] ?? null);
+    }
+
+    public function testTransitionCompletedToRefundedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('completedToRefunded.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/orders/' . $this->entityId . '/transitions/completed-to-refunded');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionRefundedToCompletedIsDenied(): void

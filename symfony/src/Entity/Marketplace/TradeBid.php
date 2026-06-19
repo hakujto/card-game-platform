@@ -32,11 +32,11 @@ class TradeBid
     private bool $isWinning = false;
 
     #[ORM\ManyToOne(targetEntity: TradeListing::class, inversedBy: 'bids')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?TradeListing $listing = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'bids')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $bidder = null;
 
     public function getId(): ?int

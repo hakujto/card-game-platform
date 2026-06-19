@@ -6,6 +6,7 @@ use App\Entity\Content\Stream;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
+use App\Entity\User;
 
 class StreamApiTest extends WebTestCase
 {
@@ -20,6 +21,8 @@ class StreamApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depStreamer = new Player();
+        $this->depStreamer->setDisplayName('test2');
+        $this->depStreamer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depStreamer);
 
         $entity = new Stream();
@@ -104,6 +107,14 @@ class StreamApiTest extends WebTestCase
     }
     public function testTransitionScheduledToLiveSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('scheduledToLive@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_STREAMER', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Stream::class, $this->entityId);
         $entity->setStatus('Scheduled');
         $entity->setStreamUrl('https://example.com'); // @on: stream_url != null
@@ -115,8 +126,29 @@ class StreamApiTest extends WebTestCase
         $this->assertEquals('Live', $data['status'] ?? null);
     }
 
+    public function testTransitionScheduledToLiveDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('scheduledToLive.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/scheduled-to-live');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionLiveToEndedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('liveToEnded@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_STREAMER', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(Stream::class, $this->entityId);
         $entity->setStatus('Live');
         $this->em->flush();
@@ -125,6 +157,19 @@ class StreamApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('Ended', $data['status'] ?? null);
+    }
+
+    public function testTransitionLiveToEndedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('liveToEnded.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/streams/' . $this->entityId . '/transitions/live-to-ended');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionEndedToLiveIsDenied(): void

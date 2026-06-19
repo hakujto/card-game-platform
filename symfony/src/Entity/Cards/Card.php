@@ -5,6 +5,15 @@ namespace App\Entity\Cards;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Cards\CardRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Players\PlayerCollection;
+use App\Entity\Players\CraftingRecipe;
+use App\Entity\Players\CraftingIngredient;
+use App\Entity\Marketplace\Product;
+use App\Entity\Marketplace\TradeListing;
+use App\Entity\Marketplace\CardPriceHistory;
+use App\Entity\Content\DraftPick;
 
 #[ORM\Entity(repositoryClass: CardRepository::class)]
 #[ORM\Table(name: 'card')]
@@ -82,8 +91,55 @@ class Card
     private int $powerLevel = 1;
 
     #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'cards')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?CardSet $set = null;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: CardRuling::class)]
+    private Collection $rulings;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: CardAbility::class)]
+    private Collection $abilities;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: DeckCard::class)]
+    private Collection $deckCards;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: DeckSideboardCard::class)]
+    private Collection $sideboardDecks;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: PlayerCollection::class)]
+    private Collection $playerCollections;
+
+    #[ORM\OneToMany(mappedBy: 'resultCard', targetEntity: CraftingRecipe::class)]
+    private Collection $craftingRecipes;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: CraftingIngredient::class)]
+    private Collection $usedInRecipes;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: TradeListing::class)]
+    private Collection $tradeListings;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: CardPriceHistory::class)]
+    private Collection $priceHistory;
+
+    #[ORM\OneToMany(mappedBy: 'card', targetEntity: DraftPick::class)]
+    private Collection $draftPicks;
+
+    #[ORM\OneToOne(mappedBy: 'card', targetEntity: Product::class)]
+    private ?Product $shopProduct = null;
+
+    public function __construct()
+    {
+        $this->rulings = new ArrayCollection();
+        $this->abilities = new ArrayCollection();
+        $this->deckCards = new ArrayCollection();
+        $this->sideboardDecks = new ArrayCollection();
+        $this->playerCollections = new ArrayCollection();
+        $this->craftingRecipes = new ArrayCollection();
+        $this->usedInRecipes = new ArrayCollection();
+        $this->tradeListings = new ArrayCollection();
+        $this->priceHistory = new ArrayCollection();
+        $this->draftPicks = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -283,6 +339,61 @@ class Card
         return $this;
     }
 
+    public function getRulings(): Collection
+    {
+        return $this->rulings;
+    }
+
+    public function getAbilities(): Collection
+    {
+        return $this->abilities;
+    }
+
+    public function getDeckCards(): Collection
+    {
+        return $this->deckCards;
+    }
+
+    public function getSideboardDecks(): Collection
+    {
+        return $this->sideboardDecks;
+    }
+
+    public function getPlayerCollections(): Collection
+    {
+        return $this->playerCollections;
+    }
+
+    public function getCraftingRecipes(): Collection
+    {
+        return $this->craftingRecipes;
+    }
+
+    public function getUsedInRecipes(): Collection
+    {
+        return $this->usedInRecipes;
+    }
+
+    public function getTradeListings(): Collection
+    {
+        return $this->tradeListings;
+    }
+
+    public function getPriceHistory(): Collection
+    {
+        return $this->priceHistory;
+    }
+
+    public function getDraftPicks(): Collection
+    {
+        return $this->draftPicks;
+    }
+
+    public function getShopProduct(): ?Product
+    {
+        return $this->shopProduct;
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     #[\Symfony\Component\Validator\Constraints\IsTrue(message: "mana_cost must be between 0 and 20")]
     public function isManaCostRangeValid(): bool
@@ -369,6 +480,12 @@ class Card
     public function validateLegality(): void
     {
         // TODO: implement validate_legality
+    }
+
+    #[ORM\PreRemove]
+    public function validateNotInUse(): void
+    {
+        // TODO: implement validate_not_in_use
     }
 
 }

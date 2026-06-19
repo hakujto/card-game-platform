@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\TournamentRoundRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: TournamentRoundRepository::class)]
 #[ORM\Table(name: 'tournament_round')]
@@ -40,8 +42,16 @@ class TournamentRound
     private int $timeLimitMinutes = 50;
 
     #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'rounds')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Tournament $tournament = null;
+
+    #[ORM\OneToMany(mappedBy: 'round', targetEntity: MatchRecord::class)]
+    private Collection $matches;
+
+    public function __construct()
+    {
+        $this->matches = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -118,6 +128,11 @@ class TournamentRound
     {
         $this->tournament = $tournament;
         return $this;
+    }
+
+    public function getMatches(): Collection
+    {
+        return $this->matches;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

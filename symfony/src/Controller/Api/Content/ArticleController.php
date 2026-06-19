@@ -181,6 +181,11 @@ class ArticleController extends AbstractController
     #[Route('/{id}/transitions/draft-to-published', name: 'article_transitionDraftToPublished', methods: ['PATCH'])]
     public function transitionDraftToPublished(Article $article): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_EDITOR', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Draft -> Published'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionDraftToPublished($article->getId());
             return $this->json($result);
@@ -194,6 +199,11 @@ class ArticleController extends AbstractController
     #[Route('/{id}/transitions/published-to-archived', name: 'article_transitionPublishedToArchived', methods: ['PATCH'])]
     public function transitionPublishedToArchived(Article $article): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_EDITOR', 'ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Published -> Archived'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPublishedToArchived($article->getId());
             return $this->json($result);
@@ -207,6 +217,11 @@ class ArticleController extends AbstractController
     #[Route('/{id}/transitions/archived-to-draft', name: 'article_transitionArchivedToDraft', methods: ['PATCH'])]
     public function transitionArchivedToDraft(Article $article): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Archived -> Draft'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionArchivedToDraft($article->getId());
             return $this->json($result);

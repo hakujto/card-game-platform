@@ -32,11 +32,11 @@ class DraftPick
     private ?\DateTimeInterface $pickedAt = null;
 
     #[ORM\ManyToOne(targetEntity: DraftParticipant::class, inversedBy: 'picks')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?DraftParticipant $participant = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'draft_picks')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'draftPicks')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
 
     public function getId(): ?int

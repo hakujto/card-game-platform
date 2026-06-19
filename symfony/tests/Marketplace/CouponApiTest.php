@@ -46,7 +46,7 @@ class CouponApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/coupons', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'code' => 'test',
+            'code' => 'test2',
             'discountValue' => '0.01',
             'validFrom' => '2024-01-01T00:00:00+00:00',
             'validUntil' => '2024-01-01T00:00:01+00:00',

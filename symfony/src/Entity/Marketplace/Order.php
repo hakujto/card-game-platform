@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\OrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
@@ -67,12 +69,20 @@ class Order
     private ?\DateTimeInterface $shippedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player = null;
 
     #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Coupon $coupon = null;
+
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class)]
+    private Collection $items;
+
+    public function __construct()
+    {
+        $this->items = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -234,6 +244,11 @@ class Order
         return $this;
     }
 
+    public function getItems(): Collection
+    {
+        return $this->items;
+    }
+
     // ── Validation rules ─────────────────────────────────────────────
     #[\Symfony\Component\Validator\Constraints\IsTrue(message: "Order total must not be negative")]
     public function isTotalNotNegativeValid(): bool
@@ -321,6 +336,12 @@ class Order
 
 
     // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PrePersist]
+    public function assignCurrencyDefault(): void
+    {
+        // TODO: implement assign_currency_default
+    }
+
     #[ORM\PostUpdate]
     public function notifyStatusChange(): void
     {

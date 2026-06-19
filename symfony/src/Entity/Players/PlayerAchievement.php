@@ -30,12 +30,12 @@ class PlayerAchievement
     #[Groups(['playerAchievement:read', 'playerAchievement:write'])]
     private bool $isCompleted = false;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'achievement_records')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'achievementRecords')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: Achievement::class, inversedBy: 'player_records')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Achievement::class, inversedBy: 'playerRecords')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Achievement $achievement = null;
 
     public function getId(): ?int

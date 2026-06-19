@@ -43,6 +43,8 @@ class CouponService
     {
         $entity = $this->repository->find($id);
         if (!$entity) throw new \RuntimeException('Coupon not found: ' . $id);
+        if (!($entity->getIsActive() === true))
+            throw new \RuntimeException('Guard condition not met for redeem');
         $entity->redeem();
         $this->repository->save($entity, flush: true);
     }

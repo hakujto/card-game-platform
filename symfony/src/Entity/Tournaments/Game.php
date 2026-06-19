@@ -42,11 +42,11 @@ class Game
     private ?string $replayUrl = null;
 
     #[ORM\ManyToOne(targetEntity: MatchRecord::class, inversedBy: 'games')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?MatchRecord $match = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'won_games')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'wonGames')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Player $winner = null;
 
     public function getId(): ?int

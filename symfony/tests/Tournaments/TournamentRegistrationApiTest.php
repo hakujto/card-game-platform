@@ -9,16 +9,18 @@ use App\Entity\Tournaments\Season;
 use App\Entity\Players\Player;
 use App\Entity\Tournaments\Tournament;
 use App\Entity\Cards\Deck;
+use App\Entity\User;
 
 class TournamentRegistrationApiTest extends WebTestCase
 {
     private \Symfony\Bundle\FrameworkBundle\KernelBrowser $client;
     private EntityManagerInterface $em;
     private int $entityId;
+    private User $ownerUser;
+    private Player $ownerModel;
     private Season $auxSeason;
     private Player $auxPlayer;
     private Tournament $depTournament;
-    private Player $depPlayer;
     private Deck $depDeck;
 
     protected function setUp(): void
@@ -26,25 +28,47 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
+        $this->ownerUser = new User();
+        $this->ownerUser->setEmail('owner@example.com');
+        $this->ownerUser->setPassword('test');
+        $this->em->persist($this->ownerUser);
+        $this->ownerModel = new Player();
+        $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setDisplayName('test1');
+        $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->em->persist($this->ownerModel);
+        $this->em->flush();
+        $this->client->loginUser($this->ownerUser);
+
         $this->auxSeason = new Season();
+        $this->auxSeason->setName('test');
+        $this->auxSeason->setStartDate(new \DateTime('2024-01-01'));
+        $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test3');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
+        $this->depTournament->setName('test');
+        $this->depTournament->setMaxPlayers(1);
+        $this->depTournament->setStartTime(new \DateTime('2024-01-01'));
+        $this->depTournament->setCreatedAt(new \DateTime('2024-01-01'));
         $this->depTournament->setSeason($this->auxSeason);
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
-        $this->depPlayer = new Player();
-        $this->em->persist($this->depPlayer);
         $this->depDeck = new Deck();
+        $this->depDeck->setName('test');
+        $this->depDeck->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->depDeck->setUpdatedAt(new \DateTime('2024-01-01'));
         $this->depDeck->setPlayer($this->auxPlayer);
         $this->em->persist($this->depDeck);
 
         $entity = new TournamentRegistration();
         $entity->setRegisteredAt(new \DateTime('2024-01-01'));
         $entity->setTournament($this->depTournament);
-        $entity->setPlayer($this->depPlayer);
         $entity->setDeck($this->depDeck);
+        $entity->setPlayer($this->ownerModel);
         $this->em->persist($entity);
         $this->em->flush();
 
@@ -64,8 +88,8 @@ class TournamentRegistrationApiTest extends WebTestCase
             json_encode([
             'registeredAt' => '2024-01-01T00:00:00+00:00',
             'tournament' => (int) $this->depTournament->getId(),
-            'player' => (int) $this->depPlayer->getId(),
             'deck' => (int) $this->depDeck->getId(),
+            'player' => (int) $this->ownerModel->getId(),
         ])
         );
         $this->assertResponseStatusCodeSame(201);

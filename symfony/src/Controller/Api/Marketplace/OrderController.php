@@ -76,6 +76,10 @@ class OrderController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Order $order): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $order->getPlayer()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         return $this->json($order, context: ['groups' => ['order:read']]);
     }
 
@@ -91,6 +95,9 @@ class OrderController extends AbstractController
     public function pay(Order $order, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (!($order->getStatus() === 'Pending')) {
+            return $this->json(['error' => 'Guard condition not met for pay'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $result = $order->pay($data['paymentRef'] ?? null);
         $this->repository->save($order, flush: true);
         return $this->json($result);
@@ -144,6 +151,11 @@ class OrderController extends AbstractController
     #[Route('/{id}/transitions/paid-to-processing', name: 'order_transitionPaidToProcessing', methods: ['PATCH'])]
     public function transitionPaidToProcessing(Order $order): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_STAFF'])) {
+            return $this->json(['error' => 'Insufficient role for transition Paid -> Processing'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPaidToProcessing($order->getId());
             return $this->json($result);
@@ -157,6 +169,11 @@ class OrderController extends AbstractController
     #[Route('/{id}/transitions/processing-to-shipped', name: 'order_transitionProcessingToShipped', methods: ['PATCH'])]
     public function transitionProcessingToShipped(Order $order): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_STAFF'])) {
+            return $this->json(['error' => 'Insufficient role for transition Processing -> Shipped'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionProcessingToShipped($order->getId());
             return $this->json($result);
@@ -170,6 +187,11 @@ class OrderController extends AbstractController
     #[Route('/{id}/transitions/shipped-to-completed', name: 'order_transitionShippedToCompleted', methods: ['PATCH'])]
     public function transitionShippedToCompleted(Order $order): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_STAFF'])) {
+            return $this->json(['error' => 'Insufficient role for transition Shipped -> Completed'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionShippedToCompleted($order->getId());
             return $this->json($result);
@@ -196,6 +218,11 @@ class OrderController extends AbstractController
     #[Route('/{id}/transitions/paid-to-cancelled', name: 'order_transitionPaidToCancelled', methods: ['PATCH'])]
     public function transitionPaidToCancelled(Order $order): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_STAFF'])) {
+            return $this->json(['error' => 'Insufficient role for transition Paid -> Cancelled'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionPaidToCancelled($order->getId());
             return $this->json($result);
@@ -209,6 +236,11 @@ class OrderController extends AbstractController
     #[Route('/{id}/transitions/completed-to-refunded', name: 'order_transitionCompletedToRefunded', methods: ['PATCH'])]
     public function transitionCompletedToRefunded(Order $order): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Completed -> Refunded'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionCompletedToRefunded($order->getId());
             return $this->json($result);

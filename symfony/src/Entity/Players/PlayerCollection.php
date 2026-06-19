@@ -40,11 +40,11 @@ class PlayerCollection
     private string $acquiredVia = 'Purchase';
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'collection')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'player_collections')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'playerCollections')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
 
     public function getId(): ?int

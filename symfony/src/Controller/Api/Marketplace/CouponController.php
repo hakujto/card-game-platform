@@ -120,6 +120,9 @@ class CouponController extends AbstractController
     #[Route('/{id}/redeem', name: 'redeem', methods: ['POST'])]
     public function redeem(Coupon $coupon): JsonResponse
     {
+        if (!($coupon->getIsActive() === true)) {
+            return $this->json(['error' => 'Guard condition not met for redeem'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $coupon->redeem();
         $this->repository->save($coupon, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);

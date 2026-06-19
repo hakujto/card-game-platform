@@ -10,6 +10,7 @@ use App\Entity\Cards\CardSet;
 use App\Entity\Cards\Card;
 use App\Entity\Marketplace\TradeListing;
 use App\Entity\Marketplace\TradeTransaction;
+use App\Entity\User;
 
 class TradeDisputeApiTest extends WebTestCase
 {
@@ -29,22 +30,37 @@ class TradeDisputeApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
+        $this->auxCardSet->setName('test');
+        $this->auxCardSet->setCode('test3');
+        $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
+        $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->auxCard = new Card();
+        $this->auxCard->setName('test');
+        $this->auxCard->setManaColors('test');
+        $this->auxCard->setDescription('test');
+        $this->auxCard->setLegalFormats('test');
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
         $this->auxTradeListing = new TradeListing();
+        $this->auxTradeListing->setCreatedAt(new \DateTime('2024-01-01'));
         $this->auxTradeListing->setSeller($this->auxPlayer);
         $this->auxTradeListing->setCard($this->auxCard);
         $this->em->persist($this->auxTradeListing);
         $this->depTransaction = new TradeTransaction();
+        $this->depTransaction->setFinalPrice('0.00');
+        $this->depTransaction->setPlatformFee('0.00');
         $this->depTransaction->setListing($this->auxTradeListing);
         $this->depTransaction->setBuyer($this->auxPlayer);
         $this->depTransaction->setSeller($this->auxPlayer);
         $this->em->persist($this->depTransaction);
         $this->depOpenedBy = new Player();
+        $this->depOpenedBy->setDisplayName('test7');
+        $this->depOpenedBy->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depOpenedBy);
 
         $entity = new TradeDispute();
@@ -69,10 +85,13 @@ class TradeDisputeApiTest extends WebTestCase
     public function testCreateReturns201(): void
     {
         $freshSubListing = new TradeListing();
+        $freshSubListing->setCreatedAt(new \DateTime('2024-01-01'));
         $freshSubListing->setSeller($this->auxPlayer);
         $freshSubListing->setCard($this->auxCard);
         $this->em->persist($freshSubListing);
         $freshTransaction = new TradeTransaction();
+        $freshTransaction->setFinalPrice('0.01');
+        $freshTransaction->setPlatformFee('NaN');
         $freshTransaction->setListing($freshSubListing);
         $freshTransaction->setBuyer($this->auxPlayer);
         $freshTransaction->setSeller($this->auxPlayer);
@@ -106,6 +125,14 @@ class TradeDisputeApiTest extends WebTestCase
     }
     public function testTransitionOpenToUnderReviewSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('openToUnderReview@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_MODERATOR']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Open');
         $this->em->flush();
@@ -116,8 +143,29 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertEquals('UnderReview', $data['status'] ?? null);
     }
 
+    public function testTransitionOpenToUnderReviewDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('openToUnderReview.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId . '/transitions/open-to-underreview');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionUnderReviewToResolvedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('underReviewToResolved@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_MODERATOR']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $entity->setResolution('test'); // @on: resolution != null
@@ -129,8 +177,29 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertEquals('Resolved', $data['status'] ?? null);
     }
 
+    public function testTransitionUnderReviewToResolvedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('underReviewToResolved.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId . '/transitions/underreview-to-resolved');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionUnderReviewToResolvedFailsWhenResolutionMissing(): void
     {
+        $user = new User();
+        $user->setEmail('underReviewToResolved.missingResolution@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN', 'ROLE_MODERATOR']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $this->em->flush();
@@ -141,6 +210,14 @@ class TradeDisputeApiTest extends WebTestCase
 
     public function testTransitionUnderReviewToEscalatedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('underReviewToEscalated@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('UnderReview');
         $this->em->flush();
@@ -151,8 +228,29 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertEquals('Escalated', $data['status'] ?? null);
     }
 
+    public function testTransitionUnderReviewToEscalatedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('underReviewToEscalated.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId . '/transitions/underreview-to-escalated');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionEscalatedToResolvedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('escalatedToResolved@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Escalated');
         $entity->setResolution('test'); // @on: resolution != null
@@ -164,8 +262,29 @@ class TradeDisputeApiTest extends WebTestCase
         $this->assertEquals('Resolved', $data['status'] ?? null);
     }
 
+    public function testTransitionEscalatedToResolvedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('escalatedToResolved.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/trade_disputes/' . $this->entityId . '/transitions/escalated-to-resolved');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionEscalatedToResolvedFailsWhenResolutionMissing(): void
     {
+        $user = new User();
+        $user->setEmail('escalatedToResolved.missingResolution@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(TradeDispute::class, $this->entityId);
         $entity->setStatus('Escalated');
         $this->em->flush();

@@ -29,7 +29,7 @@ class CardRuling
     private string $source = '';
 
     #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'rulings')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Card $card = null;
 
     public function getId(): ?int

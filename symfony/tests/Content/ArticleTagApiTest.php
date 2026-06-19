@@ -45,7 +45,7 @@ class ArticleTagApiTest extends WebTestCase
         $this->client->request('POST', '/api/article_tags', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'slug' => 'test',
+            'slug' => 'test2',
         ])
         );
         $this->assertResponseStatusCodeSame(201);

@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\MatchRecordRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: MatchRecordRepository::class)]
@@ -49,16 +51,24 @@ class MatchRecord
     private ?string $resultNotes = null;
 
     #[ORM\ManyToOne(targetEntity: TournamentRound::class, inversedBy: 'matches')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?TournamentRound $round = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'matches_as_player1')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'matchesAsPlayer1')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player1 = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'matches_as_player2')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'matchesAsPlayer2')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Player $player2 = null;
+
+    #[ORM\OneToMany(mappedBy: 'match', targetEntity: Game::class)]
+    private Collection $games;
+
+    public function __construct()
+    {
+        $this->games = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -191,6 +201,11 @@ class MatchRecord
     {
         $this->player2 = $player2;
         return $this;
+    }
+
+    public function getGames(): Collection
+    {
+        return $this->games;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

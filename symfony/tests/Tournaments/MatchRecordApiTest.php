@@ -6,6 +6,7 @@ use App\Entity\Tournaments\MatchRecord;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Players\Player;
+use App\Entity\User;
 
 class MatchRecordApiTest extends WebTestCase
 {
@@ -20,6 +21,8 @@ class MatchRecordApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depPlayer1 = new Player();
+        $this->depPlayer1->setDisplayName('test2');
+        $this->depPlayer1->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer1);
 
         $entity = new MatchRecord();
@@ -100,6 +103,14 @@ class MatchRecordApiTest extends WebTestCase
     }
     public function testTransitionPendingToActiveSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('pendingToActive@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -110,8 +121,29 @@ class MatchRecordApiTest extends WebTestCase
         $this->assertEquals('Active', $data['status'] ?? null);
     }
 
+    public function testTransitionPendingToActiveDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('pendingToActive.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/pending-to-active');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionActiveToCompletedSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('activeToCompleted@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -122,8 +154,29 @@ class MatchRecordApiTest extends WebTestCase
         $this->assertEquals('Completed', $data['status'] ?? null);
     }
 
+    public function testTransitionActiveToCompletedDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('activeToCompleted.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/active-to-completed');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionActiveToDrawSucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('activeToDraw@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Active');
         $this->em->flush();
@@ -134,8 +187,29 @@ class MatchRecordApiTest extends WebTestCase
         $this->assertEquals('Draw', $data['status'] ?? null);
     }
 
+    public function testTransitionActiveToDrawDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('activeToDraw.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/active-to-draw');
+        $this->assertResponseStatusCodeSame(403);
+    }
+
     public function testTransitionPendingToBYESucceeds(): void
     {
+        $user = new User();
+        $user->setEmail('pendingToBYE@example.com');
+        $user->setPassword('test');
+        $user->setRoles(['ROLE_JUDGE', 'ROLE_HEADJUDGE', 'ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
         $entity = $this->em->find(MatchRecord::class, $this->entityId);
         $entity->setStatus('Pending');
         $this->em->flush();
@@ -144,6 +218,19 @@ class MatchRecordApiTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('BYE', $data['status'] ?? null);
+    }
+
+    public function testTransitionPendingToBYEDeniedForWrongRole(): void
+    {
+        $user = new User();
+        $user->setEmail('pendingToBYE.wrong@example.com');
+        $user->setPassword('test');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->client->loginUser($user);
+
+        $this->client->request('PATCH', '/api/matches/' . $this->entityId . '/transitions/pending-to-bye');
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testTransitionCompletedToActiveIsDenied(): void

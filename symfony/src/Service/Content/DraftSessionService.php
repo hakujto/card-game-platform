@@ -84,7 +84,6 @@ class DraftSessionService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionDraftingToAbandoned(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -99,7 +98,6 @@ class DraftSessionService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionWaitingForPlayersToAbandoned(int $id): object
     {
         $entity = $this->repository->find($id);

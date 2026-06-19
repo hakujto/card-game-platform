@@ -36,12 +36,12 @@ class AwardedPrize
     #[Groups(['awardedPrize:read', 'awardedPrize:write'])]
     private ?\DateTimeInterface $claimedAt = null;
 
-    #[ORM\ManyToOne(targetEntity: TournamentPrize::class, inversedBy: 'awarded_prizes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: TournamentPrize::class, inversedBy: 'awardedPrizes')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?TournamentPrize $prize = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'awarded_prizes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'awardedPrizes')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player = null;
 
     public function getId(): ?int

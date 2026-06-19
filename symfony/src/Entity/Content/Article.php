@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\ArticleRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
@@ -14,6 +15,7 @@ use App\Entity\Cards\Deck;
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ORM\Table(name: 'article')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['slug'], message: 'slug must be unique')]
 class Article
 {
     #[ORM\Id]
@@ -26,7 +28,7 @@ class Article
     #[Groups(['article:read', 'article:write'])]
     private string $title = '';
 
-    #[ORM\Column(type: 'string', length: 300)]
+    #[ORM\Column(type: 'string', length: 300, unique: true)]
     #[Groups(['article:read', 'article:write'])]
     private string $slug = '';
 
@@ -82,20 +84,23 @@ class Article
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'articles')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $author = null;
 
     #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'articles')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Deck $featuredDeck = null;
 
-    #[ORM\ManyToMany(targetEntity: ArticleTag::class)]
-    #[ORM\JoinTable(name: 'article_tags_m2m')]
-    private Collection $tags;
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: ArticleTagAssignment::class)]
+    private Collection $tagAssignments;
+
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: ArticleComment::class)]
+    private Collection $comments;
 
     public function __construct()
     {
-        $this->tags = new ArrayCollection();
+        $this->tagAssignments = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -291,23 +296,14 @@ class Article
         return $this;
     }
 
-    public function getTags(): Collection
+    public function getTagAssignments(): Collection
     {
-        return $this->tags;
+        return $this->tagAssignments;
     }
 
-    public function addTags(ArticleTag $item): static
+    public function getComments(): Collection
     {
-        if (!$this->tags->contains($item)) {
-            $this->tags->add($item);
-        }
-        return $this;
-    }
-
-    public function removeTags(ArticleTag $item): static
-    {
-        $this->tags->removeElement($item);
-        return $this;
+        return $this->comments;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

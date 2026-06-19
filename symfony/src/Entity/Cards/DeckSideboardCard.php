@@ -20,12 +20,12 @@ class DeckSideboardCard
     #[Groups(['deckSideboardCard:read', 'deckSideboardCard:write'])]
     private int $quantity = 1;
 
-    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'sideboard_cards')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'sideboardCards')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Deck $deck = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'sideboard_decks')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'sideboardDecks')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
 
     public function getId(): ?int

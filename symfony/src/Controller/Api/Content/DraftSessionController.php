@@ -128,6 +128,11 @@ class DraftSessionController extends AbstractController
     #[Route('/{id}/transitions/drafting-to-abandoned', name: 'draftSession_transitionDraftingToAbandoned', methods: ['PATCH'])]
     public function transitionDraftingToAbandoned(DraftSession $draftSession): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Drafting -> Abandoned'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionDraftingToAbandoned($draftSession->getId());
             return $this->json($result);
@@ -141,6 +146,11 @@ class DraftSessionController extends AbstractController
     #[Route('/{id}/transitions/waitingforplayers-to-abandoned', name: 'draftSession_transitionWaitingForPlayersToAbandoned', methods: ['PATCH'])]
     public function transitionWaitingForPlayersToAbandoned(DraftSession $draftSession): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition WaitingForPlayers -> Abandoned'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionWaitingForPlayersToAbandoned($draftSession->getId());
             return $this->json($result);

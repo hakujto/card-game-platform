@@ -41,8 +41,8 @@ class CardPriceHistory
     #[Groups(['cardPriceHistory:read', 'cardPriceHistory:write'])]
     private bool $foil = false;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'price_history')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'priceHistory')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Card $card = null;
 
     public function getId(): ?int

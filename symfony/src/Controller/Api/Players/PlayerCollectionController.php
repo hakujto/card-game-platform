@@ -64,12 +64,20 @@ class PlayerCollectionController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(PlayerCollection $playerCollection): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $playerCollection->getPlayer()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         return $this->json($playerCollection, context: ['groups' => ['playerCollection:read']]);
     }
 
     #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function update(Request $request, PlayerCollection $playerCollection): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $playerCollection->getPlayer()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         $data = json_decode($request->getContent(), true) ?? [];
         if (isset($data['quantity'])) $playerCollection->setQuantity($data['quantity']);
         if (isset($data['foil'])) $playerCollection->setFoil($data['foil']);
@@ -99,6 +107,10 @@ class PlayerCollectionController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(PlayerCollection $playerCollection): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $playerCollection->getPlayer()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         $this->repository->remove($playerCollection, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

@@ -41,12 +41,12 @@ class PlayerSeasonStats
     #[Groups(['playerSeasonStats:read', 'playerSeasonStats:write'])]
     private int $seasonPoints = 0;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'season_stats')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'seasonStats')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: Season::class, inversedBy: 'player_stats')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Season::class, inversedBy: 'playerStats')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Season $season = null;
 
     public function getId(): ?int

@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\TradeListingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
 use App\Entity\Cards\Card;
 
@@ -70,13 +72,24 @@ class TradeListing
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
     private ?\DateTimeInterface $expiresAt = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'trade_listings')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'tradeListings')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $seller = null;
 
-    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'trade_listings')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Card::class, inversedBy: 'tradeListings')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Card $card = null;
+
+    #[ORM\OneToMany(mappedBy: 'listing', targetEntity: TradeBid::class)]
+    private Collection $bids;
+
+    #[ORM\OneToOne(mappedBy: 'listing', targetEntity: TradeTransaction::class)]
+    private ?TradeTransaction $transaction = null;
+
+    public function __construct()
+    {
+        $this->bids = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -247,6 +260,16 @@ class TradeListing
     {
         $this->card = $card;
         return $this;
+    }
+
+    public function getBids(): Collection
+    {
+        return $this->bids;
+    }
+
+    public function getTransaction(): ?TradeTransaction
+    {
+        return $this->transaction;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

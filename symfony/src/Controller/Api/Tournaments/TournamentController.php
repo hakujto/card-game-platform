@@ -193,6 +193,11 @@ class TournamentController extends AbstractController
     #[Route('/{id}/transitions/draft-to-registration', name: 'tournament_transitionDraftToRegistration', methods: ['PATCH'])]
     public function transitionDraftToRegistration(Tournament $tournament): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Draft -> Registration'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionDraftToRegistration($tournament->getId());
             return $this->json($result);
@@ -206,6 +211,11 @@ class TournamentController extends AbstractController
     #[Route('/{id}/transitions/registration-to-ongoing', name: 'tournament_transitionRegistrationToOngoing', methods: ['PATCH'])]
     public function transitionRegistrationToOngoing(Tournament $tournament): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Registration -> Ongoing'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionRegistrationToOngoing($tournament->getId());
             return $this->json($result);
@@ -219,6 +229,11 @@ class TournamentController extends AbstractController
     #[Route('/{id}/transitions/registration-to-cancelled', name: 'tournament_transitionRegistrationToCancelled', methods: ['PATCH'])]
     public function transitionRegistrationToCancelled(Tournament $tournament): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Registration -> Cancelled'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionRegistrationToCancelled($tournament->getId());
             return $this->json($result);
@@ -232,6 +247,11 @@ class TournamentController extends AbstractController
     #[Route('/{id}/transitions/ongoing-to-completed', name: 'tournament_transitionOngoingToCompleted', methods: ['PATCH'])]
     public function transitionOngoingToCompleted(Tournament $tournament): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN', 'ROLE_ORGANIZER'])) {
+            return $this->json(['error' => 'Insufficient role for transition Ongoing -> Completed'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionOngoingToCompleted($tournament->getId());
             return $this->json($result);
@@ -245,6 +265,11 @@ class TournamentController extends AbstractController
     #[Route('/{id}/transitions/ongoing-to-cancelled', name: 'tournament_transitionOngoingToCancelled', methods: ['PATCH'])]
     public function transitionOngoingToCancelled(Tournament $tournament): JsonResponse
     {
+        $userRoles = $this->getUser()?->getRoles() ?? [];
+        if (!array_intersect($userRoles, ['ROLE_ADMIN'])) {
+            return $this->json(['error' => 'Insufficient role for transition Ongoing -> Cancelled'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $result = $this->service->transitionOngoingToCancelled($tournament->getId());
             return $this->json($result);

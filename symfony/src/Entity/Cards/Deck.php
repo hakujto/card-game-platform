@@ -9,6 +9,8 @@ use App\Repository\Cards\DeckRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
+use App\Entity\Tournaments\TournamentRegistration;
+use App\Entity\Content\Article;
 
 #[ORM\Entity(repositoryClass: DeckRepository::class)]
 #[ORM\Table(name: 'deck')]
@@ -68,26 +70,31 @@ class Deck
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'decks')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Player $player = null;
 
-    #[ORM\ManyToMany(targetEntity: Card::class)]
-    #[ORM\JoinTable(name: 'deck_cards_m2m')]
-    private Collection $cards;
+    #[ORM\OneToMany(mappedBy: 'deck', targetEntity: DeckCard::class)]
+    private Collection $deckCards;
 
-    #[ORM\ManyToMany(targetEntity: Card::class)]
-    #[ORM\JoinTable(name: 'deck_sideboard_cards_m2m')]
+    #[ORM\OneToMany(mappedBy: 'deck', targetEntity: DeckSideboardCard::class)]
     private Collection $sideboardCards;
 
-    #[ORM\ManyToMany(targetEntity: DeckTag::class)]
-    #[ORM\JoinTable(name: 'deck_tags_m2m')]
-    private Collection $tags;
+    #[ORM\OneToMany(mappedBy: 'deck', targetEntity: DeckTagAssignment::class)]
+    private Collection $tagAssignments;
+
+    #[ORM\OneToMany(mappedBy: 'deck', targetEntity: TournamentRegistration::class)]
+    private Collection $tournamentRegistrations;
+
+    #[ORM\OneToMany(mappedBy: 'featuredDeck', targetEntity: Article::class)]
+    private Collection $articles;
 
     public function __construct()
     {
-        $this->cards = new ArrayCollection();
+        $this->deckCards = new ArrayCollection();
         $this->sideboardCards = new ArrayCollection();
-        $this->tags = new ArrayCollection();
+        $this->tagAssignments = new ArrayCollection();
+        $this->tournamentRegistrations = new ArrayCollection();
+        $this->articles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -233,23 +240,9 @@ class Deck
         return $this;
     }
 
-    public function getCards(): Collection
+    public function getDeckCards(): Collection
     {
-        return $this->cards;
-    }
-
-    public function addCards(Card $item): static
-    {
-        if (!$this->cards->contains($item)) {
-            $this->cards->add($item);
-        }
-        return $this;
-    }
-
-    public function removeCards(Card $item): static
-    {
-        $this->cards->removeElement($item);
-        return $this;
+        return $this->deckCards;
     }
 
     public function getSideboardCards(): Collection
@@ -257,37 +250,19 @@ class Deck
         return $this->sideboardCards;
     }
 
-    public function addSideboardCards(Card $item): static
+    public function getTagAssignments(): Collection
     {
-        if (!$this->sideboardCards->contains($item)) {
-            $this->sideboardCards->add($item);
-        }
-        return $this;
+        return $this->tagAssignments;
     }
 
-    public function removeSideboardCards(Card $item): static
+    public function getTournamentRegistrations(): Collection
     {
-        $this->sideboardCards->removeElement($item);
-        return $this;
+        return $this->tournamentRegistrations;
     }
 
-    public function getTags(): Collection
+    public function getArticles(): Collection
     {
-        return $this->tags;
-    }
-
-    public function addTags(DeckTag $item): static
-    {
-        if (!$this->tags->contains($item)) {
-            $this->tags->add($item);
-        }
-        return $this;
-    }
-
-    public function removeTags(DeckTag $item): static
-    {
-        $this->tags->removeElement($item);
-        return $this;
+        return $this->articles;
     }
 
     // ── Validation rules ─────────────────────────────────────────────

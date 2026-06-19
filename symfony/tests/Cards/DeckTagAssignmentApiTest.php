@@ -24,11 +24,17 @@ class DeckTagAssignmentApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setDisplayName('test2');
+        $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depDeck = new Deck();
+        $this->depDeck->setName('test');
+        $this->depDeck->setCreatedAt(new \DateTime('2024-01-01'));
+        $this->depDeck->setUpdatedAt(new \DateTime('2024-01-01'));
         $this->depDeck->setPlayer($this->auxPlayer);
         $this->em->persist($this->depDeck);
         $this->depTag = new DeckTag();
+        $this->depTag->setName('test');
         $this->em->persist($this->depTag);
 
         $entity = new DeckTagAssignment();

@@ -56,7 +56,6 @@ class StreamService
         $this->repository->save($entity, flush: true);
         return $result;
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_STREAMER'])]
     public function transitionScheduledToLive(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -74,7 +73,6 @@ class StreamService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_STREAMER'])]
     public function transitionLiveToEnded(int $id): object
     {
         $entity = $this->repository->find($id);

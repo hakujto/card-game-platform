@@ -6,13 +6,31 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\PlayerRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\User;
+use App\Entity\Cards\Deck;
+use App\Entity\Tournaments\Tournament;
+use App\Entity\Tournaments\TournamentJudge;
+use App\Entity\Tournaments\TournamentRegistration;
+use App\Entity\Tournaments\MatchRecord;
+use App\Entity\Tournaments\Game;
+use App\Entity\Tournaments\AwardedPrize;
+use App\Entity\Marketplace\Order;
+use App\Entity\Marketplace\TradeListing;
+use App\Entity\Marketplace\TradeBid;
+use App\Entity\Marketplace\TradeTransaction;
+use App\Entity\Marketplace\TradeDispute;
+use App\Entity\Content\DraftParticipant;
+use App\Entity\Content\Article;
+use App\Entity\Content\ArticleComment;
+use App\Entity\Content\Stream;
 
 #[ORM\Entity(repositoryClass: PlayerRepository::class)]
 #[ORM\Table(name: 'player')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['displayName'], message: 'display_name must be unique')]
 class Player
 {
     #[ORM\Id]
@@ -21,7 +39,7 @@ class Player
     #[Groups(['player:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 50)]
+    #[ORM\Column(type: 'string', length: 50, unique: true)]
     #[Groups(['player:read', 'player:write'])]
     private string $displayName = '';
 
@@ -68,21 +86,107 @@ class Player
     private ?\DateTimeInterface $lastActiveAt = null;
 
     #[ORM\OneToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, unique: true, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\ManyToMany(targetEntity: Achievement::class)]
-    #[ORM\JoinTable(name: 'player_achievements_m2m')]
-    private Collection $achievements;
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: Deck::class)]
+    private Collection $decks;
 
-    #[ORM\ManyToMany(targetEntity: Player::class)]
-    #[ORM\JoinTable(name: 'player_friends_m2m')]
-    private Collection $friends;
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: PlayerSeasonStats::class)]
+    private Collection $seasonStats;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: PlayerCollection::class)]
+    private Collection $collection;
+
+    #[ORM\OneToMany(mappedBy: 'requester', targetEntity: Friendship::class)]
+    private Collection $sentFriendRequests;
+
+    #[ORM\OneToMany(mappedBy: 'receiver', targetEntity: Friendship::class)]
+    private Collection $receivedFriendRequests;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: PlayerAchievement::class)]
+    private Collection $achievementRecords;
+
+    #[ORM\OneToMany(mappedBy: 'organizer', targetEntity: Tournament::class)]
+    private Collection $organizedTournaments;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: TournamentJudge::class)]
+    private Collection $judgeRoles;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: TournamentRegistration::class)]
+    private Collection $tournamentRegistrations;
+
+    #[ORM\OneToMany(mappedBy: 'player1', targetEntity: MatchRecord::class)]
+    private Collection $matchesAsPlayer1;
+
+    #[ORM\OneToMany(mappedBy: 'player2', targetEntity: MatchRecord::class)]
+    private Collection $matchesAsPlayer2;
+
+    #[ORM\OneToMany(mappedBy: 'winner', targetEntity: Game::class)]
+    private Collection $wonGames;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: AwardedPrize::class)]
+    private Collection $awardedPrizes;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: Order::class)]
+    private Collection $orders;
+
+    #[ORM\OneToMany(mappedBy: 'seller', targetEntity: TradeListing::class)]
+    private Collection $tradeListings;
+
+    #[ORM\OneToMany(mappedBy: 'bidder', targetEntity: TradeBid::class)]
+    private Collection $bids;
+
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: TradeTransaction::class)]
+    private Collection $purchases;
+
+    #[ORM\OneToMany(mappedBy: 'seller', targetEntity: TradeTransaction::class)]
+    private Collection $sales;
+
+    #[ORM\OneToMany(mappedBy: 'openedBy', targetEntity: TradeDispute::class)]
+    private Collection $disputesOpened;
+
+    #[ORM\OneToMany(mappedBy: 'resolvedBy', targetEntity: TradeDispute::class)]
+    private Collection $disputesResolved;
+
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: DraftParticipant::class)]
+    private Collection $draftSessions;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Article::class)]
+    private Collection $articles;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: ArticleComment::class)]
+    private Collection $articleComments;
+
+    #[ORM\OneToMany(mappedBy: 'streamer', targetEntity: Stream::class)]
+    private Collection $streams;
 
     public function __construct()
     {
-        $this->achievements = new ArrayCollection();
-        $this->friends = new ArrayCollection();
+        $this->decks = new ArrayCollection();
+        $this->seasonStats = new ArrayCollection();
+        $this->collection = new ArrayCollection();
+        $this->sentFriendRequests = new ArrayCollection();
+        $this->receivedFriendRequests = new ArrayCollection();
+        $this->achievementRecords = new ArrayCollection();
+        $this->organizedTournaments = new ArrayCollection();
+        $this->judgeRoles = new ArrayCollection();
+        $this->tournamentRegistrations = new ArrayCollection();
+        $this->matchesAsPlayer1 = new ArrayCollection();
+        $this->matchesAsPlayer2 = new ArrayCollection();
+        $this->wonGames = new ArrayCollection();
+        $this->awardedPrizes = new ArrayCollection();
+        $this->orders = new ArrayCollection();
+        $this->tradeListings = new ArrayCollection();
+        $this->bids = new ArrayCollection();
+        $this->purchases = new ArrayCollection();
+        $this->sales = new ArrayCollection();
+        $this->disputesOpened = new ArrayCollection();
+        $this->disputesResolved = new ArrayCollection();
+        $this->draftSessions = new ArrayCollection();
+        $this->articles = new ArrayCollection();
+        $this->articleComments = new ArrayCollection();
+        $this->streams = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -228,42 +332,124 @@ class Player
         return $this;
     }
 
-    public function getAchievements(): Collection
+    public function getDecks(): Collection
     {
-        return $this->achievements;
+        return $this->decks;
     }
 
-    public function addAchievements(Achievement $item): static
+    public function getSeasonStats(): Collection
     {
-        if (!$this->achievements->contains($item)) {
-            $this->achievements->add($item);
-        }
-        return $this;
+        return $this->seasonStats;
     }
 
-    public function removeAchievements(Achievement $item): static
+    public function getCollection(): Collection
     {
-        $this->achievements->removeElement($item);
-        return $this;
+        return $this->collection;
     }
 
-    public function getFriends(): Collection
+    public function getSentFriendRequests(): Collection
     {
-        return $this->friends;
+        return $this->sentFriendRequests;
     }
 
-    public function addFriends(Player $item): static
+    public function getReceivedFriendRequests(): Collection
     {
-        if (!$this->friends->contains($item)) {
-            $this->friends->add($item);
-        }
-        return $this;
+        return $this->receivedFriendRequests;
     }
 
-    public function removeFriends(Player $item): static
+    public function getAchievementRecords(): Collection
     {
-        $this->friends->removeElement($item);
-        return $this;
+        return $this->achievementRecords;
+    }
+
+    public function getOrganizedTournaments(): Collection
+    {
+        return $this->organizedTournaments;
+    }
+
+    public function getJudgeRoles(): Collection
+    {
+        return $this->judgeRoles;
+    }
+
+    public function getTournamentRegistrations(): Collection
+    {
+        return $this->tournamentRegistrations;
+    }
+
+    public function getMatchesAsPlayer1(): Collection
+    {
+        return $this->matchesAsPlayer1;
+    }
+
+    public function getMatchesAsPlayer2(): Collection
+    {
+        return $this->matchesAsPlayer2;
+    }
+
+    public function getWonGames(): Collection
+    {
+        return $this->wonGames;
+    }
+
+    public function getAwardedPrizes(): Collection
+    {
+        return $this->awardedPrizes;
+    }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function getTradeListings(): Collection
+    {
+        return $this->tradeListings;
+    }
+
+    public function getBids(): Collection
+    {
+        return $this->bids;
+    }
+
+    public function getPurchases(): Collection
+    {
+        return $this->purchases;
+    }
+
+    public function getSales(): Collection
+    {
+        return $this->sales;
+    }
+
+    public function getDisputesOpened(): Collection
+    {
+        return $this->disputesOpened;
+    }
+
+    public function getDisputesResolved(): Collection
+    {
+        return $this->disputesResolved;
+    }
+
+    public function getDraftSessions(): Collection
+    {
+        return $this->draftSessions;
+    }
+
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function getArticleComments(): Collection
+    {
+        return $this->articleComments;
+    }
+
+    public function getStreams(): Collection
+    {
+        return $this->streams;
     }
 
     // ── Validation rules ─────────────────────────────────────────────
@@ -327,6 +513,12 @@ class Player
 
 
     // ── Lifecycle hooks ──────────────────────────────────────────────
+    #[ORM\PostPersist]
+    public function initializeCollection(): void
+    {
+        // TODO: implement initialize_collection
+    }
+
     #[ORM\PostUpdate]
     public function updateRank(): void
     {

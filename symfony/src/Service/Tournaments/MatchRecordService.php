@@ -55,6 +55,8 @@ class MatchRecordService
     {
         $entity = $this->repository->find($id);
         if (!$entity) throw new \RuntimeException('MatchRecord not found: ' . $id);
+        if (!($entity->getStatus() === 'Active'))
+            throw new \RuntimeException('Guard condition not met for concede');
         $entity->concede($playerId);
         $this->repository->save($entity, flush: true);
     }
@@ -66,7 +68,6 @@ class MatchRecordService
         $entity->draw();
         $this->repository->save($entity, flush: true);
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_JUDGE'])]
     public function transitionPendingToActive(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -80,7 +81,6 @@ class MatchRecordService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_JUDGE'])]
     public function transitionActiveToCompleted(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -95,7 +95,6 @@ class MatchRecordService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_JUDGE'])]
     public function transitionActiveToDraw(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -110,7 +109,6 @@ class MatchRecordService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_JUDGE'])]
     public function transitionPendingToBYE(int $id): object
     {
         $entity = $this->repository->find($id);

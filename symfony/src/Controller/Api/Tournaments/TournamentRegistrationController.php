@@ -76,6 +76,10 @@ class TournamentRegistrationController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(TournamentRegistration $tournamentRegistration): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user || $tournamentRegistration->getPlayer()?->getUser()?->getId() !== $user->getId()) {
+            return $this->json(['error' => 'You do not own this resource.'], Response::HTTP_FORBIDDEN);
+        }
         return $this->json($tournamentRegistration, context: ['groups' => ['tournamentRegistration:read']]);
     }
 

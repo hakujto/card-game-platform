@@ -44,6 +44,8 @@ class TradeListingService
     {
         $entity = $this->repository->find($id);
         if (!$entity) throw new \RuntimeException('TradeListing not found: ' . $id);
+        if (!($entity->getStatus() === 'Active'))
+            throw new \RuntimeException('Guard condition not met for cancel');
         $entity->cancel();
         $this->repository->save($entity, flush: true);
     }
@@ -75,7 +77,6 @@ class TradeListingService
         }
         $this->repository->save($entity, flush: true);
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_SELLER')]
     public function transitionPendingToActive(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -120,7 +121,6 @@ class TradeListingService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_SELLER'])]
     public function transitionActiveToCancelled(int $id): object
     {
         $entity = $this->repository->find($id);

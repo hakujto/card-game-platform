@@ -41,15 +41,15 @@ class TournamentRegistration
     private ?\DateTimeInterface $registeredAt = null;
 
     #[ORM\ManyToOne(targetEntity: Tournament::class, inversedBy: 'registrations')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Tournament $tournament = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'tournament_registrations')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'tournamentRegistrations')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $player = null;
 
-    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'tournament_registrations')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Deck::class, inversedBy: 'tournamentRegistrations')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Deck $deck = null;
 
     public function getId(): ?int

@@ -55,7 +55,6 @@ class TradeDisputeService
         $entity->review();
         $this->repository->save($entity, flush: true);
     }
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionOpenToUnderReview(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -70,7 +69,6 @@ class TradeDisputeService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted(['ROLE_ADMIN'])]
     public function transitionUnderReviewToResolved(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -88,7 +86,6 @@ class TradeDisputeService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function transitionUnderReviewToEscalated(int $id): object
     {
         $entity = $this->repository->find($id);
@@ -103,7 +100,6 @@ class TradeDisputeService
         return $entity;
     }
 
-    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function transitionEscalatedToResolved(int $id): object
     {
         $entity = $this->repository->find($id);

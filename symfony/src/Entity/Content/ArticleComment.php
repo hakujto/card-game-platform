@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Content\ArticleCommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: ArticleCommentRepository::class)]
@@ -32,16 +34,24 @@ class ArticleComment
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Article $article = null;
 
-    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'article_comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Player::class, inversedBy: 'articleComments')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     private ?Player $author = null;
 
     #[ORM\ManyToOne(targetEntity: ArticleComment::class, inversedBy: 'replies')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ArticleComment $parentComment = null;
+
+    #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: ArticleComment::class)]
+    private Collection $replies;
+
+    public function __construct()
+    {
+        $this->replies = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -130,6 +140,11 @@ class ArticleComment
     {
         $this->parentComment = $parentComment;
         return $this;
+    }
+
+    public function getReplies(): Collection
+    {
+        return $this->replies;
     }
 
     // ── Business operations ──────────────────────────────────────────
