@@ -39,6 +39,8 @@ router.patch('/:id', async (req, res) => {
     if (body.name !== undefined) data.name = body.name;
     if (body.color !== undefined) data.color = body.color;
   try {
+    const existing = await prisma.deckTag.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.deckTag.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {

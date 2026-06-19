@@ -148,6 +148,7 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const entity = await prisma.order.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
+  if (entity.playerId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
   res.json(applyProjection(entity));
 });
 
@@ -234,6 +235,8 @@ router.patch('/:id/transitions/pending-to-paid', async (req, res) => {
 
 router.patch('/:id/transitions/paid-to-processing', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Staff'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Paid -> Processing' }); return; }
   try {
     const entity = await lifecycleService.transitionPaidToProcessing(id);
     res.json(entity);
@@ -247,6 +250,8 @@ router.patch('/:id/transitions/paid-to-processing', async (req, res) => {
 
 router.patch('/:id/transitions/processing-to-shipped', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Staff'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Processing -> Shipped' }); return; }
   try {
     const entity = await lifecycleService.transitionProcessingToShipped(id);
     res.json(entity);
@@ -260,6 +265,8 @@ router.patch('/:id/transitions/processing-to-shipped', async (req, res) => {
 
 router.patch('/:id/transitions/shipped-to-completed', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Staff'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Shipped -> Completed' }); return; }
   try {
     const entity = await lifecycleService.transitionShippedToCompleted(id);
     res.json(entity);
@@ -286,6 +293,8 @@ router.patch('/:id/transitions/pending-to-cancelled', async (req, res) => {
 
 router.patch('/:id/transitions/paid-to-cancelled', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Staff'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Paid -> Cancelled' }); return; }
   try {
     const entity = await lifecycleService.transitionPaidToCancelled(id);
     res.json(entity);
@@ -299,6 +308,8 @@ router.patch('/:id/transitions/paid-to-cancelled', async (req, res) => {
 
 router.patch('/:id/transitions/completed-to-refunded', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Completed -> Refunded' }); return; }
   try {
     const entity = await lifecycleService.transitionCompletedToRefunded(id);
     res.json(entity);

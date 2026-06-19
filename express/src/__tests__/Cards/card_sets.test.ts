@@ -22,10 +22,10 @@ describe('CardSet API', () => {
       .post('/api/card_sets')
       .send({
       name: 'test',
-      code: 'test',
+      code: `test_${Math.random().toString(36).slice(2,8)}`,
       releaseDate: '2024-01-01',
       totalCards: 1,
-      isRotated: true
+      isRotated: false
     });
     expect([200, 201]).toContain(res.status);
   });

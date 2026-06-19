@@ -24,8 +24,8 @@ describe('Order API', () => {
   });
 
   it('GET /api/orders/:id returns 200 or 404', async () => {
-    const res = await request(app).get('/api/orders/1');
-    expect([200, 404]).toContain(res.status);
+    const res = await request(app).get('/api/orders/1').set('X-User-Id', '1');
+    expect([200, 404, 403]).toContain(res.status);
   });
 
 
@@ -59,19 +59,19 @@ describe('Order API', () => {
     expect([200, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/1/transitions/paid-to-processing transitions Paid -> Processing', async () => {
+  it('PATCH /api/orders/1/transitions/paid-to-processing requires role for Paid -> Processing', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/paid-to-processing');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/1/transitions/processing-to-shipped transitions Processing -> Shipped', async () => {
+  it('PATCH /api/orders/1/transitions/processing-to-shipped requires role for Processing -> Shipped', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/processing-to-shipped');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/1/transitions/shipped-to-completed transitions Shipped -> Completed', async () => {
+  it('PATCH /api/orders/1/transitions/shipped-to-completed requires role for Shipped -> Completed', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/shipped-to-completed');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/orders/1/transitions/pending-to-cancelled transitions Pending -> Cancelled', async () => {
@@ -79,14 +79,14 @@ describe('Order API', () => {
     expect([200, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/1/transitions/paid-to-cancelled transitions Paid -> Cancelled', async () => {
+  it('PATCH /api/orders/1/transitions/paid-to-cancelled requires role for Paid -> Cancelled', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/paid-to-cancelled');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/orders/1/transitions/completed-to-refunded transitions Completed -> Refunded', async () => {
+  it('PATCH /api/orders/1/transitions/completed-to-refunded requires role for Completed -> Refunded', async () => {
     const res = await request(app).patch('/api/orders/1/transitions/completed-to-refunded');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/orders/1/transitions/refunded-to-completed is denied (409)', async () => {

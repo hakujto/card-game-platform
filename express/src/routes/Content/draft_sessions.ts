@@ -184,6 +184,8 @@ router.patch('/:id/transitions/drafting-to-completed', async (req, res) => {
 
 router.patch('/:id/transitions/drafting-to-abandoned', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Drafting -> Abandoned' }); return; }
   try {
     const entity = await lifecycleService.transitionDraftingToAbandoned(id);
     res.json(entity);
@@ -197,6 +199,8 @@ router.patch('/:id/transitions/drafting-to-abandoned', async (req, res) => {
 
 router.patch('/:id/transitions/waitingforplayers-to-abandoned', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition WaitingForPlayers -> Abandoned' }); return; }
   try {
     const entity = await lifecycleService.transitionWaitingForPlayersToAbandoned(id);
     res.json(entity);

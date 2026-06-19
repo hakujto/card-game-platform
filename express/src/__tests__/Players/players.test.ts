@@ -21,7 +21,7 @@ describe('Player API', () => {
     const res = await request(app)
       .post('/api/players')
       .send({
-      displayName: 'test',
+      displayName: `test_${Math.random().toString(36).slice(2,8)}`,
       rating: 1,
       peakRating: 1,
       isVerified: true,

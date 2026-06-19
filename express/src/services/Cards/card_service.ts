@@ -70,4 +70,8 @@ export class CardService {
   async validateLegality(entity: any): Promise<void> {
     // TODO: implement validate_legality
   }
+
+  async validateNotInUse(entity: any): Promise<void> {
+    // TODO: implement validate_not_in_use
+  }
 }

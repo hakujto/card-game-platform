@@ -132,6 +132,8 @@ router.put('/:id', async (req, res) => {
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
   try {
   validate(data);
+    const existing = await prisma.article.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.article.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -161,6 +163,8 @@ router.patch('/:id', async (req, res) => {
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
   try {
   validate(data);
+    const existing = await prisma.article.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.article.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -237,6 +241,8 @@ router.get('/:id/reading-time', async (req, res) => {
 
 router.patch('/:id/transitions/draft-to-published', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Editor', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Draft -> Published' }); return; }
   try {
     const entity = await lifecycleService.transitionDraftToPublished(id);
     res.json(entity);
@@ -250,6 +256,8 @@ router.patch('/:id/transitions/draft-to-published', async (req, res) => {
 
 router.patch('/:id/transitions/published-to-archived', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Editor', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Published -> Archived' }); return; }
   try {
     const entity = await lifecycleService.transitionPublishedToArchived(id);
     res.json(entity);
@@ -263,6 +271,8 @@ router.patch('/:id/transitions/published-to-archived', async (req, res) => {
 
 router.patch('/:id/transitions/archived-to-draft', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Archived -> Draft' }); return; }
   try {
     const entity = await lifecycleService.transitionArchivedToDraft(id);
     res.json(entity);

@@ -54,9 +54,9 @@ describe('TradeListing API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/trade_listings/1/transitions/pending-to-active transitions Pending -> Active', async () => {
+  it('PATCH /api/trade_listings/1/transitions/pending-to-active requires role for Pending -> Active', async () => {
     const res = await request(app).patch('/api/trade_listings/1/transitions/pending-to-active');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/trade_listings/1/transitions/active-to-sold transitions Active -> Sold', async () => {
@@ -69,9 +69,9 @@ describe('TradeListing API', () => {
     expect([200, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/trade_listings/1/transitions/active-to-cancelled transitions Active -> Cancelled', async () => {
+  it('PATCH /api/trade_listings/1/transitions/active-to-cancelled requires role for Active -> Cancelled', async () => {
     const res = await request(app).patch('/api/trade_listings/1/transitions/active-to-cancelled');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/trade_listings/1/transitions/sold-to-active is denied (409)', async () => {

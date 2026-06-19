@@ -22,7 +22,7 @@ describe('ArticleTag API', () => {
       .post('/api/article_tags')
       .send({
       name: 'test',
-      slug: 'test'
+      slug: `test_${Math.random().toString(36).slice(2,8)}`
     });
     expect([200, 201]).toContain(res.status);
   });

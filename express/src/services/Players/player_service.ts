@@ -67,6 +67,10 @@ export class PlayerService {
   }
   // ── Lifecycle hooks ──────────────────────────────────────────────
 
+  async initializeCollection(entity: any): Promise<void> {
+    // TODO: implement initialize_collection
+  }
+
   async updateRank(entity: any): Promise<void> {
     // TODO: implement update_rank
   }

@@ -74,6 +74,8 @@ router.patch('/:id', async (req, res) => {
     if (body.userId !== undefined) data.userId = body.userId;
   try {
   validate(data);
+    const existing = await prisma.player.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.player.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {

@@ -63,29 +63,29 @@ describe('Tournament API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/tournaments/1/transitions/draft-to-registration transitions Draft -> Registration', async () => {
+  it('PATCH /api/tournaments/1/transitions/draft-to-registration requires role for Draft -> Registration', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/draft-to-registration');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournaments/1/transitions/registration-to-ongoing transitions Registration -> Ongoing', async () => {
+  it('PATCH /api/tournaments/1/transitions/registration-to-ongoing requires role for Registration -> Ongoing', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/registration-to-ongoing');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournaments/1/transitions/registration-to-cancelled transitions Registration -> Cancelled', async () => {
+  it('PATCH /api/tournaments/1/transitions/registration-to-cancelled requires role for Registration -> Cancelled', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/registration-to-cancelled');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournaments/1/transitions/ongoing-to-completed transitions Ongoing -> Completed', async () => {
+  it('PATCH /api/tournaments/1/transitions/ongoing-to-completed requires role for Ongoing -> Completed', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/ongoing-to-completed');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/tournaments/1/transitions/ongoing-to-cancelled transitions Ongoing -> Cancelled', async () => {
+  it('PATCH /api/tournaments/1/transitions/ongoing-to-cancelled requires role for Ongoing -> Cancelled', async () => {
     const res = await request(app).patch('/api/tournaments/1/transitions/ongoing-to-cancelled');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/tournaments/1/transitions/completed-to-draft is denied (409)', async () => {

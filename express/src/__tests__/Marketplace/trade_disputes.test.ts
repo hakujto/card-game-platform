@@ -32,24 +32,24 @@ describe('TradeDispute API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/trade_disputes/1/transitions/open-to-underreview transitions Open -> UnderReview', async () => {
+  it('PATCH /api/trade_disputes/1/transitions/open-to-underreview requires role for Open -> UnderReview', async () => {
     const res = await request(app).patch('/api/trade_disputes/1/transitions/open-to-underreview');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/trade_disputes/1/transitions/underreview-to-resolved transitions UnderReview -> Resolved', async () => {
+  it('PATCH /api/trade_disputes/1/transitions/underreview-to-resolved requires role for UnderReview -> Resolved', async () => {
     const res = await request(app).patch('/api/trade_disputes/1/transitions/underreview-to-resolved');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/trade_disputes/1/transitions/underreview-to-escalated transitions UnderReview -> Escalated', async () => {
+  it('PATCH /api/trade_disputes/1/transitions/underreview-to-escalated requires role for UnderReview -> Escalated', async () => {
     const res = await request(app).patch('/api/trade_disputes/1/transitions/underreview-to-escalated');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/trade_disputes/1/transitions/escalated-to-resolved transitions Escalated -> Resolved', async () => {
+  it('PATCH /api/trade_disputes/1/transitions/escalated-to-resolved requires role for Escalated -> Resolved', async () => {
     const res = await request(app).patch('/api/trade_disputes/1/transitions/escalated-to-resolved');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/trade_disputes/1/transitions/resolved-to-open is denied (409)', async () => {

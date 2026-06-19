@@ -53,14 +53,14 @@ describe('DraftSession API', () => {
     expect([200, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned transitions Drafting -> Abandoned', async () => {
+  it('PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned requires role for Drafting -> Abandoned', async () => {
     const res = await request(app).patch('/api/draft_sessions/1/transitions/drafting-to-abandoned');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned transitions WaitingForPlayers -> Abandoned', async () => {
+  it('PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned requires role for WaitingForPlayers -> Abandoned', async () => {
     const res = await request(app).patch('/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/draft_sessions/1/transitions/completed-to-drafting is denied (409)', async () => {

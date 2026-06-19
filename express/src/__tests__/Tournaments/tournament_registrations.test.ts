@@ -22,8 +22,8 @@ describe('TournamentRegistration API', () => {
   });
 
   it('GET /api/tournament_registrations/:id returns 200 or 404', async () => {
-    const res = await request(app).get('/api/tournament_registrations/1');
-    expect([200, 404]).toContain(res.status);
+    const res = await request(app).get('/api/tournament_registrations/1').set('X-User-Id', '1');
+    expect([200, 404, 403]).toContain(res.status);
   });
 
 

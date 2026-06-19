@@ -44,6 +44,7 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const entity = await prisma.playerCollection.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
+  if (entity.playerId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
   res.json(applyProjection(entity));
 });
 
@@ -59,6 +60,9 @@ router.patch('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
   validate(data);
+    const existing = await prisma.playerCollection.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (existing.playerId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
     const entity = await prisma.playerCollection.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -69,6 +73,9 @@ router.patch('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    const existing = await prisma.playerCollection.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (existing.playerId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
     await prisma.playerCollection.delete({ where: { id: Number(req.params.id) } });
     res.status(204).send();
   } catch {

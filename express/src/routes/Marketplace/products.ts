@@ -64,6 +64,8 @@ router.put('/:id', async (req, res) => {
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
   try {
   validate(data);
+    const existing = await prisma.product.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {
@@ -88,6 +90,8 @@ router.patch('/:id', async (req, res) => {
     if (body.cardSetId !== undefined) data.cardSetId = body.cardSetId;
   try {
   validate(data);
+    const existing = await prisma.product.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.product.update({ where: { id: Number(req.params.id) }, data });
     res.json(entity);
   } catch (err: any) {

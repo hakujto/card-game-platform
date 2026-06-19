@@ -45,6 +45,7 @@ export class MatchService {
   async concede(id: number, playerId: number): Promise<void> {
     const entity = await prisma.match.findUnique({ where: { id } });
     if (!entity) throw new Error('Match not found: ' + id);
+    if (!(entity.status === 'ACTIVE')) throw new Error('Guard condition not met for concede');
     // TODO: implement concede domain logic
   }
 

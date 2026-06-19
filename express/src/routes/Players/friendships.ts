@@ -37,11 +37,15 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const entity = await prisma.friendship.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
+  if (entity.requesterId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
   res.json(applyProjection(entity));
 });
 
 router.delete('/:id', async (req, res) => {
   try {
+    const existing = await prisma.friendship.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (existing.requesterId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
     await prisma.friendship.delete({ where: { id: Number(req.params.id) } });
     res.status(204).send();
   } catch {

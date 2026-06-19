@@ -30,6 +30,7 @@ export class OrderService {
   async pay(id: number, paymentRef: string): Promise<boolean> {
     const entity = await prisma.order.findUnique({ where: { id } });
     if (!entity) throw new Error('Order not found: ' + id);
+    if (!(entity.status === 'PENDING')) throw new Error('Guard condition not met for pay');
     // TODO: implement pay domain logic
     return undefined as any;
   }
@@ -71,6 +72,10 @@ export class OrderService {
     }
   }
   // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async assignCurrencyDefault(entity: any): Promise<void> {
+    // TODO: implement assign_currency_default
+  }
 
   async notifyStatusChange(entity: any): Promise<void> {
     // TODO: implement notify_status_change

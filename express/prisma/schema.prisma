@@ -12,7 +12,7 @@ model User {
   email     String  @unique
   password  String
   createdAt DateTime @default(now())
-  players  Player[]  @relation("PlayerUser")
+  playerProfile  Player[]  @relation("PlayerUser")
 }
 
 model Card {
@@ -34,20 +34,17 @@ model Card {
   isRestricted  Boolean @default(false)
   powerLevel  Int @default(1)
   setId  Int?
-  set    CardSet?  @relation("CardSet", fields: [setId], references: [id])
-  cardRulings  CardRuling[]  @relation("CardRulingCard")
-  cardAbilities  CardAbility[]  @relation("CardAbilityCard")
-  decks  Deck[]  @relation("DeckCards")
-  decksViaDeckSideboardCards  Deck[]  @relation("DeckSideboardCards")
+  set    CardSet?  @relation("CardSet", fields: [setId], references: [id], onDelete: Restrict)
+  rulings  CardRuling[]  @relation("CardRulingCard")
+  abilities  CardAbility[]  @relation("CardAbilityCard")
   deckCards  DeckCard[]  @relation("DeckCardCard")
-  deckSideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardCard")
+  sideboardDecks  DeckSideboardCard[]  @relation("DeckSideboardCardCard")
   playerCollections  PlayerCollection[]  @relation("PlayerCollectionCard")
   craftingRecipes  CraftingRecipe[]  @relation("CraftingRecipeResultCard")
-  craftingRecipesViaCraftingRecipeRequiredCards  CraftingRecipe[]  @relation("CraftingRecipeRequiredCards")
-  craftingIngredients  CraftingIngredient[]  @relation("CraftingIngredientCard")
-  products  Product[]  @relation("ProductCard")
+  usedInRecipes  CraftingIngredient[]  @relation("CraftingIngredientCard")
+  shopProduct  Product[]  @relation("ProductCard")
   tradeListings  TradeListing[]  @relation("TradeListingCard")
-  cardPriceHistories  CardPriceHistory[]  @relation("CardPriceHistoryCard")
+  priceHistory  CardPriceHistory[]  @relation("CardPriceHistoryCard")
   draftPicks  DraftPick[]  @relation("DraftPickCard")
 }
 
@@ -55,7 +52,7 @@ model CardSet {
   id  Int  @id @default(autoincrement())
   setType  CardSetSetTypeEnum?
   name  String
-  code  String
+  code  String @unique
   releaseDate  DateTime
   rotationDate  DateTime?
   totalCards  Int @default(0)
@@ -63,7 +60,7 @@ model CardSet {
   description  String?
   logoUrl  String?
   cards  Card[]  @relation("CardSet")
-  products  Product[]  @relation("ProductCardSet")
+  shopProducts  Product[]  @relation("ProductCardSet")
   draftSessions  DraftSession[]  @relation("DraftSessionCardSet")
 }
 
@@ -73,7 +70,7 @@ model CardRuling {
   publishedAt  DateTime
   source  String
   cardId  Int?
-  card    Card?  @relation("CardRulingCard", fields: [cardId], references: [id])
+  card    Card?  @relation("CardRulingCard", fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model CardAbility {
@@ -83,7 +80,7 @@ model CardAbility {
   keyword  String?
   abilityText  String
   cardId  Int?
-  card    Card?  @relation("CardAbilityCard", fields: [cardId], references: [id])
+  card    Card?  @relation("CardAbilityCard", fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model Deck {
@@ -100,13 +97,10 @@ model Deck {
   createdAt  DateTime
   updatedAt  DateTime
   playerId  Int?
-  player    Player?  @relation("DeckPlayer", fields: [playerId], references: [id])
-  cards  Card[]  @relation("DeckCards")
-  sideboardCards  Card[]  @relation("DeckSideboardCards")
-  tags  DeckTag[]  @relation("DeckTags")
+  player    Player?  @relation("DeckPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   deckCards  DeckCard[]  @relation("DeckCardDeck")
-  deckSideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardDeck")
-  deckTagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentDeck")
+  sideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardDeck")
+  tagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentDeck")
   tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationDeck")
   articles  Article[]  @relation("ArticleFeaturedDeck")
 }
@@ -116,41 +110,40 @@ model DeckCard {
   quantity  Int @default(1)
   isCommander  Boolean @default(false)
   deckId  Int?
-  deck    Deck?  @relation("DeckCardDeck", fields: [deckId], references: [id])
+  deck    Deck?  @relation("DeckCardDeck", fields: [deckId], references: [id], onDelete: Cascade)
   cardId  Int?
-  card    Card?  @relation("DeckCardCard", fields: [cardId], references: [id])
+  card    Card?  @relation("DeckCardCard", fields: [cardId], references: [id], onDelete: Restrict)
 }
 
 model DeckSideboardCard {
   id  Int  @id @default(autoincrement())
   quantity  Int @default(1)
   deckId  Int?
-  deck    Deck?  @relation("DeckSideboardCardDeck", fields: [deckId], references: [id])
+  deck    Deck?  @relation("DeckSideboardCardDeck", fields: [deckId], references: [id], onDelete: Cascade)
   cardId  Int?
-  card    Card?  @relation("DeckSideboardCardCard", fields: [cardId], references: [id])
+  card    Card?  @relation("DeckSideboardCardCard", fields: [cardId], references: [id], onDelete: Restrict)
 }
 
 model DeckTag {
   id  Int  @id @default(autoincrement())
   name  String
   color  String?
-  decks  Deck[]  @relation("DeckTags")
-  deckTagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentTag")
+  deckAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentTag")
 }
 
 model DeckTagAssignment {
   id  Int  @id @default(autoincrement())
   deckId  Int?
-  deck    Deck?  @relation("DeckTagAssignmentDeck", fields: [deckId], references: [id])
+  deck    Deck?  @relation("DeckTagAssignmentDeck", fields: [deckId], references: [id], onDelete: Cascade)
   tagId  Int?
-  tag    DeckTag?  @relation("DeckTagAssignmentTag", fields: [tagId], references: [id])
+  tag    DeckTag?  @relation("DeckTagAssignmentTag", fields: [tagId], references: [id], onDelete: Cascade)
 }
 
 model Player {
   id  Int  @id @default(autoincrement())
   rank  PlayerRankEnum?
   preferredFormat  PlayerPreferredFormatEnum?
-  displayName  String
+  displayName  String @unique
   rating  Int @default(1000)
   peakRating  Int @default(1000)
   bio  String?
@@ -159,33 +152,29 @@ model Player {
   isVerified  Boolean @default(false)
   createdAt  DateTime
   lastActiveAt  DateTime?
-  userId  Int?
-  user    User?  @relation("PlayerUser", fields: [userId], references: [id])
-  achievements  Achievement[]  @relation("PlayerAchievements")
-  friends  Player[]  @relation("PlayerFriends")
-  friendsOf  Player[]  @relation("PlayerFriends")
+  userId  Int? @unique
+  user    User?  @relation("PlayerUser", fields: [userId], references: [id], onDelete: Cascade)
   decks  Deck[]  @relation("DeckPlayer")
-  playerSeasonStatses  PlayerSeasonStats[]  @relation("PlayerSeasonStatsPlayer")
-  playerCollections  PlayerCollection[]  @relation("PlayerCollectionPlayer")
-  friendships  Friendship[]  @relation("FriendshipRequester")
-  friendshipsViaFriendshipReceiver  Friendship[]  @relation("FriendshipReceiver")
-  playerAchievements  PlayerAchievement[]  @relation("PlayerAchievementPlayer")
-  tournaments  Tournament[]  @relation("TournamentOrganizer")
-  tournamentsViaTournamentJudges  Tournament[]  @relation("TournamentJudges")
-  tournamentJudges  TournamentJudge[]  @relation("TournamentJudgePlayer")
+  seasonStats  PlayerSeasonStats[]  @relation("PlayerSeasonStatsPlayer")
+  collection  PlayerCollection[]  @relation("PlayerCollectionPlayer")
+  sentFriendRequests  Friendship[]  @relation("FriendshipRequester")
+  receivedFriendRequests  Friendship[]  @relation("FriendshipReceiver")
+  achievementRecords  PlayerAchievement[]  @relation("PlayerAchievementPlayer")
+  organizedTournaments  Tournament[]  @relation("TournamentOrganizer")
+  judgeRoles  TournamentJudge[]  @relation("TournamentJudgePlayer")
   tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationPlayer")
-  matches  Match[]  @relation("MatchPlayer1")
-  matchesViaMatchPlayer2  Match[]  @relation("MatchPlayer2")
-  games  Game[]  @relation("GameWinner")
+  matchesAsPlayer1  Match[]  @relation("MatchPlayer1")
+  matchesAsPlayer2  Match[]  @relation("MatchPlayer2")
+  wonGames  Game[]  @relation("GameWinner")
   awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePlayer")
   orders  Order[]  @relation("OrderPlayer")
   tradeListings  TradeListing[]  @relation("TradeListingSeller")
-  tradeBids  TradeBid[]  @relation("TradeBidBidder")
-  tradeTransactions  TradeTransaction[]  @relation("TradeTransactionBuyer")
-  tradeTransactionsViaTradeTransactionSeller  TradeTransaction[]  @relation("TradeTransactionSeller")
-  tradeDisputes  TradeDispute[]  @relation("TradeDisputeOpenedBy")
-  tradeDisputesViaTradeDisputeResolvedBy  TradeDispute[]  @relation("TradeDisputeResolvedBy")
-  draftParticipants  DraftParticipant[]  @relation("DraftParticipantPlayer")
+  bids  TradeBid[]  @relation("TradeBidBidder")
+  purchases  TradeTransaction[]  @relation("TradeTransactionBuyer")
+  sales  TradeTransaction[]  @relation("TradeTransactionSeller")
+  disputesOpened  TradeDispute[]  @relation("TradeDisputeOpenedBy")
+  disputesResolved  TradeDispute[]  @relation("TradeDisputeResolvedBy")
+  draftSessions  DraftParticipant[]  @relation("DraftParticipantPlayer")
   articles  Article[]  @relation("ArticleAuthor")
   articleComments  ArticleComment[]  @relation("ArticleCommentAuthor")
   streams  Stream[]  @relation("StreamStreamer")
@@ -200,9 +189,9 @@ model PlayerSeasonStats {
   tournamentWins  Int @default(0)
   seasonPoints  Int @default(0)
   playerId  Int?
-  player    Player?  @relation("PlayerSeasonStatsPlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("PlayerSeasonStatsPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   seasonId  Int?
-  season    Season?  @relation("PlayerSeasonStatsSeason", fields: [seasonId], references: [id])
+  season    Season?  @relation("PlayerSeasonStatsSeason", fields: [seasonId], references: [id], onDelete: Cascade)
 }
 
 model PlayerCollection {
@@ -213,9 +202,9 @@ model PlayerCollection {
   foil  Boolean @default(false)
   acquiredAt  DateTime
   playerId  Int?
-  player    Player?  @relation("PlayerCollectionPlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("PlayerCollectionPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   cardId  Int?
-  card    Card?  @relation("PlayerCollectionCard", fields: [cardId], references: [id])
+  card    Card?  @relation("PlayerCollectionCard", fields: [cardId], references: [id], onDelete: Restrict)
 }
 
 model Friendship {
@@ -223,9 +212,9 @@ model Friendship {
   status  FriendshipStatusEnum?
   createdAt  DateTime
   requesterId  Int?
-  requester    Player?  @relation("FriendshipRequester", fields: [requesterId], references: [id])
+  requester    Player?  @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   receiverId  Int?
-  receiver    Player?  @relation("FriendshipReceiver", fields: [receiverId], references: [id])
+  receiver    Player?  @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
 model Achievement {
@@ -236,8 +225,7 @@ model Achievement {
   iconUrl  String?
   points  Int @default(10)
   isHidden  Boolean @default(false)
-  players  Player[]  @relation("PlayerAchievements")
-  playerAchievements  PlayerAchievement[]  @relation("PlayerAchievementAchievement")
+  playerRecords  PlayerAchievement[]  @relation("PlayerAchievementAchievement")
 }
 
 model PlayerAchievement {
@@ -246,9 +234,9 @@ model PlayerAchievement {
   progress  Int @default(0)
   isCompleted  Boolean @default(false)
   playerId  Int?
-  player    Player?  @relation("PlayerAchievementPlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("PlayerAchievementPlayer", fields: [playerId], references: [id], onDelete: Cascade)
   achievementId  Int?
-  achievement    Achievement?  @relation("PlayerAchievementAchievement", fields: [achievementId], references: [id])
+  achievement    Achievement?  @relation("PlayerAchievementAchievement", fields: [achievementId], references: [id], onDelete: Restrict)
 }
 
 model CraftingRecipe {
@@ -256,18 +244,17 @@ model CraftingRecipe {
   dustCost  Int @default(0)
   isAvailable  Boolean @default(true)
   resultCardId  Int?
-  resultCard    Card?  @relation("CraftingRecipeResultCard", fields: [resultCardId], references: [id])
-  requiredCards  Card[]  @relation("CraftingRecipeRequiredCards")
-  craftingIngredients  CraftingIngredient[]  @relation("CraftingIngredientRecipe")
+  resultCard    Card?  @relation("CraftingRecipeResultCard", fields: [resultCardId], references: [id], onDelete: Restrict)
+  ingredients  CraftingIngredient[]  @relation("CraftingIngredientRecipe")
 }
 
 model CraftingIngredient {
   id  Int  @id @default(autoincrement())
   quantity  Int @default(1)
   recipeId  Int?
-  recipe    CraftingRecipe?  @relation("CraftingIngredientRecipe", fields: [recipeId], references: [id])
+  recipe    CraftingRecipe?  @relation("CraftingIngredientRecipe", fields: [recipeId], references: [id], onDelete: Cascade)
   cardId  Int?
-  card    Card?  @relation("CraftingIngredientCard", fields: [cardId], references: [id])
+  card    Card?  @relation("CraftingIngredientCard", fields: [cardId], references: [id], onDelete: Restrict)
 }
 
 model Season {
@@ -278,7 +265,7 @@ model Season {
   endDate  DateTime
   isActive  Boolean @default(false)
   rewardDescription  String?
-  playerSeasonStatses  PlayerSeasonStats[]  @relation("PlayerSeasonStatsSeason")
+  playerStats  PlayerSeasonStats[]  @relation("PlayerSeasonStatsSeason")
   tournaments  Tournament[]  @relation("TournamentSeason")
 }
 
@@ -299,14 +286,13 @@ model Tournament {
   rulesText  String?
   createdAt  DateTime
   seasonId  Int?
-  season    Season?  @relation("TournamentSeason", fields: [seasonId], references: [id])
+  season    Season?  @relation("TournamentSeason", fields: [seasonId], references: [id], onDelete: Restrict)
   organizerId  Int?
-  organizer    Player?  @relation("TournamentOrganizer", fields: [organizerId], references: [id])
-  judges  Player[]  @relation("TournamentJudges")
-  tournamentJudges  TournamentJudge[]  @relation("TournamentJudgeTournament")
-  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationTournament")
-  tournamentRounds  TournamentRound[]  @relation("TournamentRoundTournament")
-  tournamentPrizes  TournamentPrize[]  @relation("TournamentPrizeTournament")
+  organizer    Player?  @relation("TournamentOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  judgeAssignments  TournamentJudge[]  @relation("TournamentJudgeTournament")
+  registrations  TournamentRegistration[]  @relation("TournamentRegistrationTournament")
+  rounds  TournamentRound[]  @relation("TournamentRoundTournament")
+  prizes  TournamentPrize[]  @relation("TournamentPrizeTournament")
   streams  Stream[]  @relation("StreamTournament")
 }
 
@@ -314,9 +300,9 @@ model TournamentJudge {
   id  Int  @id @default(autoincrement())
   role  TournamentJudgeRoleEnum?
   tournamentId  Int?
-  tournament    Tournament?  @relation("TournamentJudgeTournament", fields: [tournamentId], references: [id])
+  tournament    Tournament?  @relation("TournamentJudgeTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
   playerId  Int?
-  player    Player?  @relation("TournamentJudgePlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("TournamentJudgePlayer", fields: [playerId], references: [id], onDelete: Restrict)
 }
 
 model TournamentRegistration {
@@ -327,11 +313,11 @@ model TournamentRegistration {
   pointsEarned  Int @default(0)
   registeredAt  DateTime
   tournamentId  Int?
-  tournament    Tournament?  @relation("TournamentRegistrationTournament", fields: [tournamentId], references: [id])
+  tournament    Tournament?  @relation("TournamentRegistrationTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
   playerId  Int?
-  player    Player?  @relation("TournamentRegistrationPlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("TournamentRegistrationPlayer", fields: [playerId], references: [id], onDelete: Restrict)
   deckId  Int?
-  deck    Deck?  @relation("TournamentRegistrationDeck", fields: [deckId], references: [id])
+  deck    Deck?  @relation("TournamentRegistrationDeck", fields: [deckId], references: [id], onDelete: Restrict)
 }
 
 model TournamentRound {
@@ -342,7 +328,7 @@ model TournamentRound {
   endedAt  DateTime?
   timeLimitMinutes  Int @default(50)
   tournamentId  Int?
-  tournament    Tournament?  @relation("TournamentRoundTournament", fields: [tournamentId], references: [id])
+  tournament    Tournament?  @relation("TournamentRoundTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
   matches  Match[]  @relation("MatchRound")
 }
 
@@ -356,11 +342,11 @@ model Match {
   endedAt  DateTime?
   resultNotes  String?
   roundId  Int?
-  round    TournamentRound?  @relation("MatchRound", fields: [roundId], references: [id])
+  round    TournamentRound?  @relation("MatchRound", fields: [roundId], references: [id], onDelete: Cascade)
   player1Id  Int?
-  player1    Player?  @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player1    Player?  @relation("MatchPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
   player2Id  Int?
-  player2    Player?  @relation("MatchPlayer2", fields: [player2Id], references: [id])
+  player2    Player?  @relation("MatchPlayer2", fields: [player2Id], references: [id], onDelete: SetNull)
   games  Game[]  @relation("GameMatch")
 }
 
@@ -373,9 +359,9 @@ model Game {
   durationSeconds  Int?
   replayUrl  String?
   matchId  Int?
-  match    Match?  @relation("GameMatch", fields: [matchId], references: [id])
+  match    Match?  @relation("GameMatch", fields: [matchId], references: [id], onDelete: Cascade)
   winnerId  Int?
-  winner    Player?  @relation("GameWinner", fields: [winnerId], references: [id])
+  winner    Player?  @relation("GameWinner", fields: [winnerId], references: [id], onDelete: SetNull)
 }
 
 model TournamentPrize {
@@ -388,7 +374,7 @@ model TournamentPrize {
   packsCount  Int?
   seasonPoints  Int @default(0)
   tournamentId  Int?
-  tournament    Tournament?  @relation("TournamentPrizeTournament", fields: [tournamentId], references: [id])
+  tournament    Tournament?  @relation("TournamentPrizeTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
   awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePrize")
 }
 
@@ -399,9 +385,9 @@ model AwardedPrize {
   claimed  Boolean @default(false)
   claimedAt  DateTime?
   prizeId  Int?
-  prize    TournamentPrize?  @relation("AwardedPrizePrize", fields: [prizeId], references: [id])
+  prize    TournamentPrize?  @relation("AwardedPrizePrize", fields: [prizeId], references: [id], onDelete: Restrict)
   playerId  Int?
-  player    Player?  @relation("AwardedPrizePlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("AwardedPrizePlayer", fields: [playerId], references: [id], onDelete: Restrict)
 }
 
 model Product {
@@ -415,10 +401,10 @@ model Product {
   description  String?
   imageUrl  String?
   featured  Boolean @default(false)
-  cardId  Int?
-  card    Card?  @relation("ProductCard", fields: [cardId], references: [id])
+  cardId  Int? @unique
+  card    Card?  @relation("ProductCard", fields: [cardId], references: [id], onDelete: SetNull)
   cardSetId  Int?
-  cardSet    CardSet?  @relation("ProductCardSet", fields: [cardSetId], references: [id])
+  cardSet    CardSet?  @relation("ProductCardSet", fields: [cardSetId], references: [id], onDelete: SetNull)
   orderItems  OrderItem[]  @relation("OrderItemProduct")
 }
 
@@ -436,10 +422,10 @@ model Order {
   paidAt  DateTime?
   shippedAt  DateTime?
   playerId  Int?
-  player    Player?  @relation("OrderPlayer", fields: [playerId], references: [id])
+  player    Player?  @relation("OrderPlayer", fields: [playerId], references: [id], onDelete: Restrict)
   couponId  Int?
-  coupon    Coupon?  @relation("OrderCoupon", fields: [couponId], references: [id])
-  orderItems  OrderItem[]  @relation("OrderItemOrder")
+  coupon    Coupon?  @relation("OrderCoupon", fields: [couponId], references: [id], onDelete: SetNull)
+  items  OrderItem[]  @relation("OrderItemOrder")
 }
 
 model OrderItem {
@@ -448,15 +434,15 @@ model OrderItem {
   priceAtPurchase  Decimal @default(0)
   foil  Boolean @default(false)
   orderId  Int?
-  order    Order?  @relation("OrderItemOrder", fields: [orderId], references: [id])
+  order    Order?  @relation("OrderItemOrder", fields: [orderId], references: [id], onDelete: Cascade)
   productId  Int?
-  product    Product?  @relation("OrderItemProduct", fields: [productId], references: [id])
+  product    Product?  @relation("OrderItemProduct", fields: [productId], references: [id], onDelete: Restrict)
 }
 
 model Coupon {
   id  Int  @id @default(autoincrement())
   discountType  CouponDiscountTypeEnum?
-  code  String
+  code  String @unique
   discountValue  Decimal @default(0)
   minOrderValue  Decimal @default(0)
   maxUses  Int?
@@ -482,11 +468,11 @@ model TradeListing {
   createdAt  DateTime
   expiresAt  DateTime?
   sellerId  Int?
-  seller    Player?  @relation("TradeListingSeller", fields: [sellerId], references: [id])
+  seller    Player?  @relation("TradeListingSeller", fields: [sellerId], references: [id], onDelete: Restrict)
   cardId  Int?
-  card    Card?  @relation("TradeListingCard", fields: [cardId], references: [id])
-  tradeBids  TradeBid[]  @relation("TradeBidListing")
-  tradeTransactions  TradeTransaction[]  @relation("TradeTransactionListing")
+  card    Card?  @relation("TradeListingCard", fields: [cardId], references: [id], onDelete: Restrict)
+  bids  TradeBid[]  @relation("TradeBidListing")
+  transaction  TradeTransaction[]  @relation("TradeTransactionListing")
 }
 
 model TradeBid {
@@ -495,9 +481,9 @@ model TradeBid {
   placedAt  DateTime
   isWinning  Boolean @default(false)
   listingId  Int?
-  listing    TradeListing?  @relation("TradeBidListing", fields: [listingId], references: [id])
+  listing    TradeListing?  @relation("TradeBidListing", fields: [listingId], references: [id], onDelete: Cascade)
   bidderId  Int?
-  bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id])
+  bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id], onDelete: Restrict)
 }
 
 model TradeTransaction {
@@ -506,13 +492,13 @@ model TradeTransaction {
   finalPrice  Decimal @default(0)
   platformFee  Decimal @default(0)
   completedAt  DateTime?
-  listingId  Int?
-  listing    TradeListing?  @relation("TradeTransactionListing", fields: [listingId], references: [id])
+  listingId  Int? @unique
+  listing    TradeListing?  @relation("TradeTransactionListing", fields: [listingId], references: [id], onDelete: Restrict)
   buyerId  Int?
-  buyer    Player?  @relation("TradeTransactionBuyer", fields: [buyerId], references: [id])
+  buyer    Player?  @relation("TradeTransactionBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
   sellerId  Int?
-  seller    Player?  @relation("TradeTransactionSeller", fields: [sellerId], references: [id])
-  tradeDisputes  TradeDispute[]  @relation("TradeDisputeTransaction")
+  seller    Player?  @relation("TradeTransactionSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  dispute  TradeDispute[]  @relation("TradeDisputeTransaction")
 }
 
 model CardPriceHistory {
@@ -524,7 +510,7 @@ model CardPriceHistory {
   volume  Int @default(0)
   foil  Boolean @default(false)
   cardId  Int?
-  card    Card?  @relation("CardPriceHistoryCard", fields: [cardId], references: [id])
+  card    Card?  @relation("CardPriceHistoryCard", fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model TradeDispute {
@@ -535,12 +521,12 @@ model TradeDispute {
   resolution  String?
   openedAt  DateTime
   resolvedAt  DateTime?
-  transactionId  Int?
-  transaction    TradeTransaction?  @relation("TradeDisputeTransaction", fields: [transactionId], references: [id])
+  transactionId  Int? @unique
+  transaction    TradeTransaction?  @relation("TradeDisputeTransaction", fields: [transactionId], references: [id], onDelete: Cascade)
   openedById  Int?
-  openedBy    Player?  @relation("TradeDisputeOpenedBy", fields: [openedById], references: [id])
+  openedBy    Player?  @relation("TradeDisputeOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
   resolvedById  Int?
-  resolvedBy    Player?  @relation("TradeDisputeResolvedBy", fields: [resolvedById], references: [id])
+  resolvedBy    Player?  @relation("TradeDisputeResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
 }
 
 model DraftSession {
@@ -552,8 +538,8 @@ model DraftSession {
   createdAt  DateTime
   completedAt  DateTime?
   cardSetId  Int?
-  cardSet    CardSet?  @relation("DraftSessionCardSet", fields: [cardSetId], references: [id])
-  draftParticipants  DraftParticipant[]  @relation("DraftParticipantSession")
+  cardSet    CardSet?  @relation("DraftSessionCardSet", fields: [cardSetId], references: [id], onDelete: Restrict)
+  participants  DraftParticipant[]  @relation("DraftParticipantSession")
 }
 
 model DraftParticipant {
@@ -561,10 +547,10 @@ model DraftParticipant {
   seatNumber  Int @default(0)
   joinedAt  DateTime
   sessionId  Int?
-  session    DraftSession?  @relation("DraftParticipantSession", fields: [sessionId], references: [id])
+  session    DraftSession?  @relation("DraftParticipantSession", fields: [sessionId], references: [id], onDelete: Cascade)
   playerId  Int?
-  player    Player?  @relation("DraftParticipantPlayer", fields: [playerId], references: [id])
-  draftPicks  DraftPick[]  @relation("DraftPickParticipant")
+  player    Player?  @relation("DraftParticipantPlayer", fields: [playerId], references: [id], onDelete: Restrict)
+  picks  DraftPick[]  @relation("DraftPickParticipant")
 }
 
 model DraftPick {
@@ -573,9 +559,9 @@ model DraftPick {
   packNumber  Int @default(0)
   pickedAt  DateTime
   participantId  Int?
-  participant    DraftParticipant?  @relation("DraftPickParticipant", fields: [participantId], references: [id])
+  participant    DraftParticipant?  @relation("DraftPickParticipant", fields: [participantId], references: [id], onDelete: Cascade)
   cardId  Int?
-  card    Card?  @relation("DraftPickCard", fields: [cardId], references: [id])
+  card    Card?  @relation("DraftPickCard", fields: [cardId], references: [id], onDelete: Restrict)
 }
 
 model Article {
@@ -584,7 +570,7 @@ model Article {
   articleType  ArticleArticleTypeEnum?
   language  ArticleLanguageEnum?
   title  String
-  slug  String
+  slug  String @unique
   body  String
   excerpt  String?
   coverImageUrl  String?
@@ -595,28 +581,26 @@ model Article {
   createdAt  DateTime
   updatedAt  DateTime
   authorId  Int?
-  author    Player?  @relation("ArticleAuthor", fields: [authorId], references: [id])
+  author    Player?  @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
   featuredDeckId  Int?
-  featuredDeck    Deck?  @relation("ArticleFeaturedDeck", fields: [featuredDeckId], references: [id])
-  tags  ArticleTag[]  @relation("ArticleTags")
-  articleTagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentArticle")
-  articleComments  ArticleComment[]  @relation("ArticleCommentArticle")
+  featuredDeck    Deck?  @relation("ArticleFeaturedDeck", fields: [featuredDeckId], references: [id], onDelete: SetNull)
+  tagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentArticle")
+  comments  ArticleComment[]  @relation("ArticleCommentArticle")
 }
 
 model ArticleTag {
   id  Int  @id @default(autoincrement())
   name  String
-  slug  String
-  articles  Article[]  @relation("ArticleTags")
-  articleTagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentTag")
+  slug  String @unique
+  articleAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentTag")
 }
 
 model ArticleTagAssignment {
   id  Int  @id @default(autoincrement())
   articleId  Int?
-  article    Article?  @relation("ArticleTagAssignmentArticle", fields: [articleId], references: [id])
+  article    Article?  @relation("ArticleTagAssignmentArticle", fields: [articleId], references: [id], onDelete: Cascade)
   tagId  Int?
-  tag    ArticleTag?  @relation("ArticleTagAssignmentTag", fields: [tagId], references: [id])
+  tag    ArticleTag?  @relation("ArticleTagAssignmentTag", fields: [tagId], references: [id], onDelete: Cascade)
 }
 
 model ArticleComment {
@@ -625,12 +609,12 @@ model ArticleComment {
   isHidden  Boolean @default(false)
   createdAt  DateTime
   articleId  Int?
-  article    Article?  @relation("ArticleCommentArticle", fields: [articleId], references: [id])
+  article    Article?  @relation("ArticleCommentArticle", fields: [articleId], references: [id], onDelete: Cascade)
   authorId  Int?
-  author    Player?  @relation("ArticleCommentAuthor", fields: [authorId], references: [id])
+  author    Player?  @relation("ArticleCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
   parentCommentId  Int?
-  parentComment    ArticleComment?  @relation("ArticleCommentParentComment", fields: [parentCommentId], references: [id])
-  parentCommentChildren  ArticleComment[]  @relation("ArticleCommentParentComment")
+  parentComment    ArticleComment?  @relation("ArticleCommentParentComment", fields: [parentCommentId], references: [id], onDelete: SetNull)
+  replies  ArticleComment[]  @relation("ArticleCommentParentComment")
 }
 
 model Stream {
@@ -647,9 +631,9 @@ model Stream {
   endedAt  DateTime?
   vodUrl  String?
   tournamentId  Int?
-  tournament    Tournament?  @relation("StreamTournament", fields: [tournamentId], references: [id])
+  tournament    Tournament?  @relation("StreamTournament", fields: [tournamentId], references: [id], onDelete: SetNull)
   streamerId  Int?
-  streamer    Player?  @relation("StreamStreamer", fields: [streamerId], references: [id])
+  streamer    Player?  @relation("StreamStreamer", fields: [streamerId], references: [id], onDelete: Restrict)
 }
 
 enum CardCardTypeEnum {

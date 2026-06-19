@@ -23,7 +23,7 @@ describe('Deck API', () => {
       .send({
       name: 'test',
       isPublic: true,
-      isTournamentLegal: true,
+      isTournamentLegal: false,
       wins: 1,
       losses: 1,
       draws: 1,

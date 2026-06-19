@@ -38,6 +38,7 @@ export class CouponService {
   async redeem(id: number): Promise<void> {
     const entity = await prisma.coupon.findUnique({ where: { id } });
     if (!entity) throw new Error('Coupon not found: ' + id);
+    if (!(entity.isActive === true)) throw new Error('Guard condition not met for redeem');
     // TODO: implement redeem domain logic
   }
 

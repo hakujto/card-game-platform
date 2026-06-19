@@ -23,18 +23,18 @@ describe('PlayerCollection API', () => {
   });
 
   it('GET /api/player_collections/:id returns 200 or 404', async () => {
-    const res = await request(app).get('/api/player_collections/1');
-    expect([200, 404]).toContain(res.status);
+    const res = await request(app).get('/api/player_collections/1').set('X-User-Id', '1');
+    expect([200, 404, 403]).toContain(res.status);
   });
 
   it('PATCH /api/player_collections/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/player_collections/1').send({});
-    expect([200, 404]).toContain(res.status);
+    const res = await request(app).patch('/api/player_collections/1').send({}).set('X-User-Id', '1');
+    expect([200, 404, 403]).toContain(res.status);
   });
 
   it('DELETE /api/player_collections/:id returns 204 or 404', async () => {
-    const res = await request(app).delete('/api/player_collections/1');
-    expect([204, 404]).toContain(res.status);
+    const res = await request(app).delete('/api/player_collections/1').set('X-User-Id', '1');
+    expect([204, 404, 403]).toContain(res.status);
   });
 
 

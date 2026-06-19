@@ -75,6 +75,8 @@ router.put('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
   validate(data);
+    const existing = await prisma.deck.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -100,6 +102,8 @@ router.patch('/:id', async (req, res) => {
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
   validate(data);
+    const existing = await prisma.deck.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.deck.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {

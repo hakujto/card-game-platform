@@ -116,6 +116,8 @@ router.put('/:id', async (req, res) => {
     if (body.streamerId !== undefined) data.streamerId = body.streamerId;
   try {
   validate(data);
+    const existing = await prisma.stream.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.stream.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -142,6 +144,8 @@ router.patch('/:id', async (req, res) => {
     if (body.streamerId !== undefined) data.streamerId = body.streamerId;
   try {
   validate(data);
+    const existing = await prisma.stream.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.stream.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -197,6 +201,8 @@ router.get('/:id/duration', async (req, res) => {
 
 router.patch('/:id/transitions/scheduled-to-live', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Streamer', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Scheduled -> Live' }); return; }
   try {
     const entity = await lifecycleService.transitionScheduledToLive(id);
     res.json(entity);
@@ -210,6 +216,8 @@ router.patch('/:id/transitions/scheduled-to-live', async (req, res) => {
 
 router.patch('/:id/transitions/live-to-ended', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Streamer', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Live -> Ended' }); return; }
   try {
     const entity = await lifecycleService.transitionLiveToEnded(id);
     res.json(entity);

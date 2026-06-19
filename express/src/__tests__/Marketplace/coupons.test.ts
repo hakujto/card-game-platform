@@ -21,7 +21,7 @@ describe('Coupon API', () => {
     const res = await request(app)
       .post('/api/coupons')
       .send({
-      code: 'test',
+      code: `test_${Math.random().toString(36).slice(2,8)}`,
       discountValue: 1,
       minOrderValue: 0.00,
       usesCount: 1,

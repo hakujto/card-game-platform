@@ -16,7 +16,7 @@ describe('DeckCard API', () => {
       .post('/api/deck_cards')
       .send({
       quantity: 1,
-      isCommander: true
+      isCommander: false
     });
     expect([200, 201]).toContain(res.status);
   });

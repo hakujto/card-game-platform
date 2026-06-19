@@ -181,6 +181,8 @@ router.post('/:id/draw', async (req, res) => {
 
 router.patch('/:id/transitions/pending-to-active', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Judge', 'HeadJudge', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Pending -> Active' }); return; }
   try {
     const entity = await lifecycleService.transitionPendingToActive(id);
     res.json(entity);
@@ -194,6 +196,8 @@ router.patch('/:id/transitions/pending-to-active', async (req, res) => {
 
 router.patch('/:id/transitions/active-to-completed', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Judge', 'HeadJudge', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Active -> Completed' }); return; }
   try {
     const entity = await lifecycleService.transitionActiveToCompleted(id);
     res.json(entity);
@@ -207,6 +211,8 @@ router.patch('/:id/transitions/active-to-completed', async (req, res) => {
 
 router.patch('/:id/transitions/active-to-draw', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Judge', 'HeadJudge', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Active -> Draw' }); return; }
   try {
     const entity = await lifecycleService.transitionActiveToDraw(id);
     res.json(entity);
@@ -220,6 +226,8 @@ router.patch('/:id/transitions/active-to-draw', async (req, res) => {
 
 router.patch('/:id/transitions/pending-to-bye', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Judge', 'HeadJudge', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Pending -> BYE' }); return; }
   try {
     const entity = await lifecycleService.transitionPendingToBYE(id);
     res.json(entity);

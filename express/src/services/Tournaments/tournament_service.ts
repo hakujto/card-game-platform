@@ -69,4 +69,8 @@ export class TournamentService {
   async syncSeasonStats(entity: any): Promise<void> {
     // TODO: implement sync_season_stats
   }
+
+  async preventDeleteIfOngoing(entity: any): Promise<void> {
+    // TODO: implement prevent_delete_if_ongoing
+  }
 }

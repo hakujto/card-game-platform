@@ -22,7 +22,7 @@ describe('Article API', () => {
       .post('/api/articles')
       .send({
       title: 'test',
-      slug: 'test',
+      slug: `test_${Math.random().toString(36).slice(2,8)}`,
       body: 'test',
       viewCount: 1,
       likesCount: 1,
@@ -59,19 +59,19 @@ describe('Article API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/articles/1/transitions/draft-to-published transitions Draft -> Published', async () => {
+  it('PATCH /api/articles/1/transitions/draft-to-published requires role for Draft -> Published', async () => {
     const res = await request(app).patch('/api/articles/1/transitions/draft-to-published');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/articles/1/transitions/published-to-archived transitions Published -> Archived', async () => {
+  it('PATCH /api/articles/1/transitions/published-to-archived requires role for Published -> Archived', async () => {
     const res = await request(app).patch('/api/articles/1/transitions/published-to-archived');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/articles/1/transitions/archived-to-draft transitions Archived -> Draft', async () => {
+  it('PATCH /api/articles/1/transitions/archived-to-draft requires role for Archived -> Draft', async () => {
     const res = await request(app).patch('/api/articles/1/transitions/archived-to-draft');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/articles/1/transitions/published-to-draft is denied (409)', async () => {

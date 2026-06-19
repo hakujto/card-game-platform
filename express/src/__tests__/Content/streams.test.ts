@@ -56,14 +56,14 @@ describe('Stream API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/streams/1/transitions/scheduled-to-live transitions Scheduled -> Live', async () => {
+  it('PATCH /api/streams/1/transitions/scheduled-to-live requires role for Scheduled -> Live', async () => {
     const res = await request(app).patch('/api/streams/1/transitions/scheduled-to-live');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/streams/1/transitions/live-to-ended transitions Live -> Ended', async () => {
+  it('PATCH /api/streams/1/transitions/live-to-ended requires role for Live -> Ended', async () => {
     const res = await request(app).patch('/api/streams/1/transitions/live-to-ended');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/streams/1/transitions/ended-to-live is denied (409)', async () => {

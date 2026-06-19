@@ -156,6 +156,8 @@ router.post('/:id/review', async (req, res) => {
 
 router.patch('/:id/transitions/open-to-underreview', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Moderator'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Open -> UnderReview' }); return; }
   try {
     const entity = await lifecycleService.transitionOpenToUnderReview(id);
     res.json(entity);
@@ -169,6 +171,8 @@ router.patch('/:id/transitions/open-to-underreview', async (req, res) => {
 
 router.patch('/:id/transitions/underreview-to-resolved', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Moderator'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition UnderReview -> Resolved' }); return; }
   try {
     const entity = await lifecycleService.transitionUnderReviewToResolved(id);
     res.json(entity);
@@ -182,6 +186,8 @@ router.patch('/:id/transitions/underreview-to-resolved', async (req, res) => {
 
 router.patch('/:id/transitions/underreview-to-escalated', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition UnderReview -> Escalated' }); return; }
   try {
     const entity = await lifecycleService.transitionUnderReviewToEscalated(id);
     res.json(entity);
@@ -195,6 +201,8 @@ router.patch('/:id/transitions/underreview-to-escalated', async (req, res) => {
 
 router.patch('/:id/transitions/escalated-to-resolved', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Escalated -> Resolved' }); return; }
   try {
     const entity = await lifecycleService.transitionEscalatedToResolved(id);
     res.json(entity);

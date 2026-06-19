@@ -36,6 +36,7 @@ export class TradeListingService {
   async cancel(id: number): Promise<void> {
     const entity = await prisma.tradeListing.findUnique({ where: { id } });
     if (!entity) throw new Error('TradeListing not found: ' + id);
+    if (!(entity.status === 'ACTIVE')) throw new Error('Guard condition not met for cancel');
     // TODO: implement cancel domain logic
   }
 

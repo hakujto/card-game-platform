@@ -141,6 +141,8 @@ router.patch('/:id', async (req, res) => {
     if (body.cardId !== undefined) data.cardId = body.cardId;
   try {
   validate(data);
+    const existing = await prisma.tradeListing.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.tradeListing.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -207,6 +209,8 @@ router.post('/:id/finalize', async (req, res) => {
 
 router.patch('/:id/transitions/pending-to-active', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Seller'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Pending -> Active' }); return; }
   try {
     const entity = await lifecycleService.transitionPendingToActive(id);
     res.json(entity);
@@ -246,6 +250,8 @@ router.patch('/:id/transitions/active-to-expired', async (req, res) => {
 
 router.patch('/:id/transitions/active-to-cancelled', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Seller', 'Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Active -> Cancelled' }); return; }
   try {
     const entity = await lifecycleService.transitionActiveToCancelled(id);
     res.json(entity);

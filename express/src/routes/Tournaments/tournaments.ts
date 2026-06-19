@@ -158,6 +158,8 @@ router.put('/:id', async (req, res) => {
     if (body.organizerId !== undefined) data.organizerId = body.organizerId;
   try {
   validate(data);
+    const existing = await prisma.tournament.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.tournament.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -187,6 +189,8 @@ router.patch('/:id', async (req, res) => {
     if (body.organizerId !== undefined) data.organizerId = body.organizerId;
   try {
   validate(data);
+    const existing = await prisma.tournament.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.tournament.update({ where: { id: Number(req.params.id) }, data });
     res.json(applyProjection(entity));
   } catch (err: any) {
@@ -276,6 +280,8 @@ router.get('/:id/full', async (req, res) => {
 
 router.patch('/:id/transitions/draft-to-registration', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Draft -> Registration' }); return; }
   try {
     const entity = await lifecycleService.transitionDraftToRegistration(id);
     res.json(entity);
@@ -289,6 +295,8 @@ router.patch('/:id/transitions/draft-to-registration', async (req, res) => {
 
 router.patch('/:id/transitions/registration-to-ongoing', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Registration -> Ongoing' }); return; }
   try {
     const entity = await lifecycleService.transitionRegistrationToOngoing(id);
     res.json(entity);
@@ -302,6 +310,8 @@ router.patch('/:id/transitions/registration-to-ongoing', async (req, res) => {
 
 router.patch('/:id/transitions/registration-to-cancelled', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Registration -> Cancelled' }); return; }
   try {
     const entity = await lifecycleService.transitionRegistrationToCancelled(id);
     res.json(entity);
@@ -315,6 +325,8 @@ router.patch('/:id/transitions/registration-to-cancelled', async (req, res) => {
 
 router.patch('/:id/transitions/ongoing-to-completed', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin', 'Organizer'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Ongoing -> Completed' }); return; }
   try {
     const entity = await lifecycleService.transitionOngoingToCompleted(id);
     res.json(entity);
@@ -328,6 +340,8 @@ router.patch('/:id/transitions/ongoing-to-completed', async (req, res) => {
 
 router.patch('/:id/transitions/ongoing-to-cancelled', async (req, res) => {
   const id = Number(req.params.id);
+  const userRole = (req as any).user?.role;
+  if (!['Admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for transition Ongoing -> Cancelled' }); return; }
   try {
     const entity = await lifecycleService.transitionOngoingToCancelled(id);
     res.json(entity);

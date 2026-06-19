@@ -52,24 +52,24 @@ describe('Match API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('PATCH /api/matches/1/transitions/pending-to-active transitions Pending -> Active', async () => {
+  it('PATCH /api/matches/1/transitions/pending-to-active requires role for Pending -> Active', async () => {
     const res = await request(app).patch('/api/matches/1/transitions/pending-to-active');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/matches/1/transitions/active-to-completed transitions Active -> Completed', async () => {
+  it('PATCH /api/matches/1/transitions/active-to-completed requires role for Active -> Completed', async () => {
     const res = await request(app).patch('/api/matches/1/transitions/active-to-completed');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/matches/1/transitions/active-to-draw transitions Active -> Draw', async () => {
+  it('PATCH /api/matches/1/transitions/active-to-draw requires role for Active -> Draw', async () => {
     const res = await request(app).patch('/api/matches/1/transitions/active-to-draw');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
-  it('PATCH /api/matches/1/transitions/pending-to-bye transitions Pending -> BYE', async () => {
+  it('PATCH /api/matches/1/transitions/pending-to-bye requires role for Pending -> BYE', async () => {
     const res = await request(app).patch('/api/matches/1/transitions/pending-to-bye');
-    expect([200, 409, 422, 404]).toContain(res.status);
+    expect([200, 403, 409, 422, 404]).toContain(res.status);
   });
 
   it('PATCH /api/matches/1/transitions/completed-to-active is denied (409)', async () => {

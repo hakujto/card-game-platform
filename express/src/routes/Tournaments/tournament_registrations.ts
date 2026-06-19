@@ -47,6 +47,7 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const entity = await prisma.tournamentRegistration.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
+  if (entity.playerId !== (req as any).userId) return res.status(403).json({ error: 'You do not own this resource.' });
   res.json(applyProjection(entity));
 });
 
