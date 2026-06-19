@@ -22,15 +22,21 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/crafting_recipes/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/crafting_recipes/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/crafting_recipes/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/crafting_recipes/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"dustCost": 1, "isAvailable": false, "resultCardId": 1}|]
       resp <- request "PUT" "/api/crafting_recipes/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/crafting_recipes/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"dustCost": 1, "isAvailable": false, "resultCardId": 1}|]
+      resp <- request "PATCH" "/api/crafting_recipes/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/crafting_recipes/1/can-craft" $ do
     it "behavior can_craft stub returns 404 or 500" $ do

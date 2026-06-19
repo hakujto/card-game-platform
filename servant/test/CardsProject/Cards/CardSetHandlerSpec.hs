@@ -26,15 +26,21 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/card_sets/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/card_sets/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/card_sets/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/card_sets/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"name": "test", "code": "test", "releaseDate": "2024-01-01", "rotationDate": "2024-01-02", "setType": "Core", "totalCards": 1, "isRotated": false, "description": null, "logoUrl": null}|]
       resp <- request "PUT" "/api/card_sets/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/card_sets/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"name": "test", "code": "test", "releaseDate": "2024-01-01", "rotationDate": "2024-01-02", "setType": "Core", "totalCards": 1, "isRotated": false, "description": null, "logoUrl": null}|]
+      resp <- request "PATCH" "/api/card_sets/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/card_sets/1/standard-legal" $ do
     it "behavior is_legal_in_standard stub returns 404 or 500" $ do

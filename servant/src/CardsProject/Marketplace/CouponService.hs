@@ -33,9 +33,16 @@ is_valid _eid = throwIO (userError "is_valid not implemented")
 is_applicable_to_order :: Int -> IO Bool
 is_applicable_to_order _eid = throwIO (userError "is_applicable_to_order not implemented")
 
--- @invoke behavior stub (no-op)
+-- @invoke behavior with @guard
 redeem :: Int -> IO ()
-redeem _eid = throwIO (userError "redeem not implemented")
+redeem eid = withDb $ \conn -> do
+  rows <- (query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon])
+  case rows of
+    [] -> throwIO (userError "Coupon not found")
+    (entity:_) -> do
+      if not (couponIsActive entity == True)
+        then throwIO (userError "Guard condition not met for redeem")
+        else throwIO (userError "redeem not implemented")
 
 -- @invoke behavior stub (no-op)
 deactivate :: Int -> IO ()

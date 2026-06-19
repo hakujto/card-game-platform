@@ -126,8 +126,14 @@ Base URL: `http://localhost:8080`
 
 ## Tests
 
+The test suite writes to `db/test.db` without resetting it between runs.
+Re-running `cabal test` on a database already populated by a previous run
+will fail with `UNIQUE constraint failed` errors. Reset the test database
+before each run:
+
 ```bash
-cabal test
+rm -f db/test.db && mkdir -p db && sqlite3 db/test.db < schema.sql
+DATABASE_PATH=db/test.db cabal test
 ```
 
 ## Architecture

@@ -16,9 +16,9 @@ spec = with (return app) $ do
       get "/api/player_achievements" `shouldRespondWith` 200
 
   describe "GET /api/player_achievements/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/player_achievements/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/player_achievements/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/player_achievements/1/progress" $ do
     it "behavior increment_progress stub returns 404 or 500" $ do

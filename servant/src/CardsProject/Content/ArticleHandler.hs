@@ -27,9 +27,9 @@ type ArticleAPI
   :<|> "api" :> "articles" :> Capture "id" Int :> "like" :> PostNoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "like" :> DeleteNoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "reading-time" :> Get '[JSON] Int
-  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "draft-to-published" :> Patch '[JSON] Article
-  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "published-to-archived" :> Patch '[JSON] Article
-  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "archived-to-draft" :> Patch '[JSON] Article
+  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "draft-to-published" :> Header "X-User-Role" Text :> Patch '[JSON] Article
+  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "published-to-archived" :> Header "X-User-Role" Text :> Patch '[JSON] Article
+  :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "archived-to-draft" :> Header "X-User-Role" Text :> Patch '[JSON] Article
   :<|> "api" :> "articles" :> Capture "id" Int :> "transitions" :> "published-to-draft" :> Patch '[JSON] Article
 
 articleServer :: Server ArticleAPI
@@ -160,7 +160,13 @@ articleServer = listAll
             Right result -> return result
             Left _       -> throwError err500
 
-    transitionHandlerDraftToPublished eid = do
+    transitionHandlerDraftToPublished eid mRole = do
+      let allowedRoles = ["Editor", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (ArticleSvc.transitionDraftToPublished eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -170,7 +176,13 @@ articleServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerPublishedToArchived eid = do
+    transitionHandlerPublishedToArchived eid mRole = do
+      let allowedRoles = ["Editor", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (ArticleSvc.transitionPublishedToArchived eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -180,7 +192,13 @@ articleServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerArchivedToDraft eid = do
+    transitionHandlerArchivedToDraft eid mRole = do
+      let allowedRoles = ["Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (ArticleSvc.transitionArchivedToDraft eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

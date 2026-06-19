@@ -26,25 +26,39 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/streams/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/streams/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/streams/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/streams/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": null, "endedAt": null, "vodUrl": null, "tournamentId": null, "streamerId": 1}|]
       resp <- request "PUT" "/api/streams/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/streams/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"title": "test", "streamUrl": "https://example.com", "status": "Scheduled", "platform": "Twitch", "language": "EN", "isOfficial": false, "viewerCountPeak": 0, "scheduledStart": "2024-01-01T00:00:00", "actualStart": null, "endedAt": null, "vodUrl": null, "tournamentId": null, "streamerId": 1}|]
+      resp <- request "PATCH" "/api/streams/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/streams/1/transitions/scheduled-to-live" $ do
-    it "transitions Scheduled -> Live" $ do
-      resp <- request "PATCH" "/api/streams/1/transitions/scheduled-to-live" [] ""
+    it "transitions Scheduled -> Live with role Streamer" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/scheduled-to-live" [("X-User-Role","Streamer")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Scheduled -> Live without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/scheduled-to-live" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/streams/1/transitions/live-to-ended" $ do
-    it "transitions Live -> Ended" $ do
-      resp <- request "PATCH" "/api/streams/1/transitions/live-to-ended" [] ""
+    it "transitions Live -> Ended with role Streamer" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/live-to-ended" [("X-User-Role","Streamer")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Live -> Ended without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/streams/1/transitions/live-to-ended" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/streams/1/transitions/ended-to-live" $ do
     it "is denied (409 or 404)" $ do

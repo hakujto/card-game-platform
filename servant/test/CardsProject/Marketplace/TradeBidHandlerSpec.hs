@@ -22,9 +22,9 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/trade_bids/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/trade_bids/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/trade_bids/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/trade_bids/1/outbid" $ do
     it "behavior outbid_by stub returns 404 or 500" $ do

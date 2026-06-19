@@ -29,11 +29,11 @@ type TournamentAPI
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "prizes" :> Get '[JSON] Text
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "register" :> ReqBody '[JSON] Object :> PostNoContent
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "full" :> Get '[JSON] Bool
-  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "draft-to-registration" :> Patch '[JSON] Tournament
-  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-ongoing" :> Patch '[JSON] Tournament
-  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-cancelled" :> Patch '[JSON] Tournament
-  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-completed" :> Patch '[JSON] Tournament
-  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-cancelled" :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "draft-to-registration" :> Header "X-User-Role" Text :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-ongoing" :> Header "X-User-Role" Text :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "registration-to-cancelled" :> Header "X-User-Role" Text :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-completed" :> Header "X-User-Role" Text :> Patch '[JSON] Tournament
+  :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "ongoing-to-cancelled" :> Header "X-User-Role" Text :> Patch '[JSON] Tournament
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "completed-to-draft" :> Patch '[JSON] Tournament
   :<|> "api" :> "tournaments" :> Capture "id" Int :> "transitions" :> "cancelled-to-draft" :> Patch '[JSON] Tournament
 
@@ -181,7 +181,13 @@ tournamentServer = listAll
             Right result -> return result
             Left _       -> throwError err500
 
-    transitionHandlerDraftToRegistration eid = do
+    transitionHandlerDraftToRegistration eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TournamentSvc.transitionDraftToRegistration eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -191,7 +197,13 @@ tournamentServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerRegistrationToOngoing eid = do
+    transitionHandlerRegistrationToOngoing eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TournamentSvc.transitionRegistrationToOngoing eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -201,7 +213,13 @@ tournamentServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerRegistrationToCancelled eid = do
+    transitionHandlerRegistrationToCancelled eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TournamentSvc.transitionRegistrationToCancelled eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -211,7 +229,13 @@ tournamentServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerOngoingToCompleted eid = do
+    transitionHandlerOngoingToCompleted eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TournamentSvc.transitionOngoingToCompleted eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -221,7 +245,13 @@ tournamentServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerOngoingToCancelled eid = do
+    transitionHandlerOngoingToCancelled eid mRole = do
+      let allowedRoles = ["Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TournamentSvc.transitionOngoingToCancelled eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

@@ -33,9 +33,16 @@ close _eid = throwIO (userError "close not implemented")
 extend :: Int -> IO ()
 extend _eid = throwIO (userError "extend not implemented")
 
--- @invoke behavior stub (no-op)
+-- @invoke behavior with @guard
 cancel :: Int -> IO ()
-cancel _eid = throwIO (userError "cancel not implemented")
+cancel eid = withDb $ \conn -> do
+  rows <- (query conn "SELECT id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, created_at, expires_at, seller_id, card_id FROM trade_listings WHERE id = ?" (Only eid) :: IO [TradeListing])
+  case rows of
+    [] -> throwIO (userError "TradeListing not found")
+    (entity:_) -> do
+      if not (tradeListingStatus entity == TradeListingStatusType_Active)
+        then throwIO (userError "Guard condition not met for cancel")
+        else throwIO (userError "cancel not implemented")
 
 -- @invoke behavior stub (no-op)
 is_expired :: Int -> IO Bool

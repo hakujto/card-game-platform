@@ -26,9 +26,15 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/players/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/players/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/players/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/players/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"displayName": "test", "rank": "Bronze", "rating": 0, "peakRating": 1, "bio": null, "countryCode": null, "avatarUrl": null, "preferredFormat": null, "isVerified": false, "createdAt": "2024-01-01T00:00:00", "lastActiveAt": null, "userId": null}|]
+      resp <- request "PATCH" "/api/players/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "POST /api/players/1/promote" $ do
     it "behavior promote stub returns 404 or 500" $ do

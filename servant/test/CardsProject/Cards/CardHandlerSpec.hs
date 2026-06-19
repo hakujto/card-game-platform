@@ -26,15 +26,21 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/cards/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/cards/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/cards/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/cards/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"name": "test", "cardType": "Creature", "rarity": "Common", "manaCost": 0, "manaColors": "White", "attack": 1, "defense": 1, "loyalty": null, "description": "test", "flavorText": null, "imageUrl": null, "artistName": null, "legalFormats": "Standard", "isBanned": false, "isRestricted": false, "powerLevel": 1, "setId": 1}|]
       resp <- request "PUT" "/api/cards/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/cards/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"name": "test", "cardType": "Creature", "rarity": "Common", "manaCost": 0, "manaColors": "White", "attack": 1, "defense": 1, "loyalty": null, "description": "test", "flavorText": null, "imageUrl": null, "artistName": null, "legalFormats": "Standard", "isBanned": false, "isRestricted": false, "powerLevel": 1, "setId": 1}|]
+      resp <- request "PATCH" "/api/cards/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "POST /api/cards/1/ban" $ do
     it "behavior ban stub returns 404 or 500" $ do

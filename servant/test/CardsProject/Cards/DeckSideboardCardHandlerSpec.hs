@@ -22,14 +22,20 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/deck_sideboard_cards/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/deck_sideboard_cards/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/deck_sideboard_cards/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/deck_sideboard_cards/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"quantity": 1, "deckId": 1, "cardId": 1}|]
+      resp <- request "PATCH" "/api/deck_sideboard_cards/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "DELETE /api/deck_sideboard_cards/1" $ do
-    it "returns 204 or 404" $ do
+    it "returns 204, 401, 403, or 404" $ do
       resp <- request "DELETE" "/api/deck_sideboard_cards/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/deck_sideboard_cards/1/increment" $ do
     it "behavior increment stub returns 404 or 500" $ do

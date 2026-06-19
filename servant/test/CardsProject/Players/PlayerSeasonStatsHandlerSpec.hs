@@ -16,9 +16,9 @@ spec = with (return app) $ do
       get "/api/player_season_statses" `shouldRespondWith` 200
 
   describe "GET /api/player_season_statses/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/player_season_statses/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/player_season_statses/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/player_season_statses/1/win-rate" $ do
     it "behavior win_rate stub returns 404 or 500" $ do

@@ -63,3 +63,7 @@ is_legal_in_format _eid = throwIO (userError "is_legal_in_format not implemented
 validateLegalityHook :: a -> IO ()
 validateLegalityHook _ = return ()
 
+-- TODO: implement validate_not_in_use
+validateNotInUseHook :: a -> IO ()
+validateNotInUseHook _ = return ()
+

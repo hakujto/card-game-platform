@@ -26,14 +26,24 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/trade_listings/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/trade_listings/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/trade_listings/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/trade_listings/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"status": "Active", "listingType": "FixedPrice", "askingPrice": 1.0, "auctionStartPrice": 1.0, "auctionCurrentBid": null, "auctionEndTime": "2024-01-01T00:00:00Z", "foil": false, "condition": "Mint", "quantity": 1, "description": null, "createdAt": "2024-01-01T00:00:00", "expiresAt": null, "sellerId": 1, "cardId": 1}|]
+      resp <- request "PATCH" "/api/trade_listings/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/trade_listings/1/transitions/pending-to-active" $ do
-    it "transitions Pending -> Active" $ do
-      resp <- request "PATCH" "/api/trade_listings/1/transitions/pending-to-active" [] ""
+    it "transitions Pending -> Active with role Seller" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/pending-to-active" [("X-User-Role","Seller")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Pending -> Active without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/pending-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/trade_listings/1/transitions/active-to-sold" $ do
     it "transitions Active -> Sold" $ do
@@ -46,9 +56,13 @@ spec = with (return app) $ do
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
   describe "PATCH /api/trade_listings/1/transitions/active-to-cancelled" $ do
-    it "transitions Active -> Cancelled" $ do
-      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-cancelled" [] ""
+    it "transitions Active -> Cancelled with role Seller" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-cancelled" [("X-User-Role","Seller")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Active -> Cancelled without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_listings/1/transitions/active-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/trade_listings/1/transitions/sold-to-active" $ do
     it "is denied (409 or 404)" $ do

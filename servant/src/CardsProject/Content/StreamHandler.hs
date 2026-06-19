@@ -26,8 +26,8 @@ type StreamAPI
   :<|> "api" :> "streams" :> Capture "id" Int :> "end" :> PostNoContent
   :<|> "api" :> "streams" :> Capture "id" Int :> "viewers" :> ReqBody '[JSON] Object :> PatchNoContent
   :<|> "api" :> "streams" :> Capture "id" Int :> "duration" :> Get '[JSON] Int
-  :<|> "api" :> "streams" :> Capture "id" Int :> "transitions" :> "scheduled-to-live" :> Patch '[JSON] Stream
-  :<|> "api" :> "streams" :> Capture "id" Int :> "transitions" :> "live-to-ended" :> Patch '[JSON] Stream
+  :<|> "api" :> "streams" :> Capture "id" Int :> "transitions" :> "scheduled-to-live" :> Header "X-User-Role" Text :> Patch '[JSON] Stream
+  :<|> "api" :> "streams" :> Capture "id" Int :> "transitions" :> "live-to-ended" :> Header "X-User-Role" Text :> Patch '[JSON] Stream
   :<|> "api" :> "streams" :> Capture "id" Int :> "transitions" :> "ended-to-live" :> Patch '[JSON] Stream
 
 streamServer :: Server StreamAPI
@@ -131,7 +131,13 @@ streamServer = listAll
             Right result -> return result
             Left _       -> throwError err500
 
-    transitionHandlerScheduledToLive eid = do
+    transitionHandlerScheduledToLive eid mRole = do
+      let allowedRoles = ["Streamer", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (StreamSvc.transitionScheduledToLive eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -141,7 +147,13 @@ streamServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerLiveToEnded eid = do
+    transitionHandlerLiveToEnded eid mRole = do
+      let allowedRoles = ["Streamer", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (StreamSvc.transitionLiveToEnded eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

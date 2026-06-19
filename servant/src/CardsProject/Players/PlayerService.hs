@@ -49,6 +49,10 @@ update_rating _eid = throwIO (userError "update_rating not implemented")
 
 -- ── Lifecycle hooks ─────────────────────────────────────────────────
 
+-- TODO: implement initialize_collection
+initializeCollectionHook :: a -> IO ()
+initializeCollectionHook _ = return ()
+
 -- TODO: implement update_rank
 updateRankHook :: a -> IO ()
 updateRankHook _ = return ()

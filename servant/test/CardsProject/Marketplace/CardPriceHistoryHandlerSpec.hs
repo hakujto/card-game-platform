@@ -16,9 +16,9 @@ spec = with (return app) $ do
       get "/api/card_price_histories" `shouldRespondWith` 200
 
   describe "GET /api/card_price_histories/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/card_price_histories/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/card_price_histories/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/card_price_histories/1/change" $ do
     it "behavior price_change_percent stub returns 404 or 500" $ do

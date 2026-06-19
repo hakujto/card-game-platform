@@ -22,29 +22,45 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/matches/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/matches/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/matches/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/matches/1/transitions/pending-to-active" $ do
-    it "transitions Pending -> Active" $ do
-      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-active" [] ""
+    it "transitions Pending -> Active with role Judge" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-active" [("X-User-Role","Judge")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Pending -> Active without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-active" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/matches/1/transitions/active-to-completed" $ do
-    it "transitions Active -> Completed" $ do
-      resp <- request "PATCH" "/api/matches/1/transitions/active-to-completed" [] ""
+    it "transitions Active -> Completed with role Judge" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-completed" [("X-User-Role","Judge")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Active -> Completed without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/matches/1/transitions/active-to-draw" $ do
-    it "transitions Active -> Draw" $ do
-      resp <- request "PATCH" "/api/matches/1/transitions/active-to-draw" [] ""
+    it "transitions Active -> Draw with role Judge" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-draw" [("X-User-Role","Judge")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Active -> Draw without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/active-to-draw" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/matches/1/transitions/pending-to-bye" $ do
-    it "transitions Pending -> BYE" $ do
-      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-bye" [] ""
+    it "transitions Pending -> BYE with role Judge" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-bye" [("X-User-Role","Judge")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Pending -> BYE without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/matches/1/transitions/pending-to-bye" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/matches/1/transitions/completed-to-active" $ do
     it "is denied (409 or 404)" $ do

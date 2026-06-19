@@ -22,12 +22,12 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/crafting_ingredients/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/crafting_ingredients/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/crafting_ingredients/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "DELETE /api/crafting_ingredients/1" $ do
-    it "returns 204 or 404" $ do
+    it "returns 204, 401, 403, or 404" $ do
       resp <- request "DELETE" "/api/crafting_ingredients/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 401 || s == 403 || s == 404
 

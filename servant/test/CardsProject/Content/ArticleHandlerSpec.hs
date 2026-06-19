@@ -26,30 +26,48 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/articles/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/articles/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/articles/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/articles/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "PUT" "/api/articles/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/articles/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      resp <- request "PATCH" "/api/articles/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/articles/1/transitions/draft-to-published" $ do
-    it "transitions Draft -> Published" $ do
-      resp <- request "PATCH" "/api/articles/1/transitions/draft-to-published" [] ""
+    it "transitions Draft -> Published with role Editor" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/draft-to-published" [("X-User-Role","Editor")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Draft -> Published without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/draft-to-published" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/articles/1/transitions/published-to-archived" $ do
-    it "transitions Published -> Archived" $ do
-      resp <- request "PATCH" "/api/articles/1/transitions/published-to-archived" [] ""
+    it "transitions Published -> Archived with role Editor" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/published-to-archived" [("X-User-Role","Editor")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Published -> Archived without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/published-to-archived" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/articles/1/transitions/archived-to-draft" $ do
-    it "transitions Archived -> Draft" $ do
-      resp <- request "PATCH" "/api/articles/1/transitions/archived-to-draft" [] ""
+    it "transitions Archived -> Draft with role Admin" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/archived-to-draft" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Archived -> Draft without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/articles/1/transitions/archived-to-draft" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/articles/1/transitions/published-to-draft" $ do
     it "is denied (409 or 404)" $ do

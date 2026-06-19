@@ -12,6 +12,7 @@ import Database.SQLite.Simple
 import qualified CardsProject.Marketplace.OrderService as OrderSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
+import qualified Data.Text
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
@@ -19,7 +20,7 @@ import Data.Text (Text)
 type OrderAPI
   =    "api" :> "orders" :> Get '[JSON] [Order]
   :<|> "api" :> "orders" :> ReqBody '[JSON] NewOrder :> PostCreated '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> Get '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> Header "X-User-Id" Text :> Get '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "cancel" :> DeleteNoContent
   :<|> "api" :> "orders" :> Capture "id" Int :> "pay" :> ReqBody '[JSON] Object :> Post '[JSON] Bool
   :<|> "api" :> "orders" :> Capture "id" Int :> "process-payment" :> Post '[JSON] Bool
@@ -27,12 +28,12 @@ type OrderAPI
   :<|> "api" :> "orders" :> Capture "id" Int :> "discount" :> ReqBody '[JSON] Object :> Patch '[JSON] Text
   :<|> "api" :> "orders" :> Capture "id" Int :> "refund" :> PostNoContent
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "pending-to-paid" :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "paid-to-processing" :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "processing-to-shipped" :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "shipped-to-completed" :> Patch '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "paid-to-processing" :> Header "X-User-Role" Text :> Patch '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "processing-to-shipped" :> Header "X-User-Role" Text :> Patch '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "shipped-to-completed" :> Header "X-User-Role" Text :> Patch '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "pending-to-cancelled" :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "paid-to-cancelled" :> Patch '[JSON] Order
-  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "completed-to-refunded" :> Patch '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "paid-to-cancelled" :> Header "X-User-Role" Text :> Patch '[JSON] Order
+  :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "completed-to-refunded" :> Header "X-User-Role" Text :> Patch '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "refunded-to-completed" :> Patch '[JSON] Order
   :<|> "api" :> "orders" :> Capture "id" Int :> "transitions" :> "completed-to-cancelled" :> Patch '[JSON] Order
 
@@ -72,11 +73,15 @@ orderServer = listAll
             Just r  -> return r
             Nothing -> throwError err500
 
-    getOne eid = do
+    getOne eid mUserId = do
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order]
       case rows of
-        (r:_) -> return r
+        (r:_) -> case mUserId of
+          Nothing  -> throwError err401
+          Just uid -> if orderPlayerId r /= Just (read (Data.Text.unpack uid) :: Int)
+            then throwError err403
+            else return r
         []    -> throwError err404
 
     behaviorCancel eid = do
@@ -161,7 +166,13 @@ orderServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerPaidToProcessing eid = do
+    transitionHandlerPaidToProcessing eid mRole = do
+      let allowedRoles = ["Admin", "Staff"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (OrderSvc.transitionPaidToProcessing eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -171,7 +182,13 @@ orderServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerProcessingToShipped eid = do
+    transitionHandlerProcessingToShipped eid mRole = do
+      let allowedRoles = ["Admin", "Staff"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (OrderSvc.transitionProcessingToShipped eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -181,7 +198,13 @@ orderServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerShippedToCompleted eid = do
+    transitionHandlerShippedToCompleted eid mRole = do
+      let allowedRoles = ["Admin", "Staff"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (OrderSvc.transitionShippedToCompleted eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -201,7 +224,13 @@ orderServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerPaidToCancelled eid = do
+    transitionHandlerPaidToCancelled eid mRole = do
+      let allowedRoles = ["Admin", "Staff"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (OrderSvc.transitionPaidToCancelled eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -211,7 +240,13 @@ orderServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerCompletedToRefunded eid = do
+    transitionHandlerCompletedToRefunded eid mRole = do
+      let allowedRoles = ["Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (OrderSvc.transitionCompletedToRefunded eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

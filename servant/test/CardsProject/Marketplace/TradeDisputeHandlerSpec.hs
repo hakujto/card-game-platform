@@ -22,29 +22,45 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/trade_disputes/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/trade_disputes/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/trade_disputes/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/trade_disputes/1/transitions/open-to-underreview" $ do
-    it "transitions Open -> UnderReview" $ do
-      resp <- request "PATCH" "/api/trade_disputes/1/transitions/open-to-underreview" [] ""
+    it "transitions Open -> UnderReview with role Admin" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/open-to-underreview" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Open -> UnderReview without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/open-to-underreview" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/trade_disputes/1/transitions/underreview-to-resolved" $ do
-    it "transitions UnderReview -> Resolved" $ do
-      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-resolved" [] ""
+    it "transitions UnderReview -> Resolved with role Admin" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-resolved" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects UnderReview -> Resolved without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-resolved" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/trade_disputes/1/transitions/underreview-to-escalated" $ do
-    it "transitions UnderReview -> Escalated" $ do
-      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-escalated" [] ""
+    it "transitions UnderReview -> Escalated with role Admin" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-escalated" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects UnderReview -> Escalated without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/underreview-to-escalated" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/trade_disputes/1/transitions/escalated-to-resolved" $ do
-    it "transitions Escalated -> Resolved" $ do
-      resp <- request "PATCH" "/api/trade_disputes/1/transitions/escalated-to-resolved" [] ""
+    it "transitions Escalated -> Resolved with role Admin" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/escalated-to-resolved" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Escalated -> Resolved without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/trade_disputes/1/transitions/escalated-to-resolved" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/trade_disputes/1/transitions/resolved-to-open" $ do
     it "is denied (409 or 404)" $ do

@@ -11,6 +11,8 @@ import CardsProject.Db (withDb)
 import Database.SQLite.Simple
 import qualified CardsProject.Tournaments.TournamentRegistrationService as TournamentRegistrationSvc
 import qualified Data.ByteString.Lazy.Char8
+import Data.Text (Text)
+import qualified Data.Text
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
 import Data.Text (Text)
@@ -18,7 +20,7 @@ import Data.Text (Text)
 type TournamentRegistrationAPI
   =    "api" :> "tournament_registrations" :> Get '[JSON] [TournamentRegistration]
   :<|> "api" :> "tournament_registrations" :> ReqBody '[JSON] NewTournamentRegistration :> PostCreated '[JSON] TournamentRegistration
-  :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> Get '[JSON] TournamentRegistration
+  :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> Header "X-User-Id" Text :> Get '[JSON] TournamentRegistration
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "withdraw" :> PostNoContent
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "disqualify" :> ReqBody '[JSON] Object :> PostNoContent
   :<|> "api" :> "tournament_registrations" :> Capture "id" Int :> "promote" :> PostNoContent
@@ -47,11 +49,15 @@ tournamentRegistrationServer = listAll
             Just r  -> return r
             Nothing -> throwError err500
 
-    getOne eid = do
+    getOne eid mUserId = do
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, status, seed, final_standing, points_earned, registered_at, tournament_id, player_id, deck_id FROM tournament_registrations WHERE id = ?" (Only eid) :: IO [TournamentRegistration]
       case rows of
-        (r:_) -> return r
+        (r:_) -> case mUserId of
+          Nothing  -> throwError err401
+          Just uid -> if tournamentRegistrationPlayerId r /= Just (read (Data.Text.unpack uid) :: Int)
+            then throwError err403
+            else return r
         []    -> throwError err404
 
     behaviorWithdraw eid = do

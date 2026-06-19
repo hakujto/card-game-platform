@@ -22,9 +22,9 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/draft_sessions/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/draft_sessions/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/draft_sessions/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-drafting" $ do
     it "transitions WaitingForPlayers -> Drafting" $ do
@@ -37,14 +37,22 @@ spec = with (return app) $ do
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
   describe "PATCH /api/draft_sessions/1/transitions/drafting-to-abandoned" $ do
-    it "transitions Drafting -> Abandoned" $ do
-      resp <- request "PATCH" "/api/draft_sessions/1/transitions/drafting-to-abandoned" [] ""
+    it "transitions Drafting -> Abandoned with role Admin" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/drafting-to-abandoned" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Drafting -> Abandoned without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/drafting-to-abandoned" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" $ do
-    it "transitions WaitingForPlayers -> Abandoned" $ do
-      resp <- request "PATCH" "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" [] ""
+    it "transitions WaitingForPlayers -> Abandoned with role Admin" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects WaitingForPlayers -> Abandoned without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/draft_sessions/1/transitions/waitingforplayers-to-abandoned" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/draft_sessions/1/transitions/completed-to-drafting" $ do
     it "is denied (409 or 404)" $ do

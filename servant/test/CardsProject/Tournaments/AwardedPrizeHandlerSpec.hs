@@ -16,9 +16,9 @@ spec = with (return app) $ do
       get "/api/awarded_prizes" `shouldRespondWith` 200
 
   describe "GET /api/awarded_prizes/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/awarded_prizes/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/awarded_prizes/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "POST /api/awarded_prizes/1/claim" $ do
     it "behavior claim stub returns 404 or 500" $ do

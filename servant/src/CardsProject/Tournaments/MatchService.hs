@@ -39,9 +39,16 @@ finalize_result _eid = throwIO (userError "finalize_result not implemented")
 determine_winner :: Int -> IO Bool
 determine_winner _eid = throwIO (userError "determine_winner not implemented")
 
--- @invoke behavior stub (no-op)
+-- @invoke behavior with @guard
 concede :: Int -> IO ()
-concede _eid = throwIO (userError "concede not implemented")
+concede eid = withDb $ \conn -> do
+  rows <- (query conn "SELECT id, table_number, status, player1_wins, player2_wins, started_at, ended_at, result_notes, round_id, player1_id, player2_id FROM matches WHERE id = ?" (Only eid) :: IO [Match])
+  case rows of
+    [] -> throwIO (userError "Match not found")
+    (entity:_) -> do
+      if not (matchStatus entity == MatchStatusType_Active)
+        then throwIO (userError "Guard condition not met for concede")
+        else throwIO (userError "concede not implemented")
 
 -- @invoke behavior stub (no-op)
 draw :: Int -> IO ()

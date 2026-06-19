@@ -26,40 +26,66 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/tournaments/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/tournaments/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/tournaments/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/tournaments/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"name": "test", "description": null, "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 2, "entryFee": 0, "prizePool": 0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-02T00:00:00Z", "isOnline": false, "location": null, "rulesText": null, "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
       resp <- request "PUT" "/api/tournaments/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/tournaments/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"name": "test", "description": null, "status": "Draft", "format": "Standard", "tournamentType": "Swiss", "maxPlayers": 2, "entryFee": 0, "prizePool": 0, "startTime": "2024-01-01T00:00:00", "endTime": "2024-01-02T00:00:00Z", "isOnline": false, "location": null, "rulesText": null, "createdAt": "2024-01-01T00:00:00", "seasonId": 1, "organizerId": 1}|]
+      resp <- request "PATCH" "/api/tournaments/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/tournaments/1/transitions/draft-to-registration" $ do
-    it "transitions Draft -> Registration" $ do
-      resp <- request "PATCH" "/api/tournaments/1/transitions/draft-to-registration" [] ""
+    it "transitions Draft -> Registration with role Admin" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/draft-to-registration" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Draft -> Registration without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/draft-to-registration" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/tournaments/1/transitions/registration-to-ongoing" $ do
-    it "transitions Registration -> Ongoing" $ do
-      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-ongoing" [] ""
+    it "transitions Registration -> Ongoing with role Admin" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-ongoing" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Registration -> Ongoing without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-ongoing" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/tournaments/1/transitions/registration-to-cancelled" $ do
-    it "transitions Registration -> Cancelled" $ do
-      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-cancelled" [] ""
+    it "transitions Registration -> Cancelled with role Admin" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-cancelled" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Registration -> Cancelled without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/registration-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/tournaments/1/transitions/ongoing-to-completed" $ do
-    it "transitions Ongoing -> Completed" $ do
-      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-completed" [] ""
+    it "transitions Ongoing -> Completed with role Admin" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-completed" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Ongoing -> Completed without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/tournaments/1/transitions/ongoing-to-cancelled" $ do
-    it "transitions Ongoing -> Cancelled" $ do
-      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-cancelled" [] ""
+    it "transitions Ongoing -> Cancelled with role Admin" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-cancelled" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Ongoing -> Cancelled without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/tournaments/1/transitions/ongoing-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/tournaments/1/transitions/completed-to-draft" $ do
     it "is denied (409 or 404)" $ do

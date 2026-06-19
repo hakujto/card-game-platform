@@ -26,10 +26,10 @@ type TradeListingAPI
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "cancel" :> DeleteNoContent
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "expired" :> Get '[JSON] Bool
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "finalize" :> PostNoContent
-  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Header "X-User-Role" Text :> Patch '[JSON] TradeListing
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-sold" :> Patch '[JSON] TradeListing
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-expired" :> Patch '[JSON] TradeListing
-  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-cancelled" :> Patch '[JSON] TradeListing
+  :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "active-to-cancelled" :> Header "X-User-Role" Text :> Patch '[JSON] TradeListing
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "sold-to-active" :> Patch '[JSON] TradeListing
   :<|> "api" :> "trade_listings" :> Capture "id" Int :> "transitions" :> "expired-to-active" :> Patch '[JSON] TradeListing
 
@@ -147,7 +147,13 @@ tradeListingServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    transitionHandlerPendingToActive eid = do
+    transitionHandlerPendingToActive eid mRole = do
+      let allowedRoles = ["Seller"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeListingSvc.transitionPendingToActive eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -177,7 +183,13 @@ tradeListingServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerActiveToCancelled eid = do
+    transitionHandlerActiveToCancelled eid mRole = do
+      let allowedRoles = ["Seller", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeListingSvc.transitionActiveToCancelled eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

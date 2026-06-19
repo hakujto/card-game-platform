@@ -15,5 +15,6 @@ jobs:
           key: cabal-${{ hashFiles('*.cabal') }}
       - run: cabal update
       - run: cabal build --only-dependencies
-      - run: mkdir -p db && sqlite3 db/test.db < schema.sql
-      - run: cabal test
+      - run: mkdir -p db && rm -f db/test.db && sqlite3 db/test.db < schema.sql
+      - run: DATABASE_PATH=db/test.db cabal test
+      - run: rm -f db/cards-project.db && sqlite3 db/cards-project.db < schema.sql

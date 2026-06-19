@@ -31,9 +31,16 @@ validateOrderImplies body
 cancel :: Int -> IO ()
 cancel _eid = throwIO (userError "cancel not implemented")
 
--- @invoke behavior stub (no-op)
+-- @invoke behavior with @guard
 pay :: Int -> IO Bool
-pay _eid = throwIO (userError "pay not implemented")
+pay eid = withDb $ \conn -> do
+  rows <- (query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only eid) :: IO [Order])
+  case rows of
+    [] -> throwIO (userError "Order not found")
+    (entity:_) -> do
+      if not (orderStatus entity == OrderStatusType_Pending)
+        then throwIO (userError "Guard condition not met for pay")
+        else throwIO (userError "pay not implemented")
 
 -- @invoke behavior stub (no-op)
 process_payment :: Int -> IO Bool
@@ -203,6 +210,10 @@ transitionCompletedToCancelled eid = withDb $ \conn -> do
       throwIO (userError "Transition Completed -> Cancelled is not allowed")
 
 -- ── Lifecycle hooks ─────────────────────────────────────────────────
+
+-- TODO: implement assign_currency_default
+assignCurrencyDefaultHook :: a -> IO ()
+assignCurrencyDefaultHook _ = return ()
 
 -- TODO: implement notify_status_change
 notifyStatusChangeHook :: a -> IO ()

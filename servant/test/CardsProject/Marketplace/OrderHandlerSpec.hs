@@ -17,14 +17,14 @@ spec = with (return app) $ do
 
   describe "POST /api/orders" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"status": "Pending", "total": 0, "discountApplied": 0.0, "currency": "test", "paymentMethod": null, "paymentReference": null, "shippingAddress": null, "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00Z", "shippedAt": null, "playerId": 1, "couponId": null}|]
+      let body = [json|{"status": "Pending", "total": 0, "discountApplied": 0.0, "currency": "test", "paymentMethod": null, "paymentReference": null, "shippingAddress": null, "trackingNumber": "test", "createdAt": "2024-01-01T00:00:00", "paidAt": "2024-01-01T00:00:00Z", "shippedAt": null, "couponId": null, "playerId": 1}|]
       request "POST" "/api/orders" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
   describe "GET /api/orders/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/orders/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/orders/1" [("X-User-Id","1")] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/orders/1/transitions/pending-to-paid" $ do
     it "transitions Pending -> Paid" $ do
@@ -32,19 +32,31 @@ spec = with (return app) $ do
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
   describe "PATCH /api/orders/1/transitions/paid-to-processing" $ do
-    it "transitions Paid -> Processing" $ do
-      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-processing" [] ""
+    it "transitions Paid -> Processing with role Admin" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-processing" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Paid -> Processing without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-processing" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/orders/1/transitions/processing-to-shipped" $ do
-    it "transitions Processing -> Shipped" $ do
-      resp <- request "PATCH" "/api/orders/1/transitions/processing-to-shipped" [] ""
+    it "transitions Processing -> Shipped with role Admin" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/processing-to-shipped" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Processing -> Shipped without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/processing-to-shipped" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/orders/1/transitions/shipped-to-completed" $ do
-    it "transitions Shipped -> Completed" $ do
-      resp <- request "PATCH" "/api/orders/1/transitions/shipped-to-completed" [] ""
+    it "transitions Shipped -> Completed with role Admin" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/shipped-to-completed" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Shipped -> Completed without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/shipped-to-completed" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/orders/1/transitions/pending-to-cancelled" $ do
     it "transitions Pending -> Cancelled" $ do
@@ -52,14 +64,22 @@ spec = with (return app) $ do
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
   describe "PATCH /api/orders/1/transitions/paid-to-cancelled" $ do
-    it "transitions Paid -> Cancelled" $ do
-      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-cancelled" [] ""
+    it "transitions Paid -> Cancelled with role Admin" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-cancelled" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
 
+    it "rejects Paid -> Cancelled without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/paid-to-cancelled" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
+
   describe "PATCH /api/orders/1/transitions/completed-to-refunded" $ do
-    it "transitions Completed -> Refunded" $ do
-      resp <- request "PATCH" "/api/orders/1/transitions/completed-to-refunded" [] ""
+    it "transitions Completed -> Refunded with role Admin" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/completed-to-refunded" [("X-User-Role","Admin")] ""
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s `elem` [200, 409, 404, 500]
+
+    it "rejects Completed -> Refunded without role (401 or 403)" $ do
+      resp <- request "PATCH" "/api/orders/1/transitions/completed-to-refunded" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 401 || s == 403
 
   describe "PATCH /api/orders/1/transitions/refunded-to-completed" $ do
     it "is denied (409 or 404)" $ do

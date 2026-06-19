@@ -24,10 +24,10 @@ type TradeDisputeAPI
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "resolve" :> ReqBody '[JSON] Object :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "close" :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "review" :> PostNoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "open-to-underreview" :> Patch '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-resolved" :> Patch '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-escalated" :> Patch '[JSON] TradeDispute
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "escalated-to-resolved" :> Patch '[JSON] TradeDispute
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "open-to-underreview" :> Header "X-User-Role" Text :> Patch '[JSON] TradeDispute
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-resolved" :> Header "X-User-Role" Text :> Patch '[JSON] TradeDispute
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "underreview-to-escalated" :> Header "X-User-Role" Text :> Patch '[JSON] TradeDispute
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "escalated-to-resolved" :> Header "X-User-Role" Text :> Patch '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "resolved-to-open" :> Patch '[JSON] TradeDispute
 
 tradeDisputeServer :: Server TradeDisputeAPI
@@ -115,7 +115,13 @@ tradeDisputeServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    transitionHandlerOpenToUnderReview eid = do
+    transitionHandlerOpenToUnderReview eid mRole = do
+      let allowedRoles = ["Admin", "Moderator"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeDisputeSvc.transitionOpenToUnderReview eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -125,7 +131,13 @@ tradeDisputeServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerUnderReviewToResolved eid = do
+    transitionHandlerUnderReviewToResolved eid mRole = do
+      let allowedRoles = ["Admin", "Moderator"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeDisputeSvc.transitionUnderReviewToResolved eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -135,7 +147,13 @@ tradeDisputeServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerUnderReviewToEscalated eid = do
+    transitionHandlerUnderReviewToEscalated eid mRole = do
+      let allowedRoles = ["Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeDisputeSvc.transitionUnderReviewToEscalated eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -145,7 +163,13 @@ tradeDisputeServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerEscalatedToResolved eid = do
+    transitionHandlerEscalatedToResolved eid mRole = do
+      let allowedRoles = ["Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (TradeDisputeSvc.transitionEscalatedToResolved eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

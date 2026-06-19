@@ -22,20 +22,26 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/tournament_prizes/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/tournament_prizes/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/tournament_prizes/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/tournament_prizes/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"placementFrom": 1, "placementTo": 1, "prizeType": "Currency", "amount": 0, "description": null, "packsCount": null, "seasonPoints": 0, "tournamentId": 1}|]
       resp <- request "PUT" "/api/tournament_prizes/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/tournament_prizes/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"placementFrom": 1, "placementTo": 1, "prizeType": "Currency", "amount": 0, "description": null, "packsCount": null, "seasonPoints": 0, "tournamentId": 1}|]
+      resp <- request "PATCH" "/api/tournament_prizes/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "DELETE /api/tournament_prizes/1" $ do
-    it "returns 204 or 404" $ do
+    it "returns 204, 401, 403, or 404" $ do
       resp <- request "DELETE" "/api/tournament_prizes/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/tournament_prizes/1/applies" $ do
     it "behavior applies_to_placement stub returns 404 or 500" $ do

@@ -25,10 +25,10 @@ type MatchAPI
   :<|> "api" :> "matches" :> Capture "id" Int :> "winner" :> Get '[JSON] Bool
   :<|> "api" :> "matches" :> Capture "id" Int :> "concede" :> ReqBody '[JSON] Object :> PostNoContent
   :<|> "api" :> "matches" :> Capture "id" Int :> "draw" :> PostNoContent
-  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Patch '[JSON] Match
-  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-completed" :> Patch '[JSON] Match
-  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-draw" :> Patch '[JSON] Match
-  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-bye" :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-active" :> Header "X-User-Role" Text :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-completed" :> Header "X-User-Role" Text :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "active-to-draw" :> Header "X-User-Role" Text :> Patch '[JSON] Match
+  :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "pending-to-bye" :> Header "X-User-Role" Text :> Patch '[JSON] Match
   :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "completed-to-active" :> Patch '[JSON] Match
   :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "draw-to-active" :> Patch '[JSON] Match
   :<|> "api" :> "matches" :> Capture "id" Int :> "transitions" :> "bye-to-active" :> Patch '[JSON] Match
@@ -133,7 +133,13 @@ matchServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    transitionHandlerPendingToActive eid = do
+    transitionHandlerPendingToActive eid mRole = do
+      let allowedRoles = ["Judge", "HeadJudge", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (MatchSvc.transitionPendingToActive eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -143,7 +149,13 @@ matchServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerActiveToCompleted eid = do
+    transitionHandlerActiveToCompleted eid mRole = do
+      let allowedRoles = ["Judge", "HeadJudge", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (MatchSvc.transitionActiveToCompleted eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -153,7 +165,13 @@ matchServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerActiveToDraw eid = do
+    transitionHandlerActiveToDraw eid mRole = do
+      let allowedRoles = ["Judge", "HeadJudge", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (MatchSvc.transitionActiveToDraw eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -163,7 +181,13 @@ matchServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerPendingToBYE eid = do
+    transitionHandlerPendingToBYE eid mRole = do
+      let allowedRoles = ["Judge", "HeadJudge", "Admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (MatchSvc.transitionPendingToBYE eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

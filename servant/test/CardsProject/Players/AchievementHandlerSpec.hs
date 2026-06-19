@@ -26,15 +26,21 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/achievements/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/achievements/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/achievements/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/achievements/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"name": "test", "description": "test", "iconUrl": null, "points": 1, "rarity": "Common", "isHidden": false}|]
       resp <- request "PUT" "/api/achievements/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/achievements/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"name": "test", "description": "test", "iconUrl": null, "points": 1, "rarity": "Common", "isHidden": false}|]
+      resp <- request "PATCH" "/api/achievements/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/achievements/1/point-value" $ do
     it "behavior point_value stub returns 404 or 500" $ do

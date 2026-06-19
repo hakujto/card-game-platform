@@ -165,3 +165,7 @@ transitionCancelledToDraft eid = withDb $ \conn -> do
 syncSeasonStatsHook :: a -> IO ()
 syncSeasonStatsHook _ = return ()
 
+-- TODO: implement prevent_delete_if_ongoing
+preventDeleteIfOngoingHook :: a -> IO ()
+preventDeleteIfOngoingHook _ = return ()
+

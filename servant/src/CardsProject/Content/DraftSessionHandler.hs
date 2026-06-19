@@ -25,8 +25,8 @@ type DraftSessionAPI
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "full" :> Get '[JSON] Bool
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "waitingforplayers-to-drafting" :> Patch '[JSON] DraftSession
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "drafting-to-completed" :> Patch '[JSON] DraftSession
-  :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "drafting-to-abandoned" :> Patch '[JSON] DraftSession
-  :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "waitingforplayers-to-abandoned" :> Patch '[JSON] DraftSession
+  :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "drafting-to-abandoned" :> Header "X-User-Role" Text :> Patch '[JSON] DraftSession
+  :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "waitingforplayers-to-abandoned" :> Header "X-User-Role" Text :> Patch '[JSON] DraftSession
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "completed-to-drafting" :> Patch '[JSON] DraftSession
   :<|> "api" :> "draft_sessions" :> Capture "id" Int :> "transitions" :> "abandoned-to-drafting" :> Patch '[JSON] DraftSession
 
@@ -136,7 +136,13 @@ draftSessionServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerDraftingToAbandoned eid = do
+    transitionHandlerDraftingToAbandoned eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (DraftSessionSvc.transitionDraftingToAbandoned eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of
@@ -146,7 +152,13 @@ draftSessionServer = listAll
             then throwError $ err409 { errBody = "Transition not allowed" }
             else throwError $ err404 { errBody = "Not found or precondition failed" }
 
-    transitionHandlerWaitingForPlayersToAbandoned eid = do
+    transitionHandlerWaitingForPlayersToAbandoned eid mRole = do
+      let allowedRoles = ["Admin", "Organizer"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       result <- liftIO $ (DraftSessionSvc.transitionWaitingForPlayersToAbandoned eid >>= (return . Right))
         `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
       case result of

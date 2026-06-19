@@ -26,15 +26,21 @@ spec = with (return app) $ do
         `shouldRespondWith` 201
 
   describe "GET /api/coupons/1" $ do
-    it "returns 200 or 404" $ do
-      resp <- get "/api/coupons/1"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+    it "returns 200, 401, or 404" $ do
+      resp <- request "GET" "/api/coupons/1" [] ""
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PUT /api/coupons/1" $ do
-    it "returns 200 or 404" $ do
+    it "returns 200, 401, 403, or 404" $ do
       let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 1, "minOrderValue": 0.0, "maxUses": null, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-02T00:00:00Z", "isActive": false}|]
       resp <- request "PUT" "/api/coupons/1" [("Content-Type","application/json")] body
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 404
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
+
+  describe "PATCH /api/coupons/1" $ do
+    it "returns 200, 401, 403, or 404" $ do
+      let body = [json|{"code": "test", "discountType": "Percent", "discountValue": 1, "minOrderValue": 0.0, "maxUses": null, "usesCount": 0, "validFrom": "2024-01-01T00:00:00", "validUntil": "2024-01-02T00:00:00Z", "isActive": false}|]
+      resp <- request "PATCH" "/api/coupons/1" [("Content-Type","application/json")] body
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "GET /api/coupons/1/valid" $ do
     it "behavior is_valid stub returns 404 or 500" $ do
