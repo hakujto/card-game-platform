@@ -25,10 +25,10 @@ class Product(Base):
     description = Column(Text, nullable=True)
     image_url = Column(String(200), nullable=True)
     featured = Column(Boolean, default="false")
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=True)
-    card = relationship("Card", foreign_keys=[card_id])
-    card_set_id = Column(Integer, ForeignKey("card_set.id"), nullable=True)
-    card_set = relationship("CardSet", foreign_keys=[card_set_id])
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=True, unique=True)
+    card = relationship("Card", foreign_keys=[card_id], backref="shop_product", uselist=False)
+    card_set_id = Column(Integer, ForeignKey("card_set.id", ondelete="CASCADE"), nullable=True)
+    card_set = relationship("CardSet", foreign_keys=[card_set_id], backref="shop_products")
 
     def activate(self):
         # TODO: implement activate
@@ -88,10 +88,10 @@ class Order(Base):
     created_at = Column(DateTime)
     paid_at = Column(DateTime, nullable=True)
     shipped_at = Column(DateTime, nullable=True)
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
-    coupon_id = Column(Integer, ForeignKey("coupon.id"), nullable=True)
-    coupon = relationship("Coupon", foreign_keys=[coupon_id])
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="orders")
+    coupon_id = Column(Integer, ForeignKey("coupon.id", ondelete="CASCADE"), nullable=True)
+    coupon = relationship("Coupon", foreign_keys=[coupon_id], backref="orders")
 
     def cancel(self):
         # TODO: implement cancel
@@ -170,10 +170,10 @@ class OrderItem(Base):
     quantity = Column(Integer)
     price_at_purchase = Column(Numeric)
     foil = Column(Boolean, default="false")
-    order_id = Column(Integer, ForeignKey("order.id"), nullable=True)
-    order = relationship("Order", foreign_keys=[order_id])
-    product_id = Column(Integer, ForeignKey("product.id"), nullable=False)
-    product = relationship("Product", foreign_keys=[product_id])
+    order_id = Column(Integer, ForeignKey("order.id", ondelete="CASCADE"), nullable=True)
+    order = relationship("Order", foreign_keys=[order_id], backref="items")
+    product_id = Column(Integer, ForeignKey("product.id", ondelete="CASCADE"), nullable=False)
+    product = relationship("Product", foreign_keys=[product_id], backref="order_items")
 
     def line_total(self) -> float:
         # TODO: implement line_total
@@ -267,10 +267,10 @@ class TradeListing(Base):
     description = Column(Text, nullable=True)
     created_at = Column(DateTime)
     expires_at = Column(DateTime, nullable=True)
-    seller_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    seller = relationship("Player", foreign_keys=[seller_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    seller_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    seller = relationship("Player", foreign_keys=[seller_id], backref="trade_listings")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="trade_listings")
 
     def close(self):
         # TODO: implement close
@@ -329,10 +329,10 @@ class TradeBid(Base):
     amount = Column(Numeric)
     placed_at = Column(DateTime)
     is_winning = Column(Boolean, default="false")
-    listing_id = Column(Integer, ForeignKey("trade_listing.id"), nullable=False)
-    listing = relationship("TradeListing", foreign_keys=[listing_id])
-    bidder_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    bidder = relationship("Player", foreign_keys=[bidder_id])
+    listing_id = Column(Integer, ForeignKey("trade_listing.id", ondelete="CASCADE"), nullable=False)
+    listing = relationship("TradeListing", foreign_keys=[listing_id], backref="bids")
+    bidder_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    bidder = relationship("Player", foreign_keys=[bidder_id], backref="bids")
 
     def outbid_by(self, new_amount: float) -> bool:
         # TODO: implement outbid_by
@@ -364,12 +364,12 @@ class TradeTransaction(Base):
     platform_fee = Column(Numeric)
     status = Column(String(20), default="Pending")
     completed_at = Column(DateTime, nullable=True)
-    listing_id = Column(Integer, ForeignKey("trade_listing.id"), nullable=False)
-    listing = relationship("TradeListing", foreign_keys=[listing_id])
-    buyer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    buyer = relationship("Player", foreign_keys=[buyer_id])
-    seller_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    seller = relationship("Player", foreign_keys=[seller_id])
+    listing_id = Column(Integer, ForeignKey("trade_listing.id", ondelete="CASCADE"), nullable=False, unique=True)
+    listing = relationship("TradeListing", foreign_keys=[listing_id], backref="transaction", uselist=False)
+    buyer_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    buyer = relationship("Player", foreign_keys=[buyer_id], backref="purchases")
+    seller_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    seller = relationship("Player", foreign_keys=[seller_id], backref="sales")
 
     def complete(self):
         # TODO: implement complete
@@ -417,8 +417,8 @@ class CardPriceHistory(Base):
     max_price = Column(Numeric)
     volume = Column(Integer)
     foil = Column(Boolean, default="false")
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="price_history")
 
     def price_change_percent(self, previous_avg: float) -> float:
         # TODO: implement price_change_percent
@@ -457,12 +457,12 @@ class TradeDispute(Base):
     resolution = Column(Text, nullable=True)
     opened_at = Column(DateTime)
     resolved_at = Column(DateTime, nullable=True)
-    transaction_id = Column(Integer, ForeignKey("trade_transaction.id"), nullable=False)
-    transaction = relationship("TradeTransaction", foreign_keys=[transaction_id])
-    opened_by_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    opened_by = relationship("Player", foreign_keys=[opened_by_id])
-    resolved_by_id = Column(Integer, ForeignKey("player.id"), nullable=True)
-    resolved_by = relationship("Player", foreign_keys=[resolved_by_id])
+    transaction_id = Column(Integer, ForeignKey("trade_transaction.id", ondelete="CASCADE"), nullable=False, unique=True)
+    transaction = relationship("TradeTransaction", foreign_keys=[transaction_id], backref="dispute", uselist=False)
+    opened_by_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    opened_by = relationship("Player", foreign_keys=[opened_by_id], backref="disputes_opened")
+    resolved_by_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=True)
+    resolved_by = relationship("Player", foreign_keys=[resolved_by_id], backref="disputes_resolved")
 
     def escalate(self):
         # TODO: implement escalate

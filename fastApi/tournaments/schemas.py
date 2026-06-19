@@ -49,7 +49,6 @@ class TournamentBase(BaseModel):
     created_at: datetime
     season_id: int
     organizer_id: int
-    judges_ids: list[int] = []
 
 
 class TournamentCreate(TournamentBase):
@@ -73,7 +72,6 @@ class TournamentUpdate(BaseModel):
     created_at: datetime | None = None
     season_id: int | None = None
     organizer_id: int | None = None
-    judges_ids: list[int] | None = None
 
 
 class TournamentRead(TournamentBase):

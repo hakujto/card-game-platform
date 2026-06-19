@@ -8,13 +8,6 @@ from sqlalchemy.orm import relationship
 
 from app.db import Base
 
-article_tags_assoc = Table(
-    "article_tags_m2m",
-    Base.metadata,
-    Column("article_id", Integer, ForeignKey("article.id"), primary_key=True),
-    Column("article_tag_id", Integer, ForeignKey("article_tag.id"), primary_key=True),
-)
-
 from typing import Literal
 
 DraftSessionStatusType = Literal["WaitingForPlayers", "Drafting", "Completed", "Abandoned"]
@@ -30,8 +23,8 @@ class DraftSession(Base):
     time_per_pick_seconds = Column(Integer, default="30")
     created_at = Column(DateTime)
     completed_at = Column(DateTime, nullable=True)
-    card_set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
-    card_set = relationship("CardSet", foreign_keys=[card_set_id])
+    card_set_id = Column(Integer, ForeignKey("card_set.id", ondelete="CASCADE"), nullable=False)
+    card_set = relationship("CardSet", foreign_keys=[card_set_id], backref="draft_sessions")
 
     def start(self):
         # TODO: implement start
@@ -85,10 +78,10 @@ class DraftParticipant(Base):
     id = Column(Integer, primary_key=True, index=True)
     seat_number = Column(Integer)
     joined_at = Column(DateTime)
-    session_id = Column(Integer, ForeignKey("draft_session.id"), nullable=True)
-    session = relationship("DraftSession", foreign_keys=[session_id])
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
+    session_id = Column(Integer, ForeignKey("draft_session.id", ondelete="CASCADE"), nullable=True)
+    session = relationship("DraftSession", foreign_keys=[session_id], backref="participants")
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="draft_sessions")
 
     def pick_card(self, card_id: int, pack_number: int):
         # TODO: implement pick_card
@@ -115,10 +108,10 @@ class DraftPick(Base):
     pick_number = Column(Integer)
     pack_number = Column(Integer)
     picked_at = Column(DateTime)
-    participant_id = Column(Integer, ForeignKey("draft_participant.id"), nullable=False)
-    participant = relationship("DraftParticipant", foreign_keys=[participant_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    participant_id = Column(Integer, ForeignKey("draft_participant.id", ondelete="CASCADE"), nullable=False)
+    participant = relationship("DraftParticipant", foreign_keys=[participant_id], backref="picks")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="draft_picks")
 
     def is_first_pick(self) -> bool:
         # TODO: implement is_first_pick
@@ -160,11 +153,10 @@ class Article(Base):
     published_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    author_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    author = relationship("Player", foreign_keys=[author_id])
-    featured_deck_id = Column(Integer, ForeignKey("deck.id"), nullable=True)
-    featured_deck = relationship("Deck", foreign_keys=[featured_deck_id])
-    tags = relationship("ArticleTag", secondary=article_tags_assoc)
+    author_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    author = relationship("Player", foreign_keys=[author_id], backref="articles")
+    featured_deck_id = Column(Integer, ForeignKey("deck.id", ondelete="CASCADE"), nullable=True)
+    featured_deck = relationship("Deck", foreign_keys=[featured_deck_id], backref="articles")
 
     def publish(self):
         # TODO: implement publish
@@ -249,10 +241,10 @@ class ArticleTagAssignment(Base):
     __tablename__ = "article_tag_assignment"
 
     id = Column(Integer, primary_key=True, index=True)
-    article_id = Column(Integer, ForeignKey("article.id"), nullable=False)
-    article = relationship("Article", foreign_keys=[article_id])
-    tag_id = Column(Integer, ForeignKey("article_tag.id"), nullable=False)
-    tag = relationship("ArticleTag", foreign_keys=[tag_id])
+    article_id = Column(Integer, ForeignKey("article.id", ondelete="CASCADE"), nullable=False)
+    article = relationship("Article", foreign_keys=[article_id], backref="tag_assignments")
+    tag_id = Column(Integer, ForeignKey("article_tag.id", ondelete="CASCADE"), nullable=False)
+    tag = relationship("ArticleTag", foreign_keys=[tag_id], backref="article_assignments")
     def __repr__(self) -> str:
         return f"<ArticleTagAssignment id={{self.id}}>"
 
@@ -264,12 +256,12 @@ class ArticleComment(Base):
     body = Column(Text)
     is_hidden = Column(Boolean, default="false")
     created_at = Column(DateTime)
-    article_id = Column(Integer, ForeignKey("article.id"), nullable=True)
-    article = relationship("Article", foreign_keys=[article_id])
-    author_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    author = relationship("Player", foreign_keys=[author_id])
-    parent_comment_id = Column(Integer, ForeignKey("article_comment.id"), nullable=True)
-    parent_comment = relationship("ArticleComment", foreign_keys=[parent_comment_id])
+    article_id = Column(Integer, ForeignKey("article.id", ondelete="CASCADE"), nullable=True)
+    article = relationship("Article", foreign_keys=[article_id], backref="comments")
+    author_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    author = relationship("Player", foreign_keys=[author_id], backref="article_comments")
+    parent_comment_id = Column(Integer, ForeignKey("article_comment.id", ondelete="CASCADE"), nullable=True)
+    parent_comment = relationship("ArticleComment", foreign_keys=[parent_comment_id], remote_side=[id], backref="replies")
 
     def hide(self):
         # TODO: implement hide
@@ -308,10 +300,10 @@ class Stream(Base):
     actual_start = Column(DateTime, nullable=True)
     ended_at = Column(DateTime, nullable=True)
     vod_url = Column(String(200), nullable=True)
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=True)
-    tournament = relationship("Tournament", foreign_keys=[tournament_id])
-    streamer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    streamer = relationship("Player", foreign_keys=[streamer_id])
+    tournament_id = Column(Integer, ForeignKey("tournament.id", ondelete="CASCADE"), nullable=True)
+    tournament = relationship("Tournament", foreign_keys=[tournament_id], backref="streams")
+    streamer_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    streamer = relationship("Player", foreign_keys=[streamer_id], backref="streams")
 
     def go_live(self):
         # TODO: implement go_live

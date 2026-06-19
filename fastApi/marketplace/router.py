@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.auth import get_current_user
 from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 from .schemas import ProductCreate, ProductUpdate, ProductRead, OrderCreate, OrderUpdate, OrderRead, OrderItemCreate, OrderItemUpdate, OrderItemRead, CouponCreate, CouponUpdate, CouponRead, TradeListingCreate, TradeListingUpdate, TradeListingRead, TradeBidCreate, TradeBidUpdate, TradeBidRead, TradeTransactionCreate, TradeTransactionUpdate, TradeTransactionRead, CardPriceHistoryCreate, CardPriceHistoryUpdate, CardPriceHistoryRead, TradeDisputeCreate, TradeDisputeUpdate, TradeDisputeRead
 
@@ -160,11 +161,13 @@ def transition_pending_to_paid_order(item_id: int, db: Session = Depends(get_db)
     return obj
 
 @router_order.patch("/{item_id}/transitions/paid-to-processing", response_model=OrderRead)
-def transition_paid_to_processing_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+def transition_paid_to_processing_order(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Order:
     from fastapi import HTTPException
     obj = db.query(Order).filter(Order.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Paid -> Processing")
     try:
         obj.assert_transition("Processing")
     except ValueError as e:
@@ -175,11 +178,13 @@ def transition_paid_to_processing_order(item_id: int, db: Session = Depends(get_
     return obj
 
 @router_order.patch("/{item_id}/transitions/processing-to-shipped", response_model=OrderRead)
-def transition_processing_to_shipped_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+def transition_processing_to_shipped_order(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Order:
     from fastapi import HTTPException
     obj = db.query(Order).filter(Order.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Processing -> Shipped")
     try:
         obj.assert_transition("Shipped")
     except ValueError as e:
@@ -193,11 +198,13 @@ def transition_processing_to_shipped_order(item_id: int, db: Session = Depends(g
     return obj
 
 @router_order.patch("/{item_id}/transitions/shipped-to-completed", response_model=OrderRead)
-def transition_shipped_to_completed_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+def transition_shipped_to_completed_order(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Order:
     from fastapi import HTTPException
     obj = db.query(Order).filter(Order.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Shipped -> Completed")
     try:
         obj.assert_transition("Completed")
     except ValueError as e:
@@ -224,11 +231,13 @@ def transition_pending_to_cancelled_order(item_id: int, db: Session = Depends(ge
     return obj
 
 @router_order.patch("/{item_id}/transitions/paid-to-cancelled", response_model=OrderRead)
-def transition_paid_to_cancelled_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+def transition_paid_to_cancelled_order(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Order:
     from fastapi import HTTPException
     obj = db.query(Order).filter(Order.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Paid -> Cancelled")
     try:
         obj.assert_transition("Cancelled")
     except ValueError as e:
@@ -240,11 +249,13 @@ def transition_paid_to_cancelled_order(item_id: int, db: Session = Depends(get_d
     return obj
 
 @router_order.patch("/{item_id}/transitions/completed-to-refunded", response_model=OrderRead)
-def transition_completed_to_refunded_order(item_id: int, db: Session = Depends(get_db)) -> Order:
+def transition_completed_to_refunded_order(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Order:
     from fastapi import HTTPException
     obj = db.query(Order).filter(Order.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Order not found")
+    if getattr(current_user, "role", None) not in ["Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Completed -> Refunded")
     try:
         obj.assert_transition("Refunded")
     except ValueError as e:
@@ -506,11 +517,13 @@ def patch_trade_listing(item_id: int, data: TradeListingUpdate, db: Session = De
     return obj
 
 @router_trade_listing.patch("/{item_id}/transitions/pending-to-active", response_model=TradeListingRead)
-def transition_pending_to_active_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+def transition_pending_to_active_trade_listing(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeListing:
     from fastapi import HTTPException
     obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeListing not found")
+    if getattr(current_user, "role", None) not in ["Seller"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Pending -> Active")
     try:
         obj.assert_transition("Active")
     except ValueError as e:
@@ -555,11 +568,13 @@ def transition_active_to_expired_trade_listing(item_id: int, db: Session = Depen
     return obj
 
 @router_trade_listing.patch("/{item_id}/transitions/active-to-cancelled", response_model=TradeListingRead)
-def transition_active_to_cancelled_trade_listing(item_id: int, db: Session = Depends(get_db)) -> TradeListing:
+def transition_active_to_cancelled_trade_listing(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeListing:
     from fastapi import HTTPException
     obj = db.query(TradeListing).filter(TradeListing.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeListing not found")
+    if getattr(current_user, "role", None) not in ["Seller", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Active -> Cancelled")
     try:
         obj.assert_transition("Cancelled")
     except ValueError as e:
@@ -803,11 +818,13 @@ def get_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispu
     return obj
 
 @router_trade_dispute.patch("/{item_id}/transitions/open-to-underreview", response_model=TradeDisputeRead)
-def transition_open_to_under_review_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+def transition_open_to_under_review_trade_dispute(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeDispute:
     from fastapi import HTTPException
     obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Moderator"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Open -> UnderReview")
     try:
         obj.assert_transition("UnderReview")
     except ValueError as e:
@@ -819,11 +836,13 @@ def transition_open_to_under_review_trade_dispute(item_id: int, db: Session = De
     return obj
 
 @router_trade_dispute.patch("/{item_id}/transitions/underreview-to-resolved", response_model=TradeDisputeRead)
-def transition_under_review_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+def transition_under_review_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeDispute:
     from fastapi import HTTPException
     obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Moderator"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition UnderReview -> Resolved")
     try:
         obj.assert_transition("Resolved")
     except ValueError as e:
@@ -837,11 +856,13 @@ def transition_under_review_to_resolved_trade_dispute(item_id: int, db: Session 
     return obj
 
 @router_trade_dispute.patch("/{item_id}/transitions/underreview-to-escalated", response_model=TradeDisputeRead)
-def transition_under_review_to_escalated_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+def transition_under_review_to_escalated_trade_dispute(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeDispute:
     from fastapi import HTTPException
     obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
+    if getattr(current_user, "role", None) not in ["Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition UnderReview -> Escalated")
     try:
         obj.assert_transition("Escalated")
     except ValueError as e:
@@ -853,11 +874,13 @@ def transition_under_review_to_escalated_trade_dispute(item_id: int, db: Session
     return obj
 
 @router_trade_dispute.patch("/{item_id}/transitions/escalated-to-resolved", response_model=TradeDisputeRead)
-def transition_escalated_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db)) -> TradeDispute:
+def transition_escalated_to_resolved_trade_dispute(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> TradeDispute:
     from fastapi import HTTPException
     obj = db.query(TradeDispute).filter(TradeDispute.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="TradeDispute not found")
+    if getattr(current_user, "role", None) not in ["Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Escalated -> Resolved")
     try:
         obj.assert_transition("Resolved")
     except ValueError as e:

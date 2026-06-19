@@ -8,27 +8,6 @@ from sqlalchemy.orm import relationship
 
 from app.db import Base
 
-deck_cards_assoc = Table(
-    "deck_cards_m2m",
-    Base.metadata,
-    Column("deck_id", Integer, ForeignKey("deck.id"), primary_key=True),
-    Column("card_id", Integer, ForeignKey("card.id"), primary_key=True),
-)
-
-deck_sideboard_cards_assoc = Table(
-    "deck_sideboard_cards_m2m",
-    Base.metadata,
-    Column("deck_id", Integer, ForeignKey("deck.id"), primary_key=True),
-    Column("card_id", Integer, ForeignKey("card.id"), primary_key=True),
-)
-
-deck_tags_assoc = Table(
-    "deck_tags_m2m",
-    Base.metadata,
-    Column("deck_id", Integer, ForeignKey("deck.id"), primary_key=True),
-    Column("deck_tag_id", Integer, ForeignKey("deck_tag.id"), primary_key=True),
-)
-
 from typing import Literal
 
 CardCardTypeType = Literal["Creature", "Spell", "Land", "Artifact", "Enchantment", "Planeswalker"]
@@ -56,8 +35,8 @@ class Card(Base):
     is_banned = Column(Boolean, default="false")
     is_restricted = Column(Boolean, default="false")
     power_level = Column(Integer, default="1")
-    set_id = Column(Integer, ForeignKey("card_set.id"), nullable=False)
-    set = relationship("CardSet", foreign_keys=[set_id])
+    set_id = Column(Integer, ForeignKey("card_set.id", ondelete="CASCADE"), nullable=False)
+    set = relationship("CardSet", foreign_keys=[set_id], backref="cards")
 
     def ban(self):
         # TODO: implement ban
@@ -179,8 +158,8 @@ class CardRuling(Base):
     ruling_text = Column(Text)
     published_at = Column(Date)
     source = Column(String(200))
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="rulings")
 
     def is_current(self) -> bool:
         # TODO: implement is_current
@@ -207,8 +186,8 @@ class CardAbility(Base):
     keyword = Column(String(100), nullable=True)
     ability_text = Column(Text)
     timing = Column(String(20), nullable=True)
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="abilities")
 
     def is_usable_at(self, timing: str) -> bool:
         # TODO: implement is_usable_at
@@ -248,11 +227,8 @@ class Deck(Base):
     draws = Column(Integer, default="0")
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
-    cards = relationship("Card", secondary=deck_cards_assoc)
-    sideboard_cards = relationship("Card", secondary=deck_sideboard_cards_assoc)
-    tags = relationship("DeckTag", secondary=deck_tags_assoc)
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="decks")
 
     def validate_size(self) -> bool:
         # TODO: implement validate_size
@@ -317,10 +293,10 @@ class DeckCard(Base):
     id = Column(Integer, primary_key=True, index=True)
     quantity = Column(Integer, default="1")
     is_commander = Column(Boolean, default="false")
-    deck_id = Column(Integer, ForeignKey("deck.id"), nullable=False)
-    deck = relationship("Deck", foreign_keys=[deck_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    deck_id = Column(Integer, ForeignKey("deck.id", ondelete="CASCADE"), nullable=False)
+    deck = relationship("Deck", foreign_keys=[deck_id], backref="deck_cards")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="deck_cards")
 
     def increment(self, amount: int):
         # TODO: implement increment
@@ -351,10 +327,10 @@ class DeckSideboardCard(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     quantity = Column(Integer, default="1")
-    deck_id = Column(Integer, ForeignKey("deck.id"), nullable=False)
-    deck = relationship("Deck", foreign_keys=[deck_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    deck_id = Column(Integer, ForeignKey("deck.id", ondelete="CASCADE"), nullable=False)
+    deck = relationship("Deck", foreign_keys=[deck_id], backref="sideboard_cards")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="sideboard_decks")
 
     def increment(self, amount: int):
         # TODO: implement increment
@@ -397,10 +373,10 @@ class DeckTagAssignment(Base):
     __tablename__ = "deck_tag_assignment"
 
     id = Column(Integer, primary_key=True, index=True)
-    deck_id = Column(Integer, ForeignKey("deck.id"), nullable=False)
-    deck = relationship("Deck", foreign_keys=[deck_id])
-    tag_id = Column(Integer, ForeignKey("deck_tag.id"), nullable=False)
-    tag = relationship("DeckTag", foreign_keys=[tag_id])
+    deck_id = Column(Integer, ForeignKey("deck.id", ondelete="CASCADE"), nullable=False)
+    deck = relationship("Deck", foreign_keys=[deck_id], backref="tag_assignments")
+    tag_id = Column(Integer, ForeignKey("deck_tag.id", ondelete="CASCADE"), nullable=False)
+    tag = relationship("DeckTag", foreign_keys=[tag_id], backref="deck_assignments")
     def __repr__(self) -> str:
         return f"<DeckTagAssignment id={{self.id}}>"
 

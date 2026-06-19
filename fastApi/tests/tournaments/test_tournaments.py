@@ -136,36 +136,71 @@ class TestTournament:
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/draft-to-registration")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/draft-to-registration", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_draft_to_registration_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/draft-to-registration", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_registration_to_ongoing(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-ongoing")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-ongoing", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_registration_to_ongoing_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-ongoing", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_registration_to_cancelled(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-cancelled")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-cancelled", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_registration_to_cancelled_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/registration-to-cancelled", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_ongoing_to_completed(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-completed")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-completed", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_ongoing_to_completed_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-completed", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_ongoing_to_cancelled(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-cancelled")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-cancelled", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_ongoing_to_cancelled_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/tournaments", json={"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "end_time": None, "is_online": False, "created_at": "2024-01-01T00:00:00", "season_id": _dep_season["id"], "organizer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/tournaments/{created.get('id', 1)}/transitions/ongoing-to-cancelled", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_completed_to_draft_is_denied(self, client: TestClient):
         _dep_season = client.post("/api/seasons", json={"name": "test", "start_date": "2024-01-01", "end_date": "2024-01-02", "format": "Standard", "is_active": False}).json()
@@ -387,26 +422,50 @@ class TestMatch:
     def test_transition_pending_to_active(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-active")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-active", headers={"X-User-Role": "Judge"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_pending_to_active_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-active", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_active_to_completed(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-completed")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-completed", headers={"X-User-Role": "Judge"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_active_to_completed_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-completed", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_active_to_draw(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-draw")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-draw", headers={"X-User-Role": "Judge"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_active_to_draw_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/active-to-draw", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_pending_to_b_y_e(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-bye")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-bye", headers={"X-User-Role": "Judge"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_pending_to_b_y_e_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/matches", json={"status": "Pending", "player1_wins": 0, "player2_wins": 0, "started_at": "2024-01-01T00:00:00", "ended_at": None, "player1_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/matches/{created.get('id', 1)}/transitions/pending-to-bye", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_completed_to_active_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()

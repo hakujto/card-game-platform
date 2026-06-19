@@ -8,27 +8,6 @@ from sqlalchemy.orm import relationship
 
 from app.db import Base
 
-player_achievements_assoc = Table(
-    "player_achievements_m2m",
-    Base.metadata,
-    Column("player_id", Integer, ForeignKey("player.id"), primary_key=True),
-    Column("achievement_id", Integer, ForeignKey("achievement.id"), primary_key=True),
-)
-
-player_friends_assoc = Table(
-    "player_friends_m2m",
-    Base.metadata,
-    Column("left_id", Integer, ForeignKey("player.id"), primary_key=True),
-    Column("right_id", Integer, ForeignKey("player.id"), primary_key=True),
-)
-
-crafting_recipe_required_cards_assoc = Table(
-    "crafting_recipe_required_cards_m2m",
-    Base.metadata,
-    Column("crafting_recipe_id", Integer, ForeignKey("crafting_recipe.id"), primary_key=True),
-    Column("card_id", Integer, ForeignKey("card.id"), primary_key=True),
-)
-
 from typing import Literal
 
 PlayerRankType = Literal["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"]
@@ -49,14 +28,8 @@ class Player(Base):
     is_verified = Column(Boolean, default="false")
     created_at = Column(DateTime)
     last_active_at = Column(DateTime, nullable=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=True)
-    user = relationship("User", foreign_keys=[user_id])
-    achievements = relationship("Achievement", secondary=player_achievements_assoc)
-    friends = relationship(
-        "Player", secondary=player_friends_assoc,
-        primaryjoin=id == player_friends_assoc.c.left_id,
-        secondaryjoin=id == player_friends_assoc.c.right_id,
-    )
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=True, unique=True)
+    user = relationship("User", foreign_keys=[user_id], backref="player_profile", uselist=False)
 
     def promote(self) -> bool:
         # TODO: implement promote
@@ -119,10 +92,10 @@ class PlayerSeasonStats(Base):
     tournament_wins = Column(Integer, default="0")
     highest_rank = Column(String(20), nullable=True)
     season_points = Column(Integer, default="0")
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=True)
-    player = relationship("Player", foreign_keys=[player_id])
-    season_id = Column(Integer, ForeignKey("season.id"), nullable=False)
-    season = relationship("Season", foreign_keys=[season_id])
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=True)
+    player = relationship("Player", foreign_keys=[player_id], backref="season_stats")
+    season_id = Column(Integer, ForeignKey("season.id", ondelete="CASCADE"), nullable=False)
+    season = relationship("Season", foreign_keys=[season_id], backref="player_stats")
 
     def win_rate(self) -> float:
         # TODO: implement win_rate
@@ -166,10 +139,10 @@ class PlayerCollection(Base):
     condition = Column(String(20), default="Mint")
     acquired_at = Column(DateTime)
     acquired_via = Column(String(20), default="Purchase")
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="collection")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="player_collections")
 
     def add(self, quantity: int):
         # TODO: implement add
@@ -203,10 +176,10 @@ class Friendship(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(String(20), default="Pending")
     created_at = Column(DateTime)
-    requester_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    requester = relationship("Player", foreign_keys=[requester_id])
-    receiver_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    receiver = relationship("Player", foreign_keys=[receiver_id])
+    requester_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    requester = relationship("Player", foreign_keys=[requester_id], backref="sent_friend_requests")
+    receiver_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    receiver = relationship("Player", foreign_keys=[receiver_id], backref="received_friend_requests")
 
     def accept(self):
         # TODO: implement accept
@@ -264,10 +237,10 @@ class PlayerAchievement(Base):
     earned_at = Column(DateTime)
     progress = Column(Integer, default="0")
     is_completed = Column(Boolean, default="false")
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
-    achievement_id = Column(Integer, ForeignKey("achievement.id"), nullable=False)
-    achievement = relationship("Achievement", foreign_keys=[achievement_id])
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="achievement_records")
+    achievement_id = Column(Integer, ForeignKey("achievement.id", ondelete="CASCADE"), nullable=False)
+    achievement = relationship("Achievement", foreign_keys=[achievement_id], backref="player_records")
 
     def increment_progress(self, amount: int):
         # TODO: implement increment_progress
@@ -299,9 +272,8 @@ class CraftingRecipe(Base):
     id = Column(Integer, primary_key=True, index=True)
     dust_cost = Column(Integer)
     is_available = Column(Boolean, default="true")
-    result_card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    result_card = relationship("Card", foreign_keys=[result_card_id])
-    required_cards = relationship("Card", secondary=crafting_recipe_required_cards_assoc)
+    result_card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    result_card = relationship("Card", foreign_keys=[result_card_id], backref="crafting_recipes")
 
     def can_craft(self, player_id: int) -> bool:
         # TODO: implement can_craft
@@ -334,10 +306,10 @@ class CraftingIngredient(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     quantity = Column(Integer, default="1")
-    recipe_id = Column(Integer, ForeignKey("crafting_recipe.id"), nullable=False)
-    recipe = relationship("CraftingRecipe", foreign_keys=[recipe_id])
-    card_id = Column(Integer, ForeignKey("card.id"), nullable=False)
-    card = relationship("Card", foreign_keys=[card_id])
+    recipe_id = Column(Integer, ForeignKey("crafting_recipe.id", ondelete="CASCADE"), nullable=False)
+    recipe = relationship("CraftingRecipe", foreign_keys=[recipe_id], backref="ingredients")
+    card_id = Column(Integer, ForeignKey("card.id", ondelete="CASCADE"), nullable=False)
+    card = relationship("Card", foreign_keys=[card_id], backref="used_in_recipes")
     def __repr__(self) -> str:
         return f"<CraftingIngredient id={{self.id}}>"
 

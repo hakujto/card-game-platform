@@ -77,25 +77,37 @@ class TestDraftSession:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
         res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/waitingforplayers-to-drafting")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_drafting_to_completed(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
         res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/drafting-to-completed")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_drafting_to_abandoned(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
-        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/drafting-to-abandoned")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/drafting-to-abandoned", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_drafting_to_abandoned_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
+        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/drafting-to-abandoned", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_waiting_for_players_to_abandoned(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
-        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/waitingforplayers-to-abandoned")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/waitingforplayers-to-abandoned", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_waiting_for_players_to_abandoned_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        created = client.post("/api/draft_sessions", json={"status": "Completed", "draft_type": "Booster", "seats": 2, "time_per_pick_seconds": 1, "created_at": "2024-01-01T00:00:00", "completed_at": None, "card_set_id": _dep_card_set["id"]}).json()
+        res = client.patch(f"/api/draft_sessions/{created.get('id', 1)}/transitions/waitingforplayers-to-abandoned", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_completed_to_drafting_is_denied(self, client: TestClient):
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
@@ -198,20 +210,38 @@ class TestArticle:
     def test_transition_draft_to_published(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/draft-to-published")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/draft-to-published", headers={"X-User-Role": "Editor"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_draft_to_published_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/draft-to-published", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_published_to_archived(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/published-to-archived")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/published-to-archived", headers={"X-User-Role": "Editor"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_published_to_archived_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/published-to-archived", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_archived_to_draft(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/archived-to-draft")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/archived-to-draft", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_archived_to_draft_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/articles", json={"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 0, "likes_count": 0, "is_featured": False, "published_at": "2024-01-01T00:00:00", "created_at": "2024-01-01T00:00:00", "updated_at": "2024-01-01T00:00:00", "author_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/articles/{created.get('id', 1)}/transitions/archived-to-draft", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_published_to_draft_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -365,14 +395,26 @@ class TestStream:
     def test_transition_scheduled_to_live(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "status": "Ended", "platform": "Twitch", "language": "EN", "is_official": False, "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/scheduled-to-live")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/scheduled-to-live", headers={"X-User-Role": "Streamer"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_scheduled_to_live_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "status": "Ended", "platform": "Twitch", "language": "EN", "is_official": False, "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/scheduled-to-live", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_live_to_ended(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "status": "Ended", "platform": "Twitch", "language": "EN", "is_official": False, "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/live-to-ended")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/live-to-ended", headers={"X-User-Role": "Streamer"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_live_to_ended_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/streams", json={"title": "test", "stream_url": "https://example.com", "status": "Ended", "platform": "Twitch", "language": "EN", "is_official": False, "viewer_count_peak": 0, "scheduled_start": "2024-01-01T00:00:00", "actual_start": None, "ended_at": None, "streamer_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/streams/{created.get('id', 1)}/transitions/live-to-ended", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_ended_to_live_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()

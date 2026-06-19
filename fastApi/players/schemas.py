@@ -18,8 +18,6 @@ class PlayerBase(BaseModel):
     created_at: datetime
     last_active_at: datetime | None = None
     user_id: int | None = None
-    achievements_ids: list[int] = []
-    friends_ids: list[int] = []
 
 
 class PlayerCreate(PlayerBase):
@@ -39,8 +37,6 @@ class PlayerUpdate(BaseModel):
     created_at: datetime | None = None
     last_active_at: datetime | None = None
     user_id: int | None = None
-    achievements_ids: list[int] | None = None
-    friends_ids: list[int] | None = None
 
 
 class PlayerRead(PlayerBase):
@@ -192,7 +188,6 @@ class CraftingRecipeBase(BaseModel):
     dust_cost: int
     is_available: bool
     result_card_id: int
-    required_cards_ids: list[int] = []
 
 
 class CraftingRecipeCreate(CraftingRecipeBase):
@@ -203,7 +198,6 @@ class CraftingRecipeUpdate(BaseModel):
     dust_cost: int | None = None
     is_available: bool | None = None
     result_card_id: int | None = None
-    required_cards_ids: list[int] | None = None
 
 
 class CraftingRecipeRead(CraftingRecipeBase):

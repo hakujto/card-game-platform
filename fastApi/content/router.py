@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.auth import get_current_user
 from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
 from .schemas import DraftSessionCreate, DraftSessionUpdate, DraftSessionRead, DraftParticipantCreate, DraftParticipantUpdate, DraftParticipantRead, DraftPickCreate, DraftPickUpdate, DraftPickRead, ArticleCreate, ArticleUpdate, ArticleRead, ArticleTagCreate, ArticleTagUpdate, ArticleTagRead, ArticleTagAssignmentCreate, ArticleTagAssignmentUpdate, ArticleTagAssignmentRead, ArticleCommentCreate, ArticleCommentUpdate, ArticleCommentRead, StreamCreate, StreamUpdate, StreamRead
 
@@ -72,11 +73,13 @@ def transition_drafting_to_completed_draft_session(item_id: int, db: Session = D
     return obj
 
 @router_draft_session.patch("/{item_id}/transitions/drafting-to-abandoned", response_model=DraftSessionRead)
-def transition_drafting_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+def transition_drafting_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> DraftSession:
     from fastapi import HTTPException
     obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DraftSession not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Drafting -> Abandoned")
     try:
         obj.assert_transition("Abandoned")
     except ValueError as e:
@@ -88,11 +91,13 @@ def transition_drafting_to_abandoned_draft_session(item_id: int, db: Session = D
     return obj
 
 @router_draft_session.patch("/{item_id}/transitions/waitingforplayers-to-abandoned", response_model=DraftSessionRead)
-def transition_waiting_for_players_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db)) -> DraftSession:
+def transition_waiting_for_players_to_abandoned_draft_session(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> DraftSession:
     from fastapi import HTTPException
     obj = db.query(DraftSession).filter(DraftSession.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="DraftSession not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition WaitingForPlayers -> Abandoned")
     try:
         obj.assert_transition("Abandoned")
     except ValueError as e:
@@ -284,11 +289,13 @@ def patch_article(item_id: int, data: ArticleUpdate, db: Session = Depends(get_d
     return update_article(item_id, data, db)
 
 @router_article.patch("/{item_id}/transitions/draft-to-published", response_model=ArticleRead)
-def transition_draft_to_published_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+def transition_draft_to_published_article(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Article:
     from fastapi import HTTPException
     obj = db.query(Article).filter(Article.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Article not found")
+    if getattr(current_user, "role", None) not in ["Editor", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Draft -> Published")
     try:
         obj.assert_transition("Published")
     except ValueError as e:
@@ -304,11 +311,13 @@ def transition_draft_to_published_article(item_id: int, db: Session = Depends(ge
     return obj
 
 @router_article.patch("/{item_id}/transitions/published-to-archived", response_model=ArticleRead)
-def transition_published_to_archived_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+def transition_published_to_archived_article(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Article:
     from fastapi import HTTPException
     obj = db.query(Article).filter(Article.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Article not found")
+    if getattr(current_user, "role", None) not in ["Editor", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Published -> Archived")
     try:
         obj.assert_transition("Archived")
     except ValueError as e:
@@ -320,11 +329,13 @@ def transition_published_to_archived_article(item_id: int, db: Session = Depends
     return obj
 
 @router_article.patch("/{item_id}/transitions/archived-to-draft", response_model=ArticleRead)
-def transition_archived_to_draft_article(item_id: int, db: Session = Depends(get_db)) -> Article:
+def transition_archived_to_draft_article(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Article:
     from fastapi import HTTPException
     obj = db.query(Article).filter(Article.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Article not found")
+    if getattr(current_user, "role", None) not in ["Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Archived -> Draft")
     try:
         obj.assert_transition("Draft")
     except ValueError as e:
@@ -594,11 +605,13 @@ def patch_stream(item_id: int, data: StreamUpdate, db: Session = Depends(get_db)
     return update_stream(item_id, data, db)
 
 @router_stream.patch("/{item_id}/transitions/scheduled-to-live", response_model=StreamRead)
-def transition_scheduled_to_live_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:
+def transition_scheduled_to_live_stream(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Stream:
     from fastapi import HTTPException
     obj = db.query(Stream).filter(Stream.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Stream not found")
+    if getattr(current_user, "role", None) not in ["Streamer", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Scheduled -> Live")
     try:
         obj.assert_transition("Live")
     except ValueError as e:
@@ -612,11 +625,13 @@ def transition_scheduled_to_live_stream(item_id: int, db: Session = Depends(get_
     return obj
 
 @router_stream.patch("/{item_id}/transitions/live-to-ended", response_model=StreamRead)
-def transition_live_to_ended_stream(item_id: int, db: Session = Depends(get_db)) -> Stream:
+def transition_live_to_ended_stream(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Stream:
     from fastapi import HTTPException
     obj = db.query(Stream).filter(Stream.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Stream not found")
+    if getattr(current_user, "role", None) not in ["Streamer", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Live -> Ended")
     try:
         obj.assert_transition("Ended")
     except ValueError as e:

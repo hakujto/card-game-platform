@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.auth import get_current_user
 from .models import Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 from .schemas import SeasonCreate, SeasonUpdate, SeasonRead, TournamentCreate, TournamentUpdate, TournamentRead, TournamentJudgeCreate, TournamentJudgeUpdate, TournamentJudgeRead, TournamentRegistrationCreate, TournamentRegistrationUpdate, TournamentRegistrationRead, TournamentRoundCreate, TournamentRoundUpdate, TournamentRoundRead, MatchCreate, MatchUpdate, MatchRead, GameCreate, GameUpdate, GameRead, TournamentPrizeCreate, TournamentPrizeUpdate, TournamentPrizeRead, AwardedPrizeCreate, AwardedPrizeUpdate, AwardedPrizeRead
 
@@ -144,11 +145,13 @@ def patch_tournament(item_id: int, data: TournamentUpdate, db: Session = Depends
     return update_tournament(item_id, data, db)
 
 @router_tournament.patch("/{item_id}/transitions/draft-to-registration", response_model=TournamentRead)
-def transition_draft_to_registration_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+def transition_draft_to_registration_tournament(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Tournament:
     from fastapi import HTTPException
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Draft -> Registration")
     try:
         obj.assert_transition("Registration")
     except ValueError as e:
@@ -163,11 +166,13 @@ def transition_draft_to_registration_tournament(item_id: int, db: Session = Depe
     return obj
 
 @router_tournament.patch("/{item_id}/transitions/registration-to-ongoing", response_model=TournamentRead)
-def transition_registration_to_ongoing_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+def transition_registration_to_ongoing_tournament(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Tournament:
     from fastapi import HTTPException
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Registration -> Ongoing")
     try:
         obj.assert_transition("Ongoing")
     except ValueError as e:
@@ -179,11 +184,13 @@ def transition_registration_to_ongoing_tournament(item_id: int, db: Session = De
     return obj
 
 @router_tournament.patch("/{item_id}/transitions/registration-to-cancelled", response_model=TournamentRead)
-def transition_registration_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+def transition_registration_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Tournament:
     from fastapi import HTTPException
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Registration -> Cancelled")
     try:
         obj.assert_transition("Cancelled")
     except ValueError as e:
@@ -195,11 +202,13 @@ def transition_registration_to_cancelled_tournament(item_id: int, db: Session = 
     return obj
 
 @router_tournament.patch("/{item_id}/transitions/ongoing-to-completed", response_model=TournamentRead)
-def transition_ongoing_to_completed_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+def transition_ongoing_to_completed_tournament(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Tournament:
     from fastapi import HTTPException
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    if getattr(current_user, "role", None) not in ["Admin", "Organizer"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Ongoing -> Completed")
     try:
         obj.assert_transition("Completed")
     except ValueError as e:
@@ -212,11 +221,13 @@ def transition_ongoing_to_completed_tournament(item_id: int, db: Session = Depen
     return obj
 
 @router_tournament.patch("/{item_id}/transitions/ongoing-to-cancelled", response_model=TournamentRead)
-def transition_ongoing_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db)) -> Tournament:
+def transition_ongoing_to_cancelled_tournament(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Tournament:
     from fastapi import HTTPException
     obj = db.query(Tournament).filter(Tournament.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
+    if getattr(current_user, "role", None) not in ["Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Ongoing -> Cancelled")
     try:
         obj.assert_transition("Cancelled")
     except ValueError as e:
@@ -502,11 +513,13 @@ def get_match(item_id: int, db: Session = Depends(get_db)) -> Match:
     return obj
 
 @router_match.patch("/{item_id}/transitions/pending-to-active", response_model=MatchRead)
-def transition_pending_to_active_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+def transition_pending_to_active_match(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Match:
     from fastapi import HTTPException
     obj = db.query(Match).filter(Match.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Match not found")
+    if getattr(current_user, "role", None) not in ["Judge", "HeadJudge", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Pending -> Active")
     try:
         obj.assert_transition("Active")
     except ValueError as e:
@@ -517,11 +530,13 @@ def transition_pending_to_active_match(item_id: int, db: Session = Depends(get_d
     return obj
 
 @router_match.patch("/{item_id}/transitions/active-to-completed", response_model=MatchRead)
-def transition_active_to_completed_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+def transition_active_to_completed_match(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Match:
     from fastapi import HTTPException
     obj = db.query(Match).filter(Match.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Match not found")
+    if getattr(current_user, "role", None) not in ["Judge", "HeadJudge", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Active -> Completed")
     try:
         obj.assert_transition("Completed")
     except ValueError as e:
@@ -533,11 +548,13 @@ def transition_active_to_completed_match(item_id: int, db: Session = Depends(get
     return obj
 
 @router_match.patch("/{item_id}/transitions/active-to-draw", response_model=MatchRead)
-def transition_active_to_draw_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+def transition_active_to_draw_match(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Match:
     from fastapi import HTTPException
     obj = db.query(Match).filter(Match.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Match not found")
+    if getattr(current_user, "role", None) not in ["Judge", "HeadJudge", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Active -> Draw")
     try:
         obj.assert_transition("Draw")
     except ValueError as e:
@@ -549,11 +566,13 @@ def transition_active_to_draw_match(item_id: int, db: Session = Depends(get_db))
     return obj
 
 @router_match.patch("/{item_id}/transitions/pending-to-bye", response_model=MatchRead)
-def transition_pending_to_b_y_e_match(item_id: int, db: Session = Depends(get_db)) -> Match:
+def transition_pending_to_b_y_e_match(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)) -> Match:
     from fastapi import HTTPException
     obj = db.query(Match).filter(Match.id == item_id).first()
     if obj is None:
         raise HTTPException(status_code=404, detail="Match not found")
+    if getattr(current_user, "role", None) not in ["Judge", "HeadJudge", "Admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient role for transition Pending -> BYE")
     try:
         obj.assert_transition("BYE")
     except ValueError as e:

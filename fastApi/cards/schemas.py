@@ -148,9 +148,6 @@ class DeckBase(BaseModel):
     created_at: datetime
     updated_at: datetime
     player_id: int
-    cards_ids: list[int] = []
-    sideboard_cards_ids: list[int] = []
-    tags_ids: list[int] = []
 
 
 class DeckCreate(DeckBase):
@@ -170,9 +167,6 @@ class DeckUpdate(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     player_id: int | None = None
-    cards_ids: list[int] | None = None
-    sideboard_cards_ids: list[int] | None = None
-    tags_ids: list[int] | None = None
 
 
 class DeckRead(DeckBase):

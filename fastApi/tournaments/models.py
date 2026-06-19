@@ -8,13 +8,6 @@ from sqlalchemy.orm import relationship
 
 from app.db import Base
 
-tournament_judges_assoc = Table(
-    "tournament_judges_m2m",
-    Base.metadata,
-    Column("tournament_id", Integer, ForeignKey("tournament.id"), primary_key=True),
-    Column("player_id", Integer, ForeignKey("player.id"), primary_key=True),
-)
-
 from typing import Literal
 
 SeasonFormatType = Literal["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"]
@@ -80,11 +73,10 @@ class Tournament(Base):
     location = Column(String(300), nullable=True)
     rules_text = Column(Text, nullable=True)
     created_at = Column(DateTime)
-    season_id = Column(Integer, ForeignKey("season.id"), nullable=False)
-    season = relationship("Season", foreign_keys=[season_id])
-    organizer_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    organizer = relationship("Player", foreign_keys=[organizer_id])
-    judges = relationship("Player", secondary=tournament_judges_assoc)
+    season_id = Column(Integer, ForeignKey("season.id", ondelete="CASCADE"), nullable=False)
+    season = relationship("Season", foreign_keys=[season_id], backref="tournaments")
+    organizer_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    organizer = relationship("Player", foreign_keys=[organizer_id], backref="organized_tournaments")
 
     def start(self):
         # TODO: implement start
@@ -161,10 +153,10 @@ class TournamentJudge(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     role = Column(String(20), default="Judge")
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
-    tournament = relationship("Tournament", foreign_keys=[tournament_id])
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
+    tournament_id = Column(Integer, ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False)
+    tournament = relationship("Tournament", foreign_keys=[tournament_id], backref="judge_assignments")
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="judge_roles")
 
     def promote_to_head(self):
         # TODO: implement promote_to_head
@@ -191,12 +183,12 @@ class TournamentRegistration(Base):
     final_standing = Column(Integer, nullable=True)
     points_earned = Column(Integer, default="0")
     registered_at = Column(DateTime)
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
-    tournament = relationship("Tournament", foreign_keys=[tournament_id])
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
-    deck_id = Column(Integer, ForeignKey("deck.id"), nullable=False)
-    deck = relationship("Deck", foreign_keys=[deck_id])
+    tournament_id = Column(Integer, ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False)
+    tournament = relationship("Tournament", foreign_keys=[tournament_id], backref="registrations")
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="tournament_registrations")
+    deck_id = Column(Integer, ForeignKey("deck.id", ondelete="CASCADE"), nullable=False)
+    deck = relationship("Deck", foreign_keys=[deck_id], backref="tournament_registrations")
 
     def withdraw(self):
         # TODO: implement withdraw
@@ -241,8 +233,8 @@ class TournamentRound(Base):
     started_at = Column(DateTime, nullable=True)
     ended_at = Column(DateTime, nullable=True)
     time_limit_minutes = Column(Integer, default="50")
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
-    tournament = relationship("Tournament", foreign_keys=[tournament_id])
+    tournament_id = Column(Integer, ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False)
+    tournament = relationship("Tournament", foreign_keys=[tournament_id], backref="rounds")
 
     def start(self):
         # TODO: implement start
@@ -295,12 +287,12 @@ class Match(Base):
     started_at = Column(DateTime, nullable=True)
     ended_at = Column(DateTime, nullable=True)
     result_notes = Column(Text, nullable=True)
-    round_id = Column(Integer, ForeignKey("tournament_round.id"), nullable=True)
-    round = relationship("TournamentRound", foreign_keys=[round_id])
-    player1_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player1 = relationship("Player", foreign_keys=[player1_id])
-    player2_id = Column(Integer, ForeignKey("player.id"), nullable=True)
-    player2 = relationship("Player", foreign_keys=[player2_id])
+    round_id = Column(Integer, ForeignKey("tournament_round.id", ondelete="CASCADE"), nullable=True)
+    round = relationship("TournamentRound", foreign_keys=[round_id], backref="matches")
+    player1_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player1 = relationship("Player", foreign_keys=[player1_id], backref="matches_as_player1")
+    player2_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=True)
+    player2 = relationship("Player", foreign_keys=[player2_id], backref="matches_as_player2")
 
     def record_result(self, p1_wins: int, p2_wins: int):
         # TODO: implement record_result
@@ -371,10 +363,10 @@ class Game(Base):
     duration_seconds = Column(Integer, nullable=True)
     ended_by = Column(String(20), nullable=True)
     replay_url = Column(String(200), nullable=True)
-    match_id = Column(Integer, ForeignKey("match.id"), nullable=False)
-    match = relationship("Match", foreign_keys=[match_id])
-    winner_id = Column(Integer, ForeignKey("player.id"), nullable=True)
-    winner = relationship("Player", foreign_keys=[winner_id])
+    match_id = Column(Integer, ForeignKey("match.id", ondelete="CASCADE"), nullable=False)
+    match = relationship("Match", foreign_keys=[match_id], backref="games")
+    winner_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=True)
+    winner = relationship("Player", foreign_keys=[winner_id], backref="won_games")
 
     def record_winner(self, winner_side: str):
         # TODO: implement record_winner
@@ -421,8 +413,8 @@ class TournamentPrize(Base):
     description = Column(Text, nullable=True)
     packs_count = Column(Integer, nullable=True)
     season_points = Column(Integer, default="0")
-    tournament_id = Column(Integer, ForeignKey("tournament.id"), nullable=False)
-    tournament = relationship("Tournament", foreign_keys=[tournament_id])
+    tournament_id = Column(Integer, ForeignKey("tournament.id", ondelete="CASCADE"), nullable=False)
+    tournament = relationship("Tournament", foreign_keys=[tournament_id], backref="prizes")
 
     def applies_to_placement(self, placement: int) -> bool:
         # TODO: implement applies_to_placement
@@ -454,10 +446,10 @@ class AwardedPrize(Base):
     awarded_at = Column(DateTime)
     claimed = Column(Boolean, default="false")
     claimed_at = Column(DateTime, nullable=True)
-    prize_id = Column(Integer, ForeignKey("tournament_prize.id"), nullable=False)
-    prize = relationship("TournamentPrize", foreign_keys=[prize_id])
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=False)
-    player = relationship("Player", foreign_keys=[player_id])
+    prize_id = Column(Integer, ForeignKey("tournament_prize.id", ondelete="CASCADE"), nullable=False)
+    prize = relationship("TournamentPrize", foreign_keys=[prize_id], backref="awarded_prizes")
+    player_id = Column(Integer, ForeignKey("player.id", ondelete="CASCADE"), nullable=False)
+    player = relationship("Player", foreign_keys=[player_id], backref="awarded_prizes")
 
     def claim(self):
         # TODO: implement claim

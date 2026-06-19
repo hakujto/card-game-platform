@@ -122,13 +122,9 @@ curl -s "$BASE/streams/$ID_Stream" | python3 -m json.tool
 
 echo && echo "=== GET player_achievements ==="
 curl -s "$BASE/player_achievements" | python3 -m json.tool
-echo && echo "=== GET player_achievements/$ID_PlayerAchievement ==="
-curl -s "$BASE/player_achievements/$ID_PlayerAchievement" | python3 -m json.tool
 
 echo && echo "=== GET player_season_statses ==="
 curl -s "$BASE/player_season_statses" | python3 -m json.tool
-echo && echo "=== GET player_season_statses/$ID_PlayerSeasonStats ==="
-curl -s "$BASE/player_season_statses/$ID_PlayerSeasonStats" | python3 -m json.tool
 
 echo && echo "=== GET tournaments ==="
 curl -s "$BASE/tournaments" | python3 -m json.tool
@@ -162,8 +158,6 @@ curl -s "$BASE/trade_listings/$ID_TradeListing" | python3 -m json.tool
 
 echo && echo "=== GET card_price_histories ==="
 curl -s "$BASE/card_price_histories" | python3 -m json.tool
-echo && echo "=== GET card_price_histories/$ID_CardPriceHistory ==="
-curl -s "$BASE/card_price_histories/$ID_CardPriceHistory" | python3 -m json.tool
 
 echo && echo "=== GET draft_participants ==="
 curl -s "$BASE/draft_participants" | python3 -m json.tool
@@ -232,13 +226,9 @@ curl -s "$BASE/trade_bids/$ID_TradeBid" | python3 -m json.tool
 
 echo && echo "=== GET trade_transactions ==="
 curl -s "$BASE/trade_transactions" | python3 -m json.tool
-echo && echo "=== GET trade_transactions/$ID_TradeTransaction ==="
-curl -s "$BASE/trade_transactions/$ID_TradeTransaction" | python3 -m json.tool
 
 echo && echo "=== GET draft_picks ==="
 curl -s "$BASE/draft_picks" | python3 -m json.tool
-echo && echo "=== GET draft_picks/$ID_DraftPick ==="
-curl -s "$BASE/draft_picks/$ID_DraftPick" | python3 -m json.tool
 
 echo && echo "=== GET matches ==="
 curl -s "$BASE/matches" | python3 -m json.tool
@@ -247,13 +237,9 @@ curl -s "$BASE/matches/$ID_Match" | python3 -m json.tool
 
 echo && echo "=== GET awarded_prizes ==="
 curl -s "$BASE/awarded_prizes" | python3 -m json.tool
-echo && echo "=== GET awarded_prizes/$ID_AwardedPrize ==="
-curl -s "$BASE/awarded_prizes/$ID_AwardedPrize" | python3 -m json.tool
 
 echo && echo "=== GET trade_disputes ==="
 curl -s "$BASE/trade_disputes" | python3 -m json.tool
-echo && echo "=== GET trade_disputes/$ID_TradeDispute ==="
-curl -s "$BASE/trade_disputes/$ID_TradeDispute" | python3 -m json.tool
 
 echo && echo "=== GET games ==="
 curl -s "$BASE/games" | python3 -m json.tool

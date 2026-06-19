@@ -103,7 +103,6 @@ class ArticleBase(BaseModel):
     updated_at: datetime
     author_id: int
     featured_deck_id: int | None = None
-    tags_ids: list[int] = []
 
 
 class ArticleCreate(ArticleBase):
@@ -127,7 +126,6 @@ class ArticleUpdate(BaseModel):
     updated_at: datetime | None = None
     author_id: int | None = None
     featured_deck_id: int | None = None
-    tags_ids: list[int] | None = None
 
 
 class ArticleRead(ArticleBase):

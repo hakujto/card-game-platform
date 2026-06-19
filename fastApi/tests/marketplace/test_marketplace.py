@@ -137,43 +137,73 @@ class TestOrder:
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
         res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/pending-to-paid")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_paid_to_processing(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-processing")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-processing", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_paid_to_processing_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-processing", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_processing_to_shipped(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/processing-to-shipped")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/processing-to-shipped", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_processing_to_shipped_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/processing-to-shipped", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_shipped_to_completed(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/shipped-to-completed")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/shipped-to-completed", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_shipped_to_completed_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/shipped-to-completed", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_pending_to_cancelled(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
         res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/pending-to-cancelled")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_paid_to_cancelled(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-cancelled")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-cancelled", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_paid_to_cancelled_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/paid-to-cancelled", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_completed_to_refunded(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/completed-to-refunded")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/completed-to-refunded", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_completed_to_refunded_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        created = client.post("/api/orders", json={"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00", "paid_at": "2024-01-01T00:00:00", "shipped_at": None, "player_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/orders/{created.get('id', 1)}/transitions/completed-to-refunded", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_refunded_to_completed_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -348,8 +378,16 @@ class TestTradeListing:
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
-        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/pending-to-active")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/pending-to-active", headers={"X-User-Role": "Seller"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_pending_to_active_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/pending-to-active", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_active_to_sold(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -357,7 +395,7 @@ class TestTradeListing:
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-sold")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_active_to_expired(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -365,15 +403,23 @@ class TestTradeListing:
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-expired")
-        assert res.status_code in (200, 409, 422, 404)
+        assert res.status_code in (200, 403, 409, 422, 404)
 
     def test_transition_active_to_cancelled(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
         _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
         _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
         created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
-        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-cancelled")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-cancelled", headers={"X-User-Role": "Seller"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_active_to_cancelled_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        created = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        res = client.patch(f"/api/trade_listings/{created.get('id', 1)}/transitions/active-to-cancelled", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_sold_to_active_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -487,8 +533,18 @@ class TestTradeDispute:
         _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
         created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/open-to-underreview")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/open-to-underreview", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_open_to_under_review_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/open-to-underreview", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_under_review_to_resolved(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -497,8 +553,18 @@ class TestTradeDispute:
         _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
         created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-resolved")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-resolved", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_under_review_to_resolved_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-resolved", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_under_review_to_escalated(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -507,8 +573,18 @@ class TestTradeDispute:
         _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
         created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-escalated")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-escalated", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_under_review_to_escalated_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/underreview-to-escalated", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_escalated_to_resolved(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
@@ -517,8 +593,18 @@ class TestTradeDispute:
         _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
         _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
         created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
-        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/escalated-to-resolved")
-        assert res.status_code in (200, 409, 422, 404)
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/escalated-to-resolved", headers={"X-User-Role": "Admin"})
+        assert res.status_code in (200, 403, 409, 422, 404)
+
+    def test_transition_escalated_to_resolved_forbidden_for_wrong_role(self, client: TestClient):
+        _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
+        _dep_card_set = client.post("/api/card_sets", json={"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": False, "rotation_date": None}).json()
+        _dep_card = client.post("/api/cards", json={"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": False, "is_restricted": False, "power_level": 1, "attack": 0, "defense": 0, "loyalty": None, "set_id": _dep_card_set["id"]}).json()
+        _dep_trade_listing = client.post("/api/trade_listings", json={"status": "Active", "listing_type": "FixedPrice", "foil": False, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00", "seller_id": _dep_player["id"], "card_id": _dep_card["id"]}).json()
+        _dep_trade_transaction = {"id": 1}  # create not allowed, use placeholder
+        created = client.post("/api/trade_disputes", json={"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "resolved_at": None, "transaction_id": _dep_trade_transaction["id"], "opened_by_id": _dep_player["id"]}).json()
+        res = client.patch(f"/api/trade_disputes/{created.get('id', 1)}/transitions/escalated-to-resolved", headers={"X-User-Role": "nobody"})
+        assert res.status_code in (403, 404)
 
     def test_transition_resolved_to_open_is_denied(self, client: TestClient):
         _dep_player = client.post("/api/players", json={"display_name": "test", "rank": "Bronze", "rating": 0, "peak_rating": 1000, "is_verified": False, "created_at": "2024-01-01T00:00:00"}).json()
