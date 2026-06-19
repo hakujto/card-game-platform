@@ -18,12 +18,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'requester',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.requester_id' }
+  { 'foreign.id' => 'self.requester_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'receiver',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.receiver_id' }
+  { 'foreign.id' => 'self.receiver_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 
 1;

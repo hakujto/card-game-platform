@@ -17,8 +17,10 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'result_card',
   'CardsProject::Schema::Result::Card',
-  { 'foreign.id' => 'self.result_card_id' }
+  { 'foreign.id' => 'self.result_card_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
-__PACKAGE__->many_to_many('cards', 'card_links', 'card');
+__PACKAGE__->has_many('ingredients' => 'CardsProject::Schema::Result::CraftingIngredient', 'recipe_id');
+__PACKAGE__->many_to_many('cards', 'ingredients', 'card');
 
 1;

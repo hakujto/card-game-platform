@@ -14,16 +14,17 @@ subtest 'Friendship list returns 200' => sub {
 
 subtest 'Friendship create returns 201' => sub {
   $t->post_ok('/api/friendships' => json => {
+  requester_id => 'owner-1'
   })->status_is(201);
 };
 
 subtest 'Friendship show returns 200 or 404' => sub {
-  my $res = $t->get_ok('/api/friendships/1')->tx->res;
+  my $res = $t->get_ok('/api/friendships/1' => {'X-User-Id' => 'owner-1'})->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 
 subtest 'Friendship delete returns 204 or 404' => sub {
-  my $res = $t->delete_ok('/api/friendships/1')->tx->res;
+  my $res = $t->delete_ok('/api/friendships/1' => {'X-User-Id' => 'owner-1'})->tx->res;
   ok($res->code == 204 || $res->code == 404, 'status 204 or 404');
 };
 

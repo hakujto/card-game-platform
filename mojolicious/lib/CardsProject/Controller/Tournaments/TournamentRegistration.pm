@@ -10,6 +10,10 @@ sub show ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TournamentRegistration')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $uid = $c->req->headers->header('X-User-Id');
+  unless (defined $uid && $entity->player_id eq $uid) {
+    return $c->render(status => 403, json => { error => 'You do not own this resource.' });
+  }
   $c->render(json => _to_hash($entity));
 }
 

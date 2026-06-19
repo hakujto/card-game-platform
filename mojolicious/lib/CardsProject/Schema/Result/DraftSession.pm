@@ -21,7 +21,9 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'card_set',
   'CardsProject::Schema::Result::CardSet',
-  { 'foreign.id' => 'self.card_set_id' }
+  { 'foreign.id' => 'self.card_set_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('participants' => 'CardsProject::Schema::Result::DraftParticipant', 'session_id');
 
 1;

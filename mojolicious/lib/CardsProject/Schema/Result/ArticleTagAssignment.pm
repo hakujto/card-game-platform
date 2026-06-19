@@ -16,12 +16,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'article',
   'CardsProject::Schema::Result::Article',
-  { 'foreign.id' => 'self.article_id' }
+  { 'foreign.id' => 'self.article_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'tag',
   'CardsProject::Schema::Result::ArticleTag',
-  { 'foreign.id' => 'self.tag_id' }
+  { 'foreign.id' => 'self.tag_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 
 1;

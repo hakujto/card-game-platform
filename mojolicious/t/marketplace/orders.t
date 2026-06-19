@@ -16,12 +16,13 @@ subtest 'Order create returns 201' => sub {
   $t->post_ok('/api/orders' => json => {
   total => '0.00',
   discount_applied => '0.00',
-  currency => 'test'
+  currency => 'test',
+  player_id => 'owner-1'
   })->status_is(201);
 };
 
 subtest 'Order show returns 200 or 404' => sub {
-  my $res = $t->get_ok('/api/orders/1')->tx->res;
+  my $res = $t->get_ok('/api/orders/1' => {'X-User-Id' => 'owner-1'})->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

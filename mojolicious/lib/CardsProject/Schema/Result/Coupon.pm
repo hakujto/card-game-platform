@@ -7,7 +7,7 @@ __PACKAGE__->table('coupons');
 
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
-  code => { data_type => 'varchar', size => 50 },
+  code => { data_type => 'varchar', size => 50, is_unique => 1 },
   discount_type => { data_type => 'varchar', size => 50, default_value => 'Percent' },
   discount_value => { data_type => 'numeric', size => [10, 2] },
   min_order_value => { data_type => 'numeric', size => [10, 2], default_value => 0 },
@@ -20,5 +20,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->has_many('orders' => 'CardsProject::Schema::Result::Order', 'coupon_id');
 
 1;

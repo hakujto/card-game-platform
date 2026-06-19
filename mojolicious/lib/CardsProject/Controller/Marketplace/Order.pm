@@ -10,6 +10,10 @@ sub show ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $uid = $c->req->headers->header('X-User-Id');
+  unless (defined $uid && $entity->player_id eq $uid) {
+    return $c->render(status => 403, json => { error => 'You do not own this resource.' });
+  }
   $c->render(json => _to_hash($entity));
 }
 
@@ -18,6 +22,7 @@ sub create ($c) {
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
   my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'total', 'discount_applied', 'currency', 'payment_method', 'payment_reference', 'shipping_address', 'tracking_number', 'created_at', 'paid_at', 'shipped_at', 'player_id', 'coupon_id');
+  &assign_currency_default(\%cols);
   my $entity = $c->schema->resultset('Order')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -33,6 +38,7 @@ sub pay ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  return $c->render(status => 403, json => { error => 'Forbidden' }) unless $c->param('status');
   $c->render(json => { status => 'ok' });
 }
 
@@ -85,11 +91,12 @@ sub transition_paid_to_processing ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Staff')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Paid') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Processing' });
   $c->render(json => _to_hash($entity));
@@ -99,11 +106,12 @@ sub transition_processing_to_shipped ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Staff')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Processing') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Shipped' });
   &notify_shipped($entity);
@@ -114,11 +122,12 @@ sub transition_shipped_to_completed ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Staff')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Shipped') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Completed' });
   $c->render(json => _to_hash($entity));
@@ -140,11 +149,12 @@ sub transition_paid_to_cancelled ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Staff')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Paid') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Cancelled' });
   &cancel($entity);
@@ -155,11 +165,12 @@ sub transition_completed_to_refunded ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Completed') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Refunded' });
   &refund($entity);
@@ -170,22 +181,14 @@ sub transition_refunded_to_completed ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Refunded') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Completed' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub transition_completed_to_cancelled ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Order')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Completed') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Cancelled' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {
@@ -201,6 +204,8 @@ sub _validate ($data) {
   }
   return \@errors;
 }
+
+sub assign_currency_default { }
 
 sub notify_status_change { }
 

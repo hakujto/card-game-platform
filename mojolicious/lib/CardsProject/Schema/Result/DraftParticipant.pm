@@ -18,12 +18,15 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'session',
   'CardsProject::Schema::Result::DraftSession',
-  { 'foreign.id' => 'self.session_id' }
+  { 'foreign.id' => 'self.session_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'player',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.player_id' }
+  { 'foreign.id' => 'self.player_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('picks' => 'CardsProject::Schema::Result::DraftPick', 'participant_id');
 
 1;

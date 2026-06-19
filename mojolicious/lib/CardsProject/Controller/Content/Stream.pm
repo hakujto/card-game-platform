@@ -74,11 +74,12 @@ sub transition_scheduled_to_live ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Stream')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Streamer', 'Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Scheduled') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Live' });
   &go_live($entity);
@@ -89,11 +90,12 @@ sub transition_live_to_ended ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Stream')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Streamer', 'Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Live') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Ended' });
   &end($entity);
@@ -104,11 +106,7 @@ sub transition_ended_to_live ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Stream')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Ended') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Live' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {

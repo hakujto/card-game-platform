@@ -27,13 +27,18 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'player',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.player_id' }
+  { 'foreign.id' => 'self.player_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'coupon',
   'CardsProject::Schema::Result::Coupon',
-  { 'foreign.id' => 'self.coupon_id' }
+  { 'foreign.id' => 'self.coupon_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('items' => 'CardsProject::Schema::Result::OrderItem', 'order_id');
+
+sub assign_currency_default { }
 
 sub notify_status_change { }
 

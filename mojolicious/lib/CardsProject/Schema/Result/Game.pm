@@ -22,12 +22,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'match',
   'CardsProject::Schema::Result::Match',
-  { 'foreign.id' => 'self.match_id' }
+  { 'foreign.id' => 'self.match_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'winner',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.winner_id' }
+  { 'foreign.id' => 'self.winner_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
 
 1;

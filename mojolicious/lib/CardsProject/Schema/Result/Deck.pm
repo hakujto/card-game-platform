@@ -26,10 +26,16 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'player',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.player_id' }
+  { 'foreign.id' => 'self.player_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
-__PACKAGE__->many_to_many('cards', 'card_links', 'card');
-__PACKAGE__->many_to_many('deck_tags', 'deck_tag_links', 'deck_tag');
+__PACKAGE__->has_many('deck_cards' => 'CardsProject::Schema::Result::DeckCard', 'deck_id');
+__PACKAGE__->many_to_many('cards', 'deck_cards', 'card');
+__PACKAGE__->has_many('tag_assignments' => 'CardsProject::Schema::Result::DeckTagAssignment', 'deck_id');
+__PACKAGE__->many_to_many('deck_tags', 'tag_assignments', 'tag');
+__PACKAGE__->has_many('sideboard_cards' => 'CardsProject::Schema::Result::DeckSideboardCard', 'deck_id');
+__PACKAGE__->has_many('tournament_registrations' => 'CardsProject::Schema::Result::TournamentRegistration', 'deck_id');
+__PACKAGE__->has_many('articles' => 'CardsProject::Schema::Result::Article', 'featured_deck_id');
 
 sub insert_or_update {
   my ($self, @args) = @_;

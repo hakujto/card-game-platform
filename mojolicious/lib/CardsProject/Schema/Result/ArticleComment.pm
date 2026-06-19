@@ -20,17 +20,21 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'article',
   'CardsProject::Schema::Result::Article',
-  { 'foreign.id' => 'self.article_id' }
+  { 'foreign.id' => 'self.article_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'author',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.author_id' }
+  { 'foreign.id' => 'self.author_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'parent_comment',
   'CardsProject::Schema::Result::ArticleComment',
-  { 'foreign.id' => 'self.parent_comment_id' }
+  { 'foreign.id' => 'self.parent_comment_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('replies' => 'CardsProject::Schema::Result::ArticleComment', 'parent_comment_id');
 
 1;

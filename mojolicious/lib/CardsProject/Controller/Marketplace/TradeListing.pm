@@ -60,6 +60,7 @@ sub cancel ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TradeListing')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  return $c->render(status => 403, json => { error => 'Forbidden' }) unless $c->param('status');
   $c->render(json => { status => 'ok' });
 }
 
@@ -86,11 +87,12 @@ sub transition_pending_to_active ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TradeListing')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Seller')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Pending') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Active' });
   $c->render(json => _to_hash($entity));
@@ -124,11 +126,12 @@ sub transition_active_to_cancelled ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TradeListing')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Seller', 'Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Active') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Cancelled' });
   &cancel($entity);
@@ -139,22 +142,14 @@ sub transition_sold_to_active ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TradeListing')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Sold') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Active' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub transition_expired_to_active ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('TradeListing')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Expired') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Active' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {

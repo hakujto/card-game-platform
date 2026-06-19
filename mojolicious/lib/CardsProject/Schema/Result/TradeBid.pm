@@ -19,12 +19,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'listing',
   'CardsProject::Schema::Result::TradeListing',
-  { 'foreign.id' => 'self.listing_id' }
+  { 'foreign.id' => 'self.listing_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'bidder',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.bidder_id' }
+  { 'foreign.id' => 'self.bidder_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 
 1;

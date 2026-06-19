@@ -19,12 +19,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'order',
   'CardsProject::Schema::Result::Order',
-  { 'foreign.id' => 'self.order_id' }
+  { 'foreign.id' => 'self.order_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'product',
   'CardsProject::Schema::Result::Product',
-  { 'foreign.id' => 'self.product_id' }
+  { 'foreign.id' => 'self.product_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 
 1;

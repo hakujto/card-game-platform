@@ -13,4 +13,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->might_have('player_profile' => 'CardsProject::Schema::Result::Player', 'user_id');
+
 1;

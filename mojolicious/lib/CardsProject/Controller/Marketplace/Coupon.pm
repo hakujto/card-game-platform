@@ -60,6 +60,7 @@ sub redeem ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Coupon')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  return $c->render(status => 403, json => { error => 'Forbidden' }) unless $c->param('is_active');
   $c->render(json => { status => 'ok' });
 }
 

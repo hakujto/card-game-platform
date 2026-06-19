@@ -17,5 +17,7 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->has_many('player_stats' => 'CardsProject::Schema::Result::PlayerSeasonStats', 'season_id');
+__PACKAGE__->has_many('tournaments' => 'CardsProject::Schema::Result::Tournament', 'season_id');
 
 1;

@@ -115,6 +115,8 @@ sub _validate ($data) {
   return \@errors;
 }
 
+sub validate_not_in_use { }
+
 sub _to_hash ($entity) {
   return {
     id => $entity->id,

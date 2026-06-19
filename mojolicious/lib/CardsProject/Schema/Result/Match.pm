@@ -24,17 +24,21 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'round',
   'CardsProject::Schema::Result::TournamentRound',
-  { 'foreign.id' => 'self.round_id' }
+  { 'foreign.id' => 'self.round_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'player1',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.player1_id' }
+  { 'foreign.id' => 'self.player1_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'player2',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.player2_id' }
+  { 'foreign.id' => 'self.player2_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('games' => 'CardsProject::Schema::Result::Game', 'match_id');
 
 1;

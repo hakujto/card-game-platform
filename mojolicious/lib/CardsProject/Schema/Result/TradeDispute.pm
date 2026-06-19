@@ -13,7 +13,7 @@ __PACKAGE__->add_columns(
   resolution => { data_type => 'text', is_nullable => 1 },
   opened_at => { data_type => 'datetime' },
   resolved_at => { data_type => 'datetime', is_nullable => 1 },
-  transaction_id => { data_type => 'integer', is_nullable => 1 },
+  transaction_id => { data_type => 'integer', is_nullable => 1, is_unique => 1 },
   opened_by_id => { data_type => 'integer', is_nullable => 1 },
   resolved_by_id => { data_type => 'integer', is_nullable => 1 }
 );
@@ -23,17 +23,20 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'transaction',
   'CardsProject::Schema::Result::TradeTransaction',
-  { 'foreign.id' => 'self.transaction_id' }
+  { 'foreign.id' => 'self.transaction_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'opened_by',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.opened_by_id' }
+  { 'foreign.id' => 'self.opened_by_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'resolved_by',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.resolved_by_id' }
+  { 'foreign.id' => 'self.resolved_by_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
 
 1;

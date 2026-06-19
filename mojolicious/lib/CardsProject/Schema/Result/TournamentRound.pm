@@ -20,7 +20,9 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'tournament',
   'CardsProject::Schema::Result::Tournament',
-  { 'foreign.id' => 'self.tournament_id' }
+  { 'foreign.id' => 'self.tournament_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('matches' => 'CardsProject::Schema::Result::Match', 'round_id');
 
 1;

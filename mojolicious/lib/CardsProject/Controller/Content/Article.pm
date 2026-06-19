@@ -89,11 +89,12 @@ sub transition_draft_to_published ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Article')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Editor', 'Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Draft') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Published' });
   &publish($entity);
@@ -104,11 +105,12 @@ sub transition_published_to_archived ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Article')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Editor', 'Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Published') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Archived' });
   &archive($entity);
@@ -119,11 +121,12 @@ sub transition_archived_to_draft ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Article')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Archived') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Draft' });
   $c->render(json => _to_hash($entity));
@@ -133,11 +136,7 @@ sub transition_published_to_draft ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Article')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Published') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Draft' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {

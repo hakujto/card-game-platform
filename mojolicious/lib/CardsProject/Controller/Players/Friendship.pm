@@ -10,6 +10,10 @@ sub show ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Friendship')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $uid = $c->req->headers->header('X-User-Id');
+  unless (defined $uid && $entity->requester_id eq $uid) {
+    return $c->render(status => 403, json => { error => 'You do not own this resource.' });
+  }
   $c->render(json => _to_hash($entity));
 }
 
@@ -24,6 +28,10 @@ sub delete ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Friendship')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $uid = $c->req->headers->header('X-User-Id');
+  unless (defined $uid && $entity->requester_id eq $uid) {
+    return $c->render(status => 403, json => { error => 'You do not own this resource.' });
+  }
   $entity->delete;
   $c->rendered(204);
 }

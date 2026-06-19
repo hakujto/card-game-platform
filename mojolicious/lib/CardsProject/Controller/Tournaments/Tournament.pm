@@ -97,11 +97,12 @@ sub transition_draft_to_registration ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Draft') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Registration' });
   $c->render(json => _to_hash($entity));
@@ -111,11 +112,12 @@ sub transition_registration_to_ongoing ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Registration') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Ongoing' });
   &start($entity);
@@ -126,11 +128,12 @@ sub transition_registration_to_cancelled ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Registration') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Cancelled' });
   &cancel($entity);
@@ -141,11 +144,12 @@ sub transition_ongoing_to_completed ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Ongoing') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Completed' });
   &complete($entity);
@@ -157,11 +161,12 @@ sub transition_ongoing_to_cancelled ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Ongoing') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Cancelled' });
   &cancel($entity);
@@ -172,22 +177,14 @@ sub transition_completed_to_draft ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Completed') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Draft' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub transition_cancelled_to_draft ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Tournament')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Cancelled') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Draft' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {
@@ -199,6 +196,8 @@ sub _validate ($data) {
 }
 
 sub sync_season_stats { }
+
+sub prevent_delete_if_ongoing { }
 
 sub _to_hash ($entity) {
   return {

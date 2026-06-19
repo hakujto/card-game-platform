@@ -78,11 +78,12 @@ sub transition_drafting_to_abandoned ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('DraftSession')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'Drafting') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Abandoned' });
   &abandon($entity);
@@ -93,11 +94,12 @@ sub transition_waiting_for_players_to_abandoned ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('DraftSession')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
+  my $role = $c->current_user ? $c->current_user->{role} : undef;
+  unless (defined $role && grep { $_ eq $role } ('Admin', 'Organizer')) {
+    return $c->render(status => 403, json => { error => 'Forbidden' });
+  }
   if ($entity->status ne 'WaitingForPlayers') {
     return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  unless ($c->[object Object]) {
-    return $c->render(status => 422, json => { error => 'Transition condition not met' });
   }
   $entity->update({ status => 'Abandoned' });
   &abandon($entity);
@@ -108,22 +110,14 @@ sub transition_completed_to_drafting ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('DraftSession')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Completed') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Drafting' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub transition_abandoned_to_drafting ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('DraftSession')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
-  if ($entity->status ne 'Abandoned') {
-    return $c->render(status => 409, json => { error => 'Invalid state transition' });
-  }
-  $entity->update({ status => 'Drafting' });
-  $c->render(json => _to_hash($entity));
+  return $c->render(status => 409, json => { error => 'Invalid state transition' });
 }
 
 sub _validate ($data) {

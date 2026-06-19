@@ -30,15 +30,24 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'season',
   'CardsProject::Schema::Result::Season',
-  { 'foreign.id' => 'self.season_id' }
+  { 'foreign.id' => 'self.season_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'organizer',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.organizer_id' }
+  { 'foreign.id' => 'self.organizer_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
-__PACKAGE__->many_to_many('players', 'player_links', 'player');
+__PACKAGE__->has_many('judge_assignments' => 'CardsProject::Schema::Result::TournamentJudge', 'tournament_id');
+__PACKAGE__->many_to_many('players', 'judge_assignments', 'player');
+__PACKAGE__->has_many('registrations' => 'CardsProject::Schema::Result::TournamentRegistration', 'tournament_id');
+__PACKAGE__->has_many('rounds' => 'CardsProject::Schema::Result::TournamentRound', 'tournament_id');
+__PACKAGE__->has_many('prizes' => 'CardsProject::Schema::Result::TournamentPrize', 'tournament_id');
+__PACKAGE__->has_many('streams' => 'CardsProject::Schema::Result::Stream', 'tournament_id');
 
 sub sync_season_stats { }
+
+sub prevent_delete_if_ongoing { }
 
 1;

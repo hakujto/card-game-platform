@@ -28,12 +28,16 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'seller',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.seller_id' }
+  { 'foreign.id' => 'self.seller_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'card',
   'CardsProject::Schema::Result::Card',
-  { 'foreign.id' => 'self.card_id' }
+  { 'foreign.id' => 'self.card_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('bids' => 'CardsProject::Schema::Result::TradeBid', 'listing_id');
+__PACKAGE__->might_have('transaction' => 'CardsProject::Schema::Result::TradeTransaction', 'listing_id');
 
 1;

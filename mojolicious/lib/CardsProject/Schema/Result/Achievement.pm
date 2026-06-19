@@ -17,5 +17,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->has_many('player_records' => 'CardsProject::Schema::Result::PlayerAchievement', 'achievement_id');
 
 1;

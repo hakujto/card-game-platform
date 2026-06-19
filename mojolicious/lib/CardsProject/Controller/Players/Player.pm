@@ -25,6 +25,7 @@ sub create ($c) {
   my $data = $c->req->json;
   my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('display_name', 'rank', 'rating', 'peak_rating', 'bio', 'country_code', 'avatar_url', 'preferred_format', 'is_verified', 'created_at', 'last_active_at', 'user_id');
   my $entity = $c->schema->resultset('Player')->create(\%cols);
+  &initialize_collection($entity);
   $c->render(status => 201, json => _to_hash($entity));
 }
 
@@ -87,6 +88,8 @@ sub update_rating ($c) {
     or return $c->render(status => 404, json => { error => 'Not found' });
   $c->render(json => { status => 'ok' });
 }
+
+sub initialize_collection { }
 
 sub update_rank { }
 

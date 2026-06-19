@@ -31,8 +31,19 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'set',
   'CardsProject::Schema::Result::CardSet',
-  { 'foreign.id' => 'self.set_id' }
+  { 'foreign.id' => 'self.set_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('rulings' => 'CardsProject::Schema::Result::CardRuling', 'card_id');
+__PACKAGE__->has_many('abilities' => 'CardsProject::Schema::Result::CardAbility', 'card_id');
+__PACKAGE__->has_many('deck_cards' => 'CardsProject::Schema::Result::DeckCard', 'card_id');
+__PACKAGE__->has_many('player_collections' => 'CardsProject::Schema::Result::PlayerCollection', 'card_id');
+__PACKAGE__->has_many('crafting_recipes' => 'CardsProject::Schema::Result::CraftingRecipe', 'result_card_id');
+__PACKAGE__->has_many('used_in_recipes' => 'CardsProject::Schema::Result::CraftingIngredient', 'card_id');
+__PACKAGE__->might_have('shop_product' => 'CardsProject::Schema::Result::Product', 'card_id');
+__PACKAGE__->has_many('trade_listings' => 'CardsProject::Schema::Result::TradeListing', 'card_id');
+__PACKAGE__->has_many('price_history' => 'CardsProject::Schema::Result::CardPriceHistory', 'card_id');
+__PACKAGE__->has_many('draft_picks' => 'CardsProject::Schema::Result::DraftPick', 'card_id');
 
 sub insert {
   my ($self, @args) = @_;
@@ -41,5 +52,7 @@ sub insert {
 }
 
 sub validate_legality { }
+
+sub validate_not_in_use { }
 
 1;

@@ -27,12 +27,14 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'tournament',
   'CardsProject::Schema::Result::Tournament',
-  { 'foreign.id' => 'self.tournament_id' }
+  { 'foreign.id' => 'self.tournament_id' },
+  { on_delete => 'SET NULL', on_update => 'CASCADE' }
 );
 __PACKAGE__->belongs_to(
   'streamer',
   'CardsProject::Schema::Result::Player',
-  { 'foreign.id' => 'self.streamer_id' }
+  { 'foreign.id' => 'self.streamer_id' },
+  { on_delete => 'RESTRICT', on_update => 'CASCADE' }
 );
 
 1;

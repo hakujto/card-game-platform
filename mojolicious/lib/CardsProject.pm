@@ -6,7 +6,8 @@ sub startup ($self) {
   my $dsn = $ENV{TEST_DATABASE_URL} || ('dbi:SQLite:dbname=' . $self->app->home->child('cards_project.db'));
   my $schema = CardsProject::Schema->connect(
     $dsn, '', '',
-    { AutoCommit => 1, RaiseError => 1 }
+    { AutoCommit => 1, RaiseError => 1, sqlite_use_immediate_transaction => 1,
+      on_connect_do => 'PRAGMA busy_timeout = 5000' }
   );
   eval { $schema->deploy({ add_drop_table => 0, ignore_errors => 1 }) };
   warn "deploy warning: $@" if $@ && $@ !~ /already exists/i;

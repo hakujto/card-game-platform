@@ -21,7 +21,8 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'card',
   'CardsProject::Schema::Result::Card',
-  { 'foreign.id' => 'self.card_id' }
+  { 'foreign.id' => 'self.card_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
 
 1;

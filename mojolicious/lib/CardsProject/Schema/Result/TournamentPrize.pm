@@ -22,7 +22,9 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->belongs_to(
   'tournament',
   'CardsProject::Schema::Result::Tournament',
-  { 'foreign.id' => 'self.tournament_id' }
+  { 'foreign.id' => 'self.tournament_id' },
+  { on_delete => 'CASCADE', on_update => 'CASCADE' }
 );
+__PACKAGE__->has_many('awarded_prizes' => 'CardsProject::Schema::Result::AwardedPrize', 'prize_id');
 
 1;
