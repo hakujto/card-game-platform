@@ -67,24 +67,48 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
   describe "PATCH /api/articles/:id/transitions/draft-to-published" do
     test "transitions Draft -> Published", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Editor"})
       conn = patch(conn, "/api/articles/#{record.id}/transitions/draft-to-published")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/draft-to-published")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/articles/:id/transitions/published-to-archived" do
     test "transitions Published -> Archived", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Editor"})
       conn = patch(conn, "/api/articles/#{record.id}/transitions/published-to-archived")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/published-to-archived")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/articles/:id/transitions/archived-to-draft" do
     test "transitions Archived -> Draft", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/articles/#{record.id}/transitions/archived-to-draft")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_article(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/articles/#{record.id}/transitions/archived-to-draft")
+      assert conn.status == 403
     end
   end
 

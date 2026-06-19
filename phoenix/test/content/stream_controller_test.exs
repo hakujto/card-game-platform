@@ -59,16 +59,32 @@ defmodule CardsProjectWeb.Content.StreamControllerTest do
   describe "PATCH /api/streams/:id/transitions/scheduled-to-live" do
     test "transitions Scheduled -> Live", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_stream(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Streamer"})
       conn = patch(conn, "/api/streams/#{record.id}/transitions/scheduled-to-live")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_stream(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/streams/#{record.id}/transitions/scheduled-to-live")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/streams/:id/transitions/live-to-ended" do
     test "transitions Live -> Ended", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_stream(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Streamer"})
       conn = patch(conn, "/api/streams/#{record.id}/transitions/live-to-ended")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_stream(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/streams/#{record.id}/transitions/live-to-ended")
+      assert conn.status == 403
     end
   end
 

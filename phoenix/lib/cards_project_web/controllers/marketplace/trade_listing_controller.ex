@@ -58,8 +58,13 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
   # DELETE /api/trade-listings/{id}/cancel
   def cancel(conn, %{"id" => id}) do
-    Marketplace.trade_listing_cancel_behavior(id)
-    send_resp(conn, :no_content, "")
+    obj = Marketplace.get_trade_listing!(id)
+    if not (obj.status == "Active") do
+      conn |> put_status(:unprocessable_entity) |> json(%{error: "Guard condition not met for cancel"}) |> halt()
+    else
+      Marketplace.trade_listing_cancel_behavior(id)
+      send_resp(conn, :no_content, "")
+    end
   end
 
   # GET /api/trade-listings/{id}/expired
@@ -76,6 +81,10 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
   # PATCH /api/trade_listings/:id/transitions/pending-to-active
   def transition_pending_to_active(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Seller"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Pending -> Active"}) |> halt()
+    else
     trade_listing = Marketplace.get_trade_listing!(id)
     case Marketplace.transition_pending_to_active_trade_listing(trade_listing) do
       {:ok, updated} ->
@@ -89,6 +98,7 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 
@@ -130,6 +140,10 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
   # PATCH /api/trade_listings/:id/transitions/active-to-cancelled
   def transition_active_to_cancelled(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Seller", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Active -> Cancelled"}) |> halt()
+    else
     trade_listing = Marketplace.get_trade_listing!(id)
     case Marketplace.transition_active_to_cancelled_trade_listing(trade_listing) do
       {:ok, updated} ->
@@ -143,6 +157,7 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

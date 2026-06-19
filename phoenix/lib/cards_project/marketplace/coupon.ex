@@ -12,6 +12,7 @@ defmodule CardsProject.Marketplace.Coupon do
     field :valid_from, :naive_datetime
     field :valid_until, :naive_datetime
     field :is_active, :boolean, default: true
+    has_many :orders, CardsProject.Marketplace.Order, foreign_key: :coupon_id
 
     timestamps()
   end
@@ -22,6 +23,7 @@ defmodule CardsProject.Marketplace.Coupon do
     |> cast(attrs, [:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active, :discount_type, :max_uses])
     |> validate_required([:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active])
     |> validate_inclusion(:discount_type, ["Percent", "Fixed"])
+    |> unique_constraint(:code, message: "code must be unique")
     |> then(fn cs ->
       lv = get_field(cs, :valid_from)
       fv = get_field(cs, :valid_until)

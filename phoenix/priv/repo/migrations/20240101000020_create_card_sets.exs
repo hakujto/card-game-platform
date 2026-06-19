@@ -15,5 +15,6 @@ defmodule CardsProject.Repo.Migrations.CreateCardSets do
 
       timestamps()
     end
+    create unique_index(:card_sets, [:code])
   end
 end

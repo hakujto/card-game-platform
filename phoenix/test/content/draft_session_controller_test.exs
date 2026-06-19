@@ -62,16 +62,32 @@ defmodule CardsProjectWeb.Content.DraftSessionControllerTest do
   describe "PATCH /api/draft_sessions/:id/transitions/drafting-to-abandoned" do
     test "transitions Drafting -> Abandoned", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/draft_sessions/#{record.id}/transitions/drafting-to-abandoned")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/draft_sessions/#{record.id}/transitions/drafting-to-abandoned")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" do
     test "transitions WaitingForPlayers -> Abandoned", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/draft_sessions/#{record.id}/transitions/waitingforplayers-to-abandoned")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Content.create_draft_session(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/draft_sessions/#{record.id}/transitions/waitingforplayers-to-abandoned")
+      assert conn.status == 403
     end
   end
 

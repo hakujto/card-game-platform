@@ -89,6 +89,10 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
 
   # PATCH /api/tournaments/:id/transitions/draft-to-registration
   def transition_draft_to_registration(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Draft -> Registration"}) |> halt()
+    else
     tournament = Tournaments.get_tournament!(id)
     case Tournaments.transition_draft_to_registration_tournament(tournament) do
       {:ok, updated} ->
@@ -103,10 +107,15 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/tournaments/:id/transitions/registration-to-ongoing
   def transition_registration_to_ongoing(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Registration -> Ongoing"}) |> halt()
+    else
     tournament = Tournaments.get_tournament!(id)
     case Tournaments.transition_registration_to_ongoing_tournament(tournament) do
       {:ok, updated} ->
@@ -121,10 +130,15 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/tournaments/:id/transitions/registration-to-cancelled
   def transition_registration_to_cancelled(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Registration -> Cancelled"}) |> halt()
+    else
     tournament = Tournaments.get_tournament!(id)
     case Tournaments.transition_registration_to_cancelled_tournament(tournament) do
       {:ok, updated} ->
@@ -139,10 +153,15 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/tournaments/:id/transitions/ongoing-to-completed
   def transition_ongoing_to_completed(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Ongoing -> Completed"}) |> halt()
+    else
     tournament = Tournaments.get_tournament!(id)
     case Tournaments.transition_ongoing_to_completed_tournament(tournament) do
       {:ok, updated} ->
@@ -157,10 +176,15 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled
   def transition_ongoing_to_cancelled(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Ongoing -> Cancelled"}) |> halt()
+    else
     tournament = Tournaments.get_tournament!(id)
     case Tournaments.transition_ongoing_to_cancelled_tournament(tournament) do
       {:ok, updated} ->
@@ -174,6 +198,7 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

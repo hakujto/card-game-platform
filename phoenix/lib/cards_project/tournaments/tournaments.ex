@@ -212,6 +212,11 @@ defmodule CardsProject.Tournaments do
     tournament
   end
 
+  defp tournament_hook_prevent_delete_if_ongoing(%Tournament{} = tournament) do
+    # TODO: implement prevent_delete_if_ongoing
+    tournament
+  end
+
   # ── TournamentJudge ─────────────────────────────────────────────────────
 
   def list_tournament_judges, do: Repo.all(TournamentJudge)

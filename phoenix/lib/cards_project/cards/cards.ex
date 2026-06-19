@@ -97,6 +97,11 @@ defmodule CardsProject.Cards do
     attrs
   end
 
+  defp card_hook_validate_not_in_use(%Card{} = card) do
+    # TODO: implement validate_not_in_use
+    card
+  end
+
   # ── CardSet ─────────────────────────────────────────────────────
 
   def list_card_sets(nil), do: Repo.all(CardSet)

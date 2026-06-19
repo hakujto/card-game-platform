@@ -34,32 +34,64 @@ defmodule CardsProjectWeb.Tournaments.MatchControllerTest do
   describe "PATCH /api/matches/:id/transitions/pending-to-active" do
     test "transitions Pending -> Active", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Judge"})
       conn = patch(conn, "/api/matches/#{record.id}/transitions/pending-to-active")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/matches/#{record.id}/transitions/pending-to-active")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/matches/:id/transitions/active-to-completed" do
     test "transitions Active -> Completed", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Judge"})
       conn = patch(conn, "/api/matches/#{record.id}/transitions/active-to-completed")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/matches/#{record.id}/transitions/active-to-completed")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/matches/:id/transitions/active-to-draw" do
     test "transitions Active -> Draw", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Judge"})
       conn = patch(conn, "/api/matches/#{record.id}/transitions/active-to-draw")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/matches/#{record.id}/transitions/active-to-draw")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/matches/:id/transitions/pending-to-bye" do
     test "transitions Pending -> BYE", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Judge"})
       conn = patch(conn, "/api/matches/#{record.id}/transitions/pending-to-bye")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_match(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/matches/#{record.id}/transitions/pending-to-bye")
+      assert conn.status == 403
     end
   end
 

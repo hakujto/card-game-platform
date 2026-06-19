@@ -81,6 +81,10 @@ defmodule CardsProjectWeb.Content.ArticleController do
 
   # PATCH /api/articles/:id/transitions/draft-to-published
   def transition_draft_to_published(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Editor", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Draft -> Published"}) |> halt()
+    else
     article = Content.get_article!(id)
     case Content.transition_draft_to_published_article(article) do
       {:ok, updated} ->
@@ -95,10 +99,15 @@ defmodule CardsProjectWeb.Content.ArticleController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/articles/:id/transitions/published-to-archived
   def transition_published_to_archived(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Editor", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Published -> Archived"}) |> halt()
+    else
     article = Content.get_article!(id)
     case Content.transition_published_to_archived_article(article) do
       {:ok, updated} ->
@@ -113,10 +122,15 @@ defmodule CardsProjectWeb.Content.ArticleController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/articles/:id/transitions/archived-to-draft
   def transition_archived_to_draft(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Archived -> Draft"}) |> halt()
+    else
     article = Content.get_article!(id)
     case Content.transition_archived_to_draft_article(article) do
       {:ok, updated} ->
@@ -130,6 +144,7 @@ defmodule CardsProjectWeb.Content.ArticleController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

@@ -13,7 +13,7 @@ defmodule CardsProject.Tournaments.Match do
     belongs_to :round, CardsProject.Tournaments.TournamentRound
     belongs_to :player1, CardsProject.Players.Player
     belongs_to :player2, CardsProject.Players.Player
-    belongs_to :games, CardsProject.Tournaments.Game
+    has_many :games, CardsProject.Tournaments.Game, foreign_key: :match_id
 
     timestamps()
   end

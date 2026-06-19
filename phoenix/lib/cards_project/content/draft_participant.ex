@@ -7,7 +7,7 @@ defmodule CardsProject.Content.DraftParticipant do
     field :joined_at, :naive_datetime
     belongs_to :session, CardsProject.Content.DraftSession
     belongs_to :player, CardsProject.Players.Player
-    belongs_to :drafted_cards, CardsProject.Content.DraftPick
+    has_many :picks, CardsProject.Content.DraftPick, foreign_key: :participant_id
 
     timestamps()
   end

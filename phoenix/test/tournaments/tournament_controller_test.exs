@@ -71,40 +71,80 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
   describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
     test "transitions Draft -> Registration", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/tournaments/#{record.id}/transitions/draft-to-registration")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/draft-to-registration")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-ongoing" do
     test "transitions Registration -> Ongoing", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-ongoing")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-ongoing")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-cancelled" do
     test "transitions Registration -> Cancelled", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-cancelled")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/registration-to-cancelled")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-completed" do
     test "transitions Ongoing -> Completed", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-completed")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-completed")
+      assert conn.status == 403
     end
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled" do
     test "transitions Ongoing -> Cancelled", %{conn: conn} do
       {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Admin"})
       conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-cancelled")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Tournaments.create_tournament(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/tournaments/#{record.id}/transitions/ongoing-to-cancelled")
+      assert conn.status == 403
     end
   end
 

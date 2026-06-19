@@ -9,7 +9,7 @@ defmodule CardsProject.Tournaments.TournamentRound do
     field :ended_at, :naive_datetime
     field :time_limit_minutes, :integer, default: 50
     belongs_to :tournament, CardsProject.Tournaments.Tournament
-    belongs_to :matches, CardsProject.Tournaments.Match
+    has_many :matches, CardsProject.Tournaments.Match, foreign_key: :round_id
 
     timestamps()
   end

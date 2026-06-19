@@ -11,6 +11,7 @@ defmodule CardsProject.Tournaments.TournamentPrize do
     field :packs_count, :integer
     field :season_points, :integer, default: 0
     belongs_to :tournament, CardsProject.Tournaments.Tournament
+    has_many :awarded_prizes, CardsProject.Tournaments.AwardedPrize, foreign_key: :prize_id
 
     timestamps()
   end

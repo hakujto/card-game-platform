@@ -20,8 +20,18 @@ defmodule CardsProject.Cards.Card do
     field :is_restricted, :boolean, default: false
     field :power_level, :integer, default: 1
     belongs_to :set, CardsProject.Cards.CardSet
-    belongs_to :rulings, CardsProject.Cards.CardRuling
-    belongs_to :abilities, CardsProject.Cards.CardAbility
+    has_many :rulings, CardsProject.Cards.CardRuling, foreign_key: :card_id
+    has_many :abilities, CardsProject.Cards.CardAbility, foreign_key: :card_id
+    many_to_many :decks, CardsProject.Cards.Deck, join_through: "deck_cards"
+    many_to_many :sideboard_decks, CardsProject.Cards.Deck, join_through: "deck_sideboard_cards"
+    has_many :deck_cards, CardsProject.Cards.DeckCard, foreign_key: :card_id
+    has_many :player_collections, CardsProject.Players.PlayerCollection, foreign_key: :card_id
+    has_many :crafting_recipes, CardsProject.Players.CraftingRecipe, foreign_key: :result_card_id
+    has_many :used_in_recipes, CardsProject.Players.CraftingIngredient, foreign_key: :card_id
+    has_one :shop_product, CardsProject.Marketplace.Product, foreign_key: :card_id
+    has_many :trade_listings, CardsProject.Marketplace.TradeListing, foreign_key: :card_id
+    has_many :price_history, CardsProject.Marketplace.CardPriceHistory, foreign_key: :card_id
+    has_many :draft_picks, CardsProject.Content.DraftPick, foreign_key: :card_id
 
     timestamps()
   end

@@ -14,6 +14,7 @@ defmodule CardsProject.Marketplace.Product do
     field :featured, :boolean, default: false
     belongs_to :card, CardsProject.Cards.Card
     belongs_to :card_set, CardsProject.Cards.CardSet
+    has_many :order_items, CardsProject.Marketplace.OrderItem, foreign_key: :product_id
 
     timestamps()
   end

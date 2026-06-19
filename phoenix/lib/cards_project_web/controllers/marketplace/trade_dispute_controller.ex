@@ -56,6 +56,10 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
 
   # PATCH /api/trade_disputes/:id/transitions/open-to-underreview
   def transition_open_to_under_review(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Moderator"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Open -> UnderReview"}) |> halt()
+    else
     trade_dispute = Marketplace.get_trade_dispute!(id)
     case Marketplace.transition_open_to_under_review_trade_dispute(trade_dispute) do
       {:ok, updated} ->
@@ -70,10 +74,15 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/trade_disputes/:id/transitions/underreview-to-resolved
   def transition_under_review_to_resolved(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Moderator"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition UnderReview -> Resolved"}) |> halt()
+    else
     trade_dispute = Marketplace.get_trade_dispute!(id)
     case Marketplace.transition_under_review_to_resolved_trade_dispute(trade_dispute) do
       {:ok, updated} ->
@@ -88,10 +97,15 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/trade_disputes/:id/transitions/underreview-to-escalated
   def transition_under_review_to_escalated(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition UnderReview -> Escalated"}) |> halt()
+    else
     trade_dispute = Marketplace.get_trade_dispute!(id)
     case Marketplace.transition_under_review_to_escalated_trade_dispute(trade_dispute) do
       {:ok, updated} ->
@@ -106,10 +120,15 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/trade_disputes/:id/transitions/escalated-to-resolved
   def transition_escalated_to_resolved(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Escalated -> Resolved"}) |> halt()
+    else
     trade_dispute = Marketplace.get_trade_dispute!(id)
     case Marketplace.transition_escalated_to_resolved_trade_dispute(trade_dispute) do
       {:ok, updated} ->
@@ -123,6 +142,7 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

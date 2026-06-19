@@ -10,6 +10,7 @@ defmodule CardsProject.Marketplace.TradeTransaction do
     belongs_to :listing, CardsProject.Marketplace.TradeListing
     belongs_to :buyer, CardsProject.Players.Player
     belongs_to :seller, CardsProject.Players.Player
+    has_one :dispute, CardsProject.Marketplace.TradeDispute, foreign_key: :transaction_id
 
     timestamps()
   end

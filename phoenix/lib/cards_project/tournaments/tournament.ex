@@ -19,10 +19,12 @@ defmodule CardsProject.Tournaments.Tournament do
     field :created_at, :naive_datetime
     belongs_to :season, CardsProject.Tournaments.Season
     belongs_to :organizer, CardsProject.Players.Player
-    belongs_to :registrations, CardsProject.Tournaments.TournamentRegistration
-    belongs_to :rounds, CardsProject.Tournaments.TournamentRound
-    belongs_to :prizes, CardsProject.Tournaments.TournamentPrize
-    many_to_many :judges, CardsProject.Players.Player, join_through: "tournament_judges_m2m"
+    many_to_many :judges, CardsProject.Players.Player, join_through: "tournament_judges"
+    has_many :judge_assignments, CardsProject.Tournaments.TournamentJudge, foreign_key: :tournament_id
+    has_many :registrations, CardsProject.Tournaments.TournamentRegistration, foreign_key: :tournament_id
+    has_many :rounds, CardsProject.Tournaments.TournamentRound, foreign_key: :tournament_id
+    has_many :prizes, CardsProject.Tournaments.TournamentPrize, foreign_key: :tournament_id
+    has_many :streams, CardsProject.Content.Stream, foreign_key: :tournament_id
 
     timestamps()
   end

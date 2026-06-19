@@ -6,7 +6,8 @@ defmodule CardsProject.Players.CraftingRecipe do
     field :dust_cost, :integer
     field :is_available, :boolean, default: true
     belongs_to :result_card, CardsProject.Cards.Card
-    many_to_many :required_cards, CardsProject.Cards.Card, join_through: "crafting_recipe_required_cards_m2m"
+    many_to_many :required_cards, CardsProject.Cards.Card, join_through: "crafting_ingredients"
+    has_many :ingredients, CardsProject.Players.CraftingIngredient, foreign_key: :recipe_id
 
     timestamps()
   end

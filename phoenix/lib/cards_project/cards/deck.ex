@@ -14,9 +14,13 @@ defmodule CardsProject.Cards.Deck do
     field :draws, :integer, default: 0
     field :created_at, :naive_datetime
     belongs_to :player, CardsProject.Players.Player
-    many_to_many :cards, CardsProject.Cards.Card, join_through: "deck_cards_m2m"
-    many_to_many :sideboard_cards, CardsProject.Cards.Card, join_through: "deck_sideboard_cards_m2m"
-    many_to_many :tags, CardsProject.Cards.DeckTag, join_through: "deck_tags_m2m"
+    many_to_many :cards, CardsProject.Cards.Card, join_through: "deck_cards"
+    many_to_many :sideboard_cards, CardsProject.Cards.Card, join_through: "deck_sideboard_cards"
+    many_to_many :tags, CardsProject.Cards.DeckTag, join_through: "deck_tag_assignments"
+    has_many :deck_cards, CardsProject.Cards.DeckCard, foreign_key: :deck_id
+    has_many :tag_assignments, CardsProject.Cards.DeckTagAssignment, foreign_key: :deck_id
+    has_many :tournament_registrations, CardsProject.Tournaments.TournamentRegistration, foreign_key: :deck_id
+    has_many :articles, CardsProject.Content.Article, foreign_key: :featured_deck_id
 
     timestamps()
   end

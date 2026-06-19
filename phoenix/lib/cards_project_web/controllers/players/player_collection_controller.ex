@@ -12,7 +12,12 @@ defmodule CardsProjectWeb.Players.PlayerCollectionController do
 
   def show(conn, %{"id" => id}) do
     player_collection = Players.get_player_collection!(id)
-    json(conn, serialize_player_collection(player_collection))
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if player_collection.player_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      json(conn, serialize_player_collection(player_collection))
+    end
   end
 
   def create(conn, params) do
@@ -31,21 +36,31 @@ defmodule CardsProjectWeb.Players.PlayerCollectionController do
 
   def update(conn, %{"id" => id} = params) do
     player_collection = Players.get_player_collection!(id)
-    case Players.update_player_collection(player_collection, params) do
-      {:ok, player_collection} ->
-        json(conn, serialize_player_collection(player_collection))
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if player_collection.player_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      case Players.update_player_collection(player_collection, params) do
+        {:ok, player_collection} ->
+          json(conn, serialize_player_collection(player_collection))
 
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: format_errors(changeset)})
+        {:error, changeset} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{errors: format_errors(changeset)})
+      end
     end
   end
 
   def delete(conn, %{"id" => id}) do
     player_collection = Players.get_player_collection!(id)
-    Players.delete_player_collection(player_collection)
-    send_resp(conn, :no_content, "")
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if player_collection.player_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      Players.delete_player_collection(player_collection)
+      send_resp(conn, :no_content, "")
+    end
   end
 
   # POST /api/collection/{id}/add

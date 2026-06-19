@@ -12,7 +12,12 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
   def show(conn, %{"id" => id}) do
     order = Marketplace.get_order!(id)
-    json(conn, serialize_order(order))
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if order.player_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      json(conn, serialize_order(order))
+    end
   end
 
   def create(conn, params) do
@@ -38,8 +43,13 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
   # POST /api/orders/{id}/pay
   def pay(conn, %{"id" => id} = params) do
     payment_ref = Map.get(params, "payment_ref")
-    result = Marketplace.order_pay_behavior(id, payment_ref)
-    json(conn, %{result: result})
+    obj = Marketplace.get_order!(id)
+    if not (obj.status == "Pending") do
+      conn |> put_status(:unprocessable_entity) |> json(%{error: "Guard condition not met for pay"}) |> halt()
+    else
+      result = Marketplace.order_pay_behavior(id, payment_ref)
+      json(conn, %{result: result})
+    end
   end
 
   # POST /api/orders/{id}/process-payment
@@ -87,6 +97,10 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
   # PATCH /api/orders/:id/transitions/paid-to-processing
   def transition_paid_to_processing(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Staff"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Paid -> Processing"}) |> halt()
+    else
     order = Marketplace.get_order!(id)
     case Marketplace.transition_paid_to_processing_order(order) do
       {:ok, updated} ->
@@ -101,10 +115,15 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/orders/:id/transitions/processing-to-shipped
   def transition_processing_to_shipped(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Staff"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Processing -> Shipped"}) |> halt()
+    else
     order = Marketplace.get_order!(id)
     case Marketplace.transition_processing_to_shipped_order(order) do
       {:ok, updated} ->
@@ -119,10 +138,15 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/orders/:id/transitions/shipped-to-completed
   def transition_shipped_to_completed(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Staff"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Shipped -> Completed"}) |> halt()
+    else
     order = Marketplace.get_order!(id)
     case Marketplace.transition_shipped_to_completed_order(order) do
       {:ok, updated} ->
@@ -136,6 +160,7 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 
@@ -159,6 +184,10 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
   # PATCH /api/orders/:id/transitions/paid-to-cancelled
   def transition_paid_to_cancelled(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Staff"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Paid -> Cancelled"}) |> halt()
+    else
     order = Marketplace.get_order!(id)
     case Marketplace.transition_paid_to_cancelled_order(order) do
       {:ok, updated} ->
@@ -173,10 +202,15 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/orders/:id/transitions/completed-to-refunded
   def transition_completed_to_refunded(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Completed -> Refunded"}) |> halt()
+    else
     order = Marketplace.get_order!(id)
     case Marketplace.transition_completed_to_refunded_order(order) do
       {:ok, updated} ->
@@ -190,6 +224,7 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

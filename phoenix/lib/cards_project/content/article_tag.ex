@@ -5,6 +5,7 @@ defmodule CardsProject.Content.ArticleTag do
   schema "article_tags" do
     field :name, :string
     field :slug, :string
+    has_many :article_assignments, CardsProject.Content.ArticleTagAssignment, foreign_key: :tag_id
 
     timestamps()
   end
@@ -14,6 +15,7 @@ defmodule CardsProject.Content.ArticleTag do
     record
     |> cast(attrs, [:name, :slug])
     |> validate_required([:name, :slug])
+    |> unique_constraint(:slug, message: "slug must be unique")
   end
 
   # ── Business operations ────────────────────────────────────────────

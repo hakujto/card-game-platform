@@ -58,8 +58,13 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
 
   # POST /api/coupons/{id}/redeem
   def redeem(conn, %{"id" => id}) do
-    Marketplace.coupon_redeem_behavior(id)
-    send_resp(conn, :no_content, "")
+    obj = Marketplace.get_coupon!(id)
+    if not (obj.is_active == true) do
+      conn |> put_status(:unprocessable_entity) |> json(%{error: "Guard condition not met for redeem"}) |> halt()
+    else
+      Marketplace.coupon_redeem_behavior(id)
+      send_resp(conn, :no_content, "")
+    end
   end
 
   # POST /api/coupons/{id}/deactivate

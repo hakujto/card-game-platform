@@ -246,6 +246,11 @@ defmodule CardsProject.Marketplace do
 
   # ── Order lifecycle hooks ─────────────────────────────────────
 
+  defp order_hook_assign_currency_default(%Order{} = order) do
+    # TODO: implement assign_currency_default
+    order
+  end
+
   defp order_hook_notify_status_change(%Order{} = order) do
     # TODO: implement notify_status_change
     order

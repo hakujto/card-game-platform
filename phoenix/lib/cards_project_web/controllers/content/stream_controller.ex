@@ -70,6 +70,10 @@ defmodule CardsProjectWeb.Content.StreamController do
 
   # PATCH /api/streams/:id/transitions/scheduled-to-live
   def transition_scheduled_to_live(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Streamer", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Scheduled -> Live"}) |> halt()
+    else
     stream = Content.get_stream!(id)
     case Content.transition_scheduled_to_live_stream(stream) do
       {:ok, updated} ->
@@ -84,10 +88,15 @@ defmodule CardsProjectWeb.Content.StreamController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/streams/:id/transitions/live-to-ended
   def transition_live_to_ended(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Streamer", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Live -> Ended"}) |> halt()
+    else
     stream = Content.get_stream!(id)
     case Content.transition_live_to_ended_stream(stream) do
       {:ok, updated} ->
@@ -101,6 +110,7 @@ defmodule CardsProjectWeb.Content.StreamController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

@@ -9,6 +9,8 @@ defmodule CardsProject.Tournaments.Season do
     field :format, :string
     field :is_active, :boolean, default: false
     field :reward_description, :string
+    has_many :player_stats, CardsProject.Players.PlayerSeasonStats, foreign_key: :season_id
+    has_many :tournaments, CardsProject.Tournaments.Tournament, foreign_key: :season_id
 
     timestamps()
   end

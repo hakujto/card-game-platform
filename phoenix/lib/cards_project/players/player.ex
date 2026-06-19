@@ -15,9 +15,33 @@ defmodule CardsProject.Players.Player do
     field :created_at, :naive_datetime
     field :last_active_at, :naive_datetime
     belongs_to :user, CardsProject.Accounts.User
-    belongs_to :season_stats, CardsProject.Players.PlayerSeasonStats
-    many_to_many :achievements, CardsProject.Players.Achievement, join_through: "player_achievements_m2m"
-    many_to_many :friends, CardsProject.Players.Player, join_through: "player_friends_m2m"
+    many_to_many :achievements, CardsProject.Players.Achievement, join_through: "player_achievements"
+    many_to_many :friends, CardsProject.Players.Player, join_through: "friendships"
+    has_many :decks, CardsProject.Cards.Deck, foreign_key: :player_id
+    has_many :season_stats, CardsProject.Players.PlayerSeasonStats, foreign_key: :player_id
+    has_many :collection, CardsProject.Players.PlayerCollection, foreign_key: :player_id
+    has_many :sent_friend_requests, CardsProject.Players.Friendship, foreign_key: :requester_id
+    has_many :received_friend_requests, CardsProject.Players.Friendship, foreign_key: :receiver_id
+    has_many :achievement_records, CardsProject.Players.PlayerAchievement, foreign_key: :player_id
+    has_many :organized_tournaments, CardsProject.Tournaments.Tournament, foreign_key: :organizer_id
+    many_to_many :judged_tournaments, CardsProject.Tournaments.Tournament, join_through: "tournament_judges"
+    has_many :judge_roles, CardsProject.Tournaments.TournamentJudge, foreign_key: :player_id
+    has_many :tournament_registrations, CardsProject.Tournaments.TournamentRegistration, foreign_key: :player_id
+    has_many :matches_as_player1, CardsProject.Tournaments.Match, foreign_key: :player1_id
+    has_many :matches_as_player2, CardsProject.Tournaments.Match, foreign_key: :player2_id
+    has_many :won_games, CardsProject.Tournaments.Game, foreign_key: :winner_id
+    has_many :awarded_prizes, CardsProject.Tournaments.AwardedPrize, foreign_key: :player_id
+    has_many :orders, CardsProject.Marketplace.Order, foreign_key: :player_id
+    has_many :trade_listings, CardsProject.Marketplace.TradeListing, foreign_key: :seller_id
+    has_many :bids, CardsProject.Marketplace.TradeBid, foreign_key: :bidder_id
+    has_many :purchases, CardsProject.Marketplace.TradeTransaction, foreign_key: :buyer_id
+    has_many :sales, CardsProject.Marketplace.TradeTransaction, foreign_key: :seller_id
+    has_many :disputes_opened, CardsProject.Marketplace.TradeDispute, foreign_key: :opened_by_id
+    has_many :disputes_resolved, CardsProject.Marketplace.TradeDispute, foreign_key: :resolved_by_id
+    has_many :draft_sessions, CardsProject.Content.DraftParticipant, foreign_key: :player_id
+    has_many :articles, CardsProject.Content.Article, foreign_key: :author_id
+    has_many :article_comments, CardsProject.Content.ArticleComment, foreign_key: :author_id
+    has_many :streams, CardsProject.Content.Stream, foreign_key: :streamer_id
 
     timestamps()
   end
@@ -29,6 +53,7 @@ defmodule CardsProject.Players.Player do
     |> validate_required([:display_name, :rating, :peak_rating, :is_verified, :created_at])
     |> validate_inclusion(:rank, ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"])
     |> validate_inclusion(:preferred_format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> unique_constraint(:display_name, message: "display_name must be unique")
     |> validate_number(:rating, greater_than_or_equal_to: 0, less_than_or_equal_to: 9999, message: "Rating must be between 0 and 9999")
     |> then(fn cs ->
       lv = get_field(cs, :rating)

@@ -52,8 +52,13 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
   # POST /api/matches/{id}/concede
   def concede(conn, %{"id" => id} = params) do
     player_id = Map.get(params, "player_id")
-    Tournaments.match_concede_behavior(id, player_id)
-    send_resp(conn, :no_content, "")
+    obj = Tournaments.get_match!(id)
+    if not (obj.status == "Active") do
+      conn |> put_status(:unprocessable_entity) |> json(%{error: "Guard condition not met for concede"}) |> halt()
+    else
+      Tournaments.match_concede_behavior(id, player_id)
+      send_resp(conn, :no_content, "")
+    end
   end
 
   # POST /api/matches/{id}/draw
@@ -64,6 +69,10 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
 
   # PATCH /api/matches/:id/transitions/pending-to-active
   def transition_pending_to_active(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Judge", "HeadJudge", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Pending -> Active"}) |> halt()
+    else
     match = Tournaments.get_match!(id)
     case Tournaments.transition_pending_to_active_match(match) do
       {:ok, updated} ->
@@ -78,10 +87,15 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/matches/:id/transitions/active-to-completed
   def transition_active_to_completed(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Judge", "HeadJudge", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Active -> Completed"}) |> halt()
+    else
     match = Tournaments.get_match!(id)
     case Tournaments.transition_active_to_completed_match(match) do
       {:ok, updated} ->
@@ -96,10 +110,15 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/matches/:id/transitions/active-to-draw
   def transition_active_to_draw(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Judge", "HeadJudge", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Active -> Draw"}) |> halt()
+    else
     match = Tournaments.get_match!(id)
     case Tournaments.transition_active_to_draw_match(match) do
       {:ok, updated} ->
@@ -114,10 +133,15 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/matches/:id/transitions/pending-to-bye
   def transition_pending_to_b_y_e(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Judge", "HeadJudge", "Admin"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Pending -> BYE"}) |> halt()
+    else
     match = Tournaments.get_match!(id)
     case Tournaments.transition_pending_to_b_y_e_match(match) do
       {:ok, updated} ->
@@ -131,6 +155,7 @@ defmodule CardsProjectWeb.Tournaments.MatchController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

@@ -58,8 +58,16 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
   describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
     test "transitions Pending -> Active", %{conn: conn} do
       {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Seller"})
       conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/pending-to-active")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/pending-to-active")
+      assert conn.status == 403
     end
   end
 
@@ -82,8 +90,16 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
   describe "PATCH /api/trade_listings/:id/transitions/active-to-cancelled" do
     test "transitions Active -> Cancelled", %{conn: conn} do
       {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = assign(conn, :current_user, %{role: "Seller"})
       conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/active-to-cancelled")
       assert conn.status in [200, 409, 422, 404]
+    end
+
+    test "is forbidden with 403 for wrong role", %{conn: conn} do
+      {:ok, record} = CardsProject.Marketplace.create_trade_listing(@valid_params)
+      conn = assign(conn, :current_user, %{role: "admin"})
+      conn = patch(conn, "/api/trade_listings/#{record.id}/transitions/active-to-cancelled")
+      assert conn.status == 403
     end
   end
 

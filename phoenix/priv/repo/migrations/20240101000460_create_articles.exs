@@ -24,5 +24,6 @@ defmodule CardsProject.Repo.Migrations.CreateArticles do
     end
     create index(:articles, [:author_id])
     create index(:articles, [:featured_deck_id])
+    create unique_index(:articles, [:slug])
   end
 end

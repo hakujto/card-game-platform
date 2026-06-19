@@ -25,9 +25,12 @@ defmodule CardsProject.Players do
   def get_player!(id), do: Repo.get!(Player, id)
 
   def create_player(attrs \\ %{}) do
-    %Player{}
-    |> Player.changeset(attrs)
-    |> Repo.insert()
+    case %Player{} |> Player.changeset(attrs) |> Repo.insert() do
+      {:ok, player} ->
+        player_hook_initialize_collection(player)
+        {:ok, player}
+      err -> err
+    end
   end
 
   def update_player(%Player{} = player, attrs) do
@@ -91,6 +94,11 @@ defmodule CardsProject.Players do
   end
 
   # ── Player lifecycle hooks ─────────────────────────────────────
+
+  defp player_hook_initialize_collection(%Player{} = player) do
+    # TODO: implement initialize_collection
+    player
+  end
 
   defp player_hook_update_rank(%Player{} = player) do
     # TODO: implement update_rank

@@ -12,7 +12,12 @@ defmodule CardsProjectWeb.Tournaments.TournamentRegistrationController do
 
   def show(conn, %{"id" => id}) do
     tournament_registration = Tournaments.get_tournament_registration!(id)
-    json(conn, serialize_tournament_registration(tournament_registration))
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if tournament_registration.player_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      json(conn, serialize_tournament_registration(tournament_registration))
+    end
   end
 
   def create(conn, params) do

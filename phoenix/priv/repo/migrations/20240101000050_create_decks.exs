@@ -13,7 +13,7 @@ defmodule CardsProject.Repo.Migrations.CreateDecks do
       add :losses, :integer, default: 0
       add :draws, :integer, default: 0
       add :created_at, :naive_datetime
-      add :player_id, references(:players, on_delete: :nilify_all)
+      add :player_id, references(:players, on_delete: :delete_all)
 
       timestamps()
     end

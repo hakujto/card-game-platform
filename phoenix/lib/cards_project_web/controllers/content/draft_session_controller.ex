@@ -91,6 +91,10 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
 
   # PATCH /api/draft_sessions/:id/transitions/drafting-to-abandoned
   def transition_drafting_to_abandoned(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition Drafting -> Abandoned"}) |> halt()
+    else
     draft_session = Content.get_draft_session!(id)
     case Content.transition_drafting_to_abandoned_draft_session(draft_session) do
       {:ok, updated} ->
@@ -105,10 +109,15 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
     end
+    end
   end
 
   # PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned
   def transition_waiting_for_players_to_abandoned(conn, %{"id" => id}) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    unless user_role in ["Admin", "Organizer"] do
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for transition WaitingForPlayers -> Abandoned"}) |> halt()
+    else
     draft_session = Content.get_draft_session!(id)
     case Content.transition_waiting_for_players_to_abandoned_draft_session(draft_session) do
       {:ok, updated} ->
@@ -122,6 +131,7 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
 
       {:error, changeset} ->
         conn |> put_status(:unprocessable_entity) |> json(%{errors: format_errors(changeset)})
+    end
     end
   end
 

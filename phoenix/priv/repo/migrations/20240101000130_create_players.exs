@@ -20,5 +20,6 @@ defmodule CardsProject.Repo.Migrations.CreatePlayers do
       timestamps()
     end
     create index(:players, [:user_id])
+    create unique_index(:players, [:display_name])
   end
 end

@@ -10,7 +10,7 @@ defmodule CardsProject.Content.DraftSession do
     field :created_at, :naive_datetime
     field :completed_at, :naive_datetime
     belongs_to :card_set, CardsProject.Cards.CardSet
-    belongs_to :participants, CardsProject.Content.DraftParticipant
+    has_many :participants, CardsProject.Content.DraftParticipant, foreign_key: :session_id
 
     timestamps()
   end

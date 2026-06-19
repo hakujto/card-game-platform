@@ -5,6 +5,7 @@ defmodule CardsProject.Cards.DeckTag do
   schema "deck_tags" do
     field :name, :string
     field :color, :string
+    has_many :deck_assignments, CardsProject.Cards.DeckTagAssignment, foreign_key: :tag_id
 
     timestamps()
   end

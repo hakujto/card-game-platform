@@ -12,7 +12,12 @@ defmodule CardsProjectWeb.Players.FriendshipController do
 
   def show(conn, %{"id" => id}) do
     friendship = Players.get_friendship!(id)
-    json(conn, serialize_friendship(friendship))
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if friendship.requester_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      json(conn, serialize_friendship(friendship))
+    end
   end
 
   def create(conn, params) do
@@ -31,8 +36,13 @@ defmodule CardsProjectWeb.Players.FriendshipController do
 
   def delete(conn, %{"id" => id}) do
     friendship = Players.get_friendship!(id)
-    Players.delete_friendship(friendship)
-    send_resp(conn, :no_content, "")
+    current_user_id = conn.assigns[:current_user] && conn.assigns[:current_user].id
+    if friendship.requester_id != current_user_id do
+      conn |> put_status(:forbidden) |> json(%{error: "You do not own this resource."}) |> halt()
+    else
+      Players.delete_friendship(friendship)
+      send_resp(conn, :no_content, "")
+    end
   end
 
   # POST /api/friendships/{id}/accept

@@ -15,8 +15,8 @@ defmodule CardsProject.Marketplace.Order do
     field :paid_at, :naive_datetime
     field :shipped_at, :naive_datetime
     belongs_to :player, CardsProject.Players.Player
-    belongs_to :items, CardsProject.Marketplace.OrderItem
     belongs_to :coupon, CardsProject.Marketplace.Coupon
+    has_many :items, CardsProject.Marketplace.OrderItem, foreign_key: :order_id
 
     timestamps()
   end

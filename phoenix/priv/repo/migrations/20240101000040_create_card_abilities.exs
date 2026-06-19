@@ -7,7 +7,7 @@ defmodule CardsProject.Repo.Migrations.CreateCardAbilities do
       add :keyword, :string, null: true
       add :ability_text, :string
       add :timing, :string, null: true
-      add :card_id, references(:cards, on_delete: :nilify_all)
+      add :card_id, references(:cards, on_delete: :delete_all)
 
       timestamps()
     end

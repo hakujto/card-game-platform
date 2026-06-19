@@ -17,7 +17,8 @@ defmodule CardsProject.Marketplace.TradeListing do
     field :expires_at, :naive_datetime
     belongs_to :seller, CardsProject.Players.Player
     belongs_to :card, CardsProject.Cards.Card
-    belongs_to :bids, CardsProject.Marketplace.TradeBid
+    has_many :bids, CardsProject.Marketplace.TradeBid, foreign_key: :listing_id
+    has_one :transaction, CardsProject.Marketplace.TradeTransaction, foreign_key: :listing_id
 
     timestamps()
   end

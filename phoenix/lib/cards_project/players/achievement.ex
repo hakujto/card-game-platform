@@ -9,6 +9,8 @@ defmodule CardsProject.Players.Achievement do
     field :points, :integer, default: 10
     field :rarity, :string
     field :is_hidden, :boolean, default: false
+    many_to_many :players, CardsProject.Players.Player, join_through: "player_achievements"
+    has_many :player_records, CardsProject.Players.PlayerAchievement, foreign_key: :achievement_id
 
     timestamps()
   end

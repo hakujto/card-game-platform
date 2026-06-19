@@ -18,8 +18,9 @@ defmodule CardsProject.Content.Article do
     field :created_at, :naive_datetime
     belongs_to :author, CardsProject.Players.Player
     belongs_to :featured_deck, CardsProject.Cards.Deck
-    belongs_to :comments, CardsProject.Content.ArticleComment
-    many_to_many :tags, CardsProject.Content.ArticleTag, join_through: "article_tags_m2m"
+    many_to_many :tags, CardsProject.Content.ArticleTag, join_through: "article_tag_assignments"
+    has_many :tag_assignments, CardsProject.Content.ArticleTagAssignment, foreign_key: :article_id
+    has_many :comments, CardsProject.Content.ArticleComment, foreign_key: :article_id
 
     timestamps()
   end
@@ -32,6 +33,7 @@ defmodule CardsProject.Content.Article do
     |> validate_inclusion(:status, ["Draft", "Published", "Archived"])
     |> validate_inclusion(:article_type, ["Guide", "Tierlist", "Matchup", "News", "Spotlight", "Decklist"])
     |> validate_inclusion(:language, ["EN", "DE", "FR", "IT", "ES", "JP", "PT"])
+    |> unique_constraint(:slug, message: "slug must be unique")
     |> validate_number(:view_count, greater_than_or_equal_to: 0, message: "Article view count must not be negative")
     |> validate_number(:likes_count, greater_than_or_equal_to: 0, message: "Article likes count must not be negative")
     |> then(fn cs ->

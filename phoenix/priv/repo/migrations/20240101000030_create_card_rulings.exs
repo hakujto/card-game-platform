@@ -6,7 +6,7 @@ defmodule CardsProject.Repo.Migrations.CreateCardRulings do
       add :ruling_text, :string
       add :published_at, :date
       add :source, :string
-      add :card_id, references(:cards, on_delete: :nilify_all)
+      add :card_id, references(:cards, on_delete: :delete_all)
 
       timestamps()
     end
