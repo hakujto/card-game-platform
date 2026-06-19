@@ -32,6 +32,8 @@ fun Route.deckTagRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<DeckTagRequest>()
+                val item = DeckTagRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = DeckTagRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)

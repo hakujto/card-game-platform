@@ -75,4 +75,8 @@ object DeckTagRepository {
         DeckTagTable.deleteWhere { DeckTagTable.id eq id } > 0
     }
 
+    fun deckAssignments(id: Int): List<DeckTagAssignmentResponse> = transaction {
+        DeckTagAssignmentTable.selectAll().where { DeckTagAssignmentTable.tagId eq id }.map { it.toDeckTagAssignmentResponse() }
+    }
+
 }

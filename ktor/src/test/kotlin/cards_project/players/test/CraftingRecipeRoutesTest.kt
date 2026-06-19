@@ -45,7 +45,8 @@ class CraftingRecipeRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/crafting_recipes/$id")
+        val r = client.get("/api/crafting_recipes/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

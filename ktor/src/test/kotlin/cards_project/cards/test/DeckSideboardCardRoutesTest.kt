@@ -45,7 +45,8 @@ class DeckSideboardCardRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/deck_sideboard_cards/$id")
+        val r = client.get("/api/deck_sideboard_cards/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -70,7 +71,8 @@ class DeckSideboardCardRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/deck_sideboard_cards/$id")
+        val r = client.delete("/api/deck_sideboard_cards/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

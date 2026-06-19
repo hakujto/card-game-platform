@@ -15,8 +15,8 @@ import cards_project.cards.model.DeckTable
 import cards_project.cards.model.DeckTagTable
 
 object DeckTagAssignmentTable : IntIdTable("deck_tag_assignment") {
-    val deckId = reference("deck_id", DeckTable)
-    val tagId = reference("tag_id", DeckTagTable)
+    val deckId = reference("deck_id", DeckTable, onDelete = ReferenceOption.CASCADE)
+    val tagId = reference("tag_id", DeckTagTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

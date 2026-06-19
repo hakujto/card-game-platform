@@ -45,7 +45,8 @@ class CardRulingRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/card_rulings/$id")
+        val r = client.get("/api/card_rulings/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -56,7 +57,8 @@ class CardRulingRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/card_rulings/$id")
+        val r = client.delete("/api/card_rulings/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

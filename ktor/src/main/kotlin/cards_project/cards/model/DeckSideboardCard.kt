@@ -15,9 +15,9 @@ import cards_project.cards.model.DeckTable
 import cards_project.cards.model.CardTable
 
 object DeckSideboardCardTable : IntIdTable("deck_sideboard_card") {
-    val quantity = integer("quantity")
-    val deckId = reference("deck_id", DeckTable)
-    val cardId = reference("card_id", CardTable)
+    val quantity = integer("quantity").default(1)
+    val deckId = reference("deck_id", DeckTable, onDelete = ReferenceOption.CASCADE)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -68,8 +68,6 @@ object DeckSideboardCardRepository {
     fun update(id: Int, req: DeckSideboardCardRequest): DeckSideboardCardResponse? = transaction {
         val updated = DeckSideboardCardTable.update({ DeckSideboardCardTable.id eq id }) {
             it[quantity] = req.quantity
-            it[deckId] = EntityID(req.deckId, DeckTable)
-            it[cardId] = EntityID(req.cardId, CardTable)
         }
         if (updated == 0) return@transaction null
         DeckSideboardCardTable.selectAll().where { DeckSideboardCardTable.id eq id }.singleOrNull()?.toDeckSideboardCardResponse()

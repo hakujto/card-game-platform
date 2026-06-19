@@ -17,7 +17,7 @@ object CardRulingTable : IntIdTable("card_ruling") {
     val rulingText = text("ruling_text")
     val publishedAt = date("published_at")
     val sourceVal = varchar("source", 255)
-    val cardId = reference("card_id", CardTable)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

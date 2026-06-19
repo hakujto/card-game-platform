@@ -50,7 +50,8 @@ class ProductRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/products/$id")
+        val r = client.get("/api/products/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

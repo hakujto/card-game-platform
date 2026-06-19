@@ -12,12 +12,12 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.players.model.CraftingRecipeTable
-import cards_project.cards.model.CardTable
+import cards_project.cards.model.*
 
 object CraftingIngredientTable : IntIdTable("crafting_ingredient") {
-    val quantity = integer("quantity")
-    val recipeId = reference("recipe_id", CraftingRecipeTable)
-    val cardId = reference("card_id", CardTable)
+    val quantity = integer("quantity").default(1)
+    val recipeId = reference("recipe_id", CraftingRecipeTable, onDelete = ReferenceOption.CASCADE)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

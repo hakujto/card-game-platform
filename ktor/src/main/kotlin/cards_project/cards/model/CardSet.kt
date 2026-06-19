@@ -11,18 +11,21 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
+import cards_project.marketplace.model.*
+import cards_project.content.model.*
+
 enum class CardSetSetTypeType {
     CORE, EXPANSION, SUPPLEMENTAL, MASTERS, DRAFT
 }
 
 object CardSetTable : IntIdTable("card_set") {
     val name = varchar("name", 255)
-    val code = varchar("code", 255)
+    val code = varchar("code", 255).uniqueIndex()
     val releaseDate = date("release_date")
     val rotationDate = date("rotation_date").nullable()
-    val setType = enumerationByName<CardSetSetTypeType>("set_type", 50)
+    val setType = enumerationByName<CardSetSetTypeType>("set_type", 50).default(CardSetSetTypeType.EXPANSION)
     val totalCards = integer("total_cards")
-    val isRotated = bool("is_rotated")
+    val isRotated = bool("is_rotated").default(false)
     val description = text("description").nullable()
     val logoUrl = text("logo_url").nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
@@ -115,6 +118,18 @@ object CardSetRepository {
         }
         if (updated == 0) return@transaction null
         CardSetTable.selectAll().where { CardSetTable.id eq id }.singleOrNull()?.toCardSetResponse()
+    }
+
+    fun cards(id: Int): List<CardResponse> = transaction {
+        CardTable.selectAll().where { CardTable.setId eq id }.map { it.toCardResponse() }
+    }
+
+    fun shopProducts(id: Int): List<ProductResponse> = transaction {
+        ProductTable.selectAll().where { ProductTable.cardSetId eq id }.map { it.toProductResponse() }
+    }
+
+    fun draftSessions(id: Int): List<DraftSessionResponse> = transaction {
+        DraftSessionTable.selectAll().where { DraftSessionTable.cardSetId eq id }.map { it.toDraftSessionResponse() }
     }
 
 }

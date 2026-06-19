@@ -45,7 +45,8 @@ class TournamentRoundRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/tournament_rounds/$id")
+        val r = client.get("/api/tournament_rounds/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

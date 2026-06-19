@@ -45,7 +45,8 @@ class TournamentPrizeRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/tournament_prizes/$id")
+        val r = client.get("/api/tournament_prizes/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -70,7 +71,8 @@ class TournamentPrizeRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/tournament_prizes/$id")
+        val r = client.delete("/api/tournament_prizes/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

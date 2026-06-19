@@ -17,9 +17,9 @@ import cards_project.marketplace.model.ProductTable
 object OrderItemTable : IntIdTable("order_item") {
     val quantity = integer("quantity")
     val priceAtPurchase = decimal("price_at_purchase", 19, 4)
-    val foil = bool("foil")
-    val orderId = reference("order_id", OrderTable)
-    val productId = reference("product_id", ProductTable)
+    val foil = bool("foil").default(false)
+    val orderId = reference("order_id", OrderTable, onDelete = ReferenceOption.CASCADE)
+    val productId = reference("product_id", ProductTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

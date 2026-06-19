@@ -16,10 +16,10 @@ import cards_project.players.model.AchievementTable
 
 object PlayerAchievementTable : IntIdTable("player_achievement") {
     val earnedAt = datetime("earned_at")
-    val progress = integer("progress")
-    val isCompleted = bool("is_completed")
-    val playerId = reference("player_id", PlayerTable)
-    val achievementId = reference("achievement_id", AchievementTable)
+    val progress = integer("progress").default(0)
+    val isCompleted = bool("is_completed").default(false)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
+    val achievementId = reference("achievement_id", AchievementTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

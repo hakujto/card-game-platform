@@ -12,16 +12,16 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.TournamentTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 enum class TournamentJudgeRoleType {
     HEADJUDGE, JUDGE, SCOREKEEPERJUDGE
 }
 
 object TournamentJudgeTable : IntIdTable("tournament_judge") {
-    val role = enumerationByName<TournamentJudgeRoleType>("role", 50)
-    val tournamentId = reference("tournament_id", TournamentTable)
-    val playerId = reference("player_id", PlayerTable)
+    val role = enumerationByName<TournamentJudgeRoleType>("role", 50).default(TournamentJudgeRoleType.JUDGE)
+    val tournamentId = reference("tournament_id", TournamentTable, onDelete = ReferenceOption.CASCADE)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

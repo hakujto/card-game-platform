@@ -11,12 +11,12 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.cards.model.CardTable
+import cards_project.cards.model.*
 
 object CraftingRecipeTable : IntIdTable("crafting_recipe") {
     val dustCost = integer("dust_cost")
-    val isAvailable = bool("is_available")
-    val resultCardId = reference("result_card_id", CardTable)
+    val isAvailable = bool("is_available").default(true)
+    val resultCardId = reference("result_card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -72,6 +72,10 @@ object CraftingRecipeRepository {
         }
         if (updated == 0) return@transaction null
         CraftingRecipeTable.selectAll().where { CraftingRecipeTable.id eq id }.singleOrNull()?.toCraftingRecipeResponse()
+    }
+
+    fun ingredients(id: Int): List<CraftingIngredientResponse> = transaction {
+        CraftingIngredientTable.selectAll().where { CraftingIngredientTable.recipeId eq id }.map { it.toCraftingIngredientResponse() }
     }
 
 }

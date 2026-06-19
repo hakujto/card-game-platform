@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.cards.model.CardSetTable
+import cards_project.cards.model.*
 
 enum class DraftSessionStatusType {
     WAITINGFORPLAYERS, DRAFTING, COMPLETED, ABANDONED
@@ -22,12 +22,12 @@ enum class DraftSessionDraftTypeType {
 }
 
 object DraftSessionTable : IntIdTable("draft_session") {
-    val status = enumerationByName<DraftSessionStatusType>("status", 50)
-    val draftType = enumerationByName<DraftSessionDraftTypeType>("draft_type", 50)
-    val seats = integer("seats")
-    val timePerPickSeconds = integer("time_per_pick_seconds")
+    val status = enumerationByName<DraftSessionStatusType>("status", 50).default(DraftSessionStatusType.WAITINGFORPLAYERS)
+    val draftType = enumerationByName<DraftSessionDraftTypeType>("draft_type", 50).default(DraftSessionDraftTypeType.BOOSTER)
+    val seats = integer("seats").default(8)
+    val timePerPickSeconds = integer("time_per_pick_seconds").default(30)
     val completedAt = datetime("completed_at").nullable()
-    val cardSetId = reference("card_set_id", CardSetTable)
+    val cardSetId = reference("card_set_id", CardSetTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -85,6 +85,18 @@ object DraftSessionRepository {
             it[cardSetId] = EntityID(req.cardSetId, CardSetTable)
         }
         DraftSessionTable.selectAll().where { DraftSessionTable.id eq inserted }.single().toDraftSessionResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): DraftSessionResponse? = transaction {
+        val updated = DraftSessionTable.update({ DraftSessionTable.id eq id }) {
+            it[status] = DraftSessionStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        DraftSessionTable.selectAll().where { DraftSessionTable.id eq id }.singleOrNull()?.toDraftSessionResponse()
+    }
+
+    fun participants(id: Int): List<DraftParticipantResponse> = transaction {
+        DraftParticipantTable.selectAll().where { DraftParticipantTable.sessionId eq id }.map { it.toDraftParticipantResponse() }
     }
 
 }

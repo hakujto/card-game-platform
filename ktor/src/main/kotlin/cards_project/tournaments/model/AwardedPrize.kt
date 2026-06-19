@@ -12,15 +12,15 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.TournamentPrizeTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 object AwardedPrizeTable : IntIdTable("awarded_prize") {
     val finalPlacement = integer("final_placement")
     val awardedAt = datetime("awarded_at")
-    val claimed = bool("claimed")
+    val claimed = bool("claimed").default(false)
     val claimedAt = datetime("claimed_at").nullable()
-    val prizeId = reference("prize_id", TournamentPrizeTable)
-    val playerId = reference("player_id", PlayerTable)
+    val prizeId = reference("prize_id", TournamentPrizeTable, onDelete = ReferenceOption.RESTRICT)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

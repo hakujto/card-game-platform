@@ -49,6 +49,8 @@ fun Route.couponRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = CouponRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CouponRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -57,6 +59,8 @@ fun Route.couponRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<CouponRequest>()
+                val item = CouponRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CouponRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -76,6 +80,7 @@ fun Route.couponRoutes() {
             post("/redeem") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                // @guard: TODO: check guard condition — respond Forbidden if not met
                 // TODO: implement redeem behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }

@@ -11,8 +11,7 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.cards.model.CardTable
-import cards_project.cards.model.CardSetTable
+import cards_project.cards.model.*
 
 enum class ProductProductTypeType {
     SINGLECARD, BOOSTERPACK, BUNDLE, PRECONSTRUCTEDDECK, ACCESSORY
@@ -20,16 +19,16 @@ enum class ProductProductTypeType {
 
 object ProductTable : IntIdTable("product") {
     val name = varchar("name", 255)
-    val productType = enumerationByName<ProductProductTypeType>("product_type", 50)
+    val productType = enumerationByName<ProductProductTypeType>("product_type", 50).default(ProductProductTypeType.SINGLECARD)
     val price = decimal("price", 19, 4)
-    val stock = integer("stock")
-    val active = bool("active")
-    val discountPercent = integer("discount_percent")
+    val stock = integer("stock").default(0)
+    val active = bool("active").default(true)
+    val discountPercent = integer("discount_percent").default(0)
     val description = text("description").nullable()
     val imageUrl = text("image_url").nullable()
-    val featured = bool("featured")
-    val cardId = reference("card_id", CardTable).nullable()
-    val cardSetId = reference("card_set_id", CardSetTable).nullable()
+    val featured = bool("featured").default(false)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.SET_NULL).nullable().uniqueIndex()
+    val cardSetId = reference("card_set_id", CardSetTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -130,6 +129,10 @@ object ProductRepository {
         }
         if (updated == 0) return@transaction null
         ProductTable.selectAll().where { ProductTable.id eq id }.singleOrNull()?.toProductResponse()
+    }
+
+    fun orderItems(id: Int): List<OrderItemResponse> = transaction {
+        OrderItemTable.selectAll().where { OrderItemTable.productId eq id }.map { it.toOrderItemResponse() }
     }
 
 }

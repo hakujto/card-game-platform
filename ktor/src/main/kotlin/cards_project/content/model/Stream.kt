@@ -11,8 +11,8 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.tournaments.model.TournamentTable
-import cards_project.players.model.PlayerTable
+import cards_project.tournaments.model.*
+import cards_project.players.model.*
 
 enum class StreamStatusType {
     SCHEDULED, LIVE, ENDED
@@ -29,17 +29,17 @@ enum class StreamLanguageType {
 object StreamTable : IntIdTable("stream") {
     val title = varchar("title", 255)
     val streamUrl = text("stream_url")
-    val status = enumerationByName<StreamStatusType>("status", 50)
-    val platform = enumerationByName<StreamPlatformType>("platform", 50)
-    val language = enumerationByName<StreamLanguageType>("language", 50)
-    val isOfficial = bool("is_official")
-    val viewerCountPeak = integer("viewer_count_peak")
+    val status = enumerationByName<StreamStatusType>("status", 50).default(StreamStatusType.SCHEDULED)
+    val platform = enumerationByName<StreamPlatformType>("platform", 50).default(StreamPlatformType.TWITCH)
+    val language = enumerationByName<StreamLanguageType>("language", 50).default(StreamLanguageType.EN)
+    val isOfficial = bool("is_official").default(false)
+    val viewerCountPeak = integer("viewer_count_peak").default(0)
     val scheduledStart = datetime("scheduled_start")
     val actualStart = datetime("actual_start").nullable()
     val endedAt = datetime("ended_at").nullable()
     val vodUrl = text("vod_url").nullable()
-    val tournamentId = reference("tournament_id", TournamentTable).nullable()
-    val streamerId = reference("streamer_id", PlayerTable)
+    val tournamentId = reference("tournament_id", TournamentTable, onDelete = ReferenceOption.SET_NULL).nullable()
+    val streamerId = reference("streamer_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -147,6 +147,14 @@ object StreamRepository {
             it[vodUrl] = req.vodUrl
             req.tournamentId?.let { v -> it[tournamentId] = EntityID(v, TournamentTable) }
             it[streamerId] = EntityID(req.streamerId, PlayerTable)
+        }
+        if (updated == 0) return@transaction null
+        StreamTable.selectAll().where { StreamTable.id eq id }.singleOrNull()?.toStreamResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): StreamResponse? = transaction {
+        val updated = StreamTable.update({ StreamTable.id eq id }) {
+            it[status] = StreamStatusType.valueOf(newStatus)
         }
         if (updated == 0) return@transaction null
         StreamTable.selectAll().where { StreamTable.id eq id }.singleOrNull()?.toStreamResponse()

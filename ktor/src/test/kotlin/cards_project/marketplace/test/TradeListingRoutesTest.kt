@@ -50,7 +50,8 @@ class TradeListingRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/trade_listings/$id")
+        val r = client.get("/api/trade_listings/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -71,6 +72,102 @@ class TradeListingRoutesTest {
     @Test fun `get not found returns 404`() = testApp {
         val r = client.get("/api/trade_listings/99999")
         assertEquals(HttpStatusCode.NotFound, r.status)
+    }
+
+    @Test fun `transition Pending to Active returns 403 for wrong role`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Pending", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/pending-to-active") {
+            header("X-User-Role", "nobody")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
+    }
+
+    @Test fun `transition Pending to Active returns 200 for allowed role`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Pending", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/pending-to-active") {
+            header("X-User-Role", "Seller")
+        }
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Active to Sold returns 200`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/active-to-sold")
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Active to Expired returns 200`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/active-to-expired")
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Active to Cancelled returns 403 for wrong role`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/active-to-cancelled") {
+            header("X-User-Role", "nobody")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
+    }
+
+    @Test fun `transition Active to Cancelled returns 200 for allowed role`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/active-to-cancelled") {
+            header("X-User-Role", "Seller")
+        }
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Sold to Active returns 409`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Sold", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/sold-to-active")
+        assertEquals(HttpStatusCode.Conflict, r.status)
+    }
+
+    @Test fun `transition Expired to Active returns 409`() = testApp {
+        val created = client.post("/api/trade_listings") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"status": "Expired", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "seller_id": 1, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/trade_listings/$id/transitions/expired-to-active")
+        assertEquals(HttpStatusCode.Conflict, r.status)
     }
 
 }

@@ -48,6 +48,8 @@ fun Route.streamRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = StreamRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = StreamRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -56,6 +58,8 @@ fun Route.streamRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<StreamRequest>()
+                val item = StreamRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = StreamRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -84,23 +88,40 @@ fun Route.streamRoutes() {
                 // TODO: implement duration_minutes behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "SCHEDULED" to listOf("LIVE"),
+                "LIVE" to listOf("ENDED")
+            )
             patch("/transitions/scheduled-to-live") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Scheduled → Live
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Live"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Streamer", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Scheduled -> Live"))
+                val item = StreamRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("LIVE" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Live not allowed"))
+                val updated = StreamRepository.updateStatus(id, "LIVE")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/live-to-ended") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Live → Ended
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Ended"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Streamer", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Live -> Ended"))
+                val item = StreamRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ENDED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Ended not allowed"))
+                val updated = StreamRepository.updateStatus(id, "ENDED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/ended-to-live") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Ended → Live
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Live"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Ended -> Live is not allowed"))
             }
         }
     }

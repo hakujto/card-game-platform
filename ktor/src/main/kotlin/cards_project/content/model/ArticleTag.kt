@@ -13,7 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object ArticleTagTable : IntIdTable("article_tag") {
     val name = varchar("name", 255)
-    val slug = varchar("slug", 255)
+    val slug = varchar("slug", 255).uniqueIndex()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -73,6 +73,10 @@ object ArticleTagRepository {
 
     fun delete(id: Int): Boolean = transaction {
         ArticleTagTable.deleteWhere { ArticleTagTable.id eq id } > 0
+    }
+
+    fun articleAssignments(id: Int): List<ArticleTagAssignmentResponse> = transaction {
+        ArticleTagAssignmentTable.selectAll().where { ArticleTagAssignmentTable.tagId eq id }.map { it.toArticleTagAssignmentResponse() }
     }
 
 }

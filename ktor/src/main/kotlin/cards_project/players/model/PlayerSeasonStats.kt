@@ -12,21 +12,21 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.players.model.PlayerTable
-import cards_project.tournaments.model.SeasonTable
+import cards_project.tournaments.model.*
 
 enum class PlayerSeasonStatsHighestRankType {
     BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, MASTER, GRANDMASTER
 }
 
 object PlayerSeasonStatsTable : IntIdTable("player_season_stats") {
-    val wins = integer("wins")
-    val losses = integer("losses")
-    val draws = integer("draws")
-    val tournamentWins = integer("tournament_wins")
+    val wins = integer("wins").default(0)
+    val losses = integer("losses").default(0)
+    val draws = integer("draws").default(0)
+    val tournamentWins = integer("tournament_wins").default(0)
     val highestRank = enumerationByName<PlayerSeasonStatsHighestRankType>("highest_rank", 50).nullable()
-    val seasonPoints = integer("season_points")
-    val playerId = reference("player_id", PlayerTable)
-    val seasonId = reference("season_id", SeasonTable)
+    val seasonPoints = integer("season_points").default(0)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
+    val seasonId = reference("season_id", SeasonTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

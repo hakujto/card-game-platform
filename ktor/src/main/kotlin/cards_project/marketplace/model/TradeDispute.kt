@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.marketplace.model.TradeTransactionTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 enum class TradeDisputeStatusType {
     OPEN, UNDERREVIEW, RESOLVED, ESCALATED
@@ -23,15 +23,15 @@ enum class TradeDisputeReasonType {
 }
 
 object TradeDisputeTable : IntIdTable("trade_dispute") {
-    val status = enumerationByName<TradeDisputeStatusType>("status", 50)
+    val status = enumerationByName<TradeDisputeStatusType>("status", 50).default(TradeDisputeStatusType.OPEN)
     val reason = enumerationByName<TradeDisputeReasonType>("reason", 50)
     val description = text("description")
     val resolution = text("resolution").nullable()
     val openedAt = datetime("opened_at")
     val resolvedAt = datetime("resolved_at").nullable()
-    val transactionId = reference("transaction_id", TradeTransactionTable)
-    val openedById = reference("opened_by_id", PlayerTable)
-    val resolvedById = reference("resolved_by_id", PlayerTable).nullable()
+    val transactionId = reference("transaction_id", TradeTransactionTable, onDelete = ReferenceOption.CASCADE).uniqueIndex()
+    val openedById = reference("opened_by_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val resolvedById = reference("resolved_by_id", PlayerTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -101,6 +101,14 @@ object TradeDisputeRepository {
             req.resolvedById?.let { v -> it[resolvedById] = EntityID(v, PlayerTable) }
         }
         TradeDisputeTable.selectAll().where { TradeDisputeTable.id eq inserted }.single().toTradeDisputeResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): TradeDisputeResponse? = transaction {
+        val updated = TradeDisputeTable.update({ TradeDisputeTable.id eq id }) {
+            it[status] = TradeDisputeStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        TradeDisputeTable.selectAll().where { TradeDisputeTable.id eq id }.singleOrNull()?.toTradeDisputeResponse()
     }
 
 }

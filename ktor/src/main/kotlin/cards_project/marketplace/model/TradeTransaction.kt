@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.marketplace.model.TradeListingTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 enum class TradeTransactionStatusType {
     PENDING, COMPLETED, DISPUTED, REFUNDED
@@ -21,11 +21,11 @@ enum class TradeTransactionStatusType {
 object TradeTransactionTable : IntIdTable("trade_transaction") {
     val finalPrice = decimal("final_price", 19, 4)
     val platformFee = decimal("platform_fee", 19, 4)
-    val status = enumerationByName<TradeTransactionStatusType>("status", 50)
+    val status = enumerationByName<TradeTransactionStatusType>("status", 50).default(TradeTransactionStatusType.PENDING)
     val completedAt = datetime("completed_at").nullable()
-    val listingId = reference("listing_id", TradeListingTable)
-    val buyerId = reference("buyer_id", PlayerTable)
-    val sellerId = reference("seller_id", PlayerTable)
+    val listingId = reference("listing_id", TradeListingTable, onDelete = ReferenceOption.RESTRICT).uniqueIndex()
+    val buyerId = reference("buyer_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val sellerId = reference("seller_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -74,6 +74,10 @@ object TradeTransactionRepository {
 
     fun findById(id: Int): TradeTransactionResponse? = transaction {
         TradeTransactionTable.selectAll().where { TradeTransactionTable.id eq id }.singleOrNull()?.toTradeTransactionResponse()
+    }
+
+    fun dispute(id: Int): TradeDisputeResponse? = transaction {
+        TradeDisputeTable.selectAll().where { TradeDisputeTable.transactionId eq id }.singleOrNull()?.toTradeDisputeResponse()
     }
 
 }

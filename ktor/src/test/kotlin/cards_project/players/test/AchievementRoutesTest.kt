@@ -50,7 +50,8 @@ class AchievementRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/achievements/$id")
+        val r = client.get("/api/achievements/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

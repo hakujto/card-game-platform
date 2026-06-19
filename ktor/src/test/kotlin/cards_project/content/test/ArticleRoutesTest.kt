@@ -50,7 +50,8 @@ class ArticleRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/articles/$id")
+        val r = client.get("/api/articles/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -71,6 +72,95 @@ class ArticleRoutesTest {
     @Test fun `get not found returns 404`() = testApp {
         val r = client.get("/api/articles/99999")
         assertEquals(HttpStatusCode.NotFound, r.status)
+    }
+
+    @Test fun `transition Draft to Published returns 403 for wrong role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/draft-to-published") {
+            header("X-User-Role", "nobody")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
+    }
+
+    @Test fun `transition Draft to Published returns 200 for allowed role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Draft", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/draft-to-published") {
+            header("X-User-Role", "Editor")
+        }
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Published to Archived returns 403 for wrong role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/published-to-archived") {
+            header("X-User-Role", "nobody")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
+    }
+
+    @Test fun `transition Published to Archived returns 200 for allowed role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/published-to-archived") {
+            header("X-User-Role", "Editor")
+        }
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Archived to Draft returns 403 for wrong role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Archived", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/archived-to-draft") {
+            header("X-User-Role", "nobody")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
+    }
+
+    @Test fun `transition Archived to Draft returns 200 for allowed role`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Archived", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/archived-to-draft") {
+            header("X-User-Role", "Admin")
+        }
+        assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `transition Published to Draft returns 409`() = testApp {
+        val created = client.post("/api/articles") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"title": "test", "slug": "test", "body": "test", "status": "Published", "article_type": "Guide", "language": "EN", "view_count": 1, "likes_count": 1, "is_featured": true, "author_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.patch("/api/articles/$id/transitions/published-to-draft")
+        assertEquals(HttpStatusCode.Conflict, r.status)
     }
 
 }

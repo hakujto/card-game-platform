@@ -12,22 +12,22 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.TournamentTable
-import cards_project.players.model.PlayerTable
-import cards_project.cards.model.DeckTable
+import cards_project.players.model.*
+import cards_project.cards.model.*
 
 enum class TournamentRegistrationStatusType {
     REGISTERED, WAITLISTED, WITHDRAWN, DISQUALIFIED
 }
 
 object TournamentRegistrationTable : IntIdTable("tournament_registration") {
-    val status = enumerationByName<TournamentRegistrationStatusType>("status", 50)
+    val status = enumerationByName<TournamentRegistrationStatusType>("status", 50).default(TournamentRegistrationStatusType.REGISTERED)
     val seed = integer("seed").nullable()
     val finalStanding = integer("final_standing").nullable()
-    val pointsEarned = integer("points_earned")
+    val pointsEarned = integer("points_earned").default(0)
     val registeredAt = datetime("registered_at")
-    val tournamentId = reference("tournament_id", TournamentTable)
-    val playerId = reference("player_id", PlayerTable)
-    val deckId = reference("deck_id", DeckTable)
+    val tournamentId = reference("tournament_id", TournamentTable, onDelete = ReferenceOption.CASCADE)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val deckId = reference("deck_id", DeckTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

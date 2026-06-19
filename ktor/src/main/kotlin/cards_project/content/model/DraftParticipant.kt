@@ -12,13 +12,13 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.content.model.DraftSessionTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 object DraftParticipantTable : IntIdTable("draft_participant") {
     val seatNumber = integer("seat_number")
     val joinedAt = datetime("joined_at")
-    val sessionId = reference("session_id", DraftSessionTable)
-    val playerId = reference("player_id", PlayerTable)
+    val sessionId = reference("session_id", DraftSessionTable, onDelete = ReferenceOption.CASCADE)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -68,6 +68,10 @@ object DraftParticipantRepository {
             it[playerId] = EntityID(req.playerId, PlayerTable)
         }
         DraftParticipantTable.selectAll().where { DraftParticipantTable.id eq inserted }.single().toDraftParticipantResponse()
+    }
+
+    fun picks(id: Int): List<DraftPickResponse> = transaction {
+        DraftPickTable.selectAll().where { DraftPickTable.participantId eq id }.map { it.toDraftPickResponse() }
     }
 
 }

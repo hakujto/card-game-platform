@@ -50,6 +50,8 @@ fun Route.deckRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = DeckRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = DeckRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -58,6 +60,8 @@ fun Route.deckRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<DeckRequest>()
+                val item = DeckRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = DeckRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -119,4 +123,8 @@ fun Route.deckRoutes() {
             }
         }
     }
+}
+
+// TODO: implement hook recalculate_tournament_legal
+fun recalculateTournamentLegal(item: DeckResponse) {
 }

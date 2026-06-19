@@ -19,11 +19,11 @@ enum class TournamentRoundStatusType {
 
 object TournamentRoundTable : IntIdTable("tournament_round") {
     val roundNumber = integer("round_number")
-    val status = enumerationByName<TournamentRoundStatusType>("status", 50)
+    val status = enumerationByName<TournamentRoundStatusType>("status", 50).default(TournamentRoundStatusType.PENDING)
     val startedAt = datetime("started_at").nullable()
     val endedAt = datetime("ended_at").nullable()
-    val timeLimitMinutes = integer("time_limit_minutes")
-    val tournamentId = reference("tournament_id", TournamentTable)
+    val timeLimitMinutes = integer("time_limit_minutes").default(50)
+    val tournamentId = reference("tournament_id", TournamentTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -81,6 +81,10 @@ object TournamentRoundRepository {
             it[tournamentId] = EntityID(req.tournamentId, TournamentTable)
         }
         TournamentRoundTable.selectAll().where { TournamentRoundTable.id eq inserted }.single().toTournamentRoundResponse()
+    }
+
+    fun matches(id: Int): List<MatchResponse> = transaction {
+        MatchTable.selectAll().where { MatchTable.roundId eq id }.map { it.toMatchResponse() }
     }
 
 }

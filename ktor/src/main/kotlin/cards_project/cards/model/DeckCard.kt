@@ -15,10 +15,10 @@ import cards_project.cards.model.DeckTable
 import cards_project.cards.model.CardTable
 
 object DeckCardTable : IntIdTable("deck_card") {
-    val quantity = integer("quantity")
-    val isCommander = bool("is_commander")
-    val deckId = reference("deck_id", DeckTable)
-    val cardId = reference("card_id", CardTable)
+    val quantity = integer("quantity").default(1)
+    val isCommander = bool("is_commander").default(false)
+    val deckId = reference("deck_id", DeckTable, onDelete = ReferenceOption.CASCADE)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -74,8 +74,6 @@ object DeckCardRepository {
         val updated = DeckCardTable.update({ DeckCardTable.id eq id }) {
             it[quantity] = req.quantity
             it[isCommander] = req.isCommander
-            it[deckId] = EntityID(req.deckId, DeckTable)
-            it[cardId] = EntityID(req.cardId, CardTable)
         }
         if (updated == 0) return@transaction null
         DeckCardTable.selectAll().where { DeckCardTable.id eq id }.singleOrNull()?.toDeckCardResponse()

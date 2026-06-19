@@ -49,6 +49,8 @@ fun Route.tournamentPrizeRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = TournamentPrizeRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = TournamentPrizeRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -57,6 +59,8 @@ fun Route.tournamentPrizeRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<TournamentPrizeRequest>()
+                val item = TournamentPrizeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = TournamentPrizeRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)

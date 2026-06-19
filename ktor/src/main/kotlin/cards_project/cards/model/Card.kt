@@ -12,6 +12,9 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.cards.model.CardSetTable
+import cards_project.players.model.*
+import cards_project.marketplace.model.*
+import cards_project.content.model.*
 
 enum class CardCardTypeType {
     CREATURE, SPELL, LAND, ARTIFACT, ENCHANTMENT, PLANESWALKER
@@ -31,9 +34,9 @@ enum class CardLegalFormatsType {
 
 object CardTable : IntIdTable("card") {
     val name = varchar("name", 255)
-    val cardType = enumerationByName<CardCardTypeType>("card_type", 50)
-    val rarity = enumerationByName<CardRarityType>("rarity", 50)
-    val manaCost = integer("mana_cost")
+    val cardType = enumerationByName<CardCardTypeType>("card_type", 50).default(CardCardTypeType.CREATURE)
+    val rarity = enumerationByName<CardRarityType>("rarity", 50).default(CardRarityType.COMMON)
+    val manaCost = integer("mana_cost").default(0)
     val manaColors = enumerationByName<CardManaColorsType>("mana_colors", 50)
     val attack = integer("attack").nullable()
     val defense = integer("defense").nullable()
@@ -43,10 +46,10 @@ object CardTable : IntIdTable("card") {
     val imageUrl = text("image_url").nullable()
     val artistName = varchar("artist_name", 255).nullable()
     val legalFormats = enumerationByName<CardLegalFormatsType>("legal_formats", 50)
-    val isBanned = bool("is_banned")
-    val isRestricted = bool("is_restricted")
-    val powerLevel = integer("power_level")
-    val setId = reference("set_id", CardSetTable)
+    val isBanned = bool("is_banned").default(false)
+    val isRestricted = bool("is_restricted").default(false)
+    val powerLevel = integer("power_level").default(1)
+    val setId = reference("set_id", CardSetTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -177,6 +180,50 @@ object CardRepository {
         }
         if (updated == 0) return@transaction null
         CardTable.selectAll().where { CardTable.id eq id }.singleOrNull()?.toCardResponse()
+    }
+
+    fun rulings(id: Int): List<CardRulingResponse> = transaction {
+        CardRulingTable.selectAll().where { CardRulingTable.cardId eq id }.map { it.toCardRulingResponse() }
+    }
+
+    fun abilities(id: Int): List<CardAbilityResponse> = transaction {
+        CardAbilityTable.selectAll().where { CardAbilityTable.cardId eq id }.map { it.toCardAbilityResponse() }
+    }
+
+    fun deckCards(id: Int): List<DeckCardResponse> = transaction {
+        DeckCardTable.selectAll().where { DeckCardTable.cardId eq id }.map { it.toDeckCardResponse() }
+    }
+
+    fun sideboardDecks(id: Int): List<DeckSideboardCardResponse> = transaction {
+        DeckSideboardCardTable.selectAll().where { DeckSideboardCardTable.cardId eq id }.map { it.toDeckSideboardCardResponse() }
+    }
+
+    fun playerCollections(id: Int): List<PlayerCollectionResponse> = transaction {
+        PlayerCollectionTable.selectAll().where { PlayerCollectionTable.cardId eq id }.map { it.toPlayerCollectionResponse() }
+    }
+
+    fun craftingRecipes(id: Int): List<CraftingRecipeResponse> = transaction {
+        CraftingRecipeTable.selectAll().where { CraftingRecipeTable.resultCardId eq id }.map { it.toCraftingRecipeResponse() }
+    }
+
+    fun usedInRecipes(id: Int): List<CraftingIngredientResponse> = transaction {
+        CraftingIngredientTable.selectAll().where { CraftingIngredientTable.cardId eq id }.map { it.toCraftingIngredientResponse() }
+    }
+
+    fun shopProduct(id: Int): ProductResponse? = transaction {
+        ProductTable.selectAll().where { ProductTable.cardId eq id }.singleOrNull()?.toProductResponse()
+    }
+
+    fun tradeListings(id: Int): List<TradeListingResponse> = transaction {
+        TradeListingTable.selectAll().where { TradeListingTable.cardId eq id }.map { it.toTradeListingResponse() }
+    }
+
+    fun priceHistory(id: Int): List<CardPriceHistoryResponse> = transaction {
+        CardPriceHistoryTable.selectAll().where { CardPriceHistoryTable.cardId eq id }.map { it.toCardPriceHistoryResponse() }
+    }
+
+    fun draftPicks(id: Int): List<DraftPickResponse> = transaction {
+        DraftPickTable.selectAll().where { DraftPickTable.cardId eq id }.map { it.toDraftPickResponse() }
     }
 
 }

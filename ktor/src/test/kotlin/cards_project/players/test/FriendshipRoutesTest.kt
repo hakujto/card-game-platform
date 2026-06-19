@@ -16,6 +16,9 @@ import cards_project.plugins.configureSerialization
 
 class FriendshipRoutesTest {
 
+    private val ownerId = 1
+    private val ownerHeaders = mapOf("X-User-Id" to ownerId.toString())
+
     private fun testApp(block: suspend ApplicationTestBuilder.() -> Unit) = testApplication {
         application {
             configureTestDb()
@@ -33,7 +36,8 @@ class FriendshipRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/friendships") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "requester_id": 1, "receiver_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"status": "Pending", "requester_id": $ownerId, "receiver_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,22 +45,42 @@ class FriendshipRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/friendships") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "requester_id": 1, "receiver_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"status": "Pending", "requester_id": $ownerId, "receiver_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/friendships/$id")
+        val r = client.get("/api/friendships/$id") {
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+        }
         assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `get by id returns 403 for non-owner`() = testApp {
+        val created = client.post("/api/friendships") {
+            contentType(ContentType.Application.Json)
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"status": "Pending", "requester_id": $ownerId, "receiver_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.get("/api/friendships/$id") {
+            header("X-User-Id", "9999")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
     }
 
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/friendships") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "requester_id": 1, "receiver_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"status": "Pending", "requester_id": $ownerId, "receiver_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/friendships/$id")
+        val r = client.delete("/api/friendships/$id") {
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

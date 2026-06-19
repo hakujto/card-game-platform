@@ -50,7 +50,8 @@ class CardAbilityRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/card_abilities/$id")
+        val r = client.get("/api/card_abilities/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -75,7 +76,8 @@ class CardAbilityRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/card_abilities/$id")
+        val r = client.delete("/api/card_abilities/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

@@ -50,7 +50,8 @@ class CouponRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/coupons/$id")
+        val r = client.get("/api/coupons/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

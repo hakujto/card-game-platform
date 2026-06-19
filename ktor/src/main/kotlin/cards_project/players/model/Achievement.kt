@@ -19,9 +19,9 @@ object AchievementTable : IntIdTable("achievement") {
     val name = varchar("name", 255)
     val description = text("description")
     val iconUrl = text("icon_url").nullable()
-    val points = integer("points")
-    val rarity = enumerationByName<AchievementRarityType>("rarity", 50)
-    val isHidden = bool("is_hidden")
+    val points = integer("points").default(10)
+    val rarity = enumerationByName<AchievementRarityType>("rarity", 50).default(AchievementRarityType.COMMON)
+    val isHidden = bool("is_hidden").default(false)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -97,6 +97,10 @@ object AchievementRepository {
         }
         if (updated == 0) return@transaction null
         AchievementTable.selectAll().where { AchievementTable.id eq id }.singleOrNull()?.toAchievementResponse()
+    }
+
+    fun playerRecords(id: Int): List<PlayerAchievementResponse> = transaction {
+        PlayerAchievementTable.selectAll().where { PlayerAchievementTable.achievementId eq id }.map { it.toPlayerAchievementResponse() }
     }
 
 }

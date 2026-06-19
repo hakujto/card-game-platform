@@ -44,6 +44,8 @@ fun Route.playerRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<PlayerRequest>()
+                val item = PlayerRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = PlayerRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -92,4 +94,12 @@ fun Route.playerRoutes() {
             }
         }
     }
+}
+
+// TODO: implement hook initialize_collection
+fun initializeCollection(item: PlayerResponse) {
+}
+
+// TODO: implement hook update_rank
+fun updateRank(item: PlayerResponse) {
 }

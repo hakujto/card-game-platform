@@ -25,11 +25,17 @@ fun Route.friendshipRoutes() {
                     ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val item = FriendshipRepository.findById(id)
                     ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.requesterId.toString() != userId) return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 call.respond(item)
             }
             delete {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val item = FriendshipRepository.findById(id)
+                    ?: return@delete call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.requesterId.toString() != userId) return@delete call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 val deleted = FriendshipRepository.delete(id)
                 if (!deleted) return@delete call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(HttpStatusCode.NoContent)

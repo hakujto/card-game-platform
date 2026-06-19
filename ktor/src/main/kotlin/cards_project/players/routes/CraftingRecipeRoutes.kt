@@ -47,6 +47,8 @@ fun Route.craftingRecipeRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = CraftingRecipeRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CraftingRecipeRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -55,6 +57,8 @@ fun Route.craftingRecipeRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<CraftingRecipeRequest>()
+                val item = CraftingRecipeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CraftingRecipeRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)

@@ -16,15 +16,15 @@ enum class CouponDiscountTypeType {
 }
 
 object CouponTable : IntIdTable("coupon") {
-    val code = varchar("code", 255)
-    val discountType = enumerationByName<CouponDiscountTypeType>("discount_type", 50)
+    val code = varchar("code", 255).uniqueIndex()
+    val discountType = enumerationByName<CouponDiscountTypeType>("discount_type", 50).default(CouponDiscountTypeType.PERCENT)
     val discountValue = decimal("discount_value", 19, 4)
-    val minOrderValue = decimal("min_order_value", 19, 4)
+    val minOrderValue = decimal("min_order_value", 19, 4).default(java.math.BigDecimal("0"))
     val maxUses = integer("max_uses").nullable()
-    val usesCount = integer("uses_count")
+    val usesCount = integer("uses_count").default(0)
     val validFrom = datetime("valid_from")
     val validUntil = datetime("valid_until")
-    val isActive = bool("is_active")
+    val isActive = bool("is_active").default(true)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -115,6 +115,10 @@ object CouponRepository {
         }
         if (updated == 0) return@transaction null
         CouponTable.selectAll().where { CouponTable.id eq id }.singleOrNull()?.toCouponResponse()
+    }
+
+    fun orders(id: Int): List<OrderResponse> = transaction {
+        OrderTable.selectAll().where { OrderTable.couponId eq id }.map { it.toOrderResponse() }
     }
 
 }

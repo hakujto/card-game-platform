@@ -11,7 +11,9 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
+import cards_project.tournaments.model.*
+import cards_project.content.model.*
 
 enum class DeckFormatType {
     STANDARD, EXTENDED, LEGACY, VINTAGE, COMMANDER, DRAFT
@@ -24,14 +26,14 @@ enum class DeckArchetypeType {
 object DeckTable : IntIdTable("deck") {
     val name = varchar("name", 255)
     val description = text("description").nullable()
-    val format = enumerationByName<DeckFormatType>("format", 50)
-    val isPublic = bool("is_public")
-    val isTournamentLegal = bool("is_tournament_legal")
+    val format = enumerationByName<DeckFormatType>("format", 50).default(DeckFormatType.STANDARD)
+    val isPublic = bool("is_public").default(false)
+    val isTournamentLegal = bool("is_tournament_legal").default(false)
     val archetype = enumerationByName<DeckArchetypeType>("archetype", 50).nullable()
-    val wins = integer("wins")
-    val losses = integer("losses")
-    val draws = integer("draws")
-    val playerId = reference("player_id", PlayerTable)
+    val wins = integer("wins").default(0)
+    val losses = integer("losses").default(0)
+    val draws = integer("draws").default(0)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -131,6 +133,26 @@ object DeckRepository {
 
     fun delete(id: Int): Boolean = transaction {
         DeckTable.deleteWhere { DeckTable.id eq id } > 0
+    }
+
+    fun deckCards(id: Int): List<DeckCardResponse> = transaction {
+        DeckCardTable.selectAll().where { DeckCardTable.deckId eq id }.map { it.toDeckCardResponse() }
+    }
+
+    fun sideboardCards(id: Int): List<DeckSideboardCardResponse> = transaction {
+        DeckSideboardCardTable.selectAll().where { DeckSideboardCardTable.deckId eq id }.map { it.toDeckSideboardCardResponse() }
+    }
+
+    fun tagAssignments(id: Int): List<DeckTagAssignmentResponse> = transaction {
+        DeckTagAssignmentTable.selectAll().where { DeckTagAssignmentTable.deckId eq id }.map { it.toDeckTagAssignmentResponse() }
+    }
+
+    fun tournamentRegistrations(id: Int): List<TournamentRegistrationResponse> = transaction {
+        TournamentRegistrationTable.selectAll().where { TournamentRegistrationTable.deckId eq id }.map { it.toTournamentRegistrationResponse() }
+    }
+
+    fun articles(id: Int): List<ArticleResponse> = transaction {
+        ArticleTable.selectAll().where { ArticleTable.featuredDeckId eq id }.map { it.toArticleResponse() }
     }
 
 }

@@ -61,35 +61,67 @@ fun Route.tradeDisputeRoutes() {
                 // TODO: implement review behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "OPEN" to listOf("UNDERREVIEW"),
+                "UNDERREVIEW" to listOf("RESOLVED", "ESCALATED"),
+                "ESCALATED" to listOf("RESOLVED")
+            )
             patch("/transitions/open-to-underreview") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Open → UnderReview
-                call.respond(HttpStatusCode.OK, mapOf("status" to "UnderReview"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Moderator")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Open -> UnderReview"))
+                val item = TradeDisputeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("UNDERREVIEW" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> UnderReview not allowed"))
+                val updated = TradeDisputeRepository.updateStatus(id, "UNDERREVIEW")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/underreview-to-resolved") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition UnderReview → Resolved
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Resolved"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Moderator")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition UnderReview -> Resolved"))
+                val item = TradeDisputeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("RESOLVED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Resolved not allowed"))
+                val updated = TradeDisputeRepository.updateStatus(id, "RESOLVED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/underreview-to-escalated") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition UnderReview → Escalated
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Escalated"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition UnderReview -> Escalated"))
+                val item = TradeDisputeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ESCALATED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Escalated not allowed"))
+                val updated = TradeDisputeRepository.updateStatus(id, "ESCALATED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/escalated-to-resolved") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Escalated → Resolved
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Resolved"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Escalated -> Resolved"))
+                val item = TradeDisputeRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("RESOLVED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Resolved not allowed"))
+                val updated = TradeDisputeRepository.updateStatus(id, "RESOLVED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/resolved-to-open") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Resolved → Open
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Open"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Resolved -> Open is not allowed"))
             }
         }
     }

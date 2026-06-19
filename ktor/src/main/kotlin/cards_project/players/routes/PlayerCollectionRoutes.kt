@@ -36,12 +36,18 @@ fun Route.playerCollectionRoutes() {
                     ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val item = PlayerCollectionRepository.findById(id)
                     ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.playerId.toString() != userId) return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 call.respond(item)
             }
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<PlayerCollectionRequest>()
+                val item = PlayerCollectionRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.playerId.toString() != userId) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 val updated = PlayerCollectionRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -49,6 +55,10 @@ fun Route.playerCollectionRoutes() {
             delete {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val item = PlayerCollectionRepository.findById(id)
+                    ?: return@delete call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.playerId.toString() != userId) return@delete call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 val deleted = PlayerCollectionRepository.delete(id)
                 if (!deleted) return@delete call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(HttpStatusCode.NoContent)

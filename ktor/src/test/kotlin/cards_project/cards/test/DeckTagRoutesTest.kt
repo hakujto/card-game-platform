@@ -50,7 +50,8 @@ class DeckTagRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/deck_tags/$id")
+        val r = client.get("/api/deck_tags/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -75,7 +76,8 @@ class DeckTagRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/deck_tags/$id")
+        val r = client.delete("/api/deck_tags/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

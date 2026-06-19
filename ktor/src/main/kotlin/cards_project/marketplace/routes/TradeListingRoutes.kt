@@ -42,6 +42,8 @@ fun Route.tradeListingRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<TradeListingRequest>()
+                val item = TradeListingRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = TradeListingRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -61,6 +63,7 @@ fun Route.tradeListingRoutes() {
             delete("/api/trade-listings/{id}/cancel") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                // @guard: TODO: check guard condition — respond Forbidden if not met
                 // TODO: implement cancel behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
@@ -76,41 +79,67 @@ fun Route.tradeListingRoutes() {
                 // TODO: implement finalize_auction behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "PENDING" to listOf("ACTIVE"),
+                "ACTIVE" to listOf("SOLD", "EXPIRED", "CANCELLED")
+            )
             patch("/transitions/pending-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Pending → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Seller")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Pending -> Active"))
+                val item = TradeListingRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ACTIVE" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Active not allowed"))
+                val updated = TradeListingRepository.updateStatus(id, "ACTIVE")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/active-to-sold") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Active → Sold
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Sold"))
+                val item = TradeListingRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("SOLD" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Sold not allowed"))
+                val updated = TradeListingRepository.updateStatus(id, "SOLD")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/active-to-expired") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Active → Expired
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Expired"))
+                val item = TradeListingRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("EXPIRED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Expired not allowed"))
+                val updated = TradeListingRepository.updateStatus(id, "EXPIRED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/active-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Active → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Seller", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Active -> Cancelled"))
+                val item = TradeListingRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("CANCELLED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Cancelled not allowed"))
+                val updated = TradeListingRepository.updateStatus(id, "CANCELLED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/sold-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Sold → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Sold -> Active is not allowed"))
             }
             patch("/transitions/expired-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Expired → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Expired -> Active is not allowed"))
             }
         }
     }

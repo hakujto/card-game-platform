@@ -12,7 +12,8 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.SeasonTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
+import cards_project.content.model.*
 
 enum class TournamentStatusType {
     DRAFT, REGISTRATION, ONGOING, COMPLETED, CANCELLED
@@ -29,19 +30,19 @@ enum class TournamentTournamentTypeType {
 object TournamentTable : IntIdTable("tournament") {
     val name = varchar("name", 255)
     val description = text("description").nullable()
-    val status = enumerationByName<TournamentStatusType>("status", 50)
-    val format = enumerationByName<TournamentFormatType>("format", 50)
-    val tournamentType = enumerationByName<TournamentTournamentTypeType>("tournament_type", 50)
+    val status = enumerationByName<TournamentStatusType>("status", 50).default(TournamentStatusType.DRAFT)
+    val format = enumerationByName<TournamentFormatType>("format", 50).default(TournamentFormatType.STANDARD)
+    val tournamentType = enumerationByName<TournamentTournamentTypeType>("tournament_type", 50).default(TournamentTournamentTypeType.SWISS)
     val maxPlayers = integer("max_players")
-    val entryFee = decimal("entry_fee", 19, 4)
-    val prizePool = decimal("prize_pool", 19, 4)
+    val entryFee = decimal("entry_fee", 19, 4).default(java.math.BigDecimal("0"))
+    val prizePool = decimal("prize_pool", 19, 4).default(java.math.BigDecimal("0"))
     val startTime = datetime("start_time")
     val endTime = datetime("end_time").nullable()
-    val isOnline = bool("is_online")
+    val isOnline = bool("is_online").default(true)
     val location = varchar("location", 255).nullable()
     val rulesText = text("rules_text").nullable()
-    val seasonId = reference("season_id", SeasonTable)
-    val organizerId = reference("organizer_id", PlayerTable)
+    val seasonId = reference("season_id", SeasonTable, onDelete = ReferenceOption.RESTRICT)
+    val organizerId = reference("organizer_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -162,6 +163,34 @@ object TournamentRepository {
         }
         if (updated == 0) return@transaction null
         TournamentTable.selectAll().where { TournamentTable.id eq id }.singleOrNull()?.toTournamentResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): TournamentResponse? = transaction {
+        val updated = TournamentTable.update({ TournamentTable.id eq id }) {
+            it[status] = TournamentStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        TournamentTable.selectAll().where { TournamentTable.id eq id }.singleOrNull()?.toTournamentResponse()
+    }
+
+    fun judgeAssignments(id: Int): List<TournamentJudgeResponse> = transaction {
+        TournamentJudgeTable.selectAll().where { TournamentJudgeTable.tournamentId eq id }.map { it.toTournamentJudgeResponse() }
+    }
+
+    fun registrations(id: Int): List<TournamentRegistrationResponse> = transaction {
+        TournamentRegistrationTable.selectAll().where { TournamentRegistrationTable.tournamentId eq id }.map { it.toTournamentRegistrationResponse() }
+    }
+
+    fun rounds(id: Int): List<TournamentRoundResponse> = transaction {
+        TournamentRoundTable.selectAll().where { TournamentRoundTable.tournamentId eq id }.map { it.toTournamentRoundResponse() }
+    }
+
+    fun prizes(id: Int): List<TournamentPrizeResponse> = transaction {
+        TournamentPrizeTable.selectAll().where { TournamentPrizeTable.tournamentId eq id }.map { it.toTournamentPrizeResponse() }
+    }
+
+    fun streams(id: Int): List<StreamResponse> = transaction {
+        StreamTable.selectAll().where { StreamTable.tournamentId eq id }.map { it.toStreamResponse() }
     }
 
 }

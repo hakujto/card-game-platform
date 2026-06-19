@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 import cards_project.marketplace.model.CouponTable
 
 enum class OrderStatusType {
@@ -23,18 +23,18 @@ enum class OrderPaymentMethodType {
 }
 
 object OrderTable : IntIdTable("order") {
-    val status = enumerationByName<OrderStatusType>("status", 50)
-    val total = decimal("total", 19, 4)
-    val discountApplied = decimal("discount_applied", 19, 4)
-    val currency = varchar("currency", 255)
+    val status = enumerationByName<OrderStatusType>("status", 50).default(OrderStatusType.PENDING)
+    val total = decimal("total", 19, 4).default(java.math.BigDecimal("0"))
+    val discountApplied = decimal("discount_applied", 19, 4).default(java.math.BigDecimal("0"))
+    val currency = varchar("currency", 255).default("USD")
     val paymentMethod = enumerationByName<OrderPaymentMethodType>("payment_method", 50).nullable()
     val paymentReference = varchar("payment_reference", 255).nullable()
     val shippingAddress = text("shipping_address").nullable()
     val trackingNumber = varchar("tracking_number", 255).nullable()
     val paidAt = datetime("paid_at").nullable()
     val shippedAt = datetime("shipped_at").nullable()
-    val playerId = reference("player_id", PlayerTable)
-    val couponId = reference("coupon_id", CouponTable).nullable()
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val couponId = reference("coupon_id", CouponTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -116,6 +116,18 @@ object OrderRepository {
             req.couponId?.let { v -> it[couponId] = EntityID(v, CouponTable) }
         }
         OrderTable.selectAll().where { OrderTable.id eq inserted }.single().toOrderResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): OrderResponse? = transaction {
+        val updated = OrderTable.update({ OrderTable.id eq id }) {
+            it[status] = OrderStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        OrderTable.selectAll().where { OrderTable.id eq id }.singleOrNull()?.toOrderResponse()
+    }
+
+    fun items(id: Int): List<OrderItemResponse> = transaction {
+        OrderItemTable.selectAll().where { OrderItemTable.orderId eq id }.map { it.toOrderItemResponse() }
     }
 
 }

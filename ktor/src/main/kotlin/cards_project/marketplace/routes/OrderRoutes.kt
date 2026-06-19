@@ -37,6 +37,8 @@ fun Route.orderRoutes() {
                     ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val item = OrderRepository.findById(id)
                     ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.playerId.toString() != userId) return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 call.respond(item)
             }
             delete("/cancel") {
@@ -48,6 +50,7 @@ fun Route.orderRoutes() {
             post("/pay") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                // @guard: TODO: check guard condition — respond Forbidden if not met
                 // TODO: implement pay behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
@@ -75,60 +78,118 @@ fun Route.orderRoutes() {
                 // TODO: implement refund behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "PENDING" to listOf("PAID", "CANCELLED"),
+                "PAID" to listOf("PROCESSING", "CANCELLED"),
+                "PROCESSING" to listOf("SHIPPED"),
+                "SHIPPED" to listOf("COMPLETED"),
+                "COMPLETED" to listOf("REFUNDED")
+            )
             patch("/transitions/pending-to-paid") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Pending → Paid
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Paid"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("PAID" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Paid not allowed"))
+                val updated = OrderRepository.updateStatus(id, "PAID")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/paid-to-processing") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Paid → Processing
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Processing"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Staff")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Paid -> Processing"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("PROCESSING" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Processing not allowed"))
+                val updated = OrderRepository.updateStatus(id, "PROCESSING")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/processing-to-shipped") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Processing → Shipped
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Shipped"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Staff")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Processing -> Shipped"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("SHIPPED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Shipped not allowed"))
+                val updated = OrderRepository.updateStatus(id, "SHIPPED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/shipped-to-completed") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Shipped → Completed
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Completed"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Staff")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Shipped -> Completed"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("COMPLETED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Completed not allowed"))
+                val updated = OrderRepository.updateStatus(id, "COMPLETED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/pending-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Pending → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("CANCELLED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Cancelled not allowed"))
+                val updated = OrderRepository.updateStatus(id, "CANCELLED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/paid-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Paid → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Staff")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Paid -> Cancelled"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("CANCELLED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Cancelled not allowed"))
+                val updated = OrderRepository.updateStatus(id, "CANCELLED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/completed-to-refunded") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Completed → Refunded
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Refunded"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Completed -> Refunded"))
+                val item = OrderRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("REFUNDED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Refunded not allowed"))
+                val updated = OrderRepository.updateStatus(id, "REFUNDED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/refunded-to-completed") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Refunded → Completed
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Completed"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Refunded -> Completed is not allowed"))
             }
             patch("/transitions/completed-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Completed → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Completed -> Cancelled is not allowed"))
             }
         }
     }
+}
+
+// TODO: implement hook assign_currency_default
+fun assignCurrencyDefault(item: OrderResponse) {
+}
+
+// TODO: implement hook notify_status_change
+fun notifyStatusChange(item: OrderResponse) {
 }

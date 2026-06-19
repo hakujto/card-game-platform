@@ -15,8 +15,8 @@ import cards_project.content.model.ArticleTable
 import cards_project.content.model.ArticleTagTable
 
 object ArticleTagAssignmentTable : IntIdTable("article_tag_assignment") {
-    val articleId = reference("article_id", ArticleTable)
-    val tagId = reference("tag_id", ArticleTagTable)
+    val articleId = reference("article_id", ArticleTable, onDelete = ReferenceOption.CASCADE)
+    val tagId = reference("tag_id", ArticleTagTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

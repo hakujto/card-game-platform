@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.TournamentRoundTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 enum class MatchStatusType {
     PENDING, ACTIVE, COMPLETED, BYE, DRAW
@@ -20,15 +20,15 @@ enum class MatchStatusType {
 
 object MatchTable : IntIdTable("match") {
     val tableNumber = integer("table_number").nullable()
-    val status = enumerationByName<MatchStatusType>("status", 50)
-    val player1Wins = integer("player1_wins")
-    val player2Wins = integer("player2_wins")
+    val status = enumerationByName<MatchStatusType>("status", 50).default(MatchStatusType.PENDING)
+    val player1Wins = integer("player1_wins").default(0)
+    val player2Wins = integer("player2_wins").default(0)
     val startedAt = datetime("started_at").nullable()
     val endedAt = datetime("ended_at").nullable()
     val resultNotes = text("result_notes").nullable()
-    val roundId = reference("round_id", TournamentRoundTable)
-    val player1Id = reference("player1_id", PlayerTable)
-    val player2Id = reference("player2_id", PlayerTable).nullable()
+    val roundId = reference("round_id", TournamentRoundTable, onDelete = ReferenceOption.CASCADE)
+    val player1Id = reference("player1_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val player2Id = reference("player2_id", PlayerTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -102,6 +102,18 @@ object MatchRepository {
             req.player2Id?.let { v -> it[player2Id] = EntityID(v, PlayerTable) }
         }
         MatchTable.selectAll().where { MatchTable.id eq inserted }.single().toMatchResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): MatchResponse? = transaction {
+        val updated = MatchTable.update({ MatchTable.id eq id }) {
+            it[status] = MatchStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        MatchTable.selectAll().where { MatchTable.id eq id }.singleOrNull()?.toMatchResponse()
+    }
+
+    fun games(id: Int): List<GameResponse> = transaction {
+        GameTable.selectAll().where { GameTable.matchId eq id }.map { it.toGameResponse() }
     }
 
 }

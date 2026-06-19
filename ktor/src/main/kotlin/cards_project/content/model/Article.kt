@@ -11,8 +11,8 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.players.model.PlayerTable
-import cards_project.cards.model.DeckTable
+import cards_project.players.model.*
+import cards_project.cards.model.*
 
 enum class ArticleStatusType {
     DRAFT, PUBLISHED, ARCHIVED
@@ -28,19 +28,19 @@ enum class ArticleLanguageType {
 
 object ArticleTable : IntIdTable("article") {
     val title = varchar("title", 255)
-    val slug = varchar("slug", 255)
+    val slug = varchar("slug", 255).uniqueIndex()
     val body = text("body")
     val excerpt = text("excerpt").nullable()
     val coverImageUrl = text("cover_image_url").nullable()
-    val status = enumerationByName<ArticleStatusType>("status", 50)
-    val articleType = enumerationByName<ArticleArticleTypeType>("article_type", 50)
-    val language = enumerationByName<ArticleLanguageType>("language", 50)
-    val viewCount = integer("view_count")
-    val likesCount = integer("likes_count")
-    val isFeatured = bool("is_featured")
+    val status = enumerationByName<ArticleStatusType>("status", 50).default(ArticleStatusType.DRAFT)
+    val articleType = enumerationByName<ArticleArticleTypeType>("article_type", 50).default(ArticleArticleTypeType.GUIDE)
+    val language = enumerationByName<ArticleLanguageType>("language", 50).default(ArticleLanguageType.EN)
+    val viewCount = integer("view_count").default(0)
+    val likesCount = integer("likes_count").default(0)
+    val isFeatured = bool("is_featured").default(false)
     val publishedAt = datetime("published_at").nullable()
-    val authorId = reference("author_id", PlayerTable)
-    val featuredDeckId = reference("featured_deck_id", DeckTable).nullable()
+    val authorId = reference("author_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val featuredDeckId = reference("featured_deck_id", DeckTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -156,6 +156,22 @@ object ArticleRepository {
         }
         if (updated == 0) return@transaction null
         ArticleTable.selectAll().where { ArticleTable.id eq id }.singleOrNull()?.toArticleResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): ArticleResponse? = transaction {
+        val updated = ArticleTable.update({ ArticleTable.id eq id }) {
+            it[status] = ArticleStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        ArticleTable.selectAll().where { ArticleTable.id eq id }.singleOrNull()?.toArticleResponse()
+    }
+
+    fun tagAssignments(id: Int): List<ArticleTagAssignmentResponse> = transaction {
+        ArticleTagAssignmentTable.selectAll().where { ArticleTagAssignmentTable.articleId eq id }.map { it.toArticleTagAssignmentResponse() }
+    }
+
+    fun comments(id: Int): List<ArticleCommentResponse> = transaction {
+        ArticleCommentTable.selectAll().where { ArticleCommentTable.articleId eq id }.map { it.toArticleCommentResponse() }
     }
 
 }

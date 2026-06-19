@@ -22,11 +22,11 @@ enum class CardAbilityTimingType {
 }
 
 object CardAbilityTable : IntIdTable("card_ability") {
-    val abilityType = enumerationByName<CardAbilityAbilityTypeType>("ability_type", 50)
+    val abilityType = enumerationByName<CardAbilityAbilityTypeType>("ability_type", 50).default(CardAbilityAbilityTypeType.KEYWORD)
     val keyword = varchar("keyword", 255).nullable()
     val abilityText = text("ability_text")
     val timing = enumerationByName<CardAbilityTimingType>("timing", 50).nullable()
-    val cardId = reference("card_id", CardTable)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

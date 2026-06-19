@@ -49,6 +49,8 @@ fun Route.articleRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = ArticleRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = ArticleRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -57,6 +59,8 @@ fun Route.articleRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<ArticleRequest>()
+                val item = ArticleRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = ArticleRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -97,30 +101,59 @@ fun Route.articleRoutes() {
                 // TODO: implement reading_time_minutes behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "DRAFT" to listOf("PUBLISHED"),
+                "PUBLISHED" to listOf("ARCHIVED"),
+                "ARCHIVED" to listOf("DRAFT")
+            )
             patch("/transitions/draft-to-published") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Draft → Published
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Published"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Editor", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Draft -> Published"))
+                val item = ArticleRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("PUBLISHED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Published not allowed"))
+                val updated = ArticleRepository.updateStatus(id, "PUBLISHED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/published-to-archived") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Published → Archived
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Archived"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Editor", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Published -> Archived"))
+                val item = ArticleRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ARCHIVED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Archived not allowed"))
+                val updated = ArticleRepository.updateStatus(id, "ARCHIVED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/archived-to-draft") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Archived → Draft
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Draft"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Archived -> Draft"))
+                val item = ArticleRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("DRAFT" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Draft not allowed"))
+                val updated = ArticleRepository.updateStatus(id, "DRAFT")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/published-to-draft") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Published → Draft
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Draft"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Published -> Draft is not allowed"))
             }
         }
     }
+}
+
+// TODO: implement hook update_search_index
+fun updateSearchIndex(item: ArticleResponse) {
 }

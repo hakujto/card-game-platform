@@ -45,7 +45,8 @@ class CraftingIngredientRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/crafting_ingredients/$id")
+        val r = client.get("/api/crafting_ingredients/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 
@@ -56,7 +57,8 @@ class CraftingIngredientRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/crafting_ingredients/$id")
+        val r = client.delete("/api/crafting_ingredients/$id") {
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

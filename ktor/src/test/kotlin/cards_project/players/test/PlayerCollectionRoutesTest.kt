@@ -16,6 +16,9 @@ import cards_project.plugins.configureSerialization
 
 class PlayerCollectionRoutesTest {
 
+    private val ownerId = 1
+    private val ownerHeaders = mapOf("X-User-Id" to ownerId.toString())
+
     private fun testApp(block: suspend ApplicationTestBuilder.() -> Unit) = testApplication {
         application {
             configureTestDb()
@@ -33,7 +36,8 @@ class PlayerCollectionRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": 1, "card_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,24 +45,43 @@ class PlayerCollectionRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": 1, "card_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/player_collections/$id")
+        val r = client.get("/api/player_collections/$id") {
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+        }
         assertEquals(HttpStatusCode.OK, r.status)
+    }
+
+    @Test fun `get by id returns 403 for non-owner`() = testApp {
+        val created = client.post("/api/player_collections") {
+            contentType(ContentType.Application.Json)
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+        }
+        val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
+        val id = json["id"]!!.jsonPrimitive.int
+        val r = client.get("/api/player_collections/$id") {
+            header("X-User-Id", "9999")
+        }
+        assertEquals(HttpStatusCode.Forbidden, r.status)
     }
 
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": 1, "card_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.patch("/api/player_collections/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": 1, "card_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -66,11 +89,14 @@ class PlayerCollectionRoutesTest {
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": 1, "card_id": 1}""")
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.delete("/api/player_collections/$id")
+        val r = client.delete("/api/player_collections/$id") {
+            ownerHeaders.forEach { (k, v) -> header(k, v) }
+        }
         assertEquals(HttpStatusCode.NoContent, r.status)
     }
 

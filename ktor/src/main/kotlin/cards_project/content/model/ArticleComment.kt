@@ -12,15 +12,15 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.content.model.ArticleTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 import cards_project.content.model.ArticleCommentTable
 
 object ArticleCommentTable : IntIdTable("article_comment") {
     val body = text("body")
-    val isHidden = bool("is_hidden")
-    val articleId = reference("article_id", ArticleTable)
-    val authorId = reference("author_id", PlayerTable)
-    val parentCommentId = reference("parent_comment_id", ArticleCommentTable).nullable()
+    val isHidden = bool("is_hidden").default(false)
+    val articleId = reference("article_id", ArticleTable, onDelete = ReferenceOption.CASCADE)
+    val authorId = reference("author_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val parentCommentId = reference("parent_comment_id", ArticleCommentTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -78,6 +78,10 @@ object ArticleCommentRepository {
 
     fun delete(id: Int): Boolean = transaction {
         ArticleCommentTable.deleteWhere { ArticleCommentTable.id eq id } > 0
+    }
+
+    fun replies(id: Int): List<ArticleCommentResponse> = transaction {
+        ArticleCommentTable.selectAll().where { ArticleCommentTable.parentCommentId eq id }.map { it.toArticleCommentResponse() }
     }
 
 }

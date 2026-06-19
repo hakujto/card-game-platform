@@ -49,6 +49,8 @@ fun Route.tournamentRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = TournamentRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = TournamentRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -57,6 +59,8 @@ fun Route.tournamentRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<TournamentRequest>()
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = TournamentRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -103,48 +107,94 @@ fun Route.tournamentRoutes() {
                 // TODO: implement is_full behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "DRAFT" to listOf("REGISTRATION"),
+                "REGISTRATION" to listOf("ONGOING", "CANCELLED"),
+                "ONGOING" to listOf("COMPLETED", "CANCELLED")
+            )
             patch("/transitions/draft-to-registration") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Draft → Registration
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Registration"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Draft -> Registration"))
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("REGISTRATION" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Registration not allowed"))
+                val updated = TournamentRepository.updateStatus(id, "REGISTRATION")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/registration-to-ongoing") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Registration → Ongoing
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Ongoing"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Registration -> Ongoing"))
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ONGOING" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Ongoing not allowed"))
+                val updated = TournamentRepository.updateStatus(id, "ONGOING")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/registration-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Registration → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Registration -> Cancelled"))
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("CANCELLED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Cancelled not allowed"))
+                val updated = TournamentRepository.updateStatus(id, "CANCELLED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/ongoing-to-completed") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Ongoing → Completed
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Completed"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Ongoing -> Completed"))
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("COMPLETED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Completed not allowed"))
+                val updated = TournamentRepository.updateStatus(id, "COMPLETED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/ongoing-to-cancelled") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Ongoing → Cancelled
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Cancelled"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Ongoing -> Cancelled"))
+                val item = TournamentRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("CANCELLED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Cancelled not allowed"))
+                val updated = TournamentRepository.updateStatus(id, "CANCELLED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/completed-to-draft") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Completed → Draft
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Draft"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Completed -> Draft is not allowed"))
             }
             patch("/transitions/cancelled-to-draft") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Cancelled → Draft
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Draft"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Cancelled -> Draft is not allowed"))
             }
         }
     }
+}
+
+// TODO: implement hook sync_season_stats
+fun syncSeasonStats(item: TournamentResponse) {
+}
+
+// TODO: implement hook prevent_delete_if_ongoing
+fun preventDeleteIfOngoing(item: TournamentResponse) {
 }

@@ -11,6 +11,8 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
+import cards_project.players.model.*
+
 enum class SeasonFormatType {
     STANDARD, EXTENDED, LEGACY, VINTAGE, COMMANDER, DRAFT
 }
@@ -19,8 +21,8 @@ object SeasonTable : IntIdTable("season") {
     val name = varchar("name", 255)
     val startDate = date("start_date")
     val endDate = date("end_date")
-    val format = enumerationByName<SeasonFormatType>("format", 50)
-    val isActive = bool("is_active")
+    val format = enumerationByName<SeasonFormatType>("format", 50).default(SeasonFormatType.STANDARD)
+    val isActive = bool("is_active").default(false)
     val rewardDescription = text("reward_description").nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
@@ -97,6 +99,14 @@ object SeasonRepository {
         }
         if (updated == 0) return@transaction null
         SeasonTable.selectAll().where { SeasonTable.id eq id }.singleOrNull()?.toSeasonResponse()
+    }
+
+    fun playerStats(id: Int): List<PlayerSeasonStatsResponse> = transaction {
+        PlayerSeasonStatsTable.selectAll().where { PlayerSeasonStatsTable.seasonId eq id }.map { it.toPlayerSeasonStatsResponse() }
+    }
+
+    fun tournaments(id: Int): List<TournamentResponse> = transaction {
+        TournamentTable.selectAll().where { TournamentTable.seasonId eq id }.map { it.toTournamentResponse() }
     }
 
 }

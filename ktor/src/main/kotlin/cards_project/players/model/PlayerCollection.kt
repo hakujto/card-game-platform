@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.players.model.PlayerTable
-import cards_project.cards.model.CardTable
+import cards_project.cards.model.*
 
 enum class PlayerCollectionConditionType {
     MINT, NEARMINT, EXCELLENT, GOOD, PLAYED
@@ -23,13 +23,13 @@ enum class PlayerCollectionAcquiredViaType {
 }
 
 object PlayerCollectionTable : IntIdTable("player_collection") {
-    val quantity = integer("quantity")
-    val foil = bool("foil")
-    val condition = enumerationByName<PlayerCollectionConditionType>("condition", 50)
+    val quantity = integer("quantity").default(1)
+    val foil = bool("foil").default(false)
+    val condition = enumerationByName<PlayerCollectionConditionType>("condition", 50).default(PlayerCollectionConditionType.MINT)
     val acquiredAt = datetime("acquired_at")
-    val acquiredVia = enumerationByName<PlayerCollectionAcquiredViaType>("acquired_via", 50)
-    val playerId = reference("player_id", PlayerTable)
-    val cardId = reference("card_id", CardTable)
+    val acquiredVia = enumerationByName<PlayerCollectionAcquiredViaType>("acquired_via", 50).default(PlayerCollectionAcquiredViaType.PURCHASE)
+    val playerId = reference("player_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -100,8 +100,6 @@ object PlayerCollectionRepository {
             it[condition] = req.condition
             it[acquiredAt] = req.acquiredAt
             it[acquiredVia] = req.acquiredVia
-            it[playerId] = EntityID(req.playerId, PlayerTable)
-            it[cardId] = EntityID(req.cardId, CardTable)
         }
         if (updated == 0) return@transaction null
         PlayerCollectionTable.selectAll().where { PlayerCollectionTable.id eq id }.singleOrNull()?.toPlayerCollectionResponse()

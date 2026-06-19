@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.cards.model.CardTable
+import cards_project.cards.model.*
 
 object CardPriceHistoryTable : IntIdTable("card_price_history") {
     val priceDate = date("price_date")
@@ -19,8 +19,8 @@ object CardPriceHistoryTable : IntIdTable("card_price_history") {
     val minPrice = decimal("min_price", 19, 4)
     val maxPrice = decimal("max_price", 19, 4)
     val volume = integer("volume")
-    val foil = bool("foil")
-    val cardId = reference("card_id", CardTable)
+    val foil = bool("foil").default(false)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

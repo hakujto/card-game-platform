@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.tournaments.model.MatchTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 enum class GameWinnerSideType {
     PLAYER1, PLAYER2, DRAW
@@ -29,8 +29,8 @@ object GameTable : IntIdTable("game") {
     val durationSeconds = integer("duration_seconds").nullable()
     val endedBy = enumerationByName<GameEndedByType>("ended_by", 50).nullable()
     val replayUrl = text("replay_url").nullable()
-    val matchId = reference("match_id", MatchTable)
-    val winnerId = reference("winner_id", PlayerTable).nullable()
+    val matchId = reference("match_id", MatchTable, onDelete = ReferenceOption.CASCADE)
+    val winnerId = reference("winner_id", PlayerTable, onDelete = ReferenceOption.SET_NULL).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

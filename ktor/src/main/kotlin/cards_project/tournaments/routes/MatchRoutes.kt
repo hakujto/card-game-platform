@@ -42,12 +42,14 @@ fun Route.matchRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 // TODO: implement record_result behavior
+                // TODO: determineWinner() // @after
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             post("/finalize") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 // TODO: implement finalize_result behavior
+                // TODO: determineWinner() // @after
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             get("/winner") {
@@ -59,6 +61,7 @@ fun Route.matchRoutes() {
             post("/concede") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                // @guard: TODO: check guard condition — respond Forbidden if not met
                 // TODO: implement concede behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
@@ -68,47 +71,76 @@ fun Route.matchRoutes() {
                 // TODO: implement draw behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "PENDING" to listOf("ACTIVE", "BYE"),
+                "ACTIVE" to listOf("COMPLETED", "DRAW")
+            )
             patch("/transitions/pending-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Pending → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Judge", "HeadJudge", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Pending -> Active"))
+                val item = MatchRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ACTIVE" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Active not allowed"))
+                val updated = MatchRepository.updateStatus(id, "ACTIVE")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/active-to-completed") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Active → Completed
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Completed"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Judge", "HeadJudge", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Active -> Completed"))
+                val item = MatchRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("COMPLETED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Completed not allowed"))
+                val updated = MatchRepository.updateStatus(id, "COMPLETED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/active-to-draw") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Active → Draw
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Draw"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Judge", "HeadJudge", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Active -> Draw"))
+                val item = MatchRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("DRAW" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Draw not allowed"))
+                val updated = MatchRepository.updateStatus(id, "DRAW")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/pending-to-bye") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Pending → BYE
-                call.respond(HttpStatusCode.OK, mapOf("status" to "BYE"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Judge", "HeadJudge", "Admin")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Pending -> BYE"))
+                val item = MatchRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("BYE" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> BYE not allowed"))
+                val updated = MatchRepository.updateStatus(id, "BYE")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/completed-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Completed → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Completed -> Active is not allowed"))
             }
             patch("/transitions/draw-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Draw → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Draw -> Active is not allowed"))
             }
             patch("/transitions/bye-to-active") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition BYE → Active
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Active"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition BYE -> Active is not allowed"))
             }
         }
     }

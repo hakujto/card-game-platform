@@ -12,14 +12,14 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.marketplace.model.TradeListingTable
-import cards_project.players.model.PlayerTable
+import cards_project.players.model.*
 
 object TradeBidTable : IntIdTable("trade_bid") {
     val amount = decimal("amount", 19, 4)
     val placedAt = datetime("placed_at")
-    val isWinning = bool("is_winning")
-    val listingId = reference("listing_id", TradeListingTable)
-    val bidderId = reference("bidder_id", PlayerTable)
+    val isWinning = bool("is_winning").default(false)
+    val listingId = reference("listing_id", TradeListingTable, onDelete = ReferenceOption.CASCADE)
+    val bidderId = reference("bidder_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

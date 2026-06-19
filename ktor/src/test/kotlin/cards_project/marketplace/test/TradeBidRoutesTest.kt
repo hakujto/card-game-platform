@@ -45,7 +45,8 @@ class TradeBidRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/trade_bids/$id")
+        val r = client.get("/api/trade_bids/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

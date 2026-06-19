@@ -47,6 +47,8 @@ fun Route.cardRoutes() {
                     call.respond(HttpStatusCode.BadRequest, mapOf("errors" to errors))
                     return@put
                 }
+                val item = CardRepository.findById(id)
+                    ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CardRepository.update(id, req)
                     ?: return@put call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -55,6 +57,8 @@ fun Route.cardRoutes() {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val req = call.receive<CardRequest>()
+                val item = CardRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 val updated = CardRepository.update(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
@@ -103,4 +107,12 @@ fun Route.cardRoutes() {
             }
         }
     }
+}
+
+// TODO: implement hook validate_legality
+fun validateLegality(item: CardResponse) {
+}
+
+// TODO: implement hook validate_not_in_use
+fun validateNotInUse(item: CardResponse) {
 }

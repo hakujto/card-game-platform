@@ -36,6 +36,8 @@ fun Route.tournamentRegistrationRoutes() {
                     ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
                 val item = TournamentRegistrationRepository.findById(id)
                     ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val userId = call.request.headers["X-User-Id"]
+                if (item.playerId.toString() != userId) return@get call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not own this resource."))
                 call.respond(item)
             }
             post("/api/registrations/{id}/withdraw") {

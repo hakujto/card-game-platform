@@ -62,41 +62,67 @@ fun Route.draftSessionRoutes() {
                 // TODO: implement is_full behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
+            val allowedTransitions = mapOf(
+                "WAITINGFORPLAYERS" to listOf("DRAFTING", "ABANDONED"),
+                "DRAFTING" to listOf("COMPLETED", "ABANDONED")
+            )
             patch("/transitions/waitingforplayers-to-drafting") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition WaitingForPlayers → Drafting
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Drafting"))
+                val item = DraftSessionRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("DRAFTING" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Drafting not allowed"))
+                val updated = DraftSessionRepository.updateStatus(id, "DRAFTING")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/drafting-to-completed") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Drafting → Completed
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Completed"))
+                val item = DraftSessionRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("COMPLETED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Completed not allowed"))
+                val updated = DraftSessionRepository.updateStatus(id, "COMPLETED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/drafting-to-abandoned") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Drafting → Abandoned
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Abandoned"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition Drafting -> Abandoned"))
+                val item = DraftSessionRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ABANDONED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Abandoned not allowed"))
+                val updated = DraftSessionRepository.updateStatus(id, "ABANDONED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/waitingforplayers-to-abandoned") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition WaitingForPlayers → Abandoned
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Abandoned"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("Admin", "Organizer")) return@patch call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for transition WaitingForPlayers -> Abandoned"))
+                val item = DraftSessionRepository.findById(id)
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                val allowed = allowedTransitions[item.status.name] ?: emptyList()
+                if ("ABANDONED" !in allowed) return@patch call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition ${item.status.name} -> Abandoned not allowed"))
+                val updated = DraftSessionRepository.updateStatus(id, "ABANDONED")
+                    ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
+                call.respond(updated)
             }
             patch("/transitions/completed-to-drafting") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Completed → Drafting
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Drafting"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Completed -> Drafting is not allowed"))
             }
             patch("/transitions/abandoned-to-drafting") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                // TODO: validate transition Abandoned → Drafting
-                call.respond(HttpStatusCode.OK, mapOf("status" to "Drafting"))
+                call.respond(HttpStatusCode.Conflict, mapOf("error" to "Transition Abandoned -> Drafting is not allowed"))
             }
         }
     }

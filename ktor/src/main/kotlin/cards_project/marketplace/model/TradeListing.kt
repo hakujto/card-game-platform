@@ -11,8 +11,8 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
-import cards_project.players.model.PlayerTable
-import cards_project.cards.model.CardTable
+import cards_project.players.model.*
+import cards_project.cards.model.*
 
 enum class TradeListingStatusType {
     ACTIVE, SOLD, EXPIRED, CANCELLED, PENDING
@@ -27,19 +27,19 @@ enum class TradeListingConditionType {
 }
 
 object TradeListingTable : IntIdTable("trade_listing") {
-    val status = enumerationByName<TradeListingStatusType>("status", 50)
-    val listingType = enumerationByName<TradeListingListingTypeType>("listing_type", 50)
+    val status = enumerationByName<TradeListingStatusType>("status", 50).default(TradeListingStatusType.ACTIVE)
+    val listingType = enumerationByName<TradeListingListingTypeType>("listing_type", 50).default(TradeListingListingTypeType.FIXEDPRICE)
     val askingPrice = decimal("asking_price", 19, 4).nullable()
     val auctionStartPrice = decimal("auction_start_price", 19, 4).nullable()
     val auctionCurrentBid = decimal("auction_current_bid", 19, 4).nullable()
     val auctionEndTime = datetime("auction_end_time").nullable()
-    val foil = bool("foil")
-    val condition = enumerationByName<TradeListingConditionType>("condition", 50)
-    val quantity = integer("quantity")
+    val foil = bool("foil").default(false)
+    val condition = enumerationByName<TradeListingConditionType>("condition", 50).default(TradeListingConditionType.MINT)
+    val quantity = integer("quantity").default(1)
     val description = text("description").nullable()
     val expiresAt = datetime("expires_at").nullable()
-    val sellerId = reference("seller_id", PlayerTable)
-    val cardId = reference("card_id", CardTable)
+    val sellerId = reference("seller_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -145,11 +145,25 @@ object TradeListingRepository {
             it[quantity] = req.quantity
             it[description] = req.description
             it[expiresAt] = req.expiresAt
-            it[sellerId] = EntityID(req.sellerId, PlayerTable)
-            it[cardId] = EntityID(req.cardId, CardTable)
         }
         if (updated == 0) return@transaction null
         TradeListingTable.selectAll().where { TradeListingTable.id eq id }.singleOrNull()?.toTradeListingResponse()
+    }
+
+    fun updateStatus(id: Int, newStatus: String): TradeListingResponse? = transaction {
+        val updated = TradeListingTable.update({ TradeListingTable.id eq id }) {
+            it[status] = TradeListingStatusType.valueOf(newStatus)
+        }
+        if (updated == 0) return@transaction null
+        TradeListingTable.selectAll().where { TradeListingTable.id eq id }.singleOrNull()?.toTradeListingResponse()
+    }
+
+    fun bids(id: Int): List<TradeBidResponse> = transaction {
+        TradeBidTable.selectAll().where { TradeBidTable.listingId eq id }.map { it.toTradeBidResponse() }
+    }
+
+    fun transaction(id: Int): TradeTransactionResponse? = transaction {
+        TradeTransactionTable.selectAll().where { TradeTransactionTable.listingId eq id }.singleOrNull()?.toTradeTransactionResponse()
     }
 
 }

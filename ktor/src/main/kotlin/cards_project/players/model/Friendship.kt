@@ -18,9 +18,9 @@ enum class FriendshipStatusType {
 }
 
 object FriendshipTable : IntIdTable("friendship") {
-    val status = enumerationByName<FriendshipStatusType>("status", 50)
-    val requesterId = reference("requester_id", PlayerTable)
-    val receiverId = reference("receiver_id", PlayerTable)
+    val status = enumerationByName<FriendshipStatusType>("status", 50).default(FriendshipStatusType.PENDING)
+    val requesterId = reference("requester_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
+    val receiverId = reference("receiver_id", PlayerTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

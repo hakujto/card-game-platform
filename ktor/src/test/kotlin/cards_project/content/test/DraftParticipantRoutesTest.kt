@@ -45,7 +45,8 @@ class DraftParticipantRoutesTest {
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
-        val r = client.get("/api/draft_participants/$id")
+        val r = client.get("/api/draft_participants/$id") {
+        }
         assertEquals(HttpStatusCode.OK, r.status)
     }
 

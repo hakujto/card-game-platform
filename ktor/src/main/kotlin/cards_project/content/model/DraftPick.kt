@@ -12,14 +12,14 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 
 import cards_project.content.model.DraftParticipantTable
-import cards_project.cards.model.CardTable
+import cards_project.cards.model.*
 
 object DraftPickTable : IntIdTable("draft_pick") {
     val pickNumber = integer("pick_number")
     val packNumber = integer("pack_number")
     val pickedAt = datetime("picked_at")
-    val participantId = reference("participant_id", DraftParticipantTable)
-    val cardId = reference("card_id", CardTable)
+    val participantId = reference("participant_id", DraftParticipantTable, onDelete = ReferenceOption.CASCADE)
+    val cardId = reference("card_id", CardTable, onDelete = ReferenceOption.RESTRICT)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

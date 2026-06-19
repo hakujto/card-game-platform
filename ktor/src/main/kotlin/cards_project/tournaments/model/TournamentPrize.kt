@@ -21,11 +21,11 @@ object TournamentPrizeTable : IntIdTable("tournament_prize") {
     val placementFrom = integer("placement_from")
     val placementTo = integer("placement_to")
     val prizeType = enumerationByName<TournamentPrizePrizeTypeType>("prize_type", 50)
-    val amount = decimal("amount", 19, 4)
+    val amount = decimal("amount", 19, 4).default(java.math.BigDecimal("0"))
     val description = text("description").nullable()
     val packsCount = integer("packs_count").nullable()
-    val seasonPoints = integer("season_points")
-    val tournamentId = reference("tournament_id", TournamentTable)
+    val seasonPoints = integer("season_points").default(0)
+    val tournamentId = reference("tournament_id", TournamentTable, onDelete = ReferenceOption.CASCADE)
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }
@@ -110,6 +110,10 @@ object TournamentPrizeRepository {
 
     fun delete(id: Int): Boolean = transaction {
         TournamentPrizeTable.deleteWhere { TournamentPrizeTable.id eq id } > 0
+    }
+
+    fun awardedPrizes(id: Int): List<AwardedPrizeResponse> = transaction {
+        AwardedPrizeTable.selectAll().where { AwardedPrizeTable.prizeId eq id }.map { it.toAwardedPrizeResponse() }
     }
 
 }
