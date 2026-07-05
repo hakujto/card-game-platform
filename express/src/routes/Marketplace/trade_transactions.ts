@@ -6,6 +6,7 @@ const router = Router();
 const service = new TradeTransactionService();
 
 function validate(data: any): void {
+  if ((data.status === 'Completed') && data.completedAt == null) throw new Error('completed_at is required');
   if (!((data.platformFee == null || (data.finalPrice != null && Number(data.platformFee) <= Number(data.finalPrice))))) throw new Error(`Platform fee cannot exceed the final price`);
   if (!((data.platformFee == null || Number(data.platformFee) >= 0))) throw new Error(`Platform fee must not be negative`);
   if (!((data.finalPrice == null || Number(data.finalPrice) > 0))) throw new Error(`Transaction final price must be greater than zero`);

@@ -6,6 +6,8 @@ const router = Router();
 const service = new DeckCardService();
 
 function validate(data: any): void {
+  if (data.quantity != null && Number(data.quantity) < 1) throw new Error('quantity: must be >= 1');
+  if (data.quantity != null && Number(data.quantity) > 4) throw new Error('quantity: must be <= 4');
   if (!((data.quantity == null || (data.quantity >= 1 && data.quantity <= 4)))) throw new Error(`A deck can contain between 1 and 4 copies of a card`);
   if ((data.isCommander === true) && !(data.quantity === 1)) throw new Error(`Commander card must appear exactly once in the deck`);
 }

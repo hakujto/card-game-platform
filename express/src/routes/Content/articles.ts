@@ -89,6 +89,7 @@ router.post('/', async (req, res) => {
     if (body.language !== undefined) data.language = body.language;
     if (body.viewCount !== undefined) data.viewCount = body.viewCount;
     if (body.likesCount !== undefined) data.likesCount = body.likesCount;
+    if (body.totalViewsAlltime !== undefined) data.totalViewsAlltime = body.totalViewsAlltime;
     if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
     if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
@@ -119,14 +120,11 @@ router.put('/:id', async (req, res) => {
     if (body.body !== undefined) data.body = body.body;
     if (body.excerpt !== undefined) data.excerpt = body.excerpt;
     if (body.coverImageUrl !== undefined) data.coverImageUrl = body.coverImageUrl;
-    if (body.status !== undefined) data.status = body.status;
     if (body.articleType !== undefined) data.articleType = body.articleType;
     if (body.language !== undefined) data.language = body.language;
-    if (body.viewCount !== undefined) data.viewCount = body.viewCount;
-    if (body.likesCount !== undefined) data.likesCount = body.likesCount;
+    if (body.totalViewsAlltime !== undefined) data.totalViewsAlltime = body.totalViewsAlltime;
     if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
     if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.authorId !== undefined) data.authorId = body.authorId;
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
@@ -150,14 +148,11 @@ router.patch('/:id', async (req, res) => {
     if (body.body !== undefined) data.body = body.body;
     if (body.excerpt !== undefined) data.excerpt = body.excerpt;
     if (body.coverImageUrl !== undefined) data.coverImageUrl = body.coverImageUrl;
-    if (body.status !== undefined) data.status = body.status;
     if (body.articleType !== undefined) data.articleType = body.articleType;
     if (body.language !== undefined) data.language = body.language;
-    if (body.viewCount !== undefined) data.viewCount = body.viewCount;
-    if (body.likesCount !== undefined) data.likesCount = body.likesCount;
+    if (body.totalViewsAlltime !== undefined) data.totalViewsAlltime = body.totalViewsAlltime;
     if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
     if (body.publishedAt !== undefined) data.publishedAt = body.publishedAt != null ? new Date(body.publishedAt) : null;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.authorId !== undefined) data.authorId = body.authorId;
     if (body.featuredDeckId !== undefined) data.featuredDeckId = body.featuredDeckId;
@@ -174,6 +169,8 @@ router.patch('/:id', async (req, res) => {
 });
 
 router.post('/:id/publish', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['editor', 'admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for publish' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.publish(id);
@@ -185,10 +182,26 @@ router.post('/:id/publish', async (req, res) => {
 });
 
 router.post('/:id/archive', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['editor', 'admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for archive' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.archive(id);
     res.status(204).send();
+  } catch (err: any) {
+    const status = err?.message?.startsWith('Guard') ? 422 : 404;
+    res.status(status).json({ error: err?.message ?? 'Not found' });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['editor', 'admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for replace' }); return; }
+  const id = Number((req.params as any).id);
+  const data = req.body.data;
+  try {
+    const result = await service.replace(id, data);
+    res.json({ result });
   } catch (err: any) {
     const status = err?.message?.startsWith('Guard') ? 422 : 404;
     res.status(status).json({ error: err?.message ?? 'Not found' });

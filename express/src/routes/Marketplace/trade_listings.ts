@@ -6,6 +6,7 @@ const router = Router();
 const service = new TradeListingService();
 
 function validate(data: any): void {
+  if ((data.listingType === 'FixedPrice') && data.askingPrice == null) throw new Error('asking_price is required');
   if (!((data.quantity == null || (data.quantity >= 1 && data.quantity <= 9999)))) throw new Error(`Listing quantity must be between 1 and 9999`);
   if ((data.listingType === 'FIXEDPRICE') && !((data.askingPrice === undefined || data.askingPrice != null))) throw new Error(`Fixed price listing must have an asking price`);
   if ((data.listingType === 'AUCTION') && !((data.auctionStartPrice === undefined || data.auctionStartPrice != null) && (data.auctionEndTime === undefined || data.auctionEndTime != null))) throw new Error(`Auction listing must have a start price and end time`);
@@ -92,6 +93,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.status !== undefined) data.status = body.status;
     if (body.listingType !== undefined) data.listingType = body.listingType;
     if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
@@ -125,7 +127,7 @@ router.get('/:id', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
-    if (body.status !== undefined) data.status = body.status;
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.listingType !== undefined) data.listingType = body.listingType;
     if (body.askingPrice !== undefined) data.askingPrice = body.askingPrice;
     if (body.auctionStartPrice !== undefined) data.auctionStartPrice = body.auctionStartPrice;
@@ -135,7 +137,6 @@ router.patch('/:id', async (req, res) => {
     if (body.condition !== undefined) data.condition = body.condition;
     if (body.quantity !== undefined) data.quantity = body.quantity;
     if (body.description !== undefined) data.description = body.description;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.expiresAt !== undefined) data.expiresAt = body.expiresAt != null ? new Date(body.expiresAt) : null;
     if (body.sellerId !== undefined) data.sellerId = body.sellerId;
     if (body.cardId !== undefined) data.cardId = body.cardId;
@@ -197,6 +198,8 @@ router.get('/:id/expired', async (req, res) => {
 });
 
 router.post('/:id/finalize', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin', 'seller'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for finalize_auction' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.finalize_auction(id);

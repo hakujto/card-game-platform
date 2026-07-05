@@ -6,17 +6,26 @@ const router = Router();
 const service = new CouponService();
 
 function validate(data: any): void {
+  if (data.discountValue != null && Number(data.discountValue) < 0.01) throw new Error('discount_value: must be >= 0.01');
   if (!((data.validUntil == null || (data.validFrom != null && data.validUntil > data.validFrom)))) throw new Error(`Coupon expiry must be after its start date`);
   if (!((data.discountValue == null || Number(data.discountValue) > 0))) throw new Error(`Discount value must be greater than zero`);
   if ((data.discountType === 'PERCENT') && !((data.discountValue == null || (data.discountValue >= 1 && data.discountValue <= 100)))) throw new Error(`Percent discount must be between 1 and 100`);
   if ((data.maxUses != null) && !((data.usesCount == null || (data.maxUses != null && data.usesCount <= data.maxUses)))) throw new Error(`Coupon uses count cannot exceed max_uses`);
 }
+function applyProjection(obj: any): any {
+  if (!obj) return obj;
+  const r = { ...obj };
+  delete r.usesCount;
+  delete r.maxUses;
+  return r;
+}
+
 
 router.get('/', async (req, res) => {
   const q = req.query.q as string | undefined;
   const where = q ? { OR: [{ code: { contains: q } }] } : undefined;
   const items = await prisma.coupon.findMany(where ? { where } : undefined);
-  res.json(items);
+  res.json(items.map(applyProjection));
 });
 
 router.post('/', async (req, res) => {
@@ -34,7 +43,7 @@ router.post('/', async (req, res) => {
   try {
   validate(data);
     const entity = await prisma.coupon.create({ data });
-    res.status(201).json(entity);
+    res.status(201).json(applyProjection(entity));
   } catch (err: any) {
     const status = err?.code === 'P2002' ? 422 : 400;
     res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Validation error') });
@@ -44,7 +53,7 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const entity = await prisma.coupon.findUnique({ where: { id: Number(req.params.id) } });
   if (!entity) return res.status(404).json({ error: 'Not found' });
-  res.json(entity);
+  res.json(applyProjection(entity));
 });
 
 router.put('/:id', async (req, res) => {
@@ -64,7 +73,7 @@ router.put('/:id', async (req, res) => {
     const existing = await prisma.coupon.findUnique({ where: { id: Number(req.params.id) } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.coupon.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
     const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
     res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });
@@ -88,7 +97,7 @@ router.patch('/:id', async (req, res) => {
     const existing = await prisma.coupon.findUnique({ where: { id: Number(req.params.id) } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
     const entity = await prisma.coupon.update({ where: { id: Number(req.params.id) }, data });
-    res.json(entity);
+    res.json(applyProjection(entity));
   } catch (err: any) {
     const status = err?.code === 'P2025' ? 404 : err?.code === 'P2002' ? 422 : 400;
     res.status(status).json({ error: err?.code === 'P2002' ? 'Value must be unique' : (err?.message ?? 'Error') });

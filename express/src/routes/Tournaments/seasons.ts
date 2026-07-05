@@ -84,6 +84,8 @@ router.patch('/:id', async (req, res) => {
 });
 
 router.post('/:id/activate', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for activate' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.activate(id);
@@ -95,6 +97,8 @@ router.post('/:id/activate', async (req, res) => {
 });
 
 router.post('/:id/deactivate', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for deactivate' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.deactivate(id);
@@ -106,6 +110,8 @@ router.post('/:id/deactivate', async (req, res) => {
 });
 
 router.post('/:id/finalize', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for finalize_rewards' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.finalize_rewards(id);

@@ -26,6 +26,7 @@ describe('Article API', () => {
       body: 'test',
       viewCount: 1,
       likesCount: 1,
+      totalViewsAlltime: 1,
       isFeatured: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z'
@@ -39,7 +40,7 @@ describe('Article API', () => {
   });
 
   it('PATCH /api/articles/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/articles/1').send({});
+    const res = await request(app).patch('/api/articles/1').send({ excerpt: 'test' });
     expect([200, 404]).toContain(res.status);
   });
 

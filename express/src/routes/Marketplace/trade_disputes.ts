@@ -121,6 +121,8 @@ router.post('/:id/escalate', async (req, res) => {
 });
 
 router.post('/:id/resolve', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin', 'moderator'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for resolve' }); return; }
   const id = Number((req.params as any).id);
   const resolutionText = req.body.resolutionText;
   try {

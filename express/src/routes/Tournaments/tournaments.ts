@@ -6,6 +6,8 @@ const router = Router();
 const service = new TournamentService();
 
 function validate(data: any): void {
+  if (data.maxPlayers != null && Number(data.maxPlayers) < 2) throw new Error('max_players: must be >= 2');
+  if (data.maxPlayers != null && Number(data.maxPlayers) > 512) throw new Error('max_players: must be <= 512');
   if (!((data.maxPlayers == null || (data.maxPlayers >= 2 && data.maxPlayers <= 512)))) throw new Error(`Tournament must allow between 2 and 512 players`);
   if (!((data.entryFee == null || Number(data.entryFee) >= 0))) throw new Error(`Entry fee must not be negative`);
   if (!((data.prizePool == null || Number(data.prizePool) >= 0))) throw new Error(`Prize pool must not be negative`);
@@ -105,9 +107,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.name !== undefined) data.name = body.name;
     if (body.description !== undefined) data.description = body.description;
     if (body.status !== undefined) data.status = body.status;
+    if (body.bracketData !== undefined) data.bracketData = body.bracketData;
     if (body.format !== undefined) data.format = body.format;
     if (body.tournamentType !== undefined) data.tournamentType = body.tournamentType;
     if (body.maxPlayers !== undefined) data.maxPlayers = body.maxPlayers;
@@ -140,9 +144,10 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.name !== undefined) data.name = body.name;
     if (body.description !== undefined) data.description = body.description;
-    if (body.status !== undefined) data.status = body.status;
+    if (body.bracketData !== undefined) data.bracketData = body.bracketData;
     if (body.format !== undefined) data.format = body.format;
     if (body.tournamentType !== undefined) data.tournamentType = body.tournamentType;
     if (body.maxPlayers !== undefined) data.maxPlayers = body.maxPlayers;
@@ -153,7 +158,6 @@ router.put('/:id', async (req, res) => {
     if (body.isOnline !== undefined) data.isOnline = body.isOnline;
     if (body.location !== undefined) data.location = body.location;
     if (body.rulesText !== undefined) data.rulesText = body.rulesText;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.seasonId !== undefined) data.seasonId = body.seasonId;
     if (body.organizerId !== undefined) data.organizerId = body.organizerId;
   try {
@@ -171,9 +175,10 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.name !== undefined) data.name = body.name;
     if (body.description !== undefined) data.description = body.description;
-    if (body.status !== undefined) data.status = body.status;
+    if (body.bracketData !== undefined) data.bracketData = body.bracketData;
     if (body.format !== undefined) data.format = body.format;
     if (body.tournamentType !== undefined) data.tournamentType = body.tournamentType;
     if (body.maxPlayers !== undefined) data.maxPlayers = body.maxPlayers;
@@ -184,7 +189,6 @@ router.patch('/:id', async (req, res) => {
     if (body.isOnline !== undefined) data.isOnline = body.isOnline;
     if (body.location !== undefined) data.location = body.location;
     if (body.rulesText !== undefined) data.rulesText = body.rulesText;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.seasonId !== undefined) data.seasonId = body.seasonId;
     if (body.organizerId !== undefined) data.organizerId = body.organizerId;
   try {

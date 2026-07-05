@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "test": "jest --forceExit",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push --accept-data-loss"
+    "db:push": "prisma db push --accept-data-loss",
+    "db:reset": "rm -f prisma/dev.db && prisma db push --accept-data-loss"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

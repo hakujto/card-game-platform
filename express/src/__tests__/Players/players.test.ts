@@ -21,9 +21,10 @@ describe('Player API', () => {
     const res = await request(app)
       .post('/api/players')
       .send({
-      displayName: `test_${Math.random().toString(36).slice(2,8)}`,
-      rating: 1,
-      peakRating: 1,
+      publicId: `00000000-0000-0000-0000-${Math.floor(Math.random()*1e12).toString().padStart(12,'0')}`,
+      displayName: 'test_player_001',
+      rating: 1000,
+      peakRating: 1000,
       isVerified: true,
       createdAt: '2024-01-01T00:00:00.000Z'
     });
@@ -36,18 +37,18 @@ describe('Player API', () => {
   });
 
   it('PATCH /api/players/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/players/1').send({});
+    const res = await request(app).patch('/api/players/1').send({ bio: 'test' });
     expect([200, 404]).toContain(res.status);
   });
 
 
   it("POST /api/players returns 400 when rating_range violated", async () => {
-    const res = await request(app).post('/api/players').send({ displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', rating: 10000 });
+    const res = await request(app).post('/api/players').send({ publicId: '00000000-0000-0000-0000-000000000001', displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', rating: 10000 });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/players returns 400 when peak_rating_gte_rating violated", async () => {
-    const res = await request(app).post('/api/players').send({ displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', peakRating: 0 });
+    const res = await request(app).post('/api/players').send({ publicId: '00000000-0000-0000-0000-000000000001', displayName: 'test', createdAt: '2024-01-01T00:00:00.000Z', peakRating: 0 });
     expect(res.status).toBe(400);
   });
 });

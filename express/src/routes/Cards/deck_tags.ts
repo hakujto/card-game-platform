@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
     if (body.name !== undefined) data.name = body.name;
+    if (body.slug !== undefined) data.slug = body.slug;
     if (body.color !== undefined) data.color = body.color;
   try {
     const entity = await prisma.deckTag.create({ data });
@@ -37,6 +38,7 @@ router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
     if (body.name !== undefined) data.name = body.name;
+    if (body.slug !== undefined) data.slug = body.slug;
     if (body.color !== undefined) data.color = body.color;
   try {
     const existing = await prisma.deckTag.findUnique({ where: { id: Number(req.params.id) } });

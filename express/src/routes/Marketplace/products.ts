@@ -6,6 +6,8 @@ const router = Router();
 const service = new ProductService();
 
 function validate(data: any): void {
+  if (data.discountPercent != null && Number(data.discountPercent) < 0) throw new Error('discount_percent: must be >= 0');
+  if (data.discountPercent != null && Number(data.discountPercent) > 100) throw new Error('discount_percent: must be <= 100');
   if (!((data.price == null || Number(data.price) > 0))) throw new Error(`Product price must be greater than zero`);
   if (!((data.stock == null || data.stock >= 0))) throw new Error(`Product stock must not be negative`);
   if (!((data.discountPercent == null || (data.discountPercent >= 0 && data.discountPercent <= 100)))) throw new Error(`Product discount percent must be between 0 and 100`);

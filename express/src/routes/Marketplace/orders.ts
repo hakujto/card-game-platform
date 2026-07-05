@@ -6,6 +6,9 @@ const router = Router();
 const service = new OrderService();
 
 function validate(data: any): void {
+  if (data.currency != null && !/[A-Z]{3}/.test(String(data.currency))) throw new Error('currency: invalid format');
+  if ((data.status === 'Shipped') && data.trackingNumber == null) throw new Error('tracking_number is required');
+  if ((data.status === 'Paid') && data.paidAt == null) throw new Error('paid_at is required');
   if (!((data.total == null || Number(data.total) >= 0))) throw new Error(`Order total must not be negative`);
   if (!((data.discountApplied == null || (data.total != null && Number(data.discountApplied) <= Number(data.total))))) throw new Error(`Discount applied cannot exceed order total`);
   if ((data.status === 'PAID') && !((data.paidAt === undefined || data.paidAt != null))) throw new Error(`Paid order must have paid_at set`);
@@ -15,6 +18,7 @@ function validate(data: any): void {
 function applyProjection(obj: any): any {
   if (!obj) return obj;
   const r = { ...obj };
+  delete r.paymentReference;
   if ('createdAt' in r) { r.createdAt = r.createdAt; delete r.createdAt; }
   if ('paidAt' in r) { r.paidAt = r.paidAt; delete r.paidAt; }
   if ('shippedAt' in r) { r.shippedAt = r.shippedAt; delete r.shippedAt; }

@@ -22,7 +22,7 @@ describe('CardSet API', () => {
       .post('/api/card_sets')
       .send({
       name: 'test',
-      code: `test_${Math.random().toString(36).slice(2,8)}`,
+      code: `AB${Math.random().toString(36).slice(2,4).toUpperCase()}`,
       releaseDate: '2024-01-01',
       totalCards: 1,
       isRotated: false

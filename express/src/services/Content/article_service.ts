@@ -33,6 +33,13 @@ export class ArticleService {
     // TODO: implement archive domain logic
   }
 
+  async replace(id: number, data: unknown): Promise<boolean> {
+    const entity = await prisma.article.findUnique({ where: { id } });
+    if (!entity) throw new Error('Article not found: ' + id);
+    // TODO: implement replace domain logic
+    return undefined as any;
+  }
+
   async increment_view(id: number): Promise<void> {
     const entity = await prisma.article.findUnique({ where: { id } });
     if (!entity) throw new Error('Article not found: ' + id);

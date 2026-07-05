@@ -45,6 +45,13 @@ export class CardService {
     // TODO: implement unrestrict domain logic
   }
 
+  async replace(id: number, data: unknown): Promise<boolean> {
+    const entity = await prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement replace domain logic
+    return undefined as any;
+  }
+
   async calculate_value(id: number): Promise<number> {
     const entity = await prisma.card.findUnique({ where: { id } });
     if (!entity) throw new Error('Card not found: ' + id);

@@ -15,9 +15,9 @@ describe('Order API', () => {
     const res = await request(app)
       .post('/api/orders')
       .send({
-      total: 0.00,
+      total: 29.99,
       discountApplied: 0.00,
-      currency: 'test',
+      currency: 'USD',
       createdAt: '2024-01-01T00:00:00.000Z'
     });
     expect([200, 201]).toContain(res.status);

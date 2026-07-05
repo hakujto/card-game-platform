@@ -48,6 +48,9 @@ export const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.set('json replacer', (_key: string, value: unknown) =>
+  typeof value === 'bigint' ? Number(value) : value
+);
 
 app.use('/api/cards', cardRouter);
 app.use('/api/card_sets', cardSetRouter);

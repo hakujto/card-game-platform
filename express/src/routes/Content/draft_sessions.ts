@@ -91,6 +91,7 @@ router.post('/', async (req, res) => {
   const data: any = {};
     if (body.status !== undefined) data.status = body.status;
     if (body.draftType !== undefined) data.draftType = body.draftType;
+    if (body.packContents !== undefined) data.packContents = body.packContents;
     if (body.seats !== undefined) data.seats = body.seats;
     if (body.timePerPickSeconds !== undefined) data.timePerPickSeconds = body.timePerPickSeconds;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;

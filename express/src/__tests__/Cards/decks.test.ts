@@ -39,7 +39,7 @@ describe('Deck API', () => {
   });
 
   it('PATCH /api/decks/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/decks/1').send({});
+    const res = await request(app).patch('/api/decks/1').send({ name: 'test' });
     expect([200, 404]).toContain(res.status);
   });
 

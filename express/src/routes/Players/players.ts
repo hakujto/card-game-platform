@@ -6,6 +6,7 @@ const router = Router();
 const service = new PlayerService();
 
 function validate(data: any): void {
+  if (data.countryCode != null && !/[A-Z]{2}/.test(String(data.countryCode))) throw new Error('country_code: invalid format');
   if (!((data.rating == null || (data.rating >= 0 && data.rating <= 9999)))) throw new Error(`Rating must be between 0 and 9999`);
   if (!((data.peakRating == null || (data.rating != null && data.peakRating >= data.rating)))) throw new Error(`Peak rating must be greater than or equal to current rating`);
   if (!((data.displayName === undefined || data.displayName != null))) throw new Error(`Display name must not be empty`);
@@ -29,6 +30,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.displayName !== undefined) data.displayName = body.displayName;
     if (body.rank !== undefined) data.rank = body.rank;
     if (body.rating !== undefined) data.rating = body.rating;
@@ -37,6 +39,8 @@ router.post('/', async (req, res) => {
     if (body.countryCode !== undefined) data.countryCode = body.countryCode;
     if (body.avatarUrl !== undefined) data.avatarUrl = body.avatarUrl;
     if (body.preferredFormat !== undefined) data.preferredFormat = body.preferredFormat;
+    if (body.contactEmail !== undefined) data.contactEmail = body.contactEmail;
+    if (body.winRateCached !== undefined) data.winRateCached = body.winRateCached;
     if (body.isVerified !== undefined) data.isVerified = body.isVerified;
     if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.lastActiveAt !== undefined) data.lastActiveAt = body.lastActiveAt != null ? new Date(body.lastActiveAt) : null;
@@ -60,16 +64,16 @@ router.get('/:id', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   const body = req.body;
   const data: any = {};
+    if (body.publicId !== undefined) data.publicId = body.publicId;
     if (body.displayName !== undefined) data.displayName = body.displayName;
     if (body.rank !== undefined) data.rank = body.rank;
-    if (body.rating !== undefined) data.rating = body.rating;
-    if (body.peakRating !== undefined) data.peakRating = body.peakRating;
     if (body.bio !== undefined) data.bio = body.bio;
     if (body.countryCode !== undefined) data.countryCode = body.countryCode;
     if (body.avatarUrl !== undefined) data.avatarUrl = body.avatarUrl;
     if (body.preferredFormat !== undefined) data.preferredFormat = body.preferredFormat;
+    if (body.contactEmail !== undefined) data.contactEmail = body.contactEmail;
+    if (body.winRateCached !== undefined) data.winRateCached = body.winRateCached;
     if (body.isVerified !== undefined) data.isVerified = body.isVerified;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.lastActiveAt !== undefined) data.lastActiveAt = body.lastActiveAt != null ? new Date(body.lastActiveAt) : null;
     if (body.userId !== undefined) data.userId = body.userId;
   try {
@@ -140,6 +144,8 @@ router.get('/:id/win-rate', async (req, res) => {
 });
 
 router.post('/:id/verify', async (req, res) => {
+  const userRole = (req as any).user?.role;
+  if (!['admin'].includes(userRole)) { res.status(403).json({ error: 'Insufficient role for verify' }); return; }
   const id = Number((req.params as any).id);
   try {
     await service.verify(id);

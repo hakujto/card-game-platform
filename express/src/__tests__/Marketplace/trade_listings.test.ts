@@ -21,6 +21,7 @@ describe('TradeListing API', () => {
     const res = await request(app)
       .post('/api/trade_listings')
       .send({
+      publicId: `00000000-0000-0000-0000-${Math.floor(Math.random()*1e12).toString().padStart(12,'0')}`,
       foil: true,
       quantity: 1,
       createdAt: '2024-01-01T00:00:00.000Z'
@@ -40,17 +41,17 @@ describe('TradeListing API', () => {
 
 
   it("POST /api/trade_listings returns 400 when fixed_price_requires_asking_price violated", async () => {
-    const res = await request(app).post('/api/trade_listings').send({ createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'FIXEDPRICE', askingPrice: null });
+    const res = await request(app).post('/api/trade_listings').send({ publicId: '00000000-0000-0000-0000-000000000001', createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'FIXEDPRICE', askingPrice: null });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/trade_listings returns 400 when auction_requires_start_price_and_end_time violated", async () => {
-    const res = await request(app).post('/api/trade_listings').send({ createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'AUCTION', auctionStartPrice: null });
+    const res = await request(app).post('/api/trade_listings').send({ publicId: '00000000-0000-0000-0000-000000000001', createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'AUCTION', auctionStartPrice: null });
     expect(res.status).toBe(400);
   });
 
   it("POST /api/trade_listings returns 400 when quantity_positive violated", async () => {
-    const res = await request(app).post('/api/trade_listings').send({ createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'AUCTION', askingPrice: 0.00, auctionStartPrice: 0.00, auctionEndTime: '2024-01-01T00:00:00.000Z', quantity: 10000 });
+    const res = await request(app).post('/api/trade_listings').send({ publicId: '00000000-0000-0000-0000-000000000001', createdAt: '2024-01-01T00:00:00.000Z', sellerId: 1, cardId: 1, listingType: 'AUCTION', askingPrice: 0.00, auctionStartPrice: 0.00, auctionEndTime: '2024-01-01T00:00:00.000Z', quantity: 10000 });
     expect(res.status).toBe(400);
   });
 

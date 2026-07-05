@@ -6,6 +6,7 @@ const router = Router();
 const service = new AwardedPrizeService();
 
 function validate(data: any): void {
+  if ((data.claimed === true) && data.claimedAt == null) throw new Error('claimed_at is required');
   if (!((data.finalPlacement == null || data.finalPlacement > 0))) throw new Error(`Final placement must be greater than zero`);
   if ((data.claimed === true) && !((data.claimedAt === undefined || data.claimedAt != null))) throw new Error(`Claimed prize must have a claimed_at timestamp`);
 }

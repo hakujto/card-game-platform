@@ -12,6 +12,9 @@ npm install
 echo "→ Generating Prisma client..."
 npm run db:generate
 
+echo "→ Resetting database..."
+rm -f prisma/dev.db
+
 echo "→ Pushing schema to database..."
 npm run db:push
 

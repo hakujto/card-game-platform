@@ -6,6 +6,8 @@ const router = Router();
 const service = new TournamentPrizeService();
 
 function validate(data: any): void {
+  if (data.placementFrom != null && Number(data.placementFrom) < 1) throw new Error('placement_from: must be >= 1');
+  if (data.placementTo != null && Number(data.placementTo) < 1) throw new Error('placement_to: must be >= 1');
   if (!((data.placementTo == null || (data.placementFrom != null && data.placementTo >= data.placementFrom)))) throw new Error(`placement_to must be greater than or equal to placement_from`);
   if (!((data.placementFrom == null || data.placementFrom > 0))) throw new Error(`placement_from must be greater than zero`);
   if (!((data.amount == null || Number(data.amount) >= 0))) throw new Error(`Prize amount must not be negative`);

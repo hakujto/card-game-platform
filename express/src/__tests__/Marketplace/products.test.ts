@@ -37,7 +37,7 @@ describe('Product API', () => {
   });
 
   it('PATCH /api/products/:id returns 200 or 404', async () => {
-    const res = await request(app).patch('/api/products/1').send({});
+    const res = await request(app).patch('/api/products/1').send({ description: 'test' });
     expect([200, 404]).toContain(res.status);
   });
 

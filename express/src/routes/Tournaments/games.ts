@@ -6,6 +6,8 @@ const router = Router();
 const service = new GameService();
 
 function validate(data: any): void {
+  if (data.gameNumber != null && Number(data.gameNumber) < 1) throw new Error('game_number: must be >= 1');
+  if (data.gameNumber != null && Number(data.gameNumber) > 3) throw new Error('game_number: must be <= 3');
   if (!((data.gameNumber == null || (data.gameNumber >= 1 && data.gameNumber <= 3)))) throw new Error(`Game number must be between 1 and 3 (best-of-3)`);
   if ((data.turnsPlayed != null) && !((data.turnsPlayed == null || data.turnsPlayed > 0))) throw new Error(`Turns played must be greater than zero`);
   if ((data.durationSeconds != null) && !((data.durationSeconds == null || data.durationSeconds > 0))) throw new Error(`Game duration must be greater than zero`);
@@ -23,6 +25,7 @@ router.post('/', async (req, res) => {
   const data: any = {};
     if (body.gameNumber !== undefined) data.gameNumber = body.gameNumber;
     if (body.winnerSide !== undefined) data.winnerSide = body.winnerSide;
+    if (body.complexityScore !== undefined) data.complexityScore = body.complexityScore;
     if (body.turnsPlayed !== undefined) data.turnsPlayed = body.turnsPlayed;
     if (body.durationSeconds !== undefined) data.durationSeconds = body.durationSeconds;
     if (body.endedBy !== undefined) data.endedBy = body.endedBy;

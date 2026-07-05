@@ -67,10 +67,6 @@ router.put('/:id', async (req, res) => {
     if (body.isPublic !== undefined) data.isPublic = body.isPublic;
     if (body.isTournamentLegal !== undefined) data.isTournamentLegal = body.isTournamentLegal;
     if (body.archetype !== undefined) data.archetype = body.archetype;
-    if (body.wins !== undefined) data.wins = body.wins;
-    if (body.losses !== undefined) data.losses = body.losses;
-    if (body.draws !== undefined) data.draws = body.draws;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {
@@ -94,10 +90,6 @@ router.patch('/:id', async (req, res) => {
     if (body.isPublic !== undefined) data.isPublic = body.isPublic;
     if (body.isTournamentLegal !== undefined) data.isTournamentLegal = body.isTournamentLegal;
     if (body.archetype !== undefined) data.archetype = body.archetype;
-    if (body.wins !== undefined) data.wins = body.wins;
-    if (body.losses !== undefined) data.losses = body.losses;
-    if (body.draws !== undefined) data.draws = body.draws;
-    if (body.createdAt !== undefined) data.createdAt = body.createdAt != null ? new Date(body.createdAt) : null;
     if (body.updatedAt !== undefined) data.updatedAt = body.updatedAt != null ? new Date(body.updatedAt) : null;
     if (body.playerId !== undefined) data.playerId = body.playerId;
   try {

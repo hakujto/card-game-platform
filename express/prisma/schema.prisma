@@ -21,6 +21,7 @@ model Card {
   rarity  CardRarityEnum?
   manaColors  CardManaColorsEnum?
   legalFormats  CardLegalFormatsEnum?
+  publicId  String @unique
   name  String
   manaCost  Int @default(0)
   attack  Int?
@@ -33,6 +34,8 @@ model Card {
   isBanned  Boolean @default(false)
   isRestricted  Boolean @default(false)
   powerLevel  Int @default(1)
+  metadata  Json?
+  totalCopiesInCirculation  BigInt @default(0)
   setId  Int?
   set    CardSet?  @relation("CardSet", fields: [setId], references: [id], onDelete: Restrict)
   rulings  CardRuling[]  @relation("CardRulingCard")
@@ -127,6 +130,7 @@ model DeckSideboardCard {
 model DeckTag {
   id  Int  @id @default(autoincrement())
   name  String
+  slug  String?
   color  String?
   deckAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentTag")
 }
@@ -143,12 +147,15 @@ model Player {
   id  Int  @id @default(autoincrement())
   rank  PlayerRankEnum?
   preferredFormat  PlayerPreferredFormatEnum?
+  publicId  String @unique
   displayName  String @unique
   rating  Int @default(1000)
   peakRating  Int @default(1000)
   bio  String?
   countryCode  String?
   avatarUrl  String?
+  contactEmail  String?
+  winRateCached  Float?
   isVerified  Boolean @default(false)
   createdAt  DateTime
   lastActiveAt  DateTime?
@@ -274,8 +281,10 @@ model Tournament {
   status  TournamentStatusEnum?
   format  TournamentFormatEnum?
   tournamentType  TournamentTournamentTypeEnum?
+  publicId  String @unique
   name  String
   description  String?
+  bracketData  Json?
   maxPlayers  Int @default(0)
   entryFee  Decimal @default(0)
   prizePool  Decimal @default(0)
@@ -355,6 +364,7 @@ model Game {
   winnerSide  GameWinnerSideEnum?
   endedBy  GameEndedByEnum?
   gameNumber  Int @default(0)
+  complexityScore  Float?
   turnsPlayed  Int?
   durationSeconds  Int?
   replayUrl  String?
@@ -458,6 +468,7 @@ model TradeListing {
   status  TradeListingStatusEnum?
   listingType  TradeListingListingTypeEnum?
   condition  TradeListingConditionEnum?
+  publicId  String @unique
   askingPrice  Decimal?
   auctionStartPrice  Decimal?
   auctionCurrentBid  Decimal?
@@ -533,6 +544,7 @@ model DraftSession {
   id  Int  @id @default(autoincrement())
   status  DraftSessionStatusEnum?
   draftType  DraftSessionDraftTypeEnum?
+  packContents  Json?
   seats  Int @default(8)
   timePerPickSeconds  Int @default(30)
   createdAt  DateTime
@@ -576,6 +588,7 @@ model Article {
   coverImageUrl  String?
   viewCount  Int @default(0)
   likesCount  Int @default(0)
+  totalViewsAlltime  BigInt @default(0)
   isFeatured  Boolean @default(false)
   publishedAt  DateTime?
   createdAt  DateTime
@@ -669,6 +682,17 @@ enum CardLegalFormatsEnum {
   VINTAGE
   COMMANDER
   DRAFT
+}
+
+model CardAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("cards_audit_logs")
 }
 
 enum CardSetSetTypeEnum {
@@ -803,6 +827,17 @@ enum TournamentTournamentTypeEnum {
   ROUNDROBIN
 }
 
+model TournamentAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("tournaments_audit_logs")
+}
+
 enum TournamentJudgeRoleEnum {
   HEADJUDGE
   JUDGE
@@ -877,6 +912,17 @@ enum OrderPaymentMethodEnum {
   PLATFORMCREDITS
 }
 
+model OrderAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("orders_audit_logs")
+}
+
 enum CouponDiscountTypeEnum {
   PERCENT
   FIXED
@@ -909,6 +955,17 @@ enum TradeTransactionStatusEnum {
   COMPLETED
   DISPUTED
   REFUNDED
+}
+
+model TradeTransactionAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("trade_transactions_audit_logs")
 }
 
 enum TradeDisputeStatusEnum {

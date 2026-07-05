@@ -6,6 +6,7 @@ const router = Router();
 const service = new CardSetService();
 
 function validate(data: any): void {
+  if (data.code != null && !/[A-Z]{2,6}/.test(String(data.code))) throw new Error('code: invalid format');
   if (!((data.totalCards == null || data.totalCards > 0))) throw new Error(`Card set must have at least one card`);
   if ((data.rotationDate != null) && !((data.rotationDate == null || (data.releaseDate != null && data.rotationDate > data.releaseDate)))) throw new Error(`Rotation date must be after release date`);
   if ((data.isRotated === true) && !((data.rotationDate === undefined || data.rotationDate != null))) throw new Error(`Rotated set must have a rotation date`);

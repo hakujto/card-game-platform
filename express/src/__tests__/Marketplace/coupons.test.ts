@@ -24,7 +24,6 @@ describe('Coupon API', () => {
       code: `test_${Math.random().toString(36).slice(2,8)}`,
       discountValue: 1,
       minOrderValue: 0.00,
-      usesCount: 1,
       validFrom: '2024-01-01T00:00:00.000Z',
       validUntil: '2024-01-02T00:00:00.000Z',
       isActive: true
