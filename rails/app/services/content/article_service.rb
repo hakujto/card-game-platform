@@ -24,6 +24,13 @@ module Content
       instance.save!
     end
 
+    def replace(id, data)
+      instance = Article.find(id)
+      result = instance.replace(data)
+      instance.save!
+      result
+    end
+
     def increment_view(id)
       instance = Article.find(id)
       instance.increment_view()

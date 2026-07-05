@@ -8,6 +8,7 @@ class Product < ApplicationRecord
   belongs_to :card_set, class_name: 'CardSet', inverse_of: :shop_products, optional: true
 
   validates :name, presence: true, length: { maximum: 200 }
+  validates :discount_percent, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
 
   # Domain invariants — simple rules
   validate :validate_rules

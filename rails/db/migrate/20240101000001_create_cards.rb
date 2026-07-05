@@ -1,6 +1,7 @@
 class CreateCards < ActiveRecord::Migration[7.1]
   def change
     create_table :cards do |t|
+      t.string :public_id, limit: 36, null: false
       t.string :name, limit: 200, null: false
       t.integer :card_type, null: false, default: 0 # enum: { creature: 0, spell: 1, land: 2, artifact: 3, enchantment: 4, planeswalker: 5 }
       t.integer :rarity, null: false, default: 0 # enum: { common: 0, uncommon: 1, rare: 2, mythic_rare: 3, legendary: 4 }
@@ -17,9 +18,12 @@ class CreateCards < ActiveRecord::Migration[7.1]
       t.boolean :is_banned, null: false, default: false
       t.boolean :is_restricted, null: false, default: false
       t.integer :power_level, null: false, default: 1
+      t.text :metadata, null: true
+      t.bigint :total_copies_in_circulation, null: false, default: 0
       t.references :set, null: false, foreign_key: { to_table: :card_sets, on_delete: :restrict }
 
       t.timestamps
     end
+    add_index :cards, :public_id, unique: true
   end
 end

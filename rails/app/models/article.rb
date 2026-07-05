@@ -11,6 +11,8 @@ class Article < ApplicationRecord
   belongs_to :featured_deck, class_name: 'Deck', inverse_of: :articles, optional: true
   has_many :tags, class_name: 'ArticleTag', through: :tag_assignments
 
+  attr_readonly :view_count, :likes_count, :created_at
+
   validates :title, presence: true, length: { maximum: 300 }
   validates :slug, presence: true, length: { maximum: 300 }
   validates :slug, uniqueness: { message: 'slug must be unique' }
@@ -42,6 +44,11 @@ class Article < ApplicationRecord
 
   def archive
     # TODO: implement archive
+  end
+
+  def replace(data)
+    # TODO: implement replace
+    nil
   end
 
   def increment_view

@@ -32,7 +32,11 @@ class Player < ApplicationRecord
   has_many :achievements, class_name: 'Achievement', through: :achievement_records, inverse_of: :players
   has_many :friends, class_name: 'Player', through: :sent_friend_requests, inverse_of: :friends_of
 
+  attr_readonly :rating, :peak_rating, :created_at
+
   validates :display_name, presence: true, length: { maximum: 50 }
+  validates :country_code, format: { with: /[A-Z]{2}/, allow_nil: true }
+  validates :public_id, uniqueness: { message: 'public_id must be unique' }
   validates :display_name, uniqueness: { message: 'display_name must be unique' }
 
   # Domain invariants — simple rules
@@ -45,7 +49,7 @@ class Player < ApplicationRecord
   end
 
   def to_s
-    display_name.to_s
+    public_id.to_s
   end
 
   # Business operations

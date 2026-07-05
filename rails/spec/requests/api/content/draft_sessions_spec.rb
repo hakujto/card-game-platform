@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Api::Content::DraftSessions", type: :request do
   before(:each) do
-    @dep_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @dep_card_set = CardSet.create!({ name: 'test', code: 'AB', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
   end
 
   let(:valid_attributes) do
@@ -90,7 +90,7 @@ RSpec.describe "Api::Content::DraftSessions", type: :request do
     end
   end
   describe "PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-drafting" do
-    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['waiting_for_players']) } }
+    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: DraftSession.statuses['waiting_for_players']); r.reload } }
     it "transitions to Drafting" do
       patch "/api/draft_sessions/#{draftSession.id}/transitions/waitingforplayers-to-drafting"
       # If 422: model has rules that require extra fields for this state — set them in before block
@@ -100,7 +100,7 @@ RSpec.describe "Api::Content::DraftSessions", type: :request do
   end
 
   describe "PATCH /api/draft_sessions/:id/transitions/drafting-to-completed" do
-    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['drafting']) } }
+    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: DraftSession.statuses['drafting']); r.reload } }
     it "transitions to Completed" do
       patch "/api/draft_sessions/#{draftSession.id}/transitions/drafting-to-completed"
       # If 422: model has rules that require extra fields for this state — set them in before block
@@ -110,7 +110,7 @@ RSpec.describe "Api::Content::DraftSessions", type: :request do
   end
 
   describe "PATCH /api/draft_sessions/:id/transitions/drafting-to-abandoned" do
-    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['drafting']) } }
+    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: DraftSession.statuses['drafting']); r.reload } }
     it "transitions to Abandoned with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/draft_sessions/#{draftSession.id}/transitions/drafting-to-abandoned"
@@ -127,7 +127,7 @@ RSpec.describe "Api::Content::DraftSessions", type: :request do
   end
 
   describe "PATCH /api/draft_sessions/:id/transitions/waitingforplayers-to-abandoned" do
-    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.update_column(:status, DraftSession.statuses['waiting_for_players']) } }
+    let!(:draftSession) { DraftSession.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: DraftSession.statuses['waiting_for_players']); r.reload } }
     it "transitions to Abandoned with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/draft_sessions/#{draftSession.id}/transitions/waitingforplayers-to-abandoned"

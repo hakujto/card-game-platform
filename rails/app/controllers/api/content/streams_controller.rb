@@ -82,13 +82,10 @@ module Api
           render json: { error: 'stream_url is required for Scheduled -> Live' }, status: :unprocessable_content
           return
         end
-        @stream.status = 'live'
+        @stream.update_columns(status: 'live')
+        @stream.reload
         @stream.go_live  # @after
-        if @stream.save
-          render json: @stream
-        else
-          render json: { errors: @stream.errors }, status: :unprocessable_content
-        end
+        render json: @stream
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -103,13 +100,10 @@ module Api
         end
         @stream = Stream.find(params[:id])
         @stream.assert_transition!('ended')
-        @stream.status = 'ended'
+        @stream.update_columns(status: 'ended')
+        @stream.reload
         @stream.end  # @after
-        if @stream.save
-          render json: @stream
-        else
-          render json: { errors: @stream.errors }, status: :unprocessable_content
-        end
+        render json: @stream
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound

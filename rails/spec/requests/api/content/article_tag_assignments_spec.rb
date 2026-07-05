@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe "Api::Content::ArticleTagAssignments", type: :request do
   before(:each) do
-    @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @dep_article = Article.create!({ title: 'test', slug: 'test', body: 'test', status: :draft, article_type: :guide, language: :e_n, view_count: 1, likes_count: 1, is_featured: true, published_at: Time.now, created_at: Time.now, updated_at: Time.now, author_id: @aux_player.id })
+    @aux_player = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_article = Article.create!({ title: 'test', slug: 'test', body: 'test', status: :draft, article_type: :guide, language: :e_n, view_count: 1, likes_count: 1, total_views_alltime: 1, is_featured: true, published_at: Time.now, created_at: Time.now, updated_at: Time.now, author_id: @aux_player.id })
     @dep_tag = ArticleTag.create!({ name: 'test', slug: 'test' })
   end
 

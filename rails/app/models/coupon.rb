@@ -6,6 +6,7 @@ class Coupon < ApplicationRecord
   has_many :orders, class_name: 'Order', inverse_of: :coupon
 
   validates :code, presence: true, length: { maximum: 50 }
+  validates :discount_value, numericality: { greater_than_or_equal_to: 0.01 }
   validates :code, uniqueness: { message: 'code must be unique' }
 
   # Domain invariants — simple rules
@@ -46,5 +47,12 @@ class Coupon < ApplicationRecord
 
   def deactivate
     # TODO: implement deactivate
+  end
+
+  def as_json(options = {})
+    hash = super(options)
+    hash.delete('uses_count')
+    hash.delete('max_uses')
+    hash
   end
 end

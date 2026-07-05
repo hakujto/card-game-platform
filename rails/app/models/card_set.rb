@@ -9,6 +9,7 @@ class CardSet < ApplicationRecord
 
   validates :name, presence: true, length: { maximum: 200 }
   validates :code, presence: true, length: { maximum: 10 }
+  validates :code, format: { with: /[A-Z]{2,6}/ }
   validates :code, uniqueness: { message: 'code must be unique' }
 
   # Domain invariants — simple rules

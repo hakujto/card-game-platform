@@ -7,7 +7,6 @@ RSpec.describe "Api::Marketplace::Coupons", type: :request do
       discount_type: :fixed,
       discount_value: '1.00',
       min_order_value: '0.00',
-      uses_count: 1,
       valid_from: Time.now,
       valid_until: Time.now + 1,
       is_active: true
@@ -36,7 +35,6 @@ RSpec.describe "Api::Marketplace::Coupons", type: :request do
       discount_type: :fixed,
       discount_value: '1.00',
       min_order_value: '0.00',
-      uses_count: 1,
       valid_from: Time.now,
       valid_until: Time.now + 1,
       is_active: true

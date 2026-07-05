@@ -14,6 +14,8 @@ class Deck < ApplicationRecord
   has_many :sideboard_cards, class_name: 'Card', through: :deck_sideboard_cards, inverse_of: :sideboard_decks
   has_many :tags, class_name: 'DeckTag', through: :tag_assignments
 
+  attr_readonly :wins, :losses, :draws, :created_at
+
   validates :name, presence: true, length: { maximum: 100 }
 
   # Domain invariants — simple rules

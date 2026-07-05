@@ -3,18 +3,19 @@ require 'rails_helper'
 RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   before(:each) do
     @dep_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
-    @dep_organizer = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_organizer = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do
     {
-      name: 'test',
+      public_id: SecureRandom.uuid,
+      name: 'Test Tournament Alpha',
       status: :draft,
       format: :standard,
       tournament_type: :swiss,
-      max_players: 2,
-      entry_fee: '0.00',
-      prize_pool: '0.00',
+      max_players: 8,
+      entry_fee: 0,
+      prize_pool: 0,
       start_time: Time.now,
       is_online: true,
       created_at: Time.now,
@@ -41,13 +42,14 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/tournaments", params: { tournament: {
-      name: 'test',
+      public_id: SecureRandom.uuid,
+      name: 'Test Tournament Alpha',
       status: :draft,
       format: :standard,
       tournament_type: :swiss,
-      max_players: 2,
-      entry_fee: '0.00',
-      prize_pool: '0.00',
+      max_players: 8,
+      entry_fee: 0,
+      prize_pool: 0,
       start_time: Time.now,
       is_online: true,
       created_at: Time.now,
@@ -73,7 +75,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
 
     it "returns 200" do
       patch "/api/tournaments/#{tournament.id}",
-            params: { tournament: { name: 'test' } },
+            params: { tournament: { description: 'test' } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -84,6 +86,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     it "create fails when max players positive violated" do
       # Tournament must allow between 2 and 512 players
       post "/api/tournaments", params: { tournament: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         start_time: Time.now,
         created_at: Time.now,
@@ -100,6 +103,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     it "create fails when entry fee not negative violated" do
       # Entry fee must not be negative
       post "/api/tournaments", params: { tournament: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         max_players: 1,
         start_time: Time.now,
@@ -117,6 +121,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     it "create fails when prize pool not negative violated" do
       # Prize pool must not be negative
       post "/api/tournaments", params: { tournament: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         max_players: 1,
         start_time: Time.now,
@@ -134,6 +139,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     it "create fails when end time after start violated" do
       # End time must be after start time
       post "/api/tournaments", params: { tournament: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         max_players: 1,
         start_time: Time.now,
@@ -146,7 +152,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
     end
   end
   describe "PATCH /api/tournaments/:id/transitions/draft-to-registration" do
-    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['draft']) } }
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Tournament.statuses['draft']); r.reload } }
     before { tournament.update!(name: 'test', start_time: Time.now) }
     it "transitions to Registration with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
@@ -164,7 +170,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-ongoing" do
-    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Tournament.statuses['registration']); r.reload } }
     it "transitions to Ongoing with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/registration-to-ongoing"
@@ -181,7 +187,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   end
 
   describe "PATCH /api/tournaments/:id/transitions/registration-to-cancelled" do
-    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['registration']) } }
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Tournament.statuses['registration']); r.reload } }
     it "transitions to Cancelled with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/registration-to-cancelled"
@@ -198,7 +204,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-completed" do
-    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Tournament.statuses['ongoing']); r.reload } }
     it "transitions to Completed with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-completed"
@@ -215,7 +221,7 @@ RSpec.describe "Api::Tournaments::Tournaments", type: :request do
   end
 
   describe "PATCH /api/tournaments/:id/transitions/ongoing-to-cancelled" do
-    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.update_column(:status, Tournament.statuses['ongoing']) } }
+    let!(:tournament) { Tournament.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Tournament.statuses['ongoing']); r.reload } }
     it "transitions to Cancelled with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/tournaments/#{tournament.id}/transitions/ongoing-to-cancelled"

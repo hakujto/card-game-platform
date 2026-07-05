@@ -8,6 +8,7 @@ class TradeTransaction < ApplicationRecord
   belongs_to :buyer, class_name: 'Player', inverse_of: :purchases
   belongs_to :seller, class_name: 'Player', inverse_of: :sales
 
+  validates :completed_at, presence: true, if: -> { status == "Completed" }
   # Domain invariants — simple rules
   validate :validate_rules
 
@@ -52,4 +53,23 @@ class TradeTransaction < ApplicationRecord
     hash['completedAt'] = hash.delete('completed_at') if hash.key?('completed_at')
     hash
   end
+
+  before_update :_audit_changes
+
+  def _audit_changes
+    [].each do |field|
+      if changes.key?(field.to_s)
+        TradeTransactionAuditLog.create!(
+          record: self, field: field.to_s,
+          old_value: changes[field.to_s][0].to_s,
+          new_value: changes[field.to_s][1].to_s
+        )
+      end
+    end
+  end
+end
+
+class TradeTransactionAuditLog < ApplicationRecord
+  self.table_name = 'trade_transactions_audit_logs'
+  belongs_to :record, class_name: 'TradeTransaction'
 end

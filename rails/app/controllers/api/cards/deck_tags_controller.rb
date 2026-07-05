@@ -69,11 +69,11 @@ module Api
       end
 
       def deck_tag_params
-        params.fetch(:deck_tag, params).permit(:name, :color)
+        params.fetch(:deck_tag, params).permit(:name, :slug, :color)
       end
 
       def deck_tag_update_params
-        params.fetch(:deck_tag, params).permit(:name, :color)
+        params.fetch(:deck_tag, params).permit(:name, :slug, :color)
       end
     end
   end

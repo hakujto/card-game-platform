@@ -6,6 +6,7 @@ Rails.application.routes.draw do
         post :unban, action: :unban
         post :restrict, action: :restrict
         post :unrestrict, action: :unrestrict
+        put :replace, action: :replace
         get :value, action: :calculate_value
         post :rarity_bonus, action: :apply_rarity_bonus
         get :legal, action: :is_legal_in_format
@@ -314,6 +315,7 @@ Rails.application.routes.draw do
       member do
         post :publish, action: :publish
         post :archive, action: :archive
+        put :replace, action: :replace
         post :view, action: :increment_view
         post :like, action: :like
         delete :like, action: :unlike

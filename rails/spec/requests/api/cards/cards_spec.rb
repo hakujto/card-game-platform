@@ -2,21 +2,23 @@ require 'rails_helper'
 
 RSpec.describe "Api::Cards::Cards", type: :request do
   before(:each) do
-    @dep_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @dep_set = CardSet.create!({ name: 'test', code: 'AB', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
   end
 
   let(:valid_attributes) do
     {
-      name: 'test',
+      public_id: SecureRandom.uuid,
+      name: 'Test Lightning Bolt',
       card_type: :spell,
       rarity: :common,
-      mana_cost: 0,
+      mana_cost: 1,
       mana_colors: :white,
       description: 'test',
       legal_formats: :standard,
       is_banned: false,
       is_restricted: false,
-      power_level: 1,
+      power_level: 3,
+      total_copies_in_circulation: 1,
       set_id: @dep_set.id
     }
   end
@@ -39,16 +41,18 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/cards", params: { card: {
-      name: 'test',
+      public_id: SecureRandom.uuid,
+      name: 'Test Lightning Bolt',
       card_type: :spell,
       rarity: :common,
-      mana_cost: 0,
+      mana_cost: 1,
       mana_colors: :white,
       description: 'test',
       legal_formats: :standard,
       is_banned: false,
       is_restricted: false,
-      power_level: 1,
+      power_level: 3,
+      total_copies_in_circulation: 1,
       set_id: @dep_set.id
         } }, as: :json
         expect(response).to have_http_status(:created)
@@ -70,7 +74,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
 
     it "returns 200" do
       patch "/api/cards/#{card.id}",
-            params: { card: { name: 'test' } },
+            params: { card: { flavor_text: 'test' } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -81,6 +85,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when creature requires stats violated" do
       # Creature card must have attack and defense
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -97,6 +102,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when planeswalker requires loyalty violated" do
       # Planeswalker card must have loyalty
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -113,6 +119,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when land has no mana cost violated" do
       # Land card must have zero mana cost
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -129,6 +136,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when spell or artifact no loyalty violated" do
       # Only Planeswalker cards can have loyalty
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -144,6 +152,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when mana cost range violated" do
       # mana_cost must be between 0 and 20
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -162,6 +171,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when power level range violated" do
       # power_level must be between 1 and 10
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -181,6 +191,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when not banned and restricted violated" do
       # Card cannot be both banned and restricted at the same time
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',
@@ -201,6 +212,7 @@ RSpec.describe "Api::Cards::Cards", type: :request do
     it "create fails when banned card not in legal formats violated" do
       # banned_card_not_in_legal_formats
       post "/api/cards", params: { card: {
+        public_id: SecureRandom.uuid,
         name: 'test',
         mana_colors: :white,
         description: 'test',

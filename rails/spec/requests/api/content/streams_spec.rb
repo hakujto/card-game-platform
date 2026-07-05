@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Api::Content::Streams", type: :request do
   before(:each) do
-    @dep_streamer = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_streamer = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do
@@ -120,7 +120,7 @@ RSpec.describe "Api::Content::Streams", type: :request do
     end
   end
   describe "PATCH /api/streams/:id/transitions/scheduled-to-live" do
-    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['scheduled']) } }
+    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Stream.statuses['scheduled']); r.reload } }
     before { stream.update!(stream_url: 'https://example.com') }
     it "transitions to Live with role Streamer" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Streamer'))
@@ -138,7 +138,7 @@ RSpec.describe "Api::Content::Streams", type: :request do
   end
 
   describe "PATCH /api/streams/:id/transitions/live-to-ended" do
-    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.update_column(:status, Stream.statuses['live']) } }
+    let!(:stream) { Stream.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Stream.statuses['live']); r.reload } }
     it "transitions to Ended with role Streamer" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Streamer'))
       patch "/api/streams/#{stream.id}/transitions/live-to-ended"

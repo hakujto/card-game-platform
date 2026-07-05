@@ -8,7 +8,12 @@ class Order < ApplicationRecord
   belongs_to :player, class_name: 'Player', inverse_of: :orders
   belongs_to :coupon, class_name: 'Coupon', inverse_of: :orders, optional: true
 
+  attr_readonly :created_at, :paid_at
+
   validates :currency, presence: true, length: { maximum: 3 }
+  validates :currency, format: { with: /[A-Z]{3}/ }
+  validates :tracking_number, presence: true, if: -> { status == "Shipped" }
+  validates :paid_at, presence: true, if: -> { status == "Paid" }
 
   # Domain invariants — simple rules
   validate :validate_rules
@@ -95,9 +100,29 @@ class Order < ApplicationRecord
 
   def as_json(options = {})
     hash = super(options)
+    hash.delete('payment_reference')
     hash['createdAt'] = hash.delete('created_at') if hash.key?('created_at')
     hash['paidAt'] = hash.delete('paid_at') if hash.key?('paid_at')
     hash['shippedAt'] = hash.delete('shipped_at') if hash.key?('shipped_at')
     hash
   end
+
+  before_update :_audit_changes
+
+  def _audit_changes
+    [].each do |field|
+      if changes.key?(field.to_s)
+        OrderAuditLog.create!(
+          record: self, field: field.to_s,
+          old_value: changes[field.to_s][0].to_s,
+          new_value: changes[field.to_s][1].to_s
+        )
+      end
+    end
+  end
+end
+
+class OrderAuditLog < ApplicationRecord
+  self.table_name = 'orders_audit_logs'
+  belongs_to :record, class_name: 'Order'
 end

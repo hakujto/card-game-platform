@@ -114,12 +114,9 @@ module Api
           render json: { error: 'start_time is required for Draft -> Registration' }, status: :unprocessable_content
           return
         end
-        @tournament.status = 'registration'
-        if @tournament.save
-          render json: @tournament
-        else
-          render json: { errors: @tournament.errors }, status: :unprocessable_content
-        end
+        @tournament.update_columns(status: 'registration')
+        @tournament.reload
+        render json: @tournament
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -134,13 +131,10 @@ module Api
         end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('ongoing')
-        @tournament.status = 'ongoing'
+        @tournament.update_columns(status: 'ongoing')
+        @tournament.reload
         @tournament.start  # @after
-        if @tournament.save
-          render json: @tournament
-        else
-          render json: { errors: @tournament.errors }, status: :unprocessable_content
-        end
+        render json: @tournament
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -155,13 +149,10 @@ module Api
         end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('cancelled')
-        @tournament.status = 'cancelled'
+        @tournament.update_columns(status: 'cancelled')
+        @tournament.reload
         @tournament.cancel  # @after
-        if @tournament.save
-          render json: @tournament
-        else
-          render json: { errors: @tournament.errors }, status: :unprocessable_content
-        end
+        render json: @tournament
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -176,14 +167,11 @@ module Api
         end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('completed')
-        @tournament.status = 'completed'
+        @tournament.update_columns(status: 'completed')
+        @tournament.reload
         @tournament.complete  # @after
         @tournament.calculate_prize_distribution  # @after
-        if @tournament.save
-          render json: @tournament
-        else
-          render json: { errors: @tournament.errors }, status: :unprocessable_content
-        end
+        render json: @tournament
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -198,13 +186,10 @@ module Api
         end
         @tournament = Tournament.find(params[:id])
         @tournament.assert_transition!('cancelled')
-        @tournament.status = 'cancelled'
+        @tournament.update_columns(status: 'cancelled')
+        @tournament.reload
         @tournament.cancel  # @after
-        if @tournament.save
-          render json: @tournament
-        else
-          render json: { errors: @tournament.errors }, status: :unprocessable_content
-        end
+        render json: @tournament
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -240,11 +225,11 @@ module Api
       end
 
       def tournament_params
-        params.fetch(:tournament, params).permit(:name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
+        params.fetch(:tournament, params).permit(:public_id, :name, :description, :status, :bracket_data, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
       end
 
       def tournament_update_params
-        params.fetch(:tournament, params).permit(:name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id)
+        params.fetch(:tournament, params).permit(:public_id, :name, :description, :bracket_data, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :season_id, :organizer_id)
       end
     end
   end

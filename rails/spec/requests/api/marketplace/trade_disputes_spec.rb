@@ -2,10 +2,10 @@ require 'rails_helper'
 
 RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   before(:each) do
-    @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
-    @aux_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 0, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
-    @aux_trade_listing = TradeListing.create!({ status: :active, listing_type: :trade_offer, asking_price: '0.00', auction_start_price: '0.00', auction_end_time: Time.now, foil: true, condition: :mint, quantity: 1, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
+    @aux_player = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'AB', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @aux_card = Card.create!({ public_id: SecureRandom.uuid, name: 'test', card_type: :spell, rarity: :common, mana_cost: 0, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, total_copies_in_circulation: 1, set_id: @aux_card_set.id })
+    @aux_trade_listing = TradeListing.create!({ public_id: SecureRandom.uuid, status: :active, listing_type: :trade_offer, asking_price: '0.00', auction_start_price: '0.00', auction_end_time: Time.now, foil: true, condition: :mint, quantity: 1, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
     @dep_transaction = TradeTransaction.create!({ final_price: '0.01', platform_fee: '0.01', status: :pending, completed_at: Time.now, listing_id: @aux_trade_listing.id, buyer_id: @aux_player.id, seller_id: @aux_player.id })
   end
 
@@ -30,7 +30,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   describe "POST /api/trade_disputes" do
     context "with valid params" do
       it "returns 201" do
-              fresh_sub_listing = TradeListing.create!({ status: :active, listing_type: :trade_offer, foil: true, condition: :mint, quantity: 1, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
+              fresh_sub_listing = TradeListing.create!({ public_id: SecureRandom.uuid, status: :active, listing_type: :trade_offer, foil: true, condition: :mint, quantity: 1, created_at: Time.now, seller_id: @aux_player.id, card_id: @aux_card.id })
       fresh_transaction = TradeTransaction.create!({ final_price: '0.01', platform_fee: '0.01', status: :pending, listing_id: fresh_sub_listing.id, buyer_id: @aux_player.id, seller_id: @aux_player.id })
       post "/api/trade_disputes", params: { trade_dispute: {
       status: :resolved,
@@ -71,7 +71,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
     end
   end
   describe "PATCH /api/trade_disputes/:id/transitions/open-to-underreview" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['open']) } }
+    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeDispute.statuses['open']); r.reload } }
     it "transitions to UnderReview with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/open-to-underreview"
@@ -88,7 +88,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   end
 
   describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-resolved" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['under_review']) } }
+    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeDispute.statuses['under_review']); r.reload } }
     before { tradeDispute.update!(resolution: 'test') }
     it "transitions to Resolved with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
@@ -105,7 +105,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
     end
 
     context "when resolution is missing" do
-      before { tradeDispute.update_column(:resolution, nil) }
+      before { tradeDispute.class.where(id: tradeDispute.id).update_all(resolution: nil); tradeDispute.reload }
       it "returns 422" do
         allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
         patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-resolved"
@@ -115,7 +115,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   end
 
   describe "PATCH /api/trade_disputes/:id/transitions/underreview-to-escalated" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['under_review']) } }
+    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeDispute.statuses['under_review']); r.reload } }
     it "transitions to Escalated with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/trade_disputes/#{tradeDispute.id}/transitions/underreview-to-escalated"
@@ -132,7 +132,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
   end
 
   describe "PATCH /api/trade_disputes/:id/transitions/escalated-to-resolved" do
-    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.update_column(:status, TradeDispute.statuses['escalated']) } }
+    let!(:tradeDispute) { TradeDispute.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeDispute.statuses['escalated']); r.reload } }
     before { tradeDispute.update!(resolution: 'test') }
     it "transitions to Resolved with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
@@ -149,7 +149,7 @@ RSpec.describe "Api::Marketplace::TradeDisputes", type: :request do
     end
 
     context "when resolution is missing" do
-      before { tradeDispute.update_column(:resolution, nil) }
+      before { tradeDispute.class.where(id: tradeDispute.id).update_all(resolution: nil); tradeDispute.reload }
       it "returns 422" do
         allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
         patch "/api/trade_disputes/#{tradeDispute.id}/transitions/escalated-to-resolved"

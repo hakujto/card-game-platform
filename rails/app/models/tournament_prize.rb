@@ -6,6 +6,8 @@ class TournamentPrize < ApplicationRecord
   has_many :awarded_prizes, class_name: 'AwardedPrize', inverse_of: :prize
   belongs_to :tournament, class_name: 'Tournament', inverse_of: :prizes
 
+  validates :placement_from, numericality: { greater_than_or_equal_to: 1 }
+  validates :placement_to, numericality: { greater_than_or_equal_to: 1 }
   # Domain invariants — simple rules
   validate :validate_rules
 

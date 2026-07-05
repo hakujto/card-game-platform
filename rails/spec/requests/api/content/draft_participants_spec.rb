@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Api::Content::DraftParticipants", type: :request do
   before(:each) do
-    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'AB', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
     @dep_session = DraftSession.create!({ status: :completed, draft_type: :booster, seats: 2, time_per_pick_seconds: 1, created_at: Time.now, completed_at: nil, card_set_id: @aux_card_set.id })
-    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_player = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do

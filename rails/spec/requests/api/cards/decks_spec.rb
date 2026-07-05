@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Api::Cards::Decks", type: :request do
   before(:each) do
-    @dep_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_player = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do

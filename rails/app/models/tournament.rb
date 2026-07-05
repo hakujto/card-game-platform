@@ -14,7 +14,11 @@ class Tournament < ApplicationRecord
   belongs_to :organizer, class_name: 'Player', inverse_of: :organized_tournaments
   has_many :judges, class_name: 'Player', through: :judge_assignments, inverse_of: :judged_tournaments
 
+  attr_readonly :created_at
+
   validates :name, presence: true, length: { maximum: 200 }
+  validates :max_players, numericality: { greater_than_or_equal_to: 2, less_than_or_equal_to: 512 }
+  validates :public_id, uniqueness: { message: 'public_id must be unique' }
 
   # Domain invariants — simple rules
   validate :validate_rules
@@ -33,7 +37,7 @@ class Tournament < ApplicationRecord
   end
 
   def to_s
-    name.to_s
+    public_id.to_s
   end
 
   # Business operations
@@ -101,4 +105,23 @@ class Tournament < ApplicationRecord
     hash['endTime'] = hash.delete('end_time') if hash.key?('end_time')
     hash
   end
+
+  before_update :_audit_changes
+
+  def _audit_changes
+    [].each do |field|
+      if changes.key?(field.to_s)
+        TournamentAuditLog.create!(
+          record: self, field: field.to_s,
+          old_value: changes[field.to_s][0].to_s,
+          new_value: changes[field.to_s][1].to_s
+        )
+      end
+    end
+  end
+end
+
+class TournamentAuditLog < ApplicationRecord
+  self.table_name = 'tournaments_audit_logs'
+  belongs_to :record, class_name: 'Tournament'
 end

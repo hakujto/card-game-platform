@@ -4,6 +4,7 @@ class DeckCard < ApplicationRecord
   belongs_to :deck, class_name: 'Deck', inverse_of: :deck_cards
   belongs_to :card, class_name: 'Card', inverse_of: :deck_cards
 
+  validates :quantity, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 4 }
   # Domain invariants — simple rules
   validate :validate_rules
 

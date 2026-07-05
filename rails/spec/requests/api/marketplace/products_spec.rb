@@ -58,7 +58,7 @@ RSpec.describe "Api::Marketplace::Products", type: :request do
 
     it "returns 200" do
       patch "/api/products/#{product.id}",
-            params: { product: { name: 'test' } },
+            params: { product: { description: 'test' } },
             as: :json
       expect(response).to have_http_status(:ok)
     end

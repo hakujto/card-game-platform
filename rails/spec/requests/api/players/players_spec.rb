@@ -3,10 +3,11 @@ require 'rails_helper'
 RSpec.describe "Api::Players::Players", type: :request do
   let(:valid_attributes) do
     {
-      display_name: 'test2',
+      public_id: SecureRandom.uuid,
+      display_name: 'test_player_0012',
       rank: :bronze,
-      rating: 1,
-      peak_rating: 1,
+      rating: 1000,
+      peak_rating: 1000,
       is_verified: true,
       created_at: Time.now
     }
@@ -30,10 +31,11 @@ RSpec.describe "Api::Players::Players", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/players", params: { player: {
-      display_name: 'test2',
+      public_id: SecureRandom.uuid,
+      display_name: 'test_player_0012',
       rank: :bronze,
-      rating: 1,
-      peak_rating: 1,
+      rating: 1000,
+      peak_rating: 1000,
       is_verified: true,
       created_at: Time.now
         } }, as: :json
@@ -56,7 +58,7 @@ RSpec.describe "Api::Players::Players", type: :request do
 
     it "returns 200" do
       patch "/api/players/#{player.id}",
-            params: { player: { display_name: 'test' } },
+            params: { player: { bio: 'test' } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -67,6 +69,7 @@ RSpec.describe "Api::Players::Players", type: :request do
     it "create fails when rating range violated" do
       # Rating must be between 0 and 9999
       post "/api/players", params: { player: {
+        public_id: SecureRandom.uuid,
         display_name: 'test',
         created_at: Time.now,
         rating: 10000,

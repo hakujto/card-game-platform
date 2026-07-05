@@ -3,8 +3,8 @@ require 'rails_helper'
 RSpec.describe "Api::Tournaments::AwardedPrizes", type: :request do
   before(:each) do
     @aux_season = Season.create!({ name: 'test', start_date: Date.today, end_date: Date.today + 1, format: :standard, is_active: true })
-    @aux_player = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_tournament = Tournament.create!({ name: 'test', status: :draft, format: :standard, tournament_type: :swiss, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
+    @aux_player = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @aux_tournament = Tournament.create!({ public_id: SecureRandom.uuid, name: 'test', status: :draft, format: :standard, tournament_type: :swiss, max_players: 2, entry_fee: '0.00', prize_pool: '0.00', start_time: Time.now, end_time: nil, is_online: true, created_at: Time.now, season_id: @aux_season.id, organizer_id: @aux_player.id })
     @dep_prize = TournamentPrize.create!({ placement_from: 1, placement_to: 1, prize_type: :currency, amount: '0.00', season_points: 1, tournament_id: @aux_tournament.id })
   end
 

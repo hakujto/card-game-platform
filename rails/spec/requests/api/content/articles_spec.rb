@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Api::Content::Articles", type: :request do
   before(:each) do
-    @dep_author = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_author = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do
@@ -15,6 +15,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
       language: :e_n,
       view_count: 1,
       likes_count: 1,
+      total_views_alltime: 1,
       is_featured: true,
       created_at: Time.now,
       updated_at: Time.now,
@@ -48,6 +49,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
       language: :e_n,
       view_count: 1,
       likes_count: 1,
+      total_views_alltime: 1,
       is_featured: true,
       created_at: Time.now,
       updated_at: Time.now,
@@ -72,7 +74,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
 
     it "returns 200" do
       patch "/api/articles/#{article.id}",
-            params: { article: { title: 'test' } },
+            params: { article: { excerpt: 'test' } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -130,7 +132,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
     end
   end
   describe "PATCH /api/articles/:id/transitions/draft-to-published" do
-    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['draft']) } }
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Article.statuses['draft']); r.reload } }
     before { article.update!(title: 'test', body: 'test') }
     it "transitions to Published with role Editor" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Editor'))
@@ -148,7 +150,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
   end
 
   describe "PATCH /api/articles/:id/transitions/published-to-archived" do
-    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['published']) } }
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Article.statuses['published']); r.reload } }
     it "transitions to Archived with role Editor" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Editor'))
       patch "/api/articles/#{article.id}/transitions/published-to-archived"
@@ -165,7 +167,7 @@ RSpec.describe "Api::Content::Articles", type: :request do
   end
 
   describe "PATCH /api/articles/:id/transitions/archived-to-draft" do
-    let!(:article) { Article.create!(valid_attributes).tap { |r| r.update_column(:status, Article.statuses['archived']) } }
+    let!(:article) { Article.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: Article.statuses['archived']); r.reload } }
     it "transitions to Draft with role Admin" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Admin'))
       patch "/api/articles/#{article.id}/transitions/archived-to-draft"

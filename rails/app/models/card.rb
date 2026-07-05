@@ -19,7 +19,15 @@ class Card < ApplicationRecord
   has_many :draft_picks, class_name: 'DraftPick', inverse_of: :card
   belongs_to :set, class_name: 'CardSet', inverse_of: :cards
 
+  attr_readonly :is_banned, :is_restricted
+
   validates :name, presence: true, length: { maximum: 200 }
+  validates :mana_cost, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 20 }
+  validates :power_level, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 10 }
+  validates :public_id, uniqueness: { message: 'public_id must be unique' }
+  validates :attack, presence: true, if: -> { card_type == "Creature" }
+  validates :defense, presence: true, if: -> { card_type == "Creature" }
+  validates :loyalty, presence: true, if: -> { card_type == "Planeswalker" }
 
   # Domain invariants — simple rules
   validate :validate_rules
@@ -42,7 +50,7 @@ class Card < ApplicationRecord
   end
 
   def to_s
-    name.to_s
+    public_id.to_s
   end
 
   # Business operations
@@ -61,6 +69,11 @@ class Card < ApplicationRecord
 
   def unrestrict
     # TODO: implement unrestrict
+  end
+
+  def replace(data)
+    # TODO: implement replace
+    nil
   end
 
   def calculate_value
@@ -89,4 +102,23 @@ class Card < ApplicationRecord
   def validate_not_in_use
     # TODO: implement validate_not_in_use
   end
+
+  before_update :_audit_changes
+
+  def _audit_changes
+    [].each do |field|
+      if changes.key?(field.to_s)
+        CardAuditLog.create!(
+          record: self, field: field.to_s,
+          old_value: changes[field.to_s][0].to_s,
+          new_value: changes[field.to_s][1].to_s
+        )
+      end
+    end
+  end
+end
+
+class CardAuditLog < ApplicationRecord
+  self.table_name = 'cards_audit_logs'
+  belongs_to :record, class_name: 'Card'
 end

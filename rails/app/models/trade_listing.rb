@@ -10,6 +10,10 @@ class TradeListing < ApplicationRecord
   belongs_to :seller, class_name: 'Player', inverse_of: :trade_listings
   belongs_to :card, class_name: 'Card', inverse_of: :trade_listings
 
+  attr_readonly :created_at
+
+  validates :public_id, uniqueness: { message: 'public_id must be unique' }
+  validates :asking_price, presence: true, if: -> { listing_type == "FixedPrice" }
   # Domain invariants — simple rules
   validate :validate_rules
 
@@ -26,7 +30,7 @@ class TradeListing < ApplicationRecord
   end
 
   def to_s
-    status.to_s
+    public_id.to_s
   end
 
   # Business operations

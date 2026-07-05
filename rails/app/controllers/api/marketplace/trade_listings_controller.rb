@@ -77,6 +77,10 @@ module Api
 
       # POST /api/trade_listings/:id/finalize
       def finalize_auction
+        unless current_user&.role.in?(["admin", "seller"])
+          render json: { error: 'Insufficient role for finalize_auction' }, status: :forbidden
+          return
+        end
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.finalize_auction()
         head :no_content
@@ -95,12 +99,9 @@ module Api
           render json: { error: 'quantity is required for Pending -> Active' }, status: :unprocessable_content
           return
         end
-        @tradeListing.status = 'active'
-        if @tradeListing.save
-          render json: @tradeListing
-        else
-          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
-        end
+        @tradeListing.update_columns(status: 'active')
+        @tradeListing.reload
+        render json: @tradeListing
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -111,13 +112,10 @@ module Api
       def transition_active_to_sold
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.assert_transition!('sold')
-        @tradeListing.status = 'sold'
+        @tradeListing.update_columns(status: 'sold')
+        @tradeListing.reload
         @tradeListing.finalize_auction  # @after
-        if @tradeListing.save
-          render json: @tradeListing
-        else
-          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
-        end
+        render json: @tradeListing
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -128,13 +126,10 @@ module Api
       def transition_active_to_expired
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.assert_transition!('expired')
-        @tradeListing.status = 'expired'
+        @tradeListing.update_columns(status: 'expired')
+        @tradeListing.reload
         @tradeListing.close  # @after
-        if @tradeListing.save
-          render json: @tradeListing
-        else
-          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
-        end
+        render json: @tradeListing
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -149,13 +144,10 @@ module Api
         end
         @tradeListing = TradeListing.find(params[:id])
         @tradeListing.assert_transition!('cancelled')
-        @tradeListing.status = 'cancelled'
+        @tradeListing.update_columns(status: 'cancelled')
+        @tradeListing.reload
         @tradeListing.cancel  # @after
-        if @tradeListing.save
-          render json: @tradeListing
-        else
-          render json: { errors: @tradeListing.errors }, status: :unprocessable_content
-        end
+        render json: @tradeListing
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -191,11 +183,11 @@ module Api
       end
 
       def trade_listing_params
-        params.fetch(:trade_listing, params).permit(:status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id)
+        params.fetch(:trade_listing, params).permit(:public_id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id)
       end
 
       def trade_listing_update_params
-        params.fetch(:trade_listing, params).permit(:status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id)
+        params.fetch(:trade_listing, params).permit(:public_id, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :expires_at, :seller_id, :card_id)
       end
     end
   end

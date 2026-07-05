@@ -128,7 +128,7 @@ module Api
       end
 
       def deck_update_params
-        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :wins, :losses, :draws, :created_at, :updated_at, :player_id)
+        params.fetch(:deck, params).permit(:name, :description, :format, :is_public, :is_tournament_legal, :archetype, :updated_at, :player_id)
       end
     end
   end

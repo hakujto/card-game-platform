@@ -36,6 +36,10 @@ module Api
 
       # POST /api/seasons/:id/activate
       def activate
+        unless current_user&.role.in?(["admin"])
+          render json: { error: 'Insufficient role for activate' }, status: :forbidden
+          return
+        end
         @season = Season.find(params[:id])
         @season.activate()
         head :no_content
@@ -45,6 +49,10 @@ module Api
 
       # POST /api/seasons/:id/deactivate
       def deactivate
+        unless current_user&.role.in?(["admin"])
+          render json: { error: 'Insufficient role for deactivate' }, status: :forbidden
+          return
+        end
         @season = Season.find(params[:id])
         @season.deactivate()
         head :no_content
@@ -54,6 +62,10 @@ module Api
 
       # POST /api/seasons/:id/finalize
       def finalize_rewards
+        unless current_user&.role.in?(["admin"])
+          render json: { error: 'Insufficient role for finalize_rewards' }, status: :forbidden
+          return
+        end
         @season = Season.find(params[:id])
         @season.finalize_rewards()
         head :no_content

@@ -36,6 +36,10 @@ module Api
 
       # POST /api/articles/:id/publish
       def publish
+        unless current_user&.role.in?(["editor", "admin"])
+          render json: { error: 'Insufficient role for publish' }, status: :forbidden
+          return
+        end
         @article = Article.find(params[:id])
         @article.publish()
         head :no_content
@@ -45,9 +49,27 @@ module Api
 
       # POST /api/articles/:id/archive
       def archive
+        unless current_user&.role.in?(["editor", "admin"])
+          render json: { error: 'Insufficient role for archive' }, status: :forbidden
+          return
+        end
         @article = Article.find(params[:id])
         @article.archive()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Article not found' }, status: :not_found
+      end
+
+      # PUT /api/articles/:id/replace
+      def replace
+        unless current_user&.role.in?(["editor", "admin"])
+          render json: { error: 'Insufficient role for replace' }, status: :forbidden
+          return
+        end
+        @article = Article.find(params[:id])
+        data = params[:data]
+        result = @article.replace(data)
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Article not found' }, status: :not_found
       end
@@ -103,13 +125,10 @@ module Api
           render json: { error: 'body is required for Draft -> Published' }, status: :unprocessable_content
           return
         end
-        @article.status = 'published'
+        @article.update_columns(status: 'published')
+        @article.reload
         @article.publish  # @after
-        if @article.save
-          render json: @article
-        else
-          render json: { errors: @article.errors }, status: :unprocessable_content
-        end
+        render json: @article
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -124,13 +143,10 @@ module Api
         end
         @article = Article.find(params[:id])
         @article.assert_transition!('archived')
-        @article.status = 'archived'
+        @article.update_columns(status: 'archived')
+        @article.reload
         @article.archive  # @after
-        if @article.save
-          render json: @article
-        else
-          render json: { errors: @article.errors }, status: :unprocessable_content
-        end
+        render json: @article
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -145,12 +161,9 @@ module Api
         end
         @article = Article.find(params[:id])
         @article.assert_transition!('draft')
-        @article.status = 'draft'
-        if @article.save
-          render json: @article
-        else
-          render json: { errors: @article.errors }, status: :unprocessable_content
-        end
+        @article.update_columns(status: 'draft')
+        @article.reload
+        render json: @article
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -176,11 +189,11 @@ module Api
       end
 
       def article_params
-        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id)
+        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :total_views_alltime, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id)
       end
 
       def article_update_params
-        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id)
+        params.fetch(:article, params).permit(:title, :slug, :body, :excerpt, :cover_image_url, :article_type, :language, :total_views_alltime, :is_featured, :published_at, :updated_at, :author_id, :featured_deck_id)
       end
     end
   end

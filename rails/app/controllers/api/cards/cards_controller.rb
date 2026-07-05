@@ -36,6 +36,10 @@ module Api
 
       # POST /api/cards/:id/ban
       def ban
+        unless current_user&.role.in?(["admin", "moderator"])
+          render json: { error: 'Insufficient role for ban' }, status: :forbidden
+          return
+        end
         @card = Card.find(params[:id])
         @card.ban()
         head :no_content
@@ -45,6 +49,10 @@ module Api
 
       # POST /api/cards/:id/unban
       def unban
+        unless current_user&.role.in?(["admin", "moderator"])
+          render json: { error: 'Insufficient role for unban' }, status: :forbidden
+          return
+        end
         @card = Card.find(params[:id])
         @card.unban()
         head :no_content
@@ -54,6 +62,10 @@ module Api
 
       # POST /api/cards/:id/restrict
       def restrict
+        unless current_user&.role.in?(["admin", "moderator"])
+          render json: { error: 'Insufficient role for restrict' }, status: :forbidden
+          return
+        end
         @card = Card.find(params[:id])
         @card.restrict()
         head :no_content
@@ -63,9 +75,27 @@ module Api
 
       # POST /api/cards/:id/unrestrict
       def unrestrict
+        unless current_user&.role.in?(["admin", "moderator"])
+          render json: { error: 'Insufficient role for unrestrict' }, status: :forbidden
+          return
+        end
         @card = Card.find(params[:id])
         @card.unrestrict()
         head :no_content
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Card not found' }, status: :not_found
+      end
+
+      # PUT /api/cards/:id/replace
+      def replace
+        unless current_user&.role.in?(["admin"])
+          render json: { error: 'Insufficient role for replace' }, status: :forbidden
+          return
+        end
+        @card = Card.find(params[:id])
+        data = params[:data]
+        result = @card.replace(data)
+        render json: { result: result }
       rescue ActiveRecord::RecordNotFound
         render json: { error: 'Card not found' }, status: :not_found
       end
@@ -107,11 +137,11 @@ module Api
       end
 
       def card_params
-        params.fetch(:card, params).permit(:name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id)
+        params.fetch(:card, params).permit(:public_id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :metadata, :total_copies_in_circulation, :set_id)
       end
 
       def card_update_params
-        params.fetch(:card, params).permit(:name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id)
+        params.fetch(:card, params).permit(:public_id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :power_level, :metadata, :total_copies_in_circulation, :set_id)
       end
     end
   end

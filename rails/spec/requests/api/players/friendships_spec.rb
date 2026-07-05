@@ -2,10 +2,10 @@ require 'rails_helper'
 
 RSpec.describe "Api::Players::Friendships", type: :request do
   before(:each) do
-    @owner = Player.create!({ display_name: 'test2', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @owner = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test2', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
     @owner_id = @owner.id
     allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', id: @owner_id))
-    @dep_receiver = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @dep_receiver = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
   end
 
   let(:valid_attributes) do

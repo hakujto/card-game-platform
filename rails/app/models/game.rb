@@ -7,6 +7,7 @@ class Game < ApplicationRecord
   belongs_to :match, class_name: 'Match', inverse_of: :games
   belongs_to :winner, class_name: 'Player', inverse_of: :won_games, optional: true
 
+  validates :game_number, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 3 }
   # Domain invariants — simple rules
   validate :validate_rules
 

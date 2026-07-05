@@ -35,6 +35,10 @@ module Api
 
       # POST /api/trade_disputes/:id/resolve
       def resolve
+        unless current_user&.role.in?(["admin", "moderator"])
+          render json: { error: 'Insufficient role for resolve' }, status: :forbidden
+          return
+        end
         @tradeDispute = TradeDispute.find(params[:id])
         resolution_text = params[:resolution_text]
         @tradeDispute.resolve(resolution_text)
@@ -68,13 +72,10 @@ module Api
         end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('under_review')
-        @tradeDispute.status = 'under_review'
+        @tradeDispute.update_columns(status: 'under_review')
+        @tradeDispute.reload
         @tradeDispute.review  # @after
-        if @tradeDispute.save
-          render json: @tradeDispute
-        else
-          render json: { errors: @tradeDispute.errors }, status: :unprocessable_content
-        end
+        render json: @tradeDispute
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -93,13 +94,10 @@ module Api
           render json: { error: 'resolution is required for UnderReview -> Resolved' }, status: :unprocessable_content
           return
         end
-        @tradeDispute.status = 'resolved'
+        @tradeDispute.update_columns(status: 'resolved')
+        @tradeDispute.reload
         @tradeDispute.close_resolved  # @after
-        if @tradeDispute.save
-          render json: @tradeDispute
-        else
-          render json: { errors: @tradeDispute.errors }, status: :unprocessable_content
-        end
+        render json: @tradeDispute
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -114,13 +112,10 @@ module Api
         end
         @tradeDispute = TradeDispute.find(params[:id])
         @tradeDispute.assert_transition!('escalated')
-        @tradeDispute.status = 'escalated'
+        @tradeDispute.update_columns(status: 'escalated')
+        @tradeDispute.reload
         @tradeDispute.escalate  # @after
-        if @tradeDispute.save
-          render json: @tradeDispute
-        else
-          render json: { errors: @tradeDispute.errors }, status: :unprocessable_content
-        end
+        render json: @tradeDispute
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -139,13 +134,10 @@ module Api
           render json: { error: 'resolution is required for Escalated -> Resolved' }, status: :unprocessable_content
           return
         end
-        @tradeDispute.status = 'resolved'
+        @tradeDispute.update_columns(status: 'resolved')
+        @tradeDispute.reload
         @tradeDispute.close_resolved  # @after
-        if @tradeDispute.save
-          render json: @tradeDispute
-        else
-          render json: { errors: @tradeDispute.errors }, status: :unprocessable_content
-        end
+        render json: @tradeDispute
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound

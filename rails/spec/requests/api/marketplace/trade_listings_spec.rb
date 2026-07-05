@@ -2,13 +2,14 @@ require 'rails_helper'
 
 RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   before(:each) do
-    @dep_seller = Player.create!({ display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
-    @aux_card_set = CardSet.create!({ name: 'test', code: 'test', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
-    @dep_card = Card.create!({ name: 'test', card_type: :spell, rarity: :common, mana_cost: 0, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, set_id: @aux_card_set.id })
+    @dep_seller = Player.create!({ public_id: SecureRandom.uuid, display_name: 'test', rank: :bronze, rating: 1, peak_rating: 1, is_verified: true, created_at: Time.now })
+    @aux_card_set = CardSet.create!({ name: 'test', code: 'AB', release_date: Date.today, rotation_date: nil, set_type: :core, total_cards: 1, is_rotated: false })
+    @dep_card = Card.create!({ public_id: SecureRandom.uuid, name: 'test', card_type: :spell, rarity: :common, mana_cost: 0, mana_colors: :white, attack: 1, defense: 1, loyalty: nil, description: 'test', legal_formats: :standard, is_banned: false, is_restricted: false, power_level: 1, total_copies_in_circulation: 1, set_id: @aux_card_set.id })
   end
 
   let(:valid_attributes) do
     {
+      public_id: SecureRandom.uuid,
       status: :active,
       listing_type: :trade_offer,
       foil: true,
@@ -38,6 +39,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     context "with valid params" do
       it "returns 201" do
         post "/api/trade_listings", params: { trade_listing: {
+      public_id: SecureRandom.uuid,
       status: :active,
       listing_type: :trade_offer,
       foil: true,
@@ -66,7 +68,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
 
     it "returns 200" do
       patch "/api/trade_listings/#{tradeListing.id}",
-            params: { trade_listing: { status: :active } },
+            params: { trade_listing: { public_id: SecureRandom.uuid } },
             as: :json
       expect(response).to have_http_status(:ok)
     end
@@ -77,6 +79,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     it "create fails when fixed price requires asking price violated" do
       # Fixed price listing must have an asking price
       post "/api/trade_listings", params: { trade_listing: {
+        public_id: SecureRandom.uuid,
         created_at: Time.now,
         seller_id: 1,
         card_id: 1,
@@ -91,6 +94,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     it "create fails when auction requires start price and end time violated" do
       # Auction listing must have a start price and end time
       post "/api/trade_listings", params: { trade_listing: {
+        public_id: SecureRandom.uuid,
         created_at: Time.now,
         seller_id: 1,
         card_id: 1,
@@ -105,6 +109,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     it "create fails when quantity positive violated" do
       # Listing quantity must be between 1 and 9999
       post "/api/trade_listings", params: { trade_listing: {
+        public_id: SecureRandom.uuid,
         created_at: Time.now,
         seller_id: 1,
         card_id: 1,
@@ -117,7 +122,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
     end
   end
   describe "PATCH /api/trade_listings/:id/transitions/pending-to-active" do
-    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['pending']) } }
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeListing.statuses['pending']); r.reload } }
     before { tradeListing.update!(quantity: 1) }
     it "transitions to Active with role Seller" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Seller'))
@@ -135,7 +140,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   end
 
   describe "PATCH /api/trade_listings/:id/transitions/active-to-sold" do
-    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeListing.statuses['active']); r.reload } }
     it "transitions to Sold" do
       patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-sold"
       # If 422: model has rules that require extra fields for this state — set them in before block
@@ -145,7 +150,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   end
 
   describe "PATCH /api/trade_listings/:id/transitions/active-to-expired" do
-    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeListing.statuses['active']); r.reload } }
     it "transitions to Expired" do
       patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-expired"
       # If 422: model has rules that require extra fields for this state — set them in before block
@@ -155,7 +160,7 @@ RSpec.describe "Api::Marketplace::TradeListings", type: :request do
   end
 
   describe "PATCH /api/trade_listings/:id/transitions/active-to-cancelled" do
-    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.update_column(:status, TradeListing.statuses['active']) } }
+    let!(:tradeListing) { TradeListing.create!(valid_attributes).tap { |r| r.class.where(id: r.id).update_all(status: TradeListing.statuses['active']); r.reload } }
     it "transitions to Cancelled with role Seller" do
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(double('User', role: 'Seller'))
       patch "/api/trade_listings/#{tradeListing.id}/transitions/active-to-cancelled"

@@ -81,6 +81,10 @@ module Api
 
       # POST /api/players/:id/verify
       def verify
+        unless current_user&.role.in?(["admin"])
+          render json: { error: 'Insufficient role for verify' }, status: :forbidden
+          return
+        end
         @player = Player.find(params[:id])
         @player.verify()
         head :no_content
@@ -107,11 +111,11 @@ module Api
       end
 
       def player_params
-        params.fetch(:player, params).permit(:display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :is_verified, :created_at, :last_active_at, :user_id)
+        params.fetch(:player, params).permit(:public_id, :display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :contact_email, :win_rate_cached, :is_verified, :created_at, :last_active_at, :user_id)
       end
 
       def player_update_params
-        params.fetch(:player, params).permit(:display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :is_verified, :created_at, :last_active_at, :user_id)
+        params.fetch(:player, params).permit(:public_id, :display_name, :rank, :bio, :country_code, :avatar_url, :preferred_format, :contact_email, :win_rate_cached, :is_verified, :last_active_at, :user_id)
       end
     end
   end

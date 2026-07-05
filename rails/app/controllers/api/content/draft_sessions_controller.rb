@@ -63,13 +63,10 @@ module Api
       def transition_waitingforplayers_to_drafting
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('drafting')
-        @draftSession.status = 'drafting'
+        @draftSession.update_columns(status: 'drafting')
+        @draftSession.reload
         @draftSession.start  # @after
-        if @draftSession.save
-          render json: @draftSession
-        else
-          render json: { errors: @draftSession.errors }, status: :unprocessable_content
-        end
+        render json: @draftSession
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -80,13 +77,10 @@ module Api
       def transition_drafting_to_completed
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('completed')
-        @draftSession.status = 'completed'
+        @draftSession.update_columns(status: 'completed')
+        @draftSession.reload
         @draftSession.complete  # @after
-        if @draftSession.save
-          render json: @draftSession
-        else
-          render json: { errors: @draftSession.errors }, status: :unprocessable_content
-        end
+        render json: @draftSession
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -101,13 +95,10 @@ module Api
         end
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('abandoned')
-        @draftSession.status = 'abandoned'
+        @draftSession.update_columns(status: 'abandoned')
+        @draftSession.reload
         @draftSession.abandon  # @after
-        if @draftSession.save
-          render json: @draftSession
-        else
-          render json: { errors: @draftSession.errors }, status: :unprocessable_content
-        end
+        render json: @draftSession
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -122,13 +113,10 @@ module Api
         end
         @draftSession = DraftSession.find(params[:id])
         @draftSession.assert_transition!('abandoned')
-        @draftSession.status = 'abandoned'
+        @draftSession.update_columns(status: 'abandoned')
+        @draftSession.reload
         @draftSession.abandon  # @after
-        if @draftSession.save
-          render json: @draftSession
-        else
-          render json: { errors: @draftSession.errors }, status: :unprocessable_content
-        end
+        render json: @draftSession
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -164,11 +152,11 @@ module Api
       end
 
       def draft_session_params
-        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
+        params.fetch(:draft_session, params).permit(:status, :draft_type, :pack_contents, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
       end
 
       def draft_session_update_params
-        params.fetch(:draft_session, params).permit(:status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
+        params.fetch(:draft_session, params).permit(:status, :draft_type, :pack_contents, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id)
       end
     end
   end

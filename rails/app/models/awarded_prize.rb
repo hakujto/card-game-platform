@@ -4,6 +4,9 @@ class AwardedPrize < ApplicationRecord
   belongs_to :prize, class_name: 'TournamentPrize', inverse_of: :awarded_prizes
   belongs_to :player, class_name: 'Player', inverse_of: :awarded_prizes
 
+  attr_readonly :final_placement, :awarded_at
+
+  validates :claimed_at, presence: true, if: -> { claimed == true }
   # Domain invariants — simple rules
   validate :validate_rules
 

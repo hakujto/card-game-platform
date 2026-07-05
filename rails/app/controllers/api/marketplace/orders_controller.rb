@@ -91,13 +91,10 @@ module Api
           render json: { error: 'payment_method is required for Pending -> Paid' }, status: :unprocessable_content
           return
         end
-        @order.status = 'paid'
+        @order.update_columns(status: 'paid')
+        @order.reload
         @order.process_payment  # @after
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -112,12 +109,9 @@ module Api
         end
         @order = Order.find(params[:id])
         @order.assert_transition!('processing')
-        @order.status = 'processing'
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        @order.update_columns(status: 'processing')
+        @order.reload
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -136,13 +130,10 @@ module Api
           render json: { error: 'tracking_number is required for Processing -> Shipped' }, status: :unprocessable_content
           return
         end
-        @order.status = 'shipped'
+        @order.update_columns(status: 'shipped')
+        @order.reload
         @order.notify_shipped  # @after
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -157,12 +148,9 @@ module Api
         end
         @order = Order.find(params[:id])
         @order.assert_transition!('completed')
-        @order.status = 'completed'
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        @order.update_columns(status: 'completed')
+        @order.reload
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -173,13 +161,10 @@ module Api
       def transition_pending_to_cancelled
         @order = Order.find(params[:id])
         @order.assert_transition!('cancelled')
-        @order.status = 'cancelled'
+        @order.update_columns(status: 'cancelled')
+        @order.reload
         @order.cancel  # @after
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -194,13 +179,10 @@ module Api
         end
         @order = Order.find(params[:id])
         @order.assert_transition!('cancelled')
-        @order.status = 'cancelled'
+        @order.update_columns(status: 'cancelled')
+        @order.reload
         @order.cancel  # @after
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -215,13 +197,10 @@ module Api
         end
         @order = Order.find(params[:id])
         @order.assert_transition!('refunded')
-        @order.status = 'refunded'
+        @order.update_columns(status: 'refunded')
+        @order.reload
         @order.refund  # @after
-        if @order.save
-          render json: @order
-        else
-          render json: { errors: @order.errors }, status: :unprocessable_content
-        end
+        render json: @order
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -264,7 +243,7 @@ module Api
       end
 
       def order_update_params
-        params.fetch(:order, params).permit(:status, :total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :created_at, :paid_at, :shipped_at, :player_id, :coupon_id)
+        params.fetch(:order, params).permit(:total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :shipped_at, :player_id, :coupon_id)
       end
     end
   end

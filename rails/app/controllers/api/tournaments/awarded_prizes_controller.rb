@@ -36,7 +36,7 @@ module Api
       end
 
       def awarded_prize_update_params
-        params.fetch(:awarded_prize, params).permit(:final_placement, :awarded_at, :claimed, :claimed_at, :prize_id, :player_id)
+        params.fetch(:awarded_prize, params).permit(:claimed, :claimed_at, :prize_id, :player_id)
       end
     end
   end

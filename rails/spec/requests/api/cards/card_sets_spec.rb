@@ -4,7 +4,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
   let(:valid_attributes) do
     {
       name: 'test',
-      code: 'test2',
+      code: 'AB2',
       release_date: Date.today,
       set_type: :core,
       total_cards: 1,
@@ -31,7 +31,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
       it "returns 201" do
         post "/api/card_sets", params: { card_set: {
       name: 'test',
-      code: 'test2',
+      code: 'AB2',
       release_date: Date.today,
       set_type: :core,
       total_cards: 1,
@@ -68,7 +68,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
       # Card set must have at least one card
       post "/api/card_sets", params: { card_set: {
         name: 'test',
-        code: 'test',
+        code: 'AB',
         release_date: Date.today,
         rotation_date: Date.today,
         total_cards: 0,
@@ -82,7 +82,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
       # Rotation date must be after release date
       post "/api/card_sets", params: { card_set: {
         name: 'test',
-        code: 'test',
+        code: 'AB',
         release_date: Date.today,
         total_cards: 1,
         rotation_date: Date.today - 1,
@@ -96,7 +96,7 @@ RSpec.describe "Api::Cards::CardSets", type: :request do
       # Rotated set must have a rotation date
       post "/api/card_sets", params: { card_set: {
         name: 'test',
-        code: 'test',
+        code: 'AB',
         release_date: Date.today,
         total_cards: 1,
         is_rotated: true,

@@ -36,6 +36,13 @@ module Cards
       instance.save!
     end
 
+    def replace(id, data)
+      instance = Card.find(id)
+      result = instance.replace(data)
+      instance.save!
+      result
+    end
+
     def calculate_value(id)
       instance = Card.find(id)
       result = instance.calculate_value()

@@ -83,12 +83,9 @@ module Api
         end
         @match = Match.find(params[:id])
         @match.assert_transition!('active')
-        @match.status = 'active'
-        if @match.save
-          render json: @match
-        else
-          render json: { errors: @match.errors }, status: :unprocessable_content
-        end
+        @match.update_columns(status: 'active')
+        @match.reload
+        render json: @match
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -103,13 +100,10 @@ module Api
         end
         @match = Match.find(params[:id])
         @match.assert_transition!('completed')
-        @match.status = 'completed'
+        @match.update_columns(status: 'completed')
+        @match.reload
         @match.finalize_result  # @after
-        if @match.save
-          render json: @match
-        else
-          render json: { errors: @match.errors }, status: :unprocessable_content
-        end
+        render json: @match
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -124,13 +118,10 @@ module Api
         end
         @match = Match.find(params[:id])
         @match.assert_transition!('draw')
-        @match.status = 'draw'
+        @match.update_columns(status: 'draw')
+        @match.reload
         @match.draw  # @after
-        if @match.save
-          render json: @match
-        else
-          render json: { errors: @match.errors }, status: :unprocessable_content
-        end
+        render json: @match
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound
@@ -145,12 +136,9 @@ module Api
         end
         @match = Match.find(params[:id])
         @match.assert_transition!('b_y_e')
-        @match.status = 'b_y_e'
-        if @match.save
-          render json: @match
-        else
-          render json: { errors: @match.errors }, status: :unprocessable_content
-        end
+        @match.update_columns(status: 'b_y_e')
+        @match.reload
+        render json: @match
       rescue ArgumentError => e
         render json: { error: e.message }, status: :conflict
       rescue ActiveRecord::RecordNotFound

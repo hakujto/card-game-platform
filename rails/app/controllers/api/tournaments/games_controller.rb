@@ -52,11 +52,11 @@ module Api
       end
 
       def game_params
-        params.fetch(:game, params).permit(:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
+        params.fetch(:game, params).permit(:game_number, :winner_side, :complexity_score, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
       end
 
       def game_update_params
-        params.fetch(:game, params).permit(:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
+        params.fetch(:game, params).permit(:game_number, :winner_side, :complexity_score, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id)
       end
     end
   end
