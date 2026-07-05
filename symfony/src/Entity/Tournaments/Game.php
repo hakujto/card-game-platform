@@ -5,6 +5,7 @@ namespace App\Entity\Tournaments;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Tournaments\GameRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Players\Player;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
@@ -19,11 +20,16 @@ class Game
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['game:read', 'game:write'])]
+    #[Assert\Range(min: 1, max: 3)]
     private int $gameNumber = 0;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     #[Groups(['game:read', 'game:write'])]
     private ?string $winnerSide = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['game:read', 'game:write'])]
+    private ?float $complexityScore = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     #[Groups(['game:read', 'game:write'])]
@@ -73,6 +79,17 @@ class Game
     public function setWinnerSide(?string $winnerSide): static
     {
         $this->winnerSide = $winnerSide;
+        return $this;
+    }
+
+    public function getComplexityScore(): ?float
+    {
+        return $this->complexityScore;
+    }
+
+    public function setComplexityScore(?float $complexityScore): static
+    {
+        $this->complexityScore = $complexityScore;
         return $this;
     }
 

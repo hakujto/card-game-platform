@@ -43,6 +43,7 @@ class CardController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $card = new Card();
+        if (isset($data['publicId'])) $card->setPublicId($data['publicId']);
         if (isset($data['name'])) $card->setName($data['name']);
         if (isset($data['cardType'])) $card->setCardType($data['cardType']);
         if (isset($data['rarity'])) $card->setRarity($data['rarity']);
@@ -59,6 +60,8 @@ class CardController extends AbstractController
         if (isset($data['isBanned'])) $card->setIsBanned($data['isBanned']);
         if (isset($data['isRestricted'])) $card->setIsRestricted($data['isRestricted']);
         if (isset($data['powerLevel'])) $card->setPowerLevel($data['powerLevel']);
+        if (isset($data['metadata'])) $card->setMetadata($data['metadata']);
+        if (isset($data['totalCopiesInCirculation'])) $card->setTotalCopiesInCirculation($data['totalCopiesInCirculation']);
         if (!isset($data['set'])) return $this->json(['error' => 'set is required'], Response::HTTP_UNPROCESSABLE_ENTITY);
         $rel_set = $this->cardSetRepository->find($data['set']);
         if (!$rel_set) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -88,6 +91,7 @@ class CardController extends AbstractController
     public function update(Request $request, Card $card): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (isset($data['publicId'])) $card->setPublicId($data['publicId']);
         if (isset($data['name'])) $card->setName($data['name']);
         if (isset($data['cardType'])) $card->setCardType($data['cardType']);
         if (isset($data['rarity'])) $card->setRarity($data['rarity']);
@@ -101,9 +105,9 @@ class CardController extends AbstractController
         if (isset($data['imageUrl'])) $card->setImageUrl($data['imageUrl']);
         if (isset($data['artistName'])) $card->setArtistName($data['artistName']);
         if (isset($data['legalFormats'])) $card->setLegalFormats($data['legalFormats']);
-        if (isset($data['isBanned'])) $card->setIsBanned($data['isBanned']);
-        if (isset($data['isRestricted'])) $card->setIsRestricted($data['isRestricted']);
         if (isset($data['powerLevel'])) $card->setPowerLevel($data['powerLevel']);
+        if (isset($data['metadata'])) $card->setMetadata($data['metadata']);
+        if (isset($data['totalCopiesInCirculation'])) $card->setTotalCopiesInCirculation($data['totalCopiesInCirculation']);
         if (isset($data['set'])) {
             $rel_set = $this->cardSetRepository->find($data['set']);
             if (!$rel_set) return $this->json(['error' => 'CardSet not found'], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -127,6 +131,10 @@ class CardController extends AbstractController
     #[Route('/{id}/ban', name: 'ban', methods: ['POST'])]
     public function ban(Card $card): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'moderator'], true)) {
+            return $this->json(['error' => 'Insufficient role for ban'], Response::HTTP_FORBIDDEN);
+        }
         $card->ban();
         $this->repository->save($card, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -135,6 +143,10 @@ class CardController extends AbstractController
     #[Route('/{id}/unban', name: 'unban', methods: ['POST'])]
     public function unban(Card $card): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'moderator'], true)) {
+            return $this->json(['error' => 'Insufficient role for unban'], Response::HTTP_FORBIDDEN);
+        }
         $card->unban();
         $this->repository->save($card, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -143,6 +155,10 @@ class CardController extends AbstractController
     #[Route('/{id}/restrict', name: 'restrict', methods: ['POST'])]
     public function restrict(Card $card): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'moderator'], true)) {
+            return $this->json(['error' => 'Insufficient role for restrict'], Response::HTTP_FORBIDDEN);
+        }
         $card->restrict();
         $this->repository->save($card, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -151,9 +167,26 @@ class CardController extends AbstractController
     #[Route('/{id}/unrestrict', name: 'unrestrict', methods: ['POST'])]
     public function unrestrict(Card $card): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'moderator'], true)) {
+            return $this->json(['error' => 'Insufficient role for unrestrict'], Response::HTTP_FORBIDDEN);
+        }
         $card->unrestrict();
         $this->repository->save($card, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}', name: 'replace', methods: ['PUT'])]
+    public function replace(Card $card, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for replace'], Response::HTTP_FORBIDDEN);
+        }
+        $result = $card->replace($data['data'] ?? null);
+        $this->repository->save($card, flush: true);
+        return $this->json($result);
     }
 
     #[Route('/{id}/value', name: 'calculateValue', methods: ['GET'])]

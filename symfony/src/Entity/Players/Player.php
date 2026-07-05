@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Players\PlayerRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -30,6 +31,7 @@ use App\Entity\Content\Stream;
 #[ORM\Entity(repositoryClass: PlayerRepository::class)]
 #[ORM\Table(name: 'player')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['publicId'], message: 'public_id must be unique')]
 #[UniqueEntity(fields: ['displayName'], message: 'display_name must be unique')]
 class Player
 {
@@ -38,6 +40,10 @@ class Player
     #[ORM\Column]
     #[Groups(['player:read'])]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', unique: true)]
+    #[Groups(['player:read', 'player:write'])]
+    private string $publicId = '';
 
     #[ORM\Column(type: 'string', length: 50, unique: true)]
     #[Groups(['player:read', 'player:write'])]
@@ -61,6 +67,7 @@ class Player
 
     #[ORM\Column(type: 'string', length: 2, nullable: true)]
     #[Groups(['player:read', 'player:write'])]
+    #[Assert\Regex(pattern: '/[A-Z]{2}/')]
     private ?string $countryCode = null;
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
@@ -70,6 +77,14 @@ class Player
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     #[Groups(['player:read', 'player:write'])]
     private ?string $preferredFormat = null;
+
+    #[ORM\Column(type: 'string', length: 254, nullable: true)]
+    #[Groups(['player:read', 'player:write'])]
+    private ?string $contactEmail = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(['player:read', 'player:write'])]
+    private ?float $winRateCached = null;
 
     #[ORM\Column(type: 'boolean')]
     #[Groups(['player:read', 'player:write'])]
@@ -194,6 +209,17 @@ class Player
         return $this->id;
     }
 
+    public function getPublicId(): string
+    {
+        return $this->publicId;
+    }
+
+    public function setPublicId(string $publicId): static
+    {
+        $this->publicId = $publicId;
+        return $this;
+    }
+
     public function getDisplayName(): string
     {
         return $this->displayName;
@@ -279,6 +305,28 @@ class Player
     public function setPreferredFormat(?string $preferredFormat): static
     {
         $this->preferredFormat = $preferredFormat;
+        return $this;
+    }
+
+    public function getContactEmail(): ?string
+    {
+        return $this->contactEmail;
+    }
+
+    public function setContactEmail(?string $contactEmail): static
+    {
+        $this->contactEmail = $contactEmail;
+        return $this;
+    }
+
+    public function getWinRateCached(): ?float
+    {
+        return $this->winRateCached;
+    }
+
+    public function setWinRateCached(?float $winRateCached): static
+    {
+        $this->winRateCached = $winRateCached;
         return $this;
     }
 

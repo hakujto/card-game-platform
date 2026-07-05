@@ -19,7 +19,7 @@ class CardSetApiTest extends WebTestCase
 
         $entity = new CardSet();
         $entity->setName('test');
-        $entity->setCode('test');
+        $entity->setCode('AA');
         $entity->setReleaseDate(new \DateTime('2024-01-01'));
         $entity->setTotalCards(1);
         $this->em->persist($entity);
@@ -47,7 +47,7 @@ class CardSetApiTest extends WebTestCase
         $this->client->request('POST', '/api/card_sets', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
             'name' => 'test',
-            'code' => 'test2',
+            'code' => 'AB',
             'releaseDate' => '2024-01-01',
             'totalCards' => 1,
         ])

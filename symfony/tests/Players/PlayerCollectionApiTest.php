@@ -31,6 +31,7 @@ class PlayerCollectionApiTest extends WebTestCase
         $this->em->persist($this->ownerUser);
         $this->ownerModel = new Player();
         $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setPublicId('00000000-0000-0000-0000-0000000000011');
         $this->ownerModel->setDisplayName('test1');
         $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->ownerModel);
@@ -39,11 +40,12 @@ class PlayerCollectionApiTest extends WebTestCase
 
         $this->auxCardSet = new CardSet();
         $this->auxCardSet->setName('test');
-        $this->auxCardSet->setCode('test2');
+        $this->auxCardSet->setCode('tB');
         $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setPublicId('00000000-0000-0000-0000-0000000000013');
         $this->depCard->setName('test');
         $this->depCard->setManaColors('test');
         $this->depCard->setDescription('test');

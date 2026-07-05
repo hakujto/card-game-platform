@@ -64,6 +64,10 @@ class Article
     #[Groups(['article:read', 'article:write'])]
     private int $likesCount = 0;
 
+    #[ORM\Column(type: 'bigint')]
+    #[Groups(['article:read', 'article:write'])]
+    private int $totalViewsAlltime = 0;
+
     #[ORM\Column(type: 'boolean')]
     #[Groups(['article:read', 'article:write'])]
     private bool $isFeatured = false;
@@ -218,6 +222,17 @@ class Article
         return $this;
     }
 
+    public function getTotalViewsAlltime(): int
+    {
+        return $this->totalViewsAlltime;
+    }
+
+    public function setTotalViewsAlltime(int $totalViewsAlltime): static
+    {
+        $this->totalViewsAlltime = $totalViewsAlltime;
+        return $this;
+    }
+
     public function getIsFeatured(): bool
     {
         return $this->isFeatured;
@@ -337,6 +352,12 @@ class Article
     public function archive(): void
     {
         // TODO: implement archive
+    }
+
+    public function replace($data): mixed
+    {
+        // TODO: implement replace
+        return null;
     }
 
     public function incrementView(): void

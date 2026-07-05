@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\OrderRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
@@ -35,6 +36,7 @@ class Order
 
     #[ORM\Column(type: 'string', length: 3)]
     #[Groups(['order:read', 'order:write'])]
+    #[Assert\Regex(pattern: '/[A-Z]{3}/')]
     private string $currency = 'USD';
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
@@ -42,7 +44,6 @@ class Order
     private ?string $paymentMethod = null;
 
     #[ORM\Column(type: 'string', length: 200, nullable: true)]
-    #[Groups(['order:read', 'order:write'])]
     private ?string $paymentReference = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -260,6 +261,18 @@ class Order
     public function isDiscountNotExceedTotalValid(): bool
     {
         return ($this->getDiscountApplied() === null || ($this->getTotal() !== null && (float)$this->getDiscountApplied() <= (float)$this->getTotal()));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "tracking_number is required")]
+    public function isTrackingNumberRequiredWhenValid(): bool
+    {
+        return !($this->getStatus() === 'SHIPPED') || $this->getTrackingNumber() !== null;
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "paid_at is required")]
+    public function isPaidAtRequiredWhenValid(): bool
+    {
+        return !($this->getStatus() === 'PAID') || $this->getPaidAt() !== null;
     }
 
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────

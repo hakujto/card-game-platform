@@ -48,6 +48,7 @@ class TradeListingController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $tradeListing = new TradeListing();
+        if (isset($data['publicId'])) $tradeListing->setPublicId($data['publicId']);
         if (isset($data['status'])) $tradeListing->setStatus($data['status']);
         if (isset($data['listingType'])) $tradeListing->setListingType($data['listingType']);
         if (isset($data['askingPrice'])) $tradeListing->setAskingPrice($data['askingPrice']);
@@ -93,7 +94,7 @@ class TradeListingController extends AbstractController
     public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
-        if (isset($data['status'])) $tradeListing->setStatus($data['status']);
+        if (isset($data['publicId'])) $tradeListing->setPublicId($data['publicId']);
         if (isset($data['listingType'])) $tradeListing->setListingType($data['listingType']);
         if (isset($data['askingPrice'])) $tradeListing->setAskingPrice($data['askingPrice']);
         if (isset($data['auctionStartPrice'])) $tradeListing->setAuctionStartPrice($data['auctionStartPrice']);
@@ -103,7 +104,6 @@ class TradeListingController extends AbstractController
         if (isset($data['condition'])) $tradeListing->setCondition($data['condition']);
         if (isset($data['quantity'])) $tradeListing->setQuantity($data['quantity']);
         if (isset($data['description'])) $tradeListing->setDescription($data['description']);
-        if (isset($data['createdAt'])) $tradeListing->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['expiresAt'])) $tradeListing->setExpiresAt(new \DateTime($data['expiresAt']));
         if (isset($data['seller'])) {
             $rel_seller = $this->playerRepository->find($data['seller']);
@@ -169,6 +169,10 @@ class TradeListingController extends AbstractController
     #[Route('/{id}/finalize', name: 'finalizeAuction', methods: ['POST'])]
     public function finalizeAuction(TradeListing $tradeListing): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'seller'], true)) {
+            return $this->json(['error' => 'Insufficient role for finalize_auction'], Response::HTTP_FORBIDDEN);
+        }
         $tradeListing->finalizeAuction();
         $this->repository->save($tradeListing, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);

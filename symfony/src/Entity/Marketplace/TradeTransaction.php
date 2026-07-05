@@ -174,6 +174,12 @@ class TradeTransaction
         return ($this->getFinalPrice() === null || (float)$this->getFinalPrice() > (float)0);
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "completed_at is required")]
+    public function isCompletedAtRequiredWhenValid(): bool
+    {
+        return !($this->getStatus() === 'COMPLETED') || $this->getCompletedAt() !== null;
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {

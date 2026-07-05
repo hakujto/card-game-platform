@@ -5,6 +5,8 @@ namespace App\Entity\Cards;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Cards\CardRepository;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\PlayerCollection;
@@ -18,6 +20,7 @@ use App\Entity\Content\DraftPick;
 #[ORM\Entity(repositoryClass: CardRepository::class)]
 #[ORM\Table(name: 'card')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['publicId'], message: 'public_id must be unique')]
 class Card
 {
     #[ORM\Id]
@@ -25,6 +28,10 @@ class Card
     #[ORM\Column]
     #[Groups(['card:read'])]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', unique: true)]
+    #[Groups(['card:read', 'card:write'])]
+    private string $publicId = '';
 
     #[ORM\Column(type: 'string', length: 200)]
     #[Groups(['card:read', 'card:write'])]
@@ -40,6 +47,7 @@ class Card
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['card:read', 'card:write'])]
+    #[Assert\Range(min: 0, max: 20)]
     private int $manaCost = 0;
 
     #[ORM\Column(type: 'string', length: 20)]
@@ -88,7 +96,16 @@ class Card
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['card:read', 'card:write'])]
+    #[Assert\Range(min: 1, max: 10)]
     private int $powerLevel = 1;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['card:read', 'card:write'])]
+    private ?array $metadata = null;
+
+    #[ORM\Column(type: 'bigint')]
+    #[Groups(['card:read', 'card:write'])]
+    private int $totalCopiesInCirculation = 0;
 
     #[ORM\ManyToOne(targetEntity: CardSet::class, inversedBy: 'cards')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
@@ -144,6 +161,17 @@ class Card
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getPublicId(): string
+    {
+        return $this->publicId;
+    }
+
+    public function setPublicId(string $publicId): static
+    {
+        $this->publicId = $publicId;
+        return $this;
     }
 
     public function getName(): string
@@ -322,6 +350,28 @@ class Card
         return $this;
     }
 
+    public function getMetadata(): ?array
+    {
+        return $this->metadata;
+    }
+
+    public function setMetadata(?array $metadata): static
+    {
+        $this->metadata = $metadata;
+        return $this;
+    }
+
+    public function getTotalCopiesInCirculation(): int
+    {
+        return $this->totalCopiesInCirculation;
+    }
+
+    public function setTotalCopiesInCirculation(int $totalCopiesInCirculation): static
+    {
+        $this->totalCopiesInCirculation = $totalCopiesInCirculation;
+        return $this;
+    }
+
     #[Groups(['card:read'])]
     public function getSetId(): ?int
     {
@@ -413,6 +463,24 @@ class Card
         return !(($this->getIsBanned() === true && $this->getIsRestricted() === true));
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "attack is required")]
+    public function isAttackRequiredWhenValid(): bool
+    {
+        return !($this->getCardType() === 'CREATURE') || $this->getAttack() !== null;
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "defense is required")]
+    public function isDefenseRequiredWhenValid(): bool
+    {
+        return !($this->getCardType() === 'CREATURE') || $this->getDefense() !== null;
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "loyalty is required")]
+    public function isLoyaltyRequiredWhenValid(): bool
+    {
+        return !($this->getCardType() === 'PLANESWALKER') || $this->getLoyalty() !== null;
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {
@@ -453,6 +521,12 @@ class Card
     public function unrestrict(): void
     {
         // TODO: implement unrestrict
+    }
+
+    public function replace($data): mixed
+    {
+        // TODO: implement replace
+        return null;
     }
 
     public function calculateValue(): mixed

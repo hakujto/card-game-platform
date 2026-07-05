@@ -20,6 +20,7 @@ class ArticleCommentApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depAuthor = new Player();
+        $this->depAuthor->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->depAuthor->setDisplayName('test2');
         $this->depAuthor->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depAuthor);

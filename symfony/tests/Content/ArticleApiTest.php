@@ -21,6 +21,7 @@ class ArticleApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depAuthor = new Player();
+        $this->depAuthor->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->depAuthor->setDisplayName('test2');
         $this->depAuthor->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depAuthor);
@@ -77,7 +78,7 @@ class ArticleApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/articles/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test'])
+            json_encode(['excerpt' => 'test'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -87,7 +88,7 @@ class ArticleApiTest extends WebTestCase
     {
         // Published article must have a published_at timestamp
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'likesCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => null])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'likesCount' => 1, 'totalViewsAlltime' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -96,7 +97,7 @@ class ArticleApiTest extends WebTestCase
     {
         // Article view count must not be negative
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'likesCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'viewCount' => -1])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'likesCount' => 1, 'totalViewsAlltime' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'viewCount' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -105,7 +106,7 @@ class ArticleApiTest extends WebTestCase
     {
         // Article likes count must not be negative
         $this->client->request('POST', '/api/articles', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'likesCount' => -1])
+            json_encode(['title' => 'test', 'slug' => 'test', 'body' => 'test', 'articleType' => 'GUIDE', 'language' => 'EN', 'viewCount' => 1, 'totalViewsAlltime' => 1, 'isFeatured' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'updatedAt' => '2024-01-01T00:00:00+00:00', 'authorId' => 1, 'status' => 'PUBLISHED', 'publishedAt' => '2024-01-01T00:00:00+00:00', 'likesCount' => -1])
         );
         $this->assertResponseStatusCodeSame(422);
     }

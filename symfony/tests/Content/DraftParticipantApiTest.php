@@ -20,6 +20,7 @@ class DraftParticipantApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depPlayer = new Player();
+        $this->depPlayer->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->depPlayer->setDisplayName('test2');
         $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);

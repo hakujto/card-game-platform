@@ -25,16 +25,18 @@ class TradeListingApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->depSeller = new Player();
+        $this->depSeller->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->depSeller->setDisplayName('test2');
         $this->depSeller->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depSeller);
         $this->auxCardSet = new CardSet();
         $this->auxCardSet->setName('test');
-        $this->auxCardSet->setCode('test3');
+        $this->auxCardSet->setCode('tC');
         $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setPublicId('00000000-0000-0000-0000-0000000000014');
         $this->depCard->setName('test');
         $this->depCard->setManaColors('test');
         $this->depCard->setDescription('test');
@@ -43,6 +45,7 @@ class TradeListingApiTest extends WebTestCase
         $this->em->persist($this->depCard);
 
         $entity = new TradeListing();
+        $entity->setPublicId('00000000-0000-0000-0000-000000000001');
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
         $entity->setSeller($this->depSeller);
         $entity->setCard($this->depCard);
@@ -70,6 +73,7 @@ class TradeListingApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
+            'publicId' => '00000000-0000-0000-0000-0000000000012',
             'createdAt' => '2024-01-01T00:00:00+00:00',
             'seller' => (int) $this->depSeller->getId(),
             'card' => (int) $this->depCard->getId(),
@@ -88,7 +92,7 @@ class TradeListingApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/trade_listings/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'test'])
+            json_encode(['publicId' => '00000000-0000-0000-0000-000000000001'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -98,7 +102,7 @@ class TradeListingApiTest extends WebTestCase
     {
         // Fixed price listing must have an asking price
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => null])
+            json_encode(['publicId' => '00000000-0000-0000-0000-000000000001', 'status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -107,7 +111,7 @@ class TradeListingApiTest extends WebTestCase
     {
         // Auction listing must have a start price and end time
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'AUCTION', 'auctionStartPrice' => null])
+            json_encode(['publicId' => '00000000-0000-0000-0000-000000000001', 'status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'quantity' => 1, 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'AUCTION', 'auctionStartPrice' => null])
         );
         $this->assertResponseStatusCodeSame(422);
     }
@@ -116,7 +120,7 @@ class TradeListingApiTest extends WebTestCase
     {
         // Listing quantity must be between 1 and 9999
         $this->client->request('POST', '/api/trade_listings', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => '0.00', 'listingType' => 'AUCTION', 'auctionStartPrice' => '0.00', 'auctionEndTime' => '2024-01-01T00:00:00+00:00', 'quantity' => 10000])
+            json_encode(['publicId' => '00000000-0000-0000-0000-000000000001', 'status' => 'ACTIVE', 'foil' => true, 'condition' => 'MINT', 'createdAt' => '2024-01-01T00:00:00+00:00', 'sellerId' => 1, 'cardId' => 1, 'listingType' => 'FIXEDPRICE', 'askingPrice' => '0.00', 'listingType' => 'AUCTION', 'auctionStartPrice' => '0.00', 'auctionEndTime' => '2024-01-01T00:00:00+00:00', 'quantity' => 10000])
         );
         $this->assertResponseStatusCodeSame(422);
     }

@@ -34,6 +34,7 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->em->persist($this->ownerUser);
         $this->ownerModel = new Player();
         $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setPublicId('00000000-0000-0000-0000-0000000000011');
         $this->ownerModel->setDisplayName('test1');
         $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->ownerModel);
@@ -46,10 +47,12 @@ class TournamentRegistrationApiTest extends WebTestCase
         $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setPublicId('00000000-0000-0000-0000-0000000000013');
         $this->auxPlayer->setDisplayName('test3');
         $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
+        $this->depTournament->setPublicId('00000000-0000-0000-0000-0000000000014');
         $this->depTournament->setName('test');
         $this->depTournament->setMaxPlayers(1);
         $this->depTournament->setStartTime(new \DateTime('2024-01-01'));

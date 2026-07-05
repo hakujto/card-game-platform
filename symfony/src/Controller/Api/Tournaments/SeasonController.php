@@ -88,6 +88,10 @@ class SeasonController extends AbstractController
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(Season $season): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for activate'], Response::HTTP_FORBIDDEN);
+        }
         $season->activate();
         $this->repository->save($season, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -96,6 +100,10 @@ class SeasonController extends AbstractController
     #[Route('/{id}/deactivate', name: 'deactivate', methods: ['POST'])]
     public function deactivate(Season $season): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for deactivate'], Response::HTTP_FORBIDDEN);
+        }
         $season->deactivate();
         $this->repository->save($season, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -104,6 +112,10 @@ class SeasonController extends AbstractController
     #[Route('/{id}/finalize', name: 'finalizeRewards', methods: ['POST'])]
     public function finalizeRewards(Season $season): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for finalize_rewards'], Response::HTTP_FORBIDDEN);
+        }
         $season->finalizeRewards();
         $this->repository->save($season, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);

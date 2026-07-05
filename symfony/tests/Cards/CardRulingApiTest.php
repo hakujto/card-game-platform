@@ -23,11 +23,12 @@ class CardRulingApiTest extends WebTestCase
 
         $this->auxCardSet = new CardSet();
         $this->auxCardSet->setName('test');
-        $this->auxCardSet->setCode('test2');
+        $this->auxCardSet->setCode('tB');
         $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setPublicId('00000000-0000-0000-0000-0000000000013');
         $this->depCard->setName('test');
         $this->depCard->setManaColors('test');
         $this->depCard->setDescription('test');

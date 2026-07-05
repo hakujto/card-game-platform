@@ -26,6 +26,7 @@ class DeckSideboardCardApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->auxPlayer->setDisplayName('test2');
         $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
@@ -37,11 +38,12 @@ class DeckSideboardCardApiTest extends WebTestCase
         $this->em->persist($this->depDeck);
         $this->auxCardSet = new CardSet();
         $this->auxCardSet->setName('test');
-        $this->auxCardSet->setCode('test4');
+        $this->auxCardSet->setCode('tD');
         $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->depCard = new Card();
+        $this->depCard->setPublicId('00000000-0000-0000-0000-0000000000015');
         $this->depCard->setName('test');
         $this->depCard->setManaColors('test');
         $this->depCard->setDescription('test');

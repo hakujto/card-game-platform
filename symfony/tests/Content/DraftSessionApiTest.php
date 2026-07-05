@@ -22,7 +22,7 @@ class DraftSessionApiTest extends WebTestCase
 
         $this->depCardSet = new CardSet();
         $this->depCardSet->setName('test');
-        $this->depCardSet->setCode('test2');
+        $this->depCardSet->setCode('tB');
         $this->depCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->depCardSet->setTotalCards(1);
         $this->em->persist($this->depCardSet);

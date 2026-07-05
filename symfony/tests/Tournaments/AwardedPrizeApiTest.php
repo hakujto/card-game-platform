@@ -32,10 +32,12 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setPublicId('00000000-0000-0000-0000-0000000000013');
         $this->auxPlayer->setDisplayName('test3');
         $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->auxTournament = new Tournament();
+        $this->auxTournament->setPublicId('00000000-0000-0000-0000-0000000000014');
         $this->auxTournament->setName('test');
         $this->auxTournament->setMaxPlayers(1);
         $this->auxTournament->setStartTime(new \DateTime('2024-01-01'));
@@ -50,6 +52,7 @@ class AwardedPrizeApiTest extends WebTestCase
         $this->depPrize->setTournament($this->auxTournament);
         $this->em->persist($this->depPrize);
         $this->depPlayer = new Player();
+        $this->depPlayer->setPublicId('00000000-0000-0000-0000-0000000000016');
         $this->depPlayer->setDisplayName('test6');
         $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);

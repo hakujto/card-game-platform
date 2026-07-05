@@ -116,6 +116,8 @@ Swagger: http://localhost:8000/api/doc
 - `GET/POST` `/api/streams`
 - `GET/PUT/PATCH/DELETE` `/api/streams/{id}`
 
+### Wallet BC
+
 ## Tests
 
 ```bash

@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Marketplace\TradeListingRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
@@ -13,6 +14,7 @@ use App\Entity\Cards\Card;
 
 #[ORM\Entity(repositoryClass: TradeListingRepository::class)]
 #[ORM\Table(name: 'trade_listing')]
+#[UniqueEntity(fields: ['publicId'], message: 'public_id must be unique')]
 class TradeListing
 {
     #[ORM\Id]
@@ -20,6 +22,10 @@ class TradeListing
     #[ORM\Column]
     #[Groups(['tradeListing:read'])]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', unique: true)]
+    #[Groups(['tradeListing:read', 'tradeListing:write'])]
+    private string $publicId = '';
 
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tradeListing:read', 'tradeListing:write'])]
@@ -94,6 +100,17 @@ class TradeListing
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getPublicId(): string
+    {
+        return $this->publicId;
+    }
+
+    public function setPublicId(string $publicId): static
+    {
+        $this->publicId = $publicId;
+        return $this;
     }
 
     public function getStatus(): string
@@ -277,6 +294,12 @@ class TradeListing
     public function isQuantityPositiveValid(): bool
     {
         return ($this->getQuantity() === null || ($this->getQuantity() >= 1 && $this->getQuantity() <= 9999));
+    }
+
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "asking_price is required")]
+    public function isAskingPriceRequiredWhenValid(): bool
+    {
+        return !($this->getListingType() === 'FIXEDPRICE') || $this->getAskingPrice() !== null;
     }
 
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────

@@ -5,6 +5,7 @@ namespace App\Entity\Marketplace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Marketplace\CouponRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -30,6 +31,7 @@ class Coupon
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     #[Groups(['coupon:read', 'coupon:write'])]
+    #[Assert\Range(min: 0.01)]
     private string $discountValue = '0.00';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
@@ -37,11 +39,9 @@ class Coupon
     private string $minOrderValue = '0.00';
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Groups(['coupon:read', 'coupon:write'])]
     private ?int $maxUses = null;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['coupon:read', 'coupon:write'])]
     private int $usesCount = 0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]

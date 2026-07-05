@@ -61,7 +61,7 @@ class ProductApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/products/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['name' => 'test'])
+            json_encode(['description' => 'test'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);

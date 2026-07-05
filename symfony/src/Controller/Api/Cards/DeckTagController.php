@@ -42,6 +42,7 @@ class DeckTagController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         $deckTag = new DeckTag();
         if (isset($data['name'])) $deckTag->setName($data['name']);
+        if (isset($data['slug'])) $deckTag->setSlug($data['slug']);
         if (isset($data['color'])) $deckTag->setColor($data['color']);
 
 
@@ -65,6 +66,7 @@ class DeckTagController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         if (isset($data['name'])) $deckTag->setName($data['name']);
+        if (isset($data['slug'])) $deckTag->setSlug($data['slug']);
         if (isset($data['color'])) $deckTag->setColor($data['color']);
 
 

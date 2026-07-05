@@ -58,6 +58,7 @@ class ArticleController extends AbstractController
         if (isset($data['language'])) $article->setLanguage($data['language']);
         if (isset($data['viewCount'])) $article->setViewCount($data['viewCount']);
         if (isset($data['likesCount'])) $article->setLikesCount($data['likesCount']);
+        if (isset($data['totalViewsAlltime'])) $article->setTotalViewsAlltime($data['totalViewsAlltime']);
         if (isset($data['isFeatured'])) $article->setIsFeatured($data['isFeatured']);
         if (isset($data['publishedAt'])) $article->setPublishedAt(new \DateTime($data['publishedAt']));
         if (isset($data['createdAt'])) $article->setCreatedAt(new \DateTime($data['createdAt']));
@@ -99,14 +100,11 @@ class ArticleController extends AbstractController
         if (isset($data['body'])) $article->setBody($data['body']);
         if (isset($data['excerpt'])) $article->setExcerpt($data['excerpt']);
         if (isset($data['coverImageUrl'])) $article->setCoverImageUrl($data['coverImageUrl']);
-        if (isset($data['status'])) $article->setStatus($data['status']);
         if (isset($data['articleType'])) $article->setArticleType($data['articleType']);
         if (isset($data['language'])) $article->setLanguage($data['language']);
-        if (isset($data['viewCount'])) $article->setViewCount($data['viewCount']);
-        if (isset($data['likesCount'])) $article->setLikesCount($data['likesCount']);
+        if (isset($data['totalViewsAlltime'])) $article->setTotalViewsAlltime($data['totalViewsAlltime']);
         if (isset($data['isFeatured'])) $article->setIsFeatured($data['isFeatured']);
         if (isset($data['publishedAt'])) $article->setPublishedAt(new \DateTime($data['publishedAt']));
-        if (isset($data['createdAt'])) $article->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $article->setUpdatedAt(new \DateTime($data['updatedAt']));
         if (isset($data['author'])) {
             $rel_author = $this->playerRepository->find($data['author']);
@@ -134,6 +132,10 @@ class ArticleController extends AbstractController
     #[Route('/{id}/publish', name: 'publish', methods: ['POST'])]
     public function publish(Article $article): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['editor', 'admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for publish'], Response::HTTP_FORBIDDEN);
+        }
         $article->publish();
         $this->repository->save($article, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
@@ -142,9 +144,26 @@ class ArticleController extends AbstractController
     #[Route('/{id}/archive', name: 'archive', methods: ['POST'])]
     public function archive(Article $article): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['editor', 'admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for archive'], Response::HTTP_FORBIDDEN);
+        }
         $article->archive();
         $this->repository->save($article, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}', name: 'replace', methods: ['PUT'])]
+    public function replace(Article $article, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['editor', 'admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for replace'], Response::HTTP_FORBIDDEN);
+        }
+        $result = $article->replace($data['data'] ?? null);
+        $this->repository->save($article, flush: true);
+        return $this->json($result);
     }
 
     #[Route('/{id}/view', name: 'incrementView', methods: ['POST'])]

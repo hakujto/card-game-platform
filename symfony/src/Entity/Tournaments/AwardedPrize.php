@@ -134,6 +134,12 @@ class AwardedPrize
         return ($this->getFinalPlacement() === null || $this->getFinalPlacement() > 0);
     }
 
+    #[\Symfony\Component\Validator\Constraints\IsTrue(message: "claimed_at is required")]
+    public function isClaimedAtRequiredWhenValid(): bool
+    {
+        return !($this->getClaimed() === true) || $this->getClaimedAt() !== null;
+    }
+
     // ── Domain invariants (IMPLIES rules) ───────────────────────────────
     public function validateImplies(): void
     {

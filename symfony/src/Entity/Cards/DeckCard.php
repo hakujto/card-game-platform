@@ -5,6 +5,7 @@ namespace App\Entity\Cards;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Cards\DeckCardRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DeckCardRepository::class)]
 #[ORM\Table(name: 'deck_card')]
@@ -18,6 +19,7 @@ class DeckCard
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['deckCard:read', 'deckCard:write'])]
+    #[Assert\Range(min: 1, max: 4)]
     private int $quantity = 1;
 
     #[ORM\Column(type: 'boolean')]

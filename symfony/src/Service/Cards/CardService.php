@@ -53,6 +53,15 @@ class CardService
         $this->repository->save($entity, flush: true);
     }
 
+    public function replace(int $id, $data): mixed
+    {
+        $entity = $this->repository->find($id);
+        if (!$entity) throw new \RuntimeException('Card not found: ' . $id);
+        $result = $entity->replace($data);
+        $this->repository->save($entity, flush: true);
+        return $result;
+    }
+
     public function calculateValue(int $id): mixed
     {
         $entity = $this->repository->find($id);

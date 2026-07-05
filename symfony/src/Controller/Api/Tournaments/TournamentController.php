@@ -48,9 +48,11 @@ class TournamentController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $tournament = new Tournament();
+        if (isset($data['publicId'])) $tournament->setPublicId($data['publicId']);
         if (isset($data['name'])) $tournament->setName($data['name']);
         if (isset($data['description'])) $tournament->setDescription($data['description']);
         if (isset($data['status'])) $tournament->setStatus($data['status']);
+        if (isset($data['bracketData'])) $tournament->setBracketData($data['bracketData']);
         if (isset($data['format'])) $tournament->setFormat($data['format']);
         if (isset($data['tournamentType'])) $tournament->setTournamentType($data['tournamentType']);
         if (isset($data['maxPlayers'])) $tournament->setMaxPlayers($data['maxPlayers']);
@@ -95,9 +97,10 @@ class TournamentController extends AbstractController
     public function update(Request $request, Tournament $tournament): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (isset($data['publicId'])) $tournament->setPublicId($data['publicId']);
         if (isset($data['name'])) $tournament->setName($data['name']);
         if (isset($data['description'])) $tournament->setDescription($data['description']);
-        if (isset($data['status'])) $tournament->setStatus($data['status']);
+        if (isset($data['bracketData'])) $tournament->setBracketData($data['bracketData']);
         if (isset($data['format'])) $tournament->setFormat($data['format']);
         if (isset($data['tournamentType'])) $tournament->setTournamentType($data['tournamentType']);
         if (isset($data['maxPlayers'])) $tournament->setMaxPlayers($data['maxPlayers']);
@@ -108,7 +111,6 @@ class TournamentController extends AbstractController
         if (isset($data['isOnline'])) $tournament->setIsOnline($data['isOnline']);
         if (isset($data['location'])) $tournament->setLocation($data['location']);
         if (isset($data['rulesText'])) $tournament->setRulesText($data['rulesText']);
-        if (isset($data['createdAt'])) $tournament->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['season'])) {
             $rel_season = $this->seasonRepository->find($data['season']);
             if (!$rel_season) return $this->json(['error' => 'Season not found'], Response::HTTP_UNPROCESSABLE_ENTITY);

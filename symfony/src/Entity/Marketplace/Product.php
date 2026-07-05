@@ -5,6 +5,7 @@ namespace App\Entity\Marketplace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Marketplace\ProductRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Cards\Card;
@@ -42,6 +43,7 @@ class Product
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['product:read', 'product:write'])]
+    #[Assert\Range(min: 0, max: 100)]
     private int $discountPercent = 0;
 
     #[ORM\Column(type: 'text', nullable: true)]

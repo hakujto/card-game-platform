@@ -27,6 +27,7 @@ class OrderApiTest extends WebTestCase
         $this->em->persist($this->ownerUser);
         $this->ownerModel = new Player();
         $this->ownerModel->setUser($this->ownerUser);
+        $this->ownerModel->setPublicId('00000000-0000-0000-0000-0000000000011');
         $this->ownerModel->setDisplayName('test1');
         $this->ownerModel->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->ownerModel);

@@ -28,16 +28,18 @@ class TradeTransactionApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setPublicId('00000000-0000-0000-0000-0000000000012');
         $this->auxPlayer->setDisplayName('test2');
         $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->auxCardSet = new CardSet();
         $this->auxCardSet->setName('test');
-        $this->auxCardSet->setCode('test3');
+        $this->auxCardSet->setCode('tC');
         $this->auxCardSet->setReleaseDate(new \DateTime('2024-01-01'));
         $this->auxCardSet->setTotalCards(1);
         $this->em->persist($this->auxCardSet);
         $this->auxCard = new Card();
+        $this->auxCard->setPublicId('00000000-0000-0000-0000-0000000000014');
         $this->auxCard->setName('test');
         $this->auxCard->setManaColors('test');
         $this->auxCard->setDescription('test');
@@ -45,15 +47,18 @@ class TradeTransactionApiTest extends WebTestCase
         $this->auxCard->setSet($this->auxCardSet);
         $this->em->persist($this->auxCard);
         $this->depListing = new TradeListing();
+        $this->depListing->setPublicId('00000000-0000-0000-0000-0000000000015');
         $this->depListing->setCreatedAt(new \DateTime('2024-01-01'));
         $this->depListing->setSeller($this->auxPlayer);
         $this->depListing->setCard($this->auxCard);
         $this->em->persist($this->depListing);
         $this->depBuyer = new Player();
+        $this->depBuyer->setPublicId('00000000-0000-0000-0000-0000000000016');
         $this->depBuyer->setDisplayName('test6');
         $this->depBuyer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depBuyer);
         $this->depSeller = new Player();
+        $this->depSeller->setPublicId('00000000-0000-0000-0000-0000000000017');
         $this->depSeller->setDisplayName('test7');
         $this->depSeller->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depSeller);

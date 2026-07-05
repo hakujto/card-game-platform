@@ -30,10 +30,12 @@ class TournamentJudgeApiTest extends WebTestCase
         $this->auxSeason->setEndDate(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxSeason);
         $this->auxPlayer = new Player();
+        $this->auxPlayer->setPublicId('00000000-0000-0000-0000-0000000000013');
         $this->auxPlayer->setDisplayName('test3');
         $this->auxPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->auxPlayer);
         $this->depTournament = new Tournament();
+        $this->depTournament->setPublicId('00000000-0000-0000-0000-0000000000014');
         $this->depTournament->setName('test');
         $this->depTournament->setMaxPlayers(1);
         $this->depTournament->setStartTime(new \DateTime('2024-01-01'));
@@ -42,6 +44,7 @@ class TournamentJudgeApiTest extends WebTestCase
         $this->depTournament->setOrganizer($this->auxPlayer);
         $this->em->persist($this->depTournament);
         $this->depPlayer = new Player();
+        $this->depPlayer->setPublicId('00000000-0000-0000-0000-0000000000015');
         $this->depPlayer->setDisplayName('test5');
         $this->depPlayer->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($this->depPlayer);

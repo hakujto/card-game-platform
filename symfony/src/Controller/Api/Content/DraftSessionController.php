@@ -39,6 +39,7 @@ class DraftSessionController extends AbstractController
         $draftSession = new DraftSession();
         if (isset($data['status'])) $draftSession->setStatus($data['status']);
         if (isset($data['draftType'])) $draftSession->setDraftType($data['draftType']);
+        if (isset($data['packContents'])) $draftSession->setPackContents($data['packContents']);
         if (isset($data['seats'])) $draftSession->setSeats($data['seats']);
         if (isset($data['timePerPickSeconds'])) $draftSession->setTimePerPickSeconds($data['timePerPickSeconds']);
         if (isset($data['createdAt'])) $draftSession->setCreatedAt(new \DateTime($data['createdAt']));

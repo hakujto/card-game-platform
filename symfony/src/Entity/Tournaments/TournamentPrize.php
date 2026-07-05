@@ -5,6 +5,7 @@ namespace App\Entity\Tournaments;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Tournaments\TournamentPrizeRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -20,10 +21,12 @@ class TournamentPrize
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['tournamentPrize:read', 'tournamentPrize:write'])]
+    #[Assert\Range(min: 1)]
     private int $placementFrom = 0;
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['tournamentPrize:read', 'tournamentPrize:write'])]
+    #[Assert\Range(min: 1)]
     private int $placementTo = 0;
 
     #[ORM\Column(type: 'string', length: 20)]

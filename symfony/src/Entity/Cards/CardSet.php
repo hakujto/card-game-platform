@@ -5,6 +5,7 @@ namespace App\Entity\Cards;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\Cards\CardSetRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -28,6 +29,7 @@ class CardSet
 
     #[ORM\Column(type: 'string', length: 10, unique: true)]
     #[Groups(['cardSet:read', 'cardSet:write'])]
+    #[Assert\Regex(pattern: '/[A-Z]{2,6}/')]
     private string $code = '';
 
     #[ORM\Column(type: 'date', nullable: true)]

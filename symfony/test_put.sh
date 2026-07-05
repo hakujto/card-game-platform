@@ -48,17 +48,17 @@ ID_Game=1
 echo && echo "=== PUT card_sets/$ID_CardSet ==="
 curl -s -X PUT "$BASE/card_sets/$ID_CardSet" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"code\": \"fo_$RANDOM\", \"releaseDate\": \"2024-01-01\", \"rotationDate\": null, \"setType\": \"Core\", \"totalCards\": 1, \"isRotated\": false, \"description\": \"foo_description\", \"logoUrl\": \"https://example.com/foo\"}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"code\": \"$(LC_ALL=C tr -dc A-Z </dev/urandom | head -c2)\", \"releaseDate\": \"2024-01-01\", \"rotationDate\": null, \"setType\": \"Core\", \"totalCards\": 1, \"isRotated\": false, \"description\": \"foo_description\", \"logoUrl\": \"https://example.com/foo\"}" | python3 -m json.tool
 
 echo && echo "=== PATCH deck_tags/$ID_DeckTag ==="
 curl -s -X PATCH "$BASE/deck_tags/$ID_DeckTag" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"color\": \"foo_col\"}" | python3 -m json.tool
+  -d "{\"name\": \"foo_name\", \"slug\": \"foo_slug\", \"color\": \"foo_col\"}" | python3 -m json.tool
 
 echo && echo "=== PATCH players/$ID_Player ==="
 curl -s -X PATCH "$BASE/players/$ID_Player" \
   -H "Content-Type: application/json" \
-  -d "{\"displayName\": \"foo_display_name_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1, \"peakRating\": 1, \"bio\": \"foo_bio\", \"countryCode\": \"fo\", \"avatarUrl\": \"https://example.com/foo\", \"preferredFormat\": \"Standard\", \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\", \"userId\": $RANDOM}" | python3 -m json.tool
+  -d "{\"publicId\": \"$(uuidgen | tr '[:upper:]' '[:lower:]')\", \"displayName\": \"test_player_001_$RANDOM\", \"rank\": \"Bronze\", \"rating\": 1000, \"peakRating\": 1000, \"bio\": \"foo_bio\", \"countryCode\": \"AB\", \"avatarUrl\": \"https://example.com/foo\", \"preferredFormat\": \"Standard\", \"contactEmail\": \"foo@example.com\", \"winRateCached\": 1.0, \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00Z\", \"lastActiveAt\": \"2024-01-01T00:00:00Z\"}" | python3 -m json.tool
 
 echo && echo "=== PUT achievements/$ID_Achievement ==="
 curl -s -X PUT "$BASE/achievements/$ID_Achievement" \
@@ -88,7 +88,7 @@ curl -s -X PATCH "$BASE/article_tags/$ID_ArticleTag" \
 echo && echo "=== PUT cards/$ID_Card ==="
 curl -s -X PUT "$BASE/cards/$ID_Card" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"cardType\": \"Creature\", \"rarity\": \"Common\", \"manaCost\": 0, \"manaColors\": \"White\", \"attack\": 1, \"defense\": 1, \"loyalty\": null, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"Standard\", \"isBanned\": false, \"isRestricted\": false, \"powerLevel\": 1, \"set\": ${ID_CardSet:-null}}" | python3 -m json.tool
+  -d "{\"publicId\": \"$(uuidgen | tr '[:upper:]' '[:lower:]')\", \"name\": \"Test Lightning Bolt\", \"cardType\": \"Spell\", \"rarity\": \"Common\", \"manaCost\": 1, \"manaColors\": \"White\", \"attack\": 1, \"defense\": 1, \"loyalty\": null, \"description\": \"foo_description\", \"flavorText\": \"foo_flavor_text\", \"imageUrl\": \"https://example.com/foo\", \"artistName\": \"foo_artist_name\", \"legalFormats\": \"Standard\", \"isBanned\": false, \"isRestricted\": false, \"powerLevel\": 3, \"metadata\": {}, \"totalCopiesInCirculation\": 1, \"set\": ${ID_CardSet:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT decks/$ID_Deck ==="
 curl -s -X PUT "$BASE/decks/$ID_Deck" \
@@ -98,7 +98,7 @@ curl -s -X PUT "$BASE/decks/$ID_Deck" \
 echo && echo "=== PUT articles/$ID_Article ==="
 curl -s -X PUT "$BASE/articles/$ID_Article" \
   -H "Content-Type: application/json" \
-  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug_$RANDOM\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"Draft\", \"articleType\": \"Guide\", \"language\": \"EN\", \"viewCount\": 0, \"likesCount\": 0, \"isFeatured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featuredDeck\": ${ID_Deck:-null}}" | python3 -m json.tool
+  -d "{\"title\": \"foo_title\", \"slug\": \"foo_slug_$RANDOM\", \"body\": \"foo_body\", \"excerpt\": \"foo_excerpt\", \"coverImageUrl\": \"https://example.com/foo\", \"status\": \"Draft\", \"articleType\": \"Guide\", \"language\": \"EN\", \"viewCount\": 0, \"likesCount\": 0, \"totalViewsAlltime\": 1, \"isFeatured\": true, \"publishedAt\": \"2024-01-01T00:00:00Z\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"updatedAt\": \"2024-01-01T00:00:00Z\", \"author\": ${ID_Player:-null}, \"featuredDeck\": ${ID_Deck:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT streams/$ID_Stream ==="
 curl -s -X PUT "$BASE/streams/$ID_Stream" \
@@ -108,7 +108,7 @@ curl -s -X PUT "$BASE/streams/$ID_Stream" \
 echo && echo "=== PUT tournaments/$ID_Tournament ==="
 curl -s -X PUT "$BASE/tournaments/$ID_Tournament" \
   -H "Content-Type: application/json" \
-  -d "{\"name\": \"foo_name\", \"description\": \"foo_description\", \"status\": \"Draft\", \"format\": \"Standard\", \"tournamentType\": \"Swiss\", \"maxPlayers\": 2, \"entryFee\": 0, \"prizePool\": 0, \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": null, \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"season\": ${ID_Season:-null}, \"organizer\": ${ID_Player:-null}}" | python3 -m json.tool
+  -d "{\"publicId\": \"$(uuidgen | tr '[:upper:]' '[:lower:]')\", \"name\": \"Test Tournament Alpha\", \"description\": \"foo_description\", \"status\": \"Draft\", \"bracketData\": {}, \"format\": \"Standard\", \"tournamentType\": \"Swiss\", \"maxPlayers\": 8, \"entryFee\": 0, \"prizePool\": 0, \"startTime\": \"2024-01-01T00:00:00Z\", \"endTime\": null, \"isOnline\": true, \"location\": \"foo_location\", \"rulesText\": \"foo_rules_text\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"season\": ${ID_Season:-null}, \"organizer\": ${ID_Player:-null}}" | python3 -m json.tool
 
 echo && echo "=== PUT card_abilities/$ID_CardAbility ==="
 curl -s -X PUT "$BASE/card_abilities/$ID_CardAbility" \
@@ -129,7 +129,7 @@ curl -s -X PUT "$BASE/crafting_recipes/$ID_CraftingRecipe" \
 echo && echo "=== PATCH trade_listings/$ID_TradeListing ==="
 curl -s -X PATCH "$BASE/trade_listings/$ID_TradeListing" \
   -H "Content-Type: application/json" \
-  -d "{\"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": \"1.00\", \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"seller\": ${ID_Player:-null}, \"card\": ${ID_Card:-null}}" | python3 -m json.tool
+  -d "{\"publicId\": \"$(uuidgen | tr '[:upper:]' '[:lower:]')\", \"status\": \"Active\", \"listingType\": \"FixedPrice\", \"askingPrice\": 1.00, \"auctionStartPrice\": \"1.00\", \"auctionCurrentBid\": \"1.00\", \"auctionEndTime\": \"2024-01-01T00:00:00Z\", \"foil\": true, \"condition\": \"Mint\", \"quantity\": 1, \"description\": \"foo_description\", \"createdAt\": \"2024-01-01T00:00:00Z\", \"expiresAt\": \"2024-01-01T00:00:00Z\", \"seller\": ${ID_Player:-null}, \"card\": ${ID_Card:-null}}" | python3 -m json.tool
 
 echo && echo "=== PATCH deck_cards/$ID_DeckCard ==="
 curl -s -X PATCH "$BASE/deck_cards/$ID_DeckCard" \

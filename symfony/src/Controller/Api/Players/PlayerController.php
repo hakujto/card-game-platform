@@ -43,6 +43,7 @@ class PlayerController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $player = new Player();
+        if (isset($data['publicId'])) $player->setPublicId($data['publicId']);
         if (isset($data['displayName'])) $player->setDisplayName($data['displayName']);
         if (isset($data['rank'])) $player->setRank($data['rank']);
         if (isset($data['rating'])) $player->setRating($data['rating']);
@@ -51,6 +52,8 @@ class PlayerController extends AbstractController
         if (isset($data['countryCode'])) $player->setCountryCode($data['countryCode']);
         if (isset($data['avatarUrl'])) $player->setAvatarUrl($data['avatarUrl']);
         if (isset($data['preferredFormat'])) $player->setPreferredFormat($data['preferredFormat']);
+        if (isset($data['contactEmail'])) $player->setContactEmail($data['contactEmail']);
+        if (isset($data['winRateCached'])) $player->setWinRateCached($data['winRateCached']);
         if (isset($data['isVerified'])) $player->setIsVerified($data['isVerified']);
         if (isset($data['createdAt'])) $player->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['lastActiveAt'])) $player->setLastActiveAt(new \DateTime($data['lastActiveAt']));
@@ -77,16 +80,16 @@ class PlayerController extends AbstractController
     public function update(Request $request, Player $player): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        if (isset($data['publicId'])) $player->setPublicId($data['publicId']);
         if (isset($data['displayName'])) $player->setDisplayName($data['displayName']);
         if (isset($data['rank'])) $player->setRank($data['rank']);
-        if (isset($data['rating'])) $player->setRating($data['rating']);
-        if (isset($data['peakRating'])) $player->setPeakRating($data['peakRating']);
         if (isset($data['bio'])) $player->setBio($data['bio']);
         if (isset($data['countryCode'])) $player->setCountryCode($data['countryCode']);
         if (isset($data['avatarUrl'])) $player->setAvatarUrl($data['avatarUrl']);
         if (isset($data['preferredFormat'])) $player->setPreferredFormat($data['preferredFormat']);
+        if (isset($data['contactEmail'])) $player->setContactEmail($data['contactEmail']);
+        if (isset($data['winRateCached'])) $player->setWinRateCached($data['winRateCached']);
         if (isset($data['isVerified'])) $player->setIsVerified($data['isVerified']);
-        if (isset($data['createdAt'])) $player->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['lastActiveAt'])) $player->setLastActiveAt(new \DateTime($data['lastActiveAt']));
         if (array_key_exists('user', $data)) {
             $player->setUser($data['user'] !== null ? $this->userRepository->find($data['user']) : null);
@@ -144,6 +147,10 @@ class PlayerController extends AbstractController
     #[Route('/{id}/verify', name: 'verify', methods: ['POST'])]
     public function verify(Player $player): JsonResponse
     {
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin'], true)) {
+            return $this->json(['error' => 'Insufficient role for verify'], Response::HTTP_FORBIDDEN);
+        }
         $player->verify();
         $this->repository->save($player, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);

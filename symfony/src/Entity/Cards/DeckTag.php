@@ -22,6 +22,10 @@ class DeckTag
     #[Groups(['deckTag:read', 'deckTag:write'])]
     private string $name = '';
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    #[Groups(['deckTag:read', 'deckTag:write'])]
+    private ?string $slug = null;
+
     #[ORM\Column(type: 'string', length: 7, nullable: true)]
     #[Groups(['deckTag:read', 'deckTag:write'])]
     private ?string $color = null;
@@ -47,6 +51,17 @@ class DeckTag
     public function setName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
         return $this;
     }
 

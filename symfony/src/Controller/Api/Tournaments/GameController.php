@@ -40,6 +40,7 @@ class GameController extends AbstractController
         $game = new Game();
         if (isset($data['gameNumber'])) $game->setGameNumber($data['gameNumber']);
         if (isset($data['winnerSide'])) $game->setWinnerSide($data['winnerSide']);
+        if (isset($data['complexityScore'])) $game->setComplexityScore($data['complexityScore']);
         if (isset($data['turnsPlayed'])) $game->setTurnsPlayed($data['turnsPlayed']);
         if (isset($data['durationSeconds'])) $game->setDurationSeconds($data['durationSeconds']);
         if (isset($data['endedBy'])) $game->setEndedBy($data['endedBy']);

@@ -89,10 +89,6 @@ class DeckController extends AbstractController
         if (isset($data['isPublic'])) $deck->setIsPublic($data['isPublic']);
         if (isset($data['isTournamentLegal'])) $deck->setIsTournamentLegal($data['isTournamentLegal']);
         if (isset($data['archetype'])) $deck->setArchetype($data['archetype']);
-        if (isset($data['wins'])) $deck->setWins($data['wins']);
-        if (isset($data['losses'])) $deck->setLosses($data['losses']);
-        if (isset($data['draws'])) $deck->setDraws($data['draws']);
-        if (isset($data['createdAt'])) $deck->setCreatedAt(new \DateTime($data['createdAt']));
         if (isset($data['updatedAt'])) $deck->setUpdatedAt(new \DateTime($data['updatedAt']));
         if (isset($data['player'])) {
             $rel_player = $this->playerRepository->find($data['player']);

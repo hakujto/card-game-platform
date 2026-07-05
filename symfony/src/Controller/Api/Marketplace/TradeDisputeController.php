@@ -90,6 +90,10 @@ class TradeDisputeController extends AbstractController
     public function resolve(TradeDispute $tradeDispute, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
+        $userRole = $this->getUser()?->getRole();
+        if (!in_array($userRole, ['admin', 'moderator'], true)) {
+            return $this->json(['error' => 'Insufficient role for resolve'], Response::HTTP_FORBIDDEN);
+        }
         $tradeDispute->resolve($data['resolutionText'] ?? null);
         $this->repository->save($tradeDispute, flush: true);
         return $this->json(null, Response::HTTP_NO_CONTENT);

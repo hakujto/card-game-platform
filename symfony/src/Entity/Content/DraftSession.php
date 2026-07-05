@@ -28,6 +28,10 @@ class DraftSession
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private string $draftType = 'Booster';
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['draftSession:read', 'draftSession:write'])]
+    private ?array $packContents = null;
+
     #[ORM\Column(type: 'integer')]
     #[Groups(['draftSession:read', 'draftSession:write'])]
     private int $seats = 8;
@@ -82,6 +86,17 @@ class DraftSession
     public function setDraftType(string $draftType): static
     {
         $this->draftType = $draftType;
+        return $this;
+    }
+
+    public function getPackContents(): ?array
+    {
+        return $this->packContents;
+    }
+
+    public function setPackContents(?array $packContents): static
+    {
+        $this->packContents = $packContents;
         return $this;
     }
 

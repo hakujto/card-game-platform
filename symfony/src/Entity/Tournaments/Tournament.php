@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\Tournaments\TournamentRepository;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Players\Player;
@@ -14,6 +16,7 @@ use App\Entity\Content\Stream;
 #[ORM\Entity(repositoryClass: TournamentRepository::class)]
 #[ORM\Table(name: 'tournament')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['publicId'], message: 'public_id must be unique')]
 class Tournament
 {
     #[ORM\Id]
@@ -21,6 +24,10 @@ class Tournament
     #[ORM\Column]
     #[Groups(['tournament:read'])]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', unique: true)]
+    #[Groups(['tournament:read', 'tournament:write'])]
+    private string $publicId = '';
 
     #[ORM\Column(type: 'string', length: 200)]
     #[Groups(['tournament:read', 'tournament:write'])]
@@ -34,6 +41,10 @@ class Tournament
     #[Groups(['tournament:read', 'tournament:write'])]
     private string $status = 'Draft';
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['tournament:read', 'tournament:write'])]
+    private ?array $bracketData = null;
+
     #[ORM\Column(type: 'string', length: 20)]
     #[Groups(['tournament:read', 'tournament:write'])]
     private string $format = 'Standard';
@@ -44,6 +55,7 @@ class Tournament
 
     #[ORM\Column(type: 'integer')]
     #[Groups(['tournament:read', 'tournament:write'])]
+    #[Assert\Range(min: 2, max: 512)]
     private int $maxPlayers = 0;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
@@ -118,6 +130,17 @@ class Tournament
         return $this->id;
     }
 
+    public function getPublicId(): string
+    {
+        return $this->publicId;
+    }
+
+    public function setPublicId(string $publicId): static
+    {
+        $this->publicId = $publicId;
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -148,6 +171,17 @@ class Tournament
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getBracketData(): ?array
+    {
+        return $this->bracketData;
+    }
+
+    public function setBracketData(?array $bracketData): static
+    {
+        $this->bracketData = $bracketData;
         return $this;
     }
 

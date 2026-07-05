@@ -18,7 +18,8 @@ class PlayerApiTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         $entity = new Player();
-        $entity->setDisplayName('test');
+        $entity->setPublicId('00000000-0000-0000-0000-000000000001');
+        $entity->setDisplayName("test_player_001");
         $entity->setCreatedAt(new \DateTime('2024-01-01'));
         $this->em->persist($entity);
         $this->em->flush();
@@ -44,7 +45,8 @@ class PlayerApiTest extends WebTestCase
     {
         $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-            'displayName' => 'test2',
+            'publicId' => '00000000-0000-0000-0000-0000000000012',
+            'displayName' => "test_player_0012",
             'createdAt' => '2024-01-01T00:00:00+00:00',
         ])
         );
@@ -61,7 +63,7 @@ class PlayerApiTest extends WebTestCase
     public function testUpdateReturns200(): void
     {
         $this->client->request('PATCH', '/api/players/' . $this->entityId, [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['displayName' => 'test'])
+            json_encode(['bio' => 'test'])
         );
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(200);
@@ -71,7 +73,7 @@ class PlayerApiTest extends WebTestCase
     {
         // Rating must be between 0 and 9999
         $this->client->request('POST', '/api/players', [], [], ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['displayName' => 'test', 'rank' => 'BRONZE', 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'rating' => 10000])
+            json_encode(['publicId' => '00000000-0000-0000-0000-000000000001', 'displayName' => 'test', 'rank' => 'BRONZE', 'peakRating' => 1, 'isVerified' => true, 'createdAt' => '2024-01-01T00:00:00+00:00', 'rating' => 10000])
         );
         $this->assertResponseStatusCodeSame(422);
     }
