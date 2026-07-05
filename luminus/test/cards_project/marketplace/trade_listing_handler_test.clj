@@ -4,7 +4,8 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :status "Active"
+(def valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))
+   :status "Active"
    :listing-type "FixedPrice"
    :asking-price 1
    :auction-start-price 1
@@ -38,9 +39,10 @@
 
 (deftest test-update-trade-listing
   (testing "PUT /api/trade_listings/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/trade_listings/1")
+    (let [update-params (merge valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/trade_listings/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404 500} (:status resp)))))
 )
 

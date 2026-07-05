@@ -23,6 +23,15 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-tournament-prize-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :placement_from) (< (double (get m :placement_from)) 1))
+      (swap! errors conj "placement_from: must be >= 1"))
+    (when (and (get m :placement_to) (< (double (get m :placement_to)) 1))
+      (swap! errors conj "placement_to: must be >= 1"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-tournament-prize! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:placement_from :placement_to :prize_type :amount :description :packs_count :season_points :tournament_id}
@@ -60,6 +69,7 @@
     (try
       (let [kw (tournament-prize-kw-params params)]
         (validate-tournament-prize-rules! kw)
+        (validate-tournament-prize-fields! kw)
         (let [new-id (insert-tournament-prize! params)
               record  (or (queries/get-tournament-prize-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))
@@ -77,6 +87,7 @@
     (try
       (let [kw (tournament-prize-kw-params params)]
         (validate-tournament-prize-rules! kw)
+        (validate-tournament-prize-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament-prize! int-id params)
           (if-let [record (queries/get-tournament-prize-by-id db-spec {:id int-id})]
@@ -91,6 +102,7 @@
     (try
       (let [kw (tournament-prize-kw-params params)]
         (validate-tournament-prize-rules! kw)
+        (validate-tournament-prize-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament-prize! int-id params)
           (if-let [record (queries/get-tournament-prize-by-id db-spec {:id int-id})]

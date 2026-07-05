@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS tournaments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  public_id VARCHAR NOT NULL UNIQUE,
+  name VARCHAR NOT NULL,
+  description TEXT,
+  status VARCHAR NOT NULL DEFAULT 'Draft',
+  bracket_data TEXT,
+  format VARCHAR NOT NULL DEFAULT 'Standard',
+  tournament_type VARCHAR NOT NULL DEFAULT 'Swiss',
+  max_players INTEGER NOT NULL,
+  entry_fee DECIMAL NOT NULL DEFAULT 0,
+  prize_pool DECIMAL NOT NULL DEFAULT 0,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME,
+  is_online BOOLEAN NOT NULL DEFAULT 1,
+  location VARCHAR,
+  rules_text TEXT,
+  season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE RESTRICT,
+  organizer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

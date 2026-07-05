@@ -30,6 +30,13 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-trade-transaction-required-when! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :status) "Completed") (nil? (get m :completed_at)))
+      (swap! errors conj "completed_at is required"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-trade-transaction! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:final_price :platform_fee :status :completed_at :listing_id :buyer_id :seller_id}

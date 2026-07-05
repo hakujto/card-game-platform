@@ -28,6 +28,13 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-card-set-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :code) (not (re-matches #"[A-Z]{2,6}" (str (get m :code)))))
+      (swap! errors conj "code: invalid format"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-card-set! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:name :code :release_date :rotation_date :set_type :total_cards :is_rotated :description :logo_url}
@@ -67,6 +74,7 @@
       (let [kw (card-set-kw-params params)]
         (validate-card-set-rules! kw)
         (validate-card-set-implies! kw)
+        (validate-card-set-fields! kw)
         (let [new-id (insert-card-set! params)
               record  (or (queries/get-card-set-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))
@@ -85,6 +93,7 @@
       (let [kw (card-set-kw-params params)]
         (validate-card-set-rules! kw)
         (validate-card-set-implies! kw)
+        (validate-card-set-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-card-set! int-id params)
           (if-let [record (queries/get-card-set-by-id db-spec {:id int-id})]
@@ -100,6 +109,7 @@
       (let [kw (card-set-kw-params params)]
         (validate-card-set-rules! kw)
         (validate-card-set-implies! kw)
+        (validate-card-set-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-card-set! int-id params)
           (if-let [record (queries/get-card-set-by-id db-spec {:id int-id})]

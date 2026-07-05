@@ -26,6 +26,10 @@
   ; TODO: implement unrestrict
   nil)
 
+(defn- replace-behavior! [id data]
+  ; TODO: implement replace
+  nil)
+
 (defn- calculate-value-behavior! [id]
   ; TODO: implement calculate_value
   nil)
@@ -39,27 +43,38 @@
   nil)
 
 (defn ban!
+  ; @allow ["admin" "moderator"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (ban-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn unban!
+  ; @allow ["admin" "moderator"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (unban-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn restrict!
+  ; @allow ["admin" "moderator"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (restrict-behavior! id)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn unrestrict!
+  ; @allow ["admin" "moderator"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-card-by-id db-spec {:id id})]
     (unrestrict-behavior! id)
+    (throw (ex-info "Card not found" {:id id}))))
+
+(defn replace!
+  ; @allow ["admin"] — check (get-in request [:identity :role]) in route middleware
+  [id data]
+  (if-let [record (queries/get-card-by-id db-spec {:id id})]
+    (replace-behavior! id data)
     (throw (ex-info "Card not found" {:id id}))))
 
 (defn calculate-value!

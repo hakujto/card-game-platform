@@ -76,11 +76,14 @@
     (svc/escalate! (Integer/parseInt id))
     (-> (resp/response nil) (resp/status 204)))
 
-  (POST "/api/trade_disputes/:id/resolve" [id :as {params :body}]
-    (let [int-id (Integer/parseInt id)
-        resolution-text (get params :resolution-text)]
-      (svc/resolve! int-id resolution-text)
-      (-> (resp/response nil) (resp/status 204))))
+  (POST "/api/trade_disputes/:id/resolve" [id :as {params :body request :request}]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for resolve"}) (resp/status 403))
+        (let [int-id (Integer/parseInt id)
+              resolution-text (get params :resolution-text)]
+          (svc/resolve! int-id resolution-text)
+          (-> (resp/response nil) (resp/status 204))))))
 
   (POST "/api/trade_disputes/:id/close" [id]
     (svc/close-resolved! (Integer/parseInt id))

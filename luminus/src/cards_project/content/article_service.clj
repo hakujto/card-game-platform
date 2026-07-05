@@ -18,6 +18,10 @@
   ; TODO: implement archive
   nil)
 
+(defn- replace-behavior! [id data]
+  ; TODO: implement replace
+  nil)
+
 (defn- increment-view-behavior! [id]
   ; TODO: implement increment_view
   nil)
@@ -89,15 +93,24 @@
     (throw (ex-info "Article not found" {:id id :status 404}))))
 
 (defn publish!
+  ; @allow ["editor" "admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (publish-behavior! id)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn archive!
+  ; @allow ["editor" "admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-article-by-id db-spec {:id id})]
     (archive-behavior! id)
+    (throw (ex-info "Article not found" {:id id}))))
+
+(defn replace!
+  ; @allow ["editor" "admin"] — check (get-in request [:identity :role]) in route middleware
+  [id data]
+  (if-let [record (queries/get-article-by-id db-spec {:id id})]
+    (replace-behavior! id data)
     (throw (ex-info "Article not found" {:id id}))))
 
 (defn increment-view!

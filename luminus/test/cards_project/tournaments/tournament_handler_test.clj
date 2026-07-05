@@ -4,7 +4,8 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :name "test"
+(def valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))
+   :name "Test Tournament Alpha"
    :status "Draft"
    :format "Standard"
    :tournament-type "Swiss"
@@ -40,10 +41,19 @@
 
 (deftest test-update-tournament
   (testing "PUT /api/tournaments/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/tournaments/1")
+    (let [update-params (merge valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/tournaments/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
+                     (mock/body (json/generate-string update-params))))]
       (is (#{200 404 500} (:status resp)))))
+)
+
+(deftest test-patch-tournament
+  (testing "PATCH /api/tournaments/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/tournaments/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:description "test"}))))]
+      (is (#{200 404 500 422} (:status resp)))))
 )
 
 ; Simple rule violated → 422

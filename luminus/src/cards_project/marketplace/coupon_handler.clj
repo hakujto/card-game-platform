@@ -30,6 +30,13 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-coupon-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :discount_value) (< (double (get m :discount_value)) 0.01))
+      (swap! errors conj "discount_value: must be >= 0.01"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-coupon! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:code :discount_type :discount_value :min_order_value :max_uses :uses_count :valid_from :valid_until :is_active}
@@ -58,20 +65,25 @@
                      " WHERE id = ?")]
     (jdbc/execute-one! db-spec (into [sql] (conj (vec vals) id)))))
 
+(defn- apply-projection-coupon [record]
+  (when record
+    (dissoc (dissoc record :uses_count) :max_uses)))
+
 (defroutes coupons-routes
 
   (GET "/api/coupons" {params :query-params}
     (let [q (or (get params "q") "")]
-      (resp/response (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :code "")) q))) (queries/get-all-coupon db-spec)))))
+      (resp/response (map apply-projection-coupon (filter #(or (empty? q) (or (clojure.string/includes? (str (get % :code "")) q))) (queries/get-all-coupon db-spec))))))
 
   (POST "/api/coupons" {params :body}
     (try
       (let [kw (coupon-kw-params params)]
         (validate-coupon-rules! kw)
         (validate-coupon-implies! kw)
+        (validate-coupon-fields! kw)
         (let [new-id (insert-coupon! params)
               record  (or (queries/get-coupon-by-id db-spec {:id new-id}) {:id new-id})]
-          (-> (resp/response record) (resp/status 201))))
+          (-> (resp/response (apply-projection-coupon record)) (resp/status 201))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
       (catch Exception e
@@ -79,7 +91,7 @@
 
   (GET "/api/coupons/:id" [id]
     (if-let [record (queries/get-coupon-by-id db-spec {:id (Integer/parseInt id)})]
-      (resp/response record)
+      (resp/response (apply-projection-coupon record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
   (PUT "/api/coupons/:id" [id :as {params :body :as req}]
@@ -87,10 +99,11 @@
       (let [kw (coupon-kw-params params)]
         (validate-coupon-rules! kw)
         (validate-coupon-implies! kw)
+        (validate-coupon-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-coupon! int-id params)
           (if-let [record (queries/get-coupon-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-coupon record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
@@ -102,10 +115,11 @@
       (let [kw (coupon-kw-params params)]
         (validate-coupon-rules! kw)
         (validate-coupon-implies! kw)
+        (validate-coupon-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-coupon! int-id params)
           (if-let [record (queries/get-coupon-by-id db-spec {:id int-id})]
-            (resp/response record)
+            (resp/response (apply-projection-coupon record))
             (-> (resp/response {:error "Not found"}) (resp/status 404)))))
       (catch clojure.lang.ExceptionInfo e
         (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))

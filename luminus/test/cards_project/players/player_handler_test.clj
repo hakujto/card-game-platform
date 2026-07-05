@@ -4,7 +4,8 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :display-name (str "test-" (System/currentTimeMillis))
+(def valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))
+   :display-name (str "test-" (System/currentTimeMillis))
    :rank "Bronze"
    :rating 0
    :peak-rating 0
@@ -33,11 +34,20 @@
 
 (deftest test-update-player
   (testing "PUT /api/players/1 returns 200 or 404"
-    (let [update-params (merge valid-params {   :display-name (str "test-" (System/currentTimeMillis))})
+    (let [update-params (merge valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))
+   :display-name (str "test-" (System/currentTimeMillis))})
           resp (app (-> (mock/request :put "/api/players/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string update-params))))]
       (is (#{200 404} (:status resp)))))
+)
+
+(deftest test-patch-player
+  (testing "PATCH /api/players/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/players/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:bio "test"}))))]
+      (is (#{200 404 422} (:status resp)))))
 )
 
 ; Simple rule violated → 422

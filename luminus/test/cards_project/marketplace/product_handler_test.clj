@@ -40,6 +40,14 @@
       (is (#{200 404} (:status resp)))))
 )
 
+(deftest test-patch-product
+  (testing "PATCH /api/products/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/products/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:description "test"}))))]
+      (is (#{200 404 422} (:status resp)))))
+)
+
 ; Simple rule violated → 422
 (deftest test-rule-price-positive
   (testing "POST /api/products violates rule price_positive → 422"

@@ -43,6 +43,14 @@
       (is (#{200 404 500} (:status resp)))))
 )
 
+(deftest test-patch-deck
+  (testing "PATCH /api/decks/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/decks/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:name "test"}))))]
+      (is (#{200 404 500 422} (:status resp)))))
+)
+
 (deftest test-delete-deck
   (testing "DELETE /api/decks/1 returns 204 or 404"
     (let [resp (app (mock/request :delete "/api/decks/1"))]

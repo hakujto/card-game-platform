@@ -17,5 +17,6 @@ jobs:
           path: ~/.m2/repository
           key: clojure-${{ hashFiles('deps.edn') }}
       - run: mkdir -p db
+      - run: rm -f db/cards-project.db
       - run: clojure -M:migrate
       - run: clojure -M:test

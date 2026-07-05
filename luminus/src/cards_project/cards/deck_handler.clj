@@ -49,7 +49,7 @@
 
 (defn- update-deck! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :description :format :is_public :is_tournament_legal :archetype :wins :losses :draws :player_id}
+        allowed  #{:name :description :format :is_public :is_tournament_legal :archetype :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)

@@ -38,9 +38,33 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-card-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :mana_cost) (< (double (get m :mana_cost)) 0))
+      (swap! errors conj "mana_cost: must be >= 0"))
+    (when (and (get m :mana_cost) (> (double (get m :mana_cost)) 20))
+      (swap! errors conj "mana_cost: must be <= 20"))
+    (when (and (get m :power_level) (< (double (get m :power_level)) 1))
+      (swap! errors conj "power_level: must be >= 1"))
+    (when (and (get m :power_level) (> (double (get m :power_level)) 10))
+      (swap! errors conj "power_level: must be <= 10"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
+(defn- validate-card-required-when! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :card_type) "Creature") (nil? (get m :attack)))
+      (swap! errors conj "attack is required"))
+    (when (and (= (get m :card_type) "Creature") (nil? (get m :defense)))
+      (swap! errors conj "defense is required"))
+    (when (and (= (get m :card_type) "Planeswalker") (nil? (get m :loyalty)))
+      (swap! errors conj "loyalty is required"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-card! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :card_type :rarity :mana_cost :mana_colors :attack :defense :loyalty :description :flavor_text :image_url :artist_name :legal_formats :is_banned :is_restricted :power_level :set_id}
+        allowed  #{:public_id :name :card_type :rarity :mana_cost :mana_colors :attack :defense :loyalty :description :flavor_text :image_url :artist_name :legal_formats :is_banned :is_restricted :power_level :metadata :total_copies_in_circulation :set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -57,7 +81,7 @@
 
 (defn- update-card! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :card_type :rarity :mana_cost :mana_colors :attack :defense :loyalty :description :flavor_text :image_url :artist_name :legal_formats :is_banned :is_restricted :power_level :set_id}
+        allowed  #{:public_id :name :card_type :rarity :mana_cost :mana_colors :attack :defense :loyalty :description :flavor_text :image_url :artist_name :legal_formats :power_level :metadata :total_copies_in_circulation :set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -77,6 +101,8 @@
       (let [kw (card-kw-params params)]
         (validate-card-rules! kw)
         (validate-card-implies! kw)
+        (validate-card-fields! kw)
+        (validate-card-required-when! kw)
         (let [new-id (insert-card! params)
               record  (or (queries/get-card-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))
@@ -90,26 +116,13 @@
       (resp/response record)
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/cards/:id" [id :as {params :body :as req}]
-    (try
-      (let [kw (card-kw-params params)]
-        (validate-card-rules! kw)
-        (validate-card-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-card! int-id params)
-          (if-let [record (queries/get-card-by-id db-spec {:id int-id})]
-            (resp/response record)
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (PATCH "/api/cards/:id" [id :as {params :body :as req}]
     (try
       (let [kw (card-kw-params params)]
         (validate-card-rules! kw)
         (validate-card-implies! kw)
+        (validate-card-fields! kw)
+        (validate-card-required-when! kw)
         (let [int-id (Integer/parseInt id)]
           (update-card! int-id params)
           (if-let [record (queries/get-card-by-id db-spec {:id int-id})]
@@ -121,21 +134,41 @@
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
 
-  (POST "/api/cards/:id/ban" [id]
-    (svc/ban! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/cards/:id/ban" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for ban"}) (resp/status 403))
+        (do (svc/ban! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/cards/:id/unban" [id]
-    (svc/unban! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/cards/:id/unban" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for unban"}) (resp/status 403))
+        (do (svc/unban! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/cards/:id/restrict" [id]
-    (svc/restrict! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/cards/:id/restrict" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for restrict"}) (resp/status 403))
+        (do (svc/restrict! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/cards/:id/unrestrict" [id]
-    (svc/unrestrict! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/cards/:id/unrestrict" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "moderator"} user-role))
+        (-> (resp/response {:error "Insufficient role for unrestrict"}) (resp/status 403))
+        (do (svc/unrestrict! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
+
+  (PUT "/api/cards/:id" [id :as {params :body request :request}]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for replace"}) (resp/status 403))
+        (let [data (get params :data)]
+        (let [result (svc/replace! (Integer/parseInt id) data)]
+          (resp/response {:result result}))))))
 
   (GET "/api/cards/:id/value" [id]
     (let [result (svc/calculate-value! (Integer/parseInt id))]

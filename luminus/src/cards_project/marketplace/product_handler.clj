@@ -23,6 +23,15 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-product-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :discount_percent) (< (double (get m :discount_percent)) 0))
+      (swap! errors conj "discount_percent: must be >= 0"))
+    (when (and (get m :discount_percent) (> (double (get m :discount_percent)) 100))
+      (swap! errors conj "discount_percent: must be <= 100"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-product! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:name :product_type :price :stock :active :discount_percent :description :image_url :featured :card_id :card_set_id}
@@ -61,6 +70,7 @@
     (try
       (let [kw (product-kw-params params)]
         (validate-product-rules! kw)
+        (validate-product-fields! kw)
         (let [new-id (insert-product! params)
               record  (or (queries/get-product-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))
@@ -78,6 +88,7 @@
     (try
       (let [kw (product-kw-params params)]
         (validate-product-rules! kw)
+        (validate-product-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-product! int-id params)
           (if-let [record (queries/get-product-by-id db-spec {:id int-id})]
@@ -92,6 +103,7 @@
     (try
       (let [kw (product-kw-params params)]
         (validate-product-rules! kw)
+        (validate-product-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-product! int-id params)
           (if-let [record (queries/get-product-by-id db-spec {:id int-id})]

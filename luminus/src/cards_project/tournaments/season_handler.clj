@@ -99,17 +99,26 @@
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
 
-  (POST "/api/seasons/:id/activate" [id]
-    (svc/activate! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/seasons/:id/activate" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for activate"}) (resp/status 403))
+        (do (svc/activate! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/seasons/:id/deactivate" [id]
-    (svc/deactivate! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/seasons/:id/deactivate" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for deactivate"}) (resp/status 403))
+        (do (svc/deactivate! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/seasons/:id/finalize" [id]
-    (svc/finalize-rewards! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/seasons/:id/finalize" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for finalize_rewards"}) (resp/status 403))
+        (do (svc/finalize-rewards! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
   (GET "/api/seasons/:id/ongoing" [id]
     (let [result (svc/is-ongoing! (Integer/parseInt id))]

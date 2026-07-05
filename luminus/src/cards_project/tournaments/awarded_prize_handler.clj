@@ -26,6 +26,13 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-awarded-prize-required-when! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :claimed) "true") (nil? (get m :claimed_at)))
+      (swap! errors conj "claimed_at is required"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-awarded-prize! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:final_placement :awarded_at :claimed :claimed_at :prize_id :player_id}
@@ -45,7 +52,7 @@
 
 (defn- update-awarded-prize! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:final_placement :awarded_at :claimed :claimed_at :prize_id :player_id}
+        allowed  #{:claimed :claimed_at :prize_id :player_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)

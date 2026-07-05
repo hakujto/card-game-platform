@@ -32,9 +32,18 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-game-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :game_number) (< (double (get m :game_number)) 1))
+      (swap! errors conj "game_number: must be >= 1"))
+    (when (and (get m :game_number) (> (double (get m :game_number)) 3))
+      (swap! errors conj "game_number: must be <= 3"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-game! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:game_number :winner_side :turns_played :duration_seconds :ended_by :replay_url :match_id :winner_id}
+        allowed  #{:game_number :winner_side :complexity_score :turns_played :duration_seconds :ended_by :replay_url :match_id :winner_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -51,7 +60,7 @@
 
 (defn- update-game! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:game_number :winner_side :turns_played :duration_seconds :ended_by :replay_url :match_id :winner_id}
+        allowed  #{:game_number :winner_side :complexity_score :turns_played :duration_seconds :ended_by :replay_url :match_id :winner_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -70,6 +79,7 @@
       (let [kw (game-kw-params params)]
         (validate-game-rules! kw)
         (validate-game-implies! kw)
+        (validate-game-fields! kw)
         (let [new-id (insert-game! params)
               record  (or (queries/get-game-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS orders_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  field VARCHAR(100) NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

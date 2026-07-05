@@ -69,6 +69,7 @@
     (throw (ex-info "Player not found" {:id id}))))
 
 (defn verify!
+  ; @allow ["admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-player-by-id db-spec {:id id})]
     (verify-behavior! id)

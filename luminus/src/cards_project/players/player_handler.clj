@@ -23,9 +23,16 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-player-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :country_code) (not (re-matches #"[A-Z]{2}" (str (get m :country_code)))))
+      (swap! errors conj "country_code: invalid format"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-player! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:display_name :rank :rating :peak_rating :bio :country_code :avatar_url :preferred_format :is_verified :last_active_at :user_id}
+        allowed  #{:public_id :display_name :rank :rating :peak_rating :bio :country_code :avatar_url :preferred_format :contact_email :win_rate_cached :is_verified :last_active_at :user_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -42,7 +49,7 @@
 
 (defn- update-player! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:display_name :rank :rating :peak_rating :bio :country_code :avatar_url :preferred_format :is_verified :last_active_at :user_id}
+        allowed  #{:public_id :display_name :rank :bio :country_code :avatar_url :preferred_format :contact_email :win_rate_cached :is_verified :last_active_at :user_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -65,6 +72,7 @@
     (try
       (let [kw (player-kw-params params)]
         (validate-player-rules! kw)
+        (validate-player-fields! kw)
         (let [new-id (insert-player! params)
               record  (or (queries/get-player-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response (apply-projection-player record)) (resp/status 201))))
@@ -82,6 +90,7 @@
     (try
       (let [kw (player-kw-params params)]
         (validate-player-rules! kw)
+        (validate-player-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-player! int-id params)
           (if-let [record (queries/get-player-by-id db-spec {:id int-id})]
@@ -113,9 +122,12 @@
     (let [result (svc/win-rate! (Integer/parseInt id))]
       (resp/response {:result result})))
 
-  (POST "/api/players/:id/verify" [id]
-    (svc/verify! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/players/:id/verify" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for verify"}) (resp/status 403))
+        (do (svc/verify! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
   (PATCH "/api/players/:id/rating" [id :as {params :body}]
     (let [int-id (Integer/parseInt id)

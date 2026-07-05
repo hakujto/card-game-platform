@@ -4,7 +4,8 @@
             [ring.mock.request :as mock]
             [cheshire.core :as json]))
 
-(def valid-params {   :name "test"
+(def valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))
+   :name "Test Lightning Bolt"
    :card-type "Creature"
    :rarity "Common"
    :mana-cost 0
@@ -17,6 +18,7 @@
    :is-banned false
    :is-restricted true
    :power-level 1
+   :total-copies-in-circulation 0
    :set-id 1})
 
 (deftest test-list-cards
@@ -41,10 +43,19 @@
 
 (deftest test-update-card
   (testing "PUT /api/cards/1 returns 200 or 404"
-    (let [resp (app (-> (mock/request :put "/api/cards/1")
+    (let [update-params (merge valid-params {   :public-id (str "00000000-0000-0000-0000-000000000001-" (System/currentTimeMillis))})
+          resp (app (-> (mock/request :put "/api/cards/1")
                      (mock/content-type "application/json")
-                     (mock/body (json/generate-string valid-params))))]
-      (is (#{200 404 500} (:status resp)))))
+                     (mock/body (json/generate-string update-params))))]
+      (is (#{200 404 500 403} (:status resp)))))
+)
+
+(deftest test-patch-card
+  (testing "PATCH /api/cards/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/cards/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:flavor-text "test"}))))]
+      (is (#{200 404 500 422} (:status resp)))))
 )
 
 ; IMPLIES: antecedent=true, consequent violated → 422

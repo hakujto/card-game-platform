@@ -30,9 +30,18 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-tournament-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :max_players) (< (double (get m :max_players)) 2))
+      (swap! errors conj "max_players: must be >= 2"))
+    (when (and (get m :max_players) (> (double (get m :max_players)) 512))
+      (swap! errors conj "max_players: must be <= 512"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-tournament! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :description :status :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
+        allowed  #{:public_id :name :description :status :bracket_data :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -49,7 +58,7 @@
 
 (defn- update-tournament! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:name :description :status :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
+        allowed  #{:public_id :name :description :bracket_data :format :tournament_type :max_players :entry_fee :prize_pool :start_time :end_time :is_online :location :rules_text :season_id :organizer_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -73,6 +82,7 @@
       (let [kw (tournament-kw-params params)]
         (validate-tournament-rules! kw)
         (validate-tournament-implies! kw)
+        (validate-tournament-fields! kw)
         (let [new-id (insert-tournament! params)
               record  (or (queries/get-tournament-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response (apply-projection-tournament record)) (resp/status 201))))
@@ -91,6 +101,7 @@
       (let [kw (tournament-kw-params params)]
         (validate-tournament-rules! kw)
         (validate-tournament-implies! kw)
+        (validate-tournament-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament! int-id params)
           (if-let [record (queries/get-tournament-by-id db-spec {:id int-id})]
@@ -106,6 +117,7 @@
       (let [kw (tournament-kw-params params)]
         (validate-tournament-rules! kw)
         (validate-tournament-implies! kw)
+        (validate-tournament-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-tournament! int-id params)
           (if-let [record (queries/get-tournament-by-id db-spec {:id int-id})]

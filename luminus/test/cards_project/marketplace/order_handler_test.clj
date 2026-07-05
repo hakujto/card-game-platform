@@ -7,7 +7,7 @@
 (def valid-params {   :status "Paid"
    :total 0
    :discount-applied 0
-   :currency "test"
+   :currency "USD"
    :tracking-number "test"
    :created-at "2024-01-01T00:00:00"
    :paid-at "2024-01-02T00:00:00"

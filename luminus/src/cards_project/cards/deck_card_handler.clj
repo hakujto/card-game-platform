@@ -26,6 +26,15 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-deck-card-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :quantity) (< (double (get m :quantity)) 1))
+      (swap! errors conj "quantity: must be >= 1"))
+    (when (and (get m :quantity) (> (double (get m :quantity)) 4))
+      (swap! errors conj "quantity: must be <= 4"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-deck-card! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:quantity :is_commander :deck_id :card_id}
@@ -64,6 +73,7 @@
       (let [kw (deck-card-kw-params params)]
         (validate-deck-card-rules! kw)
         (validate-deck-card-implies! kw)
+        (validate-deck-card-fields! kw)
         (let [new-id (insert-deck-card! params)
               record  (or (queries/get-deck-card-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response record) (resp/status 201))))
@@ -82,6 +92,7 @@
       (let [kw (deck-card-kw-params params)]
         (validate-deck-card-rules! kw)
         (validate-deck-card-implies! kw)
+        (validate-deck-card-fields! kw)
         (let [int-id (Integer/parseInt id)]
           (update-deck-card! int-id params)
           (if-let [record (queries/get-deck-card-by-id db-spec {:id int-id})]

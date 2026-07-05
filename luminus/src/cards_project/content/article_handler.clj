@@ -30,7 +30,7 @@
 
 (defn- insert-article! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :language :view_count :likes_count :is_featured :published_at :author_id :featured_deck_id}
+        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :language :view_count :likes_count :total_views_alltime :is_featured :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -47,7 +47,7 @@
 
 (defn- update-article! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:title :slug :body :excerpt :cover_image_url :status :article_type :language :view_count :likes_count :is_featured :published_at :author_id :featured_deck_id}
+        allowed  #{:title :slug :body :excerpt :cover_image_url :article_type :language :total_views_alltime :is_featured :published_at :author_id :featured_deck_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -84,21 +84,6 @@
       (resp/response (apply-projection-article record))
       (-> (resp/response {:error "Not found"}) (resp/status 404))))
 
-  (PUT "/api/articles/:id" [id :as {params :body :as req}]
-    (try
-      (let [kw (article-kw-params params)]
-        (validate-article-rules! kw)
-        (validate-article-implies! kw)
-        (let [int-id (Integer/parseInt id)]
-          (update-article! int-id params)
-          (if-let [record (queries/get-article-by-id db-spec {:id int-id})]
-            (resp/response (apply-projection-article record))
-            (-> (resp/response {:error "Not found"}) (resp/status 404)))))
-      (catch clojure.lang.ExceptionInfo e
-        (-> (resp/response {:errors (:errors (ex-data e))}) (resp/status 422)))
-      (catch Exception e
-        (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
-
   (PATCH "/api/articles/:id" [id :as {params :body :as req}]
     (try
       (let [kw (article-kw-params params)]
@@ -115,13 +100,27 @@
         (-> (resp/response {:error (.getMessage e)}) (resp/status 500)))))
 
 
-  (POST "/api/articles/:id/publish" [id]
-    (svc/publish! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/articles/:id/publish" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"editor" "admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for publish"}) (resp/status 403))
+        (do (svc/publish! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
-  (POST "/api/articles/:id/archive" [id]
-    (svc/archive! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/articles/:id/archive" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"editor" "admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for archive"}) (resp/status 403))
+        (do (svc/archive! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
+
+  (PUT "/api/articles/:id" [id :as {params :body request :request}]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"editor" "admin"} user-role))
+        (-> (resp/response {:error "Insufficient role for replace"}) (resp/status 403))
+        (let [data (get params :data)]
+        (let [result (svc/replace! (Integer/parseInt id) data)]
+          (resp/response {:result result}))))))
 
   (POST "/api/articles/:id/view" [id]
     (svc/increment-view! (Integer/parseInt id))

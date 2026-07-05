@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS card_sets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR NOT NULL,
+  code VARCHAR NOT NULL UNIQUE,
+  release_date DATE NOT NULL,
+  rotation_date DATE,
+  set_type VARCHAR NOT NULL DEFAULT 'Expansion',
+  total_cards INTEGER NOT NULL,
+  is_rotated BOOLEAN NOT NULL DEFAULT 0,
+  description TEXT,
+  logo_url VARCHAR,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

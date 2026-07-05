@@ -30,7 +30,7 @@
 
 (defn- insert-draft-session! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :draft_type :seats :time_per_pick_seconds :completed_at :card_set_id}
+        allowed  #{:status :draft_type :pack_contents :seats :time_per_pick_seconds :completed_at :card_set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -47,7 +47,7 @@
 
 (defn- update-draft-session! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :draft_type :seats :time_per_pick_seconds :completed_at :card_set_id}
+        allowed  #{:status :draft_type :pack_contents :seats :time_per_pick_seconds :completed_at :card_set_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)

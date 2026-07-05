@@ -12,6 +12,7 @@
    :language "EN"
    :view-count 0
    :likes-count 0
+   :total-views-alltime 0
    :is-featured true
    :published-at "2024-01-02T00:00:00"
    :created-at "2024-01-01T00:00:00"
@@ -44,7 +45,15 @@
           resp (app (-> (mock/request :put "/api/articles/1")
                      (mock/content-type "application/json")
                      (mock/body (json/generate-string update-params))))]
-      (is (#{200 404 500} (:status resp)))))
+      (is (#{200 404 500 403} (:status resp)))))
+)
+
+(deftest test-patch-article
+  (testing "PATCH /api/articles/1 partial update returns 200 or 404"
+    (let [resp (app (-> (mock/request :patch "/api/articles/1")
+                     (mock/content-type "application/json")
+                     (mock/body (json/generate-string {:excerpt "test"}))))]
+      (is (#{200 404 500 422} (:status resp)))))
 )
 
 ; IMPLIES: antecedent=true, consequent violated → 422

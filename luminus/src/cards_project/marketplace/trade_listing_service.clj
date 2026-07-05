@@ -125,6 +125,7 @@
     (throw (ex-info "TradeListing not found" {:id id}))))
 
 (defn finalize-auction!
+  ; @allow ["admin" "seller"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-trade-listing-by-id db-spec {:id id})]
     (finalize-auction-behavior! id)

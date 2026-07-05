@@ -99,6 +99,7 @@
     (throw (ex-info "TradeDispute not found" {:id id}))))
 
 (defn resolve!
+  ; @allow ["admin" "moderator"] — check (get-in request [:identity :role]) in route middleware
   [id resolution-text]
   (if-let [record (queries/get-trade-dispute-by-id db-spec {:id id})]
     (resolve-behavior! id resolution-text)

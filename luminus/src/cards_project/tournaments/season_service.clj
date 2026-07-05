@@ -27,18 +27,21 @@
   nil)
 
 (defn activate!
+  ; @allow ["admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (activate-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
 (defn deactivate!
+  ; @allow ["admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (deactivate-behavior! id)
     (throw (ex-info "Season not found" {:id id}))))
 
 (defn finalize-rewards!
+  ; @allow ["admin"] — check (get-in request [:identity :role]) in route middleware
   [id]
   (if-let [record (queries/get-season-by-id db-spec {:id id})]
     (finalize-rewards-behavior! id)

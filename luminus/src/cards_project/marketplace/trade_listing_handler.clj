@@ -28,9 +28,16 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-trade-listing-required-when! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :listing_type) "FixedPrice") (nil? (get m :asking_price)))
+      (swap! errors conj "asking_price is required"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-trade-listing! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
+        allowed  #{:public_id :status :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -47,7 +54,7 @@
 
 (defn- update-trade-listing! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
+        allowed  #{:public_id :listing_type :asking_price :auction_start_price :auction_current_bid :auction_end_time :foil :condition :quantity :description :expires_at :seller_id :card_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -71,6 +78,7 @@
       (let [kw (trade-listing-kw-params params)]
         (validate-trade-listing-rules! kw)
         (validate-trade-listing-implies! kw)
+        (validate-trade-listing-required-when! kw)
         (let [new-id (insert-trade-listing! params)
               record  (or (queries/get-trade-listing-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response (apply-projection-trade-listing record)) (resp/status 201))))
@@ -89,6 +97,7 @@
       (let [kw (trade-listing-kw-params params)]
         (validate-trade-listing-rules! kw)
         (validate-trade-listing-implies! kw)
+        (validate-trade-listing-required-when! kw)
         (let [int-id (Integer/parseInt id)]
           (update-trade-listing! int-id params)
           (if-let [record (queries/get-trade-listing-by-id db-spec {:id int-id})]
@@ -118,9 +127,12 @@
     (let [result (svc/is-expired! (Integer/parseInt id))]
       (resp/response {:result result})))
 
-  (POST "/api/trade_listings/:id/finalize" [id]
-    (svc/finalize-auction! (Integer/parseInt id))
-    (-> (resp/response nil) (resp/status 204)))
+  (POST "/api/trade_listings/:id/finalize" [id :as request]
+    (let [user-role (get-in request [:headers "x-user-role"])]
+      (if (not (contains? #{"admin" "seller"} user-role))
+        (-> (resp/response {:error "Insufficient role for finalize_auction"}) (resp/status 403))
+        (do (svc/finalize-auction! (Integer/parseInt id))
+            (-> (resp/response nil) (resp/status 204))))))
 
   (PATCH "/api/trade_listings/:id/transitions/pending-to-active" [id :as request]
     (let [user-role (get-in request [:headers "x-user-role"])]

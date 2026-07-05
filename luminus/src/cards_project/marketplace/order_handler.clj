@@ -32,6 +32,22 @@
     (when (seq @errors)
       (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
 
+(defn- validate-order-fields! [m]
+  (let [errors (atom [])]
+    (when (and (get m :currency) (not (re-matches #"[A-Z]{3}" (str (get m :currency)))))
+      (swap! errors conj "currency: invalid format"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
+(defn- validate-order-required-when! [m]
+  (let [errors (atom [])]
+    (when (and (= (get m :status) "Shipped") (nil? (get m :tracking_number)))
+      (swap! errors conj "tracking_number is required"))
+    (when (and (= (get m :status) "Paid") (nil? (get m :paid_at)))
+      (swap! errors conj "paid_at is required"))
+    (when (seq @errors)
+      (throw (ex-info "Validation failed" {:errors @errors :status 422})))))
+
 (defn- insert-order! [params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
         allowed  #{:status :total :discount_applied :currency :payment_method :payment_reference :shipping_address :tracking_number :paid_at :shipped_at :player_id :coupon_id}
@@ -51,7 +67,7 @@
 
 (defn- update-order! [id params]
   (let [kw-params (into {} (map (fn [[k v]] [(keyword (clojure.string/replace (name k) "-" "_")) v]) params))
-        allowed  #{:status :total :discount_applied :currency :payment_method :payment_reference :shipping_address :tracking_number :paid_at :shipped_at :player_id :coupon_id}
+        allowed  #{:total :discount_applied :currency :payment_method :payment_reference :shipping_address :tracking_number :shipped_at :player_id :coupon_id}
         pairs    (filter (fn [[k _]] (allowed k)) kw-params)
         cols     (map #(name (first %)) pairs)
         vals     (map second pairs)
@@ -62,7 +78,7 @@
 
 (defn- apply-projection-order [record]
   (when record
-    (let [m (let [m (let [m record] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :paid_at) (assoc :paid_at (get m :paid_at))))] (-> m (dissoc :shipped_at) (assoc :shipped_at (get m :shipped_at))))))
+    (let [m (let [m (let [m (dissoc record :payment_reference)] (-> m (dissoc :created_at) (assoc :created_at (get m :created_at))))] (-> m (dissoc :paid_at) (assoc :paid_at (get m :paid_at))))] (-> m (dissoc :shipped_at) (assoc :shipped_at (get m :shipped_at))))))
 
 (defroutes orders-routes
 
@@ -74,6 +90,8 @@
       (let [kw (order-kw-params params)]
         (validate-order-rules! kw)
         (validate-order-implies! kw)
+        (validate-order-fields! kw)
+        (validate-order-required-when! kw)
         (let [new-id (insert-order! params)
               record  (or (queries/get-order-by-id db-spec {:id new-id}) {:id new-id})]
           (-> (resp/response (apply-projection-order record)) (resp/status 201))))

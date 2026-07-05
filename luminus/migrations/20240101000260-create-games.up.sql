@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  game_number INTEGER NOT NULL,
+  winner_side VARCHAR,
+  complexity_score REAL,
+  turns_played INTEGER,
+  duration_seconds INTEGER,
+  ended_by VARCHAR,
+  replay_url VARCHAR,
+  match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  winner_id INTEGER REFERENCES players(id) ON DELETE SET NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
