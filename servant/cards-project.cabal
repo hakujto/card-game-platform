@@ -32,6 +32,7 @@ library
     CardsProject.Tournaments.Types
     CardsProject.Marketplace.Types
     CardsProject.Content.Types
+    CardsProject.Wallet.Types
     CardsProject.Cards.CardHandler
     CardsProject.Cards.CardSetHandler
     CardsProject.Cards.CardRulingHandler

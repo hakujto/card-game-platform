@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Marketplace.OrderService as OrderSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
@@ -65,7 +66,7 @@ orderServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           mRow <- liftIO $ withDb $ \conn -> do
-            execute conn "INSERT INTO orders (status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            execute conn "INSERT INTO orders (status, total, discount_applied, currency, payment_method, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
             rowId <- lastInsertRowId conn
             rows <- query conn "SELECT id, status, total, discount_applied, currency, payment_method, payment_reference, shipping_address, tracking_number, created_at, paid_at, shipped_at, player_id, coupon_id FROM orders WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Order]
             return $ case rows of { (r:_) -> Just r; [] -> Nothing }

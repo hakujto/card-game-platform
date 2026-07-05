@@ -26,6 +26,7 @@ validateTradeDisputeImplies body
 escalate :: Int -> IO ()
 escalate _eid = throwIO (userError "escalate not implemented")
 
+-- @allow [admin, moderator] — check user role before calling
 -- @invoke behavior stub (no-op)
 resolve :: Int -> IO ()
 resolve _eid = throwIO (userError "resolve not implemented")

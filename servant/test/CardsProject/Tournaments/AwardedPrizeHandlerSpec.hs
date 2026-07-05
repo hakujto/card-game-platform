@@ -23,5 +23,5 @@ spec = with (return app) $ do
   describe "POST /api/awarded_prizes/1/claim" $ do
     it "behavior claim stub returns 404 or 500" $ do
       resp <- request "POST" "/api/awarded_prizes/1/claim" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 

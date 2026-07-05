@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.CraftingRecipeService as CraftingRecipeSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -65,7 +66,7 @@ craftingRecipeServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bCraftingRecipeDustCost validBody), toField (bCraftingRecipeIsAvailable validBody), toField (bCraftingRecipeResultCardId validBody), toField eid]
             execute conn "UPDATE crafting_recipes SET dust_cost = ?, is_available = ?, result_card_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, dust_cost, is_available, result_card_id FROM crafting_recipes WHERE id = ?" (Only eid) :: IO [CraftingRecipe]
           case rows of

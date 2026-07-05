@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS cards (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  public_id TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   card_type TEXT NOT NULL DEFAULT 'Creature',
   rarity TEXT NOT NULL DEFAULT 'Common',
@@ -26,6 +27,8 @@ CREATE TABLE IF NOT EXISTS cards (
   is_banned INTEGER NOT NULL DEFAULT 0,
   is_restricted INTEGER NOT NULL DEFAULT 0,
   power_level INTEGER NOT NULL DEFAULT 1,
+  metadata TEXT,
+  total_copies_in_circulation INTEGER NOT NULL DEFAULT 0,
   set_id INTEGER,
   FOREIGN KEY (set_id) REFERENCES card_sets(id) ON DELETE RESTRICT
 );
@@ -101,6 +104,7 @@ CREATE TABLE IF NOT EXISTS deck_sideboard_cards (
 CREATE TABLE IF NOT EXISTS deck_tags (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  slug TEXT,
   color TEXT
 );
 
@@ -112,8 +116,18 @@ CREATE TABLE IF NOT EXISTS deck_tag_assignments (
   FOREIGN KEY (tag_id) REFERENCES deck_tags(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS cards_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  field TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS players (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  public_id TEXT NOT NULL UNIQUE,
   display_name TEXT NOT NULL UNIQUE,
   rank TEXT NOT NULL DEFAULT 'Bronze',
   rating INTEGER NOT NULL DEFAULT 1000,
@@ -122,6 +136,8 @@ CREATE TABLE IF NOT EXISTS players (
   country_code TEXT,
   avatar_url TEXT,
   preferred_format TEXT,
+  contact_email TEXT,
+  win_rate_cached REAL,
   is_verified INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   last_active_at TEXT,
@@ -216,9 +232,11 @@ CREATE TABLE IF NOT EXISTS seasons (
 
 CREATE TABLE IF NOT EXISTS tournaments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  public_id TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'Draft',
+  bracket_data TEXT,
   format TEXT NOT NULL DEFAULT 'Standard',
   tournament_type TEXT NOT NULL DEFAULT 'Swiss',
   max_players INTEGER NOT NULL,
@@ -292,6 +310,7 @@ CREATE TABLE IF NOT EXISTS games (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   game_number INTEGER NOT NULL,
   winner_side TEXT,
+  complexity_score REAL,
   turns_played INTEGER,
   duration_seconds INTEGER,
   ended_by TEXT,
@@ -325,6 +344,15 @@ CREATE TABLE IF NOT EXISTS awarded_prizes (
   player_id INTEGER,
   FOREIGN KEY (prize_id) REFERENCES tournament_prizes(id) ON DELETE RESTRICT,
   FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS tournaments_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  field TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -389,6 +417,7 @@ CREATE TABLE IF NOT EXISTS coupons (
 
 CREATE TABLE IF NOT EXISTS trade_listings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  public_id TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'Active',
   listing_type TEXT NOT NULL DEFAULT 'FixedPrice',
   asking_price REAL,
@@ -460,10 +489,29 @@ CREATE TABLE IF NOT EXISTS trade_disputes (
   FOREIGN KEY (resolved_by_id) REFERENCES players(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS orders_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  field TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS trade_transactions_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  record_id INTEGER NOT NULL,
+  field TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS draft_sessions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   status TEXT NOT NULL DEFAULT 'WaitingForPlayers',
   draft_type TEXT NOT NULL DEFAULT 'Booster',
+  pack_contents TEXT,
   seats INTEGER NOT NULL DEFAULT 8,
   time_per_pick_seconds INTEGER NOT NULL DEFAULT 30,
   created_at TEXT NOT NULL,
@@ -505,6 +553,7 @@ CREATE TABLE IF NOT EXISTS articles (
   language TEXT NOT NULL DEFAULT 'EN',
   view_count INTEGER NOT NULL DEFAULT 0,
   likes_count INTEGER NOT NULL DEFAULT 0,
+  total_views_alltime INTEGER NOT NULL DEFAULT 0,
   is_featured INTEGER NOT NULL DEFAULT 0,
   published_at TEXT,
   created_at TEXT NOT NULL,
@@ -560,3 +609,4 @@ CREATE TABLE IF NOT EXISTS streams (
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
   FOREIGN KEY (streamer_id) REFERENCES players(id) ON DELETE RESTRICT
 );
+

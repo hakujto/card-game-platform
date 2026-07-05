@@ -15,6 +15,8 @@ import CardsProject.Db (withDb)
 -- Domain service for Game
 validateGame :: NewGame -> Either String NewGame
 validateGame body
+  | bGameGameNumber body < 1 = Left "game_number: must be >= 1"
+  | bGameGameNumber body > 3 = Left "game_number: must be <= 3"
   | not ((bGameGameNumber body >= 1 && bGameGameNumber body <= 3)) = Left "Game number must be between 1 and 3 (best-of-3)"
   | otherwise = validateGameImplies body
 

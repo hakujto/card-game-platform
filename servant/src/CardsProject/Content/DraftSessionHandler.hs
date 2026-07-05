@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Content.DraftSessionService as DraftSessionSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
@@ -46,16 +47,16 @@ draftSessionServer = listAll
   :<|> transitionHandlerAbandonedToDrafting
   where
     listAll = liftIO $ withDb $ \conn ->
-      query_ conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions" :: IO [DraftSession]
+      query_ conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions" :: IO [DraftSession]
 
     create body = do
       case DraftSessionSvc.validateDraftSession body of
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           mRow <- liftIO $ withDb $ \conn -> do
-            execute conn "INSERT INTO draft_sessions (status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id) VALUES (?, ?, ?, ?, ?, ?, ?)" validBody
+            execute conn "INSERT INTO draft_sessions (status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)" validBody
             rowId <- lastInsertRowId conn
-            rows <- query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [DraftSession]
+            rows <- query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [DraftSession]
             return $ case rows of { (r:_) -> Just r; [] -> Nothing }
           case mRow of
             Just r  -> return r
@@ -63,14 +64,14 @@ draftSessionServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+        query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
 
     behaviorStart eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+        query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -82,7 +83,7 @@ draftSessionServer = listAll
 
     behaviorAbandon eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+        query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -94,7 +95,7 @@ draftSessionServer = listAll
 
     behaviorComplete eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+        query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -106,7 +107,7 @@ draftSessionServer = listAll
 
     behaviorIsFull eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, status, draft_type, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
+        query conn "SELECT id, status, draft_type, pack_contents, seats, time_per_pick_seconds, created_at, completed_at, card_set_id FROM draft_sessions WHERE id = ?" (Only eid) :: IO [DraftSession]
       case rows of
         []    -> throwError err404
         (_:_) -> do

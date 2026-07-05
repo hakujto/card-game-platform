@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.FriendshipService as FriendshipSvc
 import Data.Text (Text)
 import qualified Data.Text

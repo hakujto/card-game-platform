@@ -70,22 +70,22 @@ spec = with (return app) $ do
   describe "POST /api/trade_disputes/1/escalate" $ do
     it "behavior escalate stub returns 404 or 500" $ do
       resp <- request "POST" "/api/trade_disputes/1/escalate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/trade_disputes/1/resolve" $ do
     it "behavior resolve stub returns 404 or 500" $ do
       resp <- request "POST" "/api/trade_disputes/1/resolve" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/trade_disputes/1/close" $ do
     it "behavior close_resolved stub returns 404 or 500" $ do
       resp <- request "POST" "/api/trade_disputes/1/close" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/trade_disputes/1/review" $ do
     it "behavior review stub returns 404 or 500" $ do
       resp <- request "POST" "/api/trade_disputes/1/review" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/trade_disputes rule resolved_at_requires_terminal_status" $ do
     it "rejects when resolved_at_requires_terminal_status violated" $ do

@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Cards.DeckTagService as DeckTagSvc
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
@@ -33,15 +34,15 @@ deckTagServer = listAll
   :<|> behaviorMergeInto
   where
     listAll mq = liftIO $ withDb $ \conn -> case mq of
-      Nothing -> query_ conn "SELECT id, name, color FROM deck_tags" :: IO [DeckTag]
+      Nothing -> query_ conn "SELECT id, name, slug, color FROM deck_tags" :: IO [DeckTag]
       Just q  -> let qp = "%" <> q <> "%" in
-        query conn "SELECT id, name, color FROM deck_tags WHERE name LIKE ?" (Only qp) :: IO [DeckTag]
+        query conn "SELECT id, name, slug, color FROM deck_tags WHERE name LIKE ?" (Only qp) :: IO [DeckTag]
 
     create body = do
       mRow <- liftIO $ withDb $ \conn -> do
-        execute conn "INSERT INTO deck_tags (name, color) VALUES (?, ?)" body
+        execute conn "INSERT INTO deck_tags (name, slug, color) VALUES (?, ?, ?)" body
         rowId <- lastInsertRowId conn
-        rows <- query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [DeckTag]
+        rows <- query conn "SELECT id, name, slug, color FROM deck_tags WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [DeckTag]
         return $ case rows of { (r:_) -> Just r; [] -> Nothing }
       case mRow of
         Just r  -> return r
@@ -49,16 +50,16 @@ deckTagServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+        query conn "SELECT id, name, slug, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
 
     partialUpdate eid body = do
       rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
-        execute conn "UPDATE deck_tags SET name = ?, color = ? WHERE id = ?" bodyRow
-        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+        let bodyRow = [toField (bDeckTagName body), toField (bDeckTagSlug body), toField (bDeckTagColor body), toField eid]
+        execute conn "UPDATE deck_tags SET name = ?, slug = ?, color = ? WHERE id = ?" bodyRow
+        query conn "SELECT id, name, slug, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -70,7 +71,7 @@ deckTagServer = listAll
 
     behaviorRename eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+        query conn "SELECT id, name, slug, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -82,7 +83,7 @@ deckTagServer = listAll
 
     behaviorMergeInto eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, name, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
+        query conn "SELECT id, name, slug, color FROM deck_tags WHERE id = ?" (Only eid) :: IO [DeckTag]
       case rows of
         []    -> throwError err404
         (_:_) -> do

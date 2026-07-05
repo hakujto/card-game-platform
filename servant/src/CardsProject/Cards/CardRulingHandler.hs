@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Cards.CardRulingService as CardRulingSvc
 import Control.Exception (catch, IOException)
 

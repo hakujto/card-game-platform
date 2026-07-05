@@ -4,9 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Players.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=), Value(..), encode, decode)
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.ByteString.Lazy as BSL
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
 import Database.SQLite.Simple.ToField (ToField(..))
 import Database.SQLite.Simple.FromField (FromField(..), returnError, ResultError(ConversionFailed))
@@ -119,6 +122,7 @@ _playerOpts = defaultOptions
 
 data Player = Player
   { playerId :: Int
+  , playerPublicId :: Text
   , playerDisplayName :: Text
   , playerRank :: PlayerRankType
   , playerRating :: Int
@@ -127,6 +131,8 @@ data Player = Player
   , playerCountryCode :: Maybe Text
   , playerAvatarUrl :: Maybe Text
   , playerPreferredFormat :: Maybe PlayerPreferredFormatType
+  , playerContactEmail :: Maybe Text
+  , playerWinRateCached :: Maybe Double
   , playerIsVerified :: Bool
   , playerCreatedAt :: Text
   , playerLastActiveAt :: Maybe Text
@@ -136,6 +142,7 @@ data Player = Player
 instance ToJSON Player where
   toJSON rec = object $ filter (\(k,_) -> k /= "") [
     "id" .= rec.playerId
+    , "public_id" .= rec.playerPublicId
     , "display_name" .= rec.playerDisplayName
     , "rank" .= rec.playerRank
     , "rating" .= rec.playerRating
@@ -144,6 +151,8 @@ instance ToJSON Player where
     , "country_code" .= rec.playerCountryCode
     , "avatar_url" .= rec.playerAvatarUrl
     , "preferred_format" .= rec.playerPreferredFormat
+    , "contact_email" .= rec.playerContactEmail
+    , "win_rate_cached" .= rec.playerWinRateCached
     , "is_verified" .= rec.playerIsVerified
     , "createdAt" .= rec.playerCreatedAt
     , "lastActiveAt" .= rec.playerLastActiveAt
@@ -153,14 +162,15 @@ instance FromJSON Player where
   parseJSON = genericParseJSON _playerOpts
 
 instance FromRow Player where
-  fromRow = Player <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Player <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newPlayerOpts :: Options
 _newPlayerOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 7 }
 
 data NewPlayer = NewPlayer
-  { bPlayerDisplayName :: Text
+  { bPlayerPublicId :: Text
+  , bPlayerDisplayName :: Text
   , bPlayerRank :: PlayerRankType
   , bPlayerRating :: Int
   , bPlayerPeakRating :: Int
@@ -168,6 +178,8 @@ data NewPlayer = NewPlayer
   , bPlayerCountryCode :: Maybe Text
   , bPlayerAvatarUrl :: Maybe Text
   , bPlayerPreferredFormat :: Maybe PlayerPreferredFormatType
+  , bPlayerContactEmail :: Maybe Text
+  , bPlayerWinRateCached :: Maybe Double
   , bPlayerIsVerified :: Bool
   , bPlayerCreatedAt :: Text
   , bPlayerLastActiveAt :: Maybe Text
@@ -180,7 +192,7 @@ instance FromJSON NewPlayer where
   parseJSON = genericParseJSON _newPlayerOpts
 
 instance ToRow NewPlayer where
-  toRow b = [toField (bPlayerDisplayName b), toField (bPlayerRank b), toField (bPlayerRating b), toField (bPlayerPeakRating b), toField (bPlayerBio b), toField (bPlayerCountryCode b), toField (bPlayerAvatarUrl b), toField (bPlayerPreferredFormat b), toField (bPlayerIsVerified b), toField (bPlayerCreatedAt b), toField (bPlayerLastActiveAt b), toField (bPlayerUserId b)]
+  toRow b = [toField (bPlayerPublicId b), toField (bPlayerDisplayName b), toField (bPlayerRank b), toField (bPlayerRating b), toField (bPlayerPeakRating b), toField (bPlayerBio b), toField (bPlayerCountryCode b), toField (bPlayerAvatarUrl b), toField (bPlayerPreferredFormat b), toField (bPlayerContactEmail b), toField (bPlayerWinRateCached b), toField (bPlayerIsVerified b), toField (bPlayerCreatedAt b), toField (bPlayerLastActiveAt b), toField (bPlayerUserId b)]
 
 data PlayerSeasonStatsHighestRankType
   = PlayerSeasonStatsHighestRankType_Bronze

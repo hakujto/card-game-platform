@@ -16,6 +16,8 @@ import CardsProject.Db (withDb)
 -- Domain service for Tournament
 validateTournament :: NewTournament -> Either String NewTournament
 validateTournament body
+  | bTournamentMaxPlayers body < 2 = Left "max_players: must be >= 2"
+  | bTournamentMaxPlayers body > 512 = Left "max_players: must be <= 512"
   | not ((bTournamentMaxPlayers body >= 2 && bTournamentMaxPlayers body <= 512)) = Left "Tournament must allow between 2 and 512 players"
   | not (bTournamentEntryFee body >= 0) = Left "Entry fee must not be negative"
   | not (bTournamentPrizePool body >= 0) = Left "Prize pool must not be negative"
@@ -75,48 +77,48 @@ assertTransition current to_ = do
 
 transitionDraftToRegistration :: Int -> IO Tournament
 transitionDraftToRegistration eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
       assertTransition (enumToText (tournamentStatus record)) "Registration"
       execute conn "UPDATE tournaments SET status = ? WHERE id = ?" ("Registration" :: Text, eid)
-      updated <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      updated <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Tournament not found after update")
 
 transitionRegistrationToOngoing :: Int -> IO Tournament
 transitionRegistrationToOngoing eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
       assertTransition (enumToText (tournamentStatus record)) "Ongoing"
       execute conn "UPDATE tournaments SET status = ? WHERE id = ?" ("Ongoing" :: Text, eid)
       start eid  -- @after
-      updated <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      updated <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Tournament not found after update")
 
 transitionRegistrationToCancelled :: Int -> IO Tournament
 transitionRegistrationToCancelled eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
       assertTransition (enumToText (tournamentStatus record)) "Cancelled"
       execute conn "UPDATE tournaments SET status = ? WHERE id = ?" ("Cancelled" :: Text, eid)
       cancel eid  -- @after
-      updated <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      updated <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Tournament not found after update")
 
 transitionOngoingToCompleted :: Int -> IO Tournament
 transitionOngoingToCompleted eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
@@ -124,28 +126,28 @@ transitionOngoingToCompleted eid = withDb $ \conn -> do
       execute conn "UPDATE tournaments SET status = ? WHERE id = ?" ("Completed" :: Text, eid)
       complete eid  -- @after
       calculate_prize_distribution eid  -- @after
-      updated <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      updated <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Tournament not found after update")
 
 transitionOngoingToCancelled :: Int -> IO Tournament
 transitionOngoingToCancelled eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
       assertTransition (enumToText (tournamentStatus record)) "Cancelled"
       execute conn "UPDATE tournaments SET status = ? WHERE id = ?" ("Cancelled" :: Text, eid)
       cancel eid  -- @after
-      updated <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+      updated <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Tournament not found after update")
 
 transitionCompletedToDraft :: Int -> IO Tournament
 transitionCompletedToDraft eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do
@@ -153,7 +155,7 @@ transitionCompletedToDraft eid = withDb $ \conn -> do
 
 transitionCancelledToDraft :: Int -> IO Tournament
 transitionCancelledToDraft eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
+  rows <- query conn "SELECT id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, created_at, season_id, organizer_id FROM tournaments WHERE id = ?" (Only eid) :: IO [Tournament]
   case rows of
     [] -> throwIO (userError "Tournament not found")
     (record:_) -> do

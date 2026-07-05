@@ -4,9 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Content.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=), Value(..), encode, decode)
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.ByteString.Lazy as BSL
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
 import Database.SQLite.Simple.ToField (ToField(..))
 import Database.SQLite.Simple.FromField (FromField(..), returnError, ResultError(ConversionFailed))
@@ -15,6 +18,16 @@ import GHC.Generics (Generic)
 
 _toCamel :: String -> String
 _toCamel = camelCase
+
+instance ToField Value where
+  toField v = toField (TL.toStrict (TLE.decodeUtf8 (encode v)))
+
+instance FromField Value where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    case decode (TLE.encodeUtf8 (TL.fromStrict txt)) of
+      Just v  -> return v
+      Nothing -> returnError ConversionFailed f "Invalid JSON"
 
 data DraftSessionStatusType
   = DraftSessionStatusType_WaitingForPlayers
@@ -91,6 +104,7 @@ data DraftSession = DraftSession
   { draftSessionId :: Int
   , draftSessionStatus :: DraftSessionStatusType
   , draftSessionDraftType :: DraftSessionDraftTypeType
+  , draftSessionPackContents :: Maybe Value
   , draftSessionSeats :: Int
   , draftSessionTimePerPickSeconds :: Int
   , draftSessionCreatedAt :: Text
@@ -103,6 +117,7 @@ instance ToJSON DraftSession where
     "id" .= rec.draftSessionId
     , "status" .= rec.draftSessionStatus
     , "draft_type" .= rec.draftSessionDraftType
+    , "pack_contents" .= rec.draftSessionPackContents
     , "seats" .= rec.draftSessionSeats
     , "time_per_pick_seconds" .= rec.draftSessionTimePerPickSeconds
     , "createdAt" .= rec.draftSessionCreatedAt
@@ -113,7 +128,7 @@ instance FromJSON DraftSession where
   parseJSON = genericParseJSON _draftSessionOpts
 
 instance FromRow DraftSession where
-  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = DraftSession <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newDraftSessionOpts :: Options
 _newDraftSessionOpts = defaultOptions
@@ -122,6 +137,7 @@ _newDraftSessionOpts = defaultOptions
 data NewDraftSession = NewDraftSession
   { bDraftSessionStatus :: DraftSessionStatusType
   , bDraftSessionDraftType :: DraftSessionDraftTypeType
+  , bDraftSessionPackContents :: Maybe Value
   , bDraftSessionSeats :: Int
   , bDraftSessionTimePerPickSeconds :: Int
   , bDraftSessionCreatedAt :: Text
@@ -135,7 +151,7 @@ instance FromJSON NewDraftSession where
   parseJSON = genericParseJSON _newDraftSessionOpts
 
 instance ToRow NewDraftSession where
-  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionSeats b), toField (bDraftSessionTimePerPickSeconds b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b)]
+  toRow b = [toField (bDraftSessionStatus b), toField (bDraftSessionDraftType b), toField (bDraftSessionPackContents b), toField (bDraftSessionSeats b), toField (bDraftSessionTimePerPickSeconds b), toField (bDraftSessionCreatedAt b), toField (bDraftSessionCompletedAt b), toField (bDraftSessionCardSetId b)]
 
 _draftParticipantOpts :: Options
 _draftParticipantOpts = defaultOptions
@@ -374,6 +390,7 @@ data Article = Article
   , articleLanguage :: ArticleLanguageType
   , articleViewCount :: Int
   , articleLikesCount :: Int
+  , articleTotalViewsAlltime :: Integer
   , articleIsFeatured :: Bool
   , articlePublishedAt :: Maybe Text
   , articleCreatedAt :: Text
@@ -395,6 +412,7 @@ instance ToJSON Article where
     , "language" .= rec.articleLanguage
     , "view_count" .= rec.articleViewCount
     , "likes_count" .= rec.articleLikesCount
+    , "total_views_alltime" .= rec.articleTotalViewsAlltime
     , "is_featured" .= rec.articleIsFeatured
     , "publishedAt" .= rec.articlePublishedAt
     , "createdAt" .= rec.articleCreatedAt
@@ -406,7 +424,7 @@ instance FromJSON Article where
   parseJSON = genericParseJSON _articleOpts
 
 instance FromRow Article where
-  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Article <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newArticleOpts :: Options
 _newArticleOpts = defaultOptions
@@ -423,6 +441,7 @@ data NewArticle = NewArticle
   , bArticleLanguage :: ArticleLanguageType
   , bArticleViewCount :: Int
   , bArticleLikesCount :: Int
+  , bArticleTotalViewsAlltime :: Integer
   , bArticleIsFeatured :: Bool
   , bArticlePublishedAt :: Maybe Text
   , bArticleCreatedAt :: Text
@@ -437,7 +456,7 @@ instance FromJSON NewArticle where
   parseJSON = genericParseJSON _newArticleOpts
 
 instance ToRow NewArticle where
-  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleLanguage b), toField (bArticleViewCount b), toField (bArticleLikesCount b), toField (bArticleIsFeatured b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b)]
+  toRow b = [toField (bArticleTitle b), toField (bArticleSlug b), toField (bArticleBody b), toField (bArticleExcerpt b), toField (bArticleCoverImageUrl b), toField (bArticleStatus b), toField (bArticleArticleType b), toField (bArticleLanguage b), toField (bArticleViewCount b), toField (bArticleLikesCount b), toField (bArticleTotalViewsAlltime b), toField (bArticleIsFeatured b), toField (bArticlePublishedAt b), toField (bArticleCreatedAt b), toField (bArticleUpdatedAt b), toField (bArticleAuthorId b), toField (bArticleFeaturedDeckId b)]
 
 _articleTagOpts :: Options
 _articleTagOpts = defaultOptions

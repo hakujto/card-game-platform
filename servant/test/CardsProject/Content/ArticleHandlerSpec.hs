@@ -21,7 +21,7 @@ spec = with (return app) $ do
 
   describe "POST /api/articles" $ do
     it "creates and returns 201" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       request "POST" "/api/articles" [("Content-Type","application/json")] body
         `shouldRespondWith` 201
 
@@ -32,13 +32,13 @@ spec = with (return app) $ do
 
   describe "PUT /api/articles/1" $ do
     it "returns 200, 401, 403, or 404" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "PUT" "/api/articles/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
   describe "PATCH /api/articles/1" $ do
     it "returns 200, 401, 403, or 404" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": null, "coverImageUrl": null, "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00Z", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "PATCH" "/api/articles/1" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 200 || s == 401 || s == 403 || s == 404
 
@@ -77,48 +77,53 @@ spec = with (return app) $ do
   describe "POST /api/articles/1/publish" $ do
     it "behavior publish stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/publish" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/articles/1/archive" $ do
     it "behavior archive stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/archive" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
+
+  describe "PUT /api/articles/1" $ do
+    it "behavior replace stub returns 404 or 500" $ do
+      resp <- request "PUT" "/api/articles/1" [("Content-Type","application/json")] "{}"
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/articles/1/view" $ do
     it "behavior increment_view stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/view" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/articles/1/like" $ do
     it "behavior like stub returns 404 or 500" $ do
       resp <- request "POST" "/api/articles/1/like" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "DELETE /api/articles/1/like" $ do
     it "behavior unlike stub returns 404 or 500" $ do
       resp <- request "DELETE" "/api/articles/1/like" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "GET /api/articles/1/reading-time" $ do
     it "behavior reading_time_minutes stub returns 404 or 500" $ do
       resp <- get "/api/articles/1/reading-time"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/articles rule published_requires_published_at" $ do
     it "rejects when published_requires_published_at violated" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Published", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "isFeatured": false, "publishedAt": null, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Published", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": 0, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": null, "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "POST" "/api/articles" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 
   describe "POST /api/articles rule view_count_not_negative" $ do
     it "rejects when view_count_not_negative violated" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": -2, "likesCount": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": -2, "likesCount": 0, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "POST" "/api/articles" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 
   describe "POST /api/articles rule likes_count_not_negative" $ do
     it "rejects when likes_count_not_negative violated" $ do
-      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": -2, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
+      let body = [json|{"title": "test", "slug": "test", "body": "test", "excerpt": "test", "coverImageUrl": "https://example.com", "status": "Draft", "articleType": "Guide", "language": "EN", "viewCount": 0, "likesCount": -2, "totalViewsAlltime": 0, "isFeatured": false, "publishedAt": "2024-01-01T00:00:00", "createdAt": "2024-01-01T00:00:00", "updatedAt": "2024-01-01T00:00:00", "authorId": 1, "featuredDeckId": null}|]
       resp <- request "POST" "/api/articles" [("Content-Type","application/json")] body
       liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 400
 

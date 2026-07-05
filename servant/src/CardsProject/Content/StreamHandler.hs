@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Content.StreamService as StreamSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
@@ -74,7 +75,7 @@ streamServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bStreamTitle validBody), toField (bStreamStreamUrl validBody), toField (bStreamStatus validBody), toField (bStreamPlatform validBody), toField (bStreamLanguage validBody), toField (bStreamIsOfficial validBody), toField (bStreamViewerCountPeak validBody), toField (bStreamScheduledStart validBody), toField (bStreamActualStart validBody), toField (bStreamEndedAt validBody), toField (bStreamVodUrl validBody), toField (bStreamTournamentId validBody), toField (bStreamStreamerId validBody), toField eid]
             execute conn "UPDATE streams SET title = ?, stream_url = ?, status = ?, platform = ?, language = ?, is_official = ?, viewer_count_peak = ?, scheduled_start = ?, actual_start = ?, ended_at = ?, vod_url = ?, tournament_id = ?, streamer_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, title, stream_url, status, platform, language, is_official, viewer_count_peak, scheduled_start, actual_start, ended_at, vod_url, tournament_id, streamer_id FROM streams WHERE id = ?" (Only eid) :: IO [Stream]
           case rows of

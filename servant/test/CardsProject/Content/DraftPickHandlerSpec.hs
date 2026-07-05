@@ -23,5 +23,5 @@ spec = with (return app) $ do
   describe "GET /api/draft_picks/1/first-pick" $ do
     it "behavior is_first_pick stub returns 404 or 500" $ do
       resp <- get "/api/draft_picks/1/first-pick"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 

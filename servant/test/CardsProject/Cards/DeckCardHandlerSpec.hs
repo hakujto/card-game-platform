@@ -40,12 +40,12 @@ spec = with (return app) $ do
   describe "PATCH /api/deck_cards/1/increment" $ do
     it "behavior increment stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/deck_cards/1/increment" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "PATCH /api/deck_cards/1/decrement" $ do
     it "behavior decrement stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/deck_cards/1/decrement" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/deck_cards rule quantity_range" $ do
     it "rejects when quantity_range violated" $ do

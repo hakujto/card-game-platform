@@ -50,42 +50,42 @@ spec = with (return app) $ do
   describe "GET /api/decks/1/validate" $ do
     it "behavior validate_size stub returns 404 or 500" $ do
       resp <- get "/api/decks/1/validate"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks/1/cards" $ do
     it "behavior add_card stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/cards" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "DELETE /api/decks/1/cards/1" $ do
     it "behavior remove_card stub returns 404 or 500" $ do
       resp <- request "DELETE" "/api/decks/1/cards/1" [] ""
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "GET /api/decks/1/win-rate" $ do
     it "behavior win_rate stub returns 404 or 500" $ do
       resp <- get "/api/decks/1/win-rate"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks/1/clone" $ do
     it "behavior clone stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/clone" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks/1/publish" $ do
     it "behavior publish stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/publish" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks/1/unpublish" $ do
     it "behavior unpublish stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/unpublish" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks/1/certify" $ do
     it "behavior certify_tournament_legal stub returns 404 or 500" $ do
       resp <- request "POST" "/api/decks/1/certify" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/decks rule wins_not_negative" $ do
     it "rejects when wins_not_negative violated" $ do

@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.AchievementService as AchievementSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -62,7 +63,7 @@ achievementServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bAchievementName validBody), toField (bAchievementDescription validBody), toField (bAchievementIconUrl validBody), toField (bAchievementPoints validBody), toField (bAchievementRarity validBody), toField (bAchievementIsHidden validBody), toField eid]
             execute conn "UPDATE achievements SET name = ?, description = ?, icon_url = ?, points = ?, rarity = ?, is_hidden = ? WHERE id = ?" bodyRow
             query conn "SELECT id, name, description, icon_url, points, rarity, is_hidden FROM achievements WHERE id = ?" (Only eid) :: IO [Achievement]
           case rows of

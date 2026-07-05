@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Marketplace.CouponService as CouponSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -46,7 +47,7 @@ couponServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           mRow <- liftIO $ withDb $ \conn -> do
-            execute conn "INSERT INTO coupons (code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            execute conn "INSERT INTO coupons (code, discount_type, discount_value, min_order_value, valid_from, valid_until, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)" validBody
             rowId <- lastInsertRowId conn
             rows <- query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Coupon]
             return $ case rows of { (r:_) -> Just r; [] -> Nothing }
@@ -66,8 +67,8 @@ couponServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
-            execute conn "UPDATE coupons SET code = ?, discount_type = ?, discount_value = ?, min_order_value = ?, max_uses = ?, uses_count = ?, valid_from = ?, valid_until = ?, is_active = ? WHERE id = ?" bodyRow
+            let bodyRow = [toField (bCouponCode validBody), toField (bCouponDiscountType validBody), toField (bCouponDiscountValue validBody), toField (bCouponMinOrderValue validBody), toField (bCouponValidFrom validBody), toField (bCouponValidUntil validBody), toField (bCouponIsActive validBody), toField eid]
+            execute conn "UPDATE coupons SET code = ?, discount_type = ?, discount_value = ?, min_order_value = ?, valid_from = ?, valid_until = ?, is_active = ? WHERE id = ?" bodyRow
             query conn "SELECT id, code, discount_type, discount_value, min_order_value, max_uses, uses_count, valid_from, valid_until, is_active FROM coupons WHERE id = ?" (Only eid) :: IO [Coupon]
           case rows of
             (r:_) -> return r

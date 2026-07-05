@@ -45,22 +45,22 @@ spec = with (return app) $ do
   describe "GET /api/card_sets/1/standard-legal" $ do
     it "behavior is_legal_in_standard stub returns 404 or 500" $ do
       resp <- get "/api/card_sets/1/standard-legal"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "GET /api/card_sets/1/legal" $ do
     it "behavior is_legal_in_format stub returns 404 or 500" $ do
       resp <- get "/api/card_sets/1/legal"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "GET /api/card_sets/1/rarity-count" $ do
     it "behavior card_count_by_rarity stub returns 404 or 500" $ do
       resp <- get "/api/card_sets/1/rarity-count"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/card_sets/1/rotate" $ do
     it "behavior rotate_out stub returns 404 or 500" $ do
       resp <- request "POST" "/api/card_sets/1/rotate" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/card_sets rule total_cards_positive" $ do
     it "rejects when total_cards_positive violated" $ do

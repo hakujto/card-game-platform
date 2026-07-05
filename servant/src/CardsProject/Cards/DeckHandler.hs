@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Cards.DeckService as DeckSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -77,8 +78,8 @@ deckServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
-            execute conn "UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, wins = ?, losses = ?, draws = ?, created_at = ?, updated_at = ?, player_id = ? WHERE id = ?" bodyRow
+            let bodyRow = [toField (bDeckName validBody), toField (bDeckDescription validBody), toField (bDeckFormat validBody), toField (bDeckIsPublic validBody), toField (bDeckIsTournamentLegal validBody), toField (bDeckArchetype validBody), toField (bDeckUpdatedAt validBody), toField (bDeckPlayerId validBody), toField eid]
+            execute conn "UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, updated_at = ?, player_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, name, description, format, is_public, is_tournament_legal, archetype, wins, losses, draws, created_at, updated_at, player_id FROM decks WHERE id = ?" (Only eid) :: IO [Deck]
           case rows of
             (r:_) -> return r

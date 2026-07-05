@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.PlayerCollectionService as PlayerCollectionSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
@@ -79,7 +80,7 @@ playerCollectionServer = listAll
                   Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
                   Right validBody -> do
                     rows <- liftIO $ withDb $ \conn -> do
-                      let bodyRow = toRow validBody ++ toRow (Only eid)
+                      let bodyRow = [toField (bPlayerCollectionQuantity validBody), toField (bPlayerCollectionFoil validBody), toField (bPlayerCollectionCondition validBody), toField (bPlayerCollectionAcquiredAt validBody), toField (bPlayerCollectionAcquiredVia validBody), toField (bPlayerCollectionPlayerId validBody), toField (bPlayerCollectionCardId validBody), toField eid]
                       execute conn "UPDATE player_collections SET quantity = ?, foil = ?, condition = ?, acquired_at = ?, acquired_via = ?, player_id = ?, card_id = ? WHERE id = ?" bodyRow
                       query conn "SELECT id, quantity, foil, condition, acquired_at, acquired_via, player_id, card_id FROM player_collections WHERE id = ?" (Only eid) :: IO [PlayerCollection]
                     case rows of

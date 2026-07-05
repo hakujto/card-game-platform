@@ -18,6 +18,7 @@ validateTradeTransaction body
   | not (bTradeTransactionPlatformFee body <= bTradeTransactionFinalPrice body) = Left "Platform fee cannot exceed the final price"
   | not (bTradeTransactionPlatformFee body >= 0) = Left "Platform fee must not be negative"
   | not (bTradeTransactionFinalPrice body > 0) = Left "Transaction final price must be greater than zero"
+  | (bTradeTransactionStatus body == TradeTransactionStatusType_Completed) && (bTradeTransactionCompletedAt body == Nothing) = Left "completed_at is required"
   | otherwise = validateTradeTransactionImplies body
 
 validateTradeTransactionImplies :: NewTradeTransaction -> Either String NewTradeTransaction

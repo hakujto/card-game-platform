@@ -14,6 +14,8 @@ import CardsProject.Db (withDb)
 -- Domain service for Product
 validateProduct :: NewProduct -> Either String NewProduct
 validateProduct body
+  | bProductDiscountPercent body < 0 = Left "discount_percent: must be >= 0"
+  | bProductDiscountPercent body > 100 = Left "discount_percent: must be <= 100"
   | not (bProductPrice body > 0) = Left "Product price must be greater than zero"
   | not (bProductStock body >= 0) = Left "Product stock must not be negative"
   | not ((bProductDiscountPercent body >= 0 && bProductDiscountPercent body <= 100)) = Left "Product discount percent must be between 0 and 100"

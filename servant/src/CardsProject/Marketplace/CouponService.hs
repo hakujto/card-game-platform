@@ -15,6 +15,7 @@ import CardsProject.Db (withDb)
 -- Domain service for Coupon
 validateCoupon :: NewCoupon -> Either String NewCoupon
 validateCoupon body
+  | bCouponDiscountValue body < 0.01 = Left "discount_value: must be >= 0.01"
   | not (bCouponValidUntil body > bCouponValidFrom body) = Left "Coupon expiry must be after its start date"
   | not (bCouponDiscountValue body > 0) = Left "Discount value must be greater than zero"
   | otherwise = validateCouponImplies body
@@ -22,7 +23,6 @@ validateCoupon body
 validateCouponImplies :: NewCoupon -> Either String NewCoupon
 validateCouponImplies body
   | (bCouponDiscountType body == CouponDiscountTypeType_Percent) && not ((bCouponDiscountValue body >= 1 && bCouponDiscountValue body <= 100)) = Left "Percent discount must be between 1 and 100"
-  | (bCouponMaxUses body /= Nothing) && not (bCouponUsesCount body <= (fromMaybe 0 (bCouponMaxUses body))) = Left "Coupon uses count cannot exceed max_uses"
   | otherwise = Right body
 
 -- @invoke behavior stub (no-op)

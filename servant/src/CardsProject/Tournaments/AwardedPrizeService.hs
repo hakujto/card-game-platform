@@ -16,6 +16,7 @@ import CardsProject.Db (withDb)
 validateAwardedPrize :: NewAwardedPrize -> Either String NewAwardedPrize
 validateAwardedPrize body
   | not (bAwardedPrizeFinalPlacement body > 0) = Left "Final placement must be greater than zero"
+  | (bAwardedPrizeClaimed body == True) && (bAwardedPrizeClaimedAt body == Nothing) = Left "claimed_at is required"
   | otherwise = validateAwardedPrizeImplies body
 
 validateAwardedPrizeImplies :: NewAwardedPrize -> Either String NewAwardedPrize

@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Tournaments.SeasonService as SeasonSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -20,9 +21,9 @@ type SeasonAPI
   :<|> "api" :> "seasons" :> Capture "id" Int :> Get '[JSON] Season
   :<|> "api" :> "seasons" :> Capture "id" Int :> ReqBody '[JSON] NewSeason :> Put '[JSON] Season
   :<|> "api" :> "seasons" :> Capture "id" Int :> ReqBody '[JSON] NewSeason :> Patch '[JSON] Season
-  :<|> "api" :> "seasons" :> Capture "id" Int :> "activate" :> PostNoContent
-  :<|> "api" :> "seasons" :> Capture "id" Int :> "deactivate" :> PostNoContent
-  :<|> "api" :> "seasons" :> Capture "id" Int :> "finalize" :> PostNoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "activate" :> Header "X-User-Role" Text :> PostNoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "deactivate" :> Header "X-User-Role" Text :> PostNoContent
+  :<|> "api" :> "seasons" :> Capture "id" Int :> "finalize" :> Header "X-User-Role" Text :> PostNoContent
   :<|> "api" :> "seasons" :> Capture "id" Int :> "ongoing" :> Get '[JSON] Bool
 
 seasonServer :: Server SeasonAPI
@@ -66,7 +67,7 @@ seasonServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bSeasonName validBody), toField (bSeasonStartDate validBody), toField (bSeasonEndDate validBody), toField (bSeasonFormat validBody), toField (bSeasonIsActive validBody), toField (bSeasonRewardDescription validBody), toField eid]
             execute conn "UPDATE seasons SET name = ?, start_date = ?, end_date = ?, format = ?, is_active = ?, reward_description = ? WHERE id = ?" bodyRow
             query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
           case rows of
@@ -75,7 +76,13 @@ seasonServer = listAll
 
     partialUpdate = update
 
-    behaviorActivate eid = do
+    behaviorActivate eid mRole = do
+      let allowedRoles = ["admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
       case rows of
@@ -87,7 +94,13 @@ seasonServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    behaviorDeactivate eid = do
+    behaviorDeactivate eid mRole = do
+      let allowedRoles = ["admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
       case rows of
@@ -99,7 +112,13 @@ seasonServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    behaviorFinalizeRewards eid = do
+    behaviorFinalizeRewards eid mRole = do
+      let allowedRoles = ["admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, name, start_date, end_date, format, is_active, reward_description FROM seasons WHERE id = ?" (Only eid) :: IO [Season]
       case rows of

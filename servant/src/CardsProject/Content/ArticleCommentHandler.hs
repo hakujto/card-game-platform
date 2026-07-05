@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Content.ArticleCommentService as ArticleCommentSvc
 import Control.Exception (catch, IOException)
 import Data.Text (Text)

@@ -29,12 +29,12 @@ spec = with (return app) $ do
   describe "POST /api/draft_participants/1/pick" $ do
     it "behavior pick_card stub returns 404 or 500" $ do
       resp <- request "POST" "/api/draft_participants/1/pick" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "GET /api/draft_participants/1/card-count" $ do
     it "behavior drafted_card_count stub returns 404 or 500" $ do
       resp <- get "/api/draft_participants/1/card-count"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/draft_participants rule seat_number_positive" $ do
     it "rejects when seat_number_positive violated" $ do

@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Content.ArticleTagService as ArticleTagSvc
 import Control.Exception (catch, IOException)
 import Data.Aeson (Object)
@@ -56,7 +57,7 @@ articleTagServer = listAll
 
     partialUpdate eid body = do
       rows <- liftIO $ withDb $ \conn -> do
-        let bodyRow = toRow body ++ toRow (Only eid)
+        let bodyRow = [toField (bArticleTagName body), toField (bArticleTagSlug body), toField eid]
         execute conn "UPDATE article_tags SET name = ?, slug = ? WHERE id = ?" bodyRow
         query conn "SELECT id, name, slug FROM article_tags WHERE id = ?" (Only eid) :: IO [ArticleTag]
       case rows of

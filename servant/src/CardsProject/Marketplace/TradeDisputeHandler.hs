@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Marketplace.TradeDisputeService as TradeDisputeSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
@@ -21,7 +22,7 @@ type TradeDisputeAPI
   :<|> "api" :> "trade_disputes" :> ReqBody '[JSON] NewTradeDispute :> PostCreated '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> Get '[JSON] TradeDispute
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "escalate" :> PostNoContent
-  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "resolve" :> ReqBody '[JSON] Object :> PostNoContent
+  :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "resolve" :> ReqBody '[JSON] Object :> Header "X-User-Role" Text :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "close" :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "review" :> PostNoContent
   :<|> "api" :> "trade_disputes" :> Capture "id" Int :> "transitions" :> "open-to-underreview" :> Header "X-User-Role" Text :> Patch '[JSON] TradeDispute
@@ -79,7 +80,13 @@ tradeDisputeServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    behaviorResolve eid _body = do
+    behaviorResolve eid _body mRole = do
+      let allowedRoles = ["admin", "moderator"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
         query conn "SELECT id, status, reason, description, resolution, opened_at, resolved_at, transaction_id, opened_by_id, resolved_by_id FROM trade_disputes WHERE id = ?" (Only eid) :: IO [TradeDispute]
       case rows of

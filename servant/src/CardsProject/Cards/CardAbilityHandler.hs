@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Cards.CardAbilityService as CardAbilitySvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -64,7 +65,7 @@ cardAbilityServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bCardAbilityAbilityType validBody), toField (bCardAbilityKeyword validBody), toField (bCardAbilityAbilityText validBody), toField (bCardAbilityTiming validBody), toField (bCardAbilityCardId validBody), toField eid]
             execute conn "UPDATE card_abilities SET ability_type = ?, keyword = ?, ability_text = ?, timing = ?, card_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, ability_type, keyword, ability_text, timing, card_id FROM card_abilities WHERE id = ?" (Only eid) :: IO [CardAbility]
           case rows of

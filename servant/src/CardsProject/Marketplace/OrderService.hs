@@ -18,6 +18,8 @@ validateOrder :: NewOrder -> Either String NewOrder
 validateOrder body
   | not (bOrderTotal body >= 0) = Left "Order total must not be negative"
   | not (bOrderDiscountApplied body <= bOrderTotal body) = Left "Discount applied cannot exceed order total"
+  | (bOrderStatus body == OrderStatusType_Shipped) && (bOrderTrackingNumber body == Nothing) = Left "tracking_number is required"
+  | (bOrderStatus body == OrderStatusType_Paid) && (bOrderPaidAt body == Nothing) = Left "paid_at is required"
   | otherwise = validateOrderImplies body
 
 validateOrderImplies :: NewOrder -> Either String NewOrder

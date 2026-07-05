@@ -4,9 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Tournaments.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=), Value(..), encode, decode)
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.ByteString.Lazy as BSL
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
 import Database.SQLite.Simple.ToField (ToField(..))
 import Database.SQLite.Simple.FromField (FromField(..), returnError, ResultError(ConversionFailed))
@@ -15,6 +18,16 @@ import GHC.Generics (Generic)
 
 _toCamel :: String -> String
 _toCamel = camelCase
+
+instance ToField Value where
+  toField v = toField (TL.toStrict (TLE.decodeUtf8 (encode v)))
+
+instance FromField Value where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    case decode (TLE.encodeUtf8 (TL.fromStrict txt)) of
+      Just v  -> return v
+      Nothing -> returnError ConversionFailed f "Invalid JSON"
 
 data SeasonFormatType
   = SeasonFormatType_Standard
@@ -234,9 +247,11 @@ _tournamentOpts = defaultOptions
 
 data Tournament = Tournament
   { tournamentId :: Int
+  , tournamentPublicId :: Text
   , tournamentName :: Text
   , tournamentDescription :: Maybe Text
   , tournamentStatus :: TournamentStatusType
+  , tournamentBracketData :: Maybe Value
   , tournamentFormat :: TournamentFormatType
   , tournamentTournamentType :: TournamentTournamentTypeType
   , tournamentMaxPlayers :: Int
@@ -255,9 +270,11 @@ data Tournament = Tournament
 instance ToJSON Tournament where
   toJSON rec = object $ filter (\(k,_) -> k /= "") [
     "id" .= rec.tournamentId
+    , "public_id" .= rec.tournamentPublicId
     , "name" .= rec.tournamentName
     , "description" .= rec.tournamentDescription
     , "status" .= rec.tournamentStatus
+    , "bracket_data" .= rec.tournamentBracketData
     , "format" .= rec.tournamentFormat
     , "tournament_type" .= rec.tournamentTournamentType
     , "max_players" .= rec.tournamentMaxPlayers
@@ -276,16 +293,18 @@ instance FromJSON Tournament where
   parseJSON = genericParseJSON _tournamentOpts
 
 instance FromRow Tournament where
-  fromRow = Tournament <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Tournament <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newTournamentOpts :: Options
 _newTournamentOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 11 }
 
 data NewTournament = NewTournament
-  { bTournamentName :: Text
+  { bTournamentPublicId :: Text
+  , bTournamentName :: Text
   , bTournamentDescription :: Maybe Text
   , bTournamentStatus :: TournamentStatusType
+  , bTournamentBracketData :: Maybe Value
   , bTournamentFormat :: TournamentFormatType
   , bTournamentTournamentType :: TournamentTournamentTypeType
   , bTournamentMaxPlayers :: Int
@@ -307,7 +326,7 @@ instance FromJSON NewTournament where
   parseJSON = genericParseJSON _newTournamentOpts
 
 instance ToRow NewTournament where
-  toRow b = [toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentStatus b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b)]
+  toRow b = [toField (bTournamentPublicId b), toField (bTournamentName b), toField (bTournamentDescription b), toField (bTournamentStatus b), toField (bTournamentBracketData b), toField (bTournamentFormat b), toField (bTournamentTournamentType b), toField (bTournamentMaxPlayers b), toField (bTournamentEntryFee b), toField (bTournamentPrizePool b), toField (bTournamentStartTime b), toField (bTournamentEndTime b), toField (bTournamentIsOnline b), toField (bTournamentLocation b), toField (bTournamentRulesText b), toField (bTournamentCreatedAt b), toField (bTournamentSeasonId b), toField (bTournamentOrganizerId b)]
 
 data TournamentJudgeRoleType
   = TournamentJudgeRoleType_HeadJudge
@@ -731,6 +750,7 @@ data Game = Game
   { gameId :: Int
   , gameGameNumber :: Int
   , gameWinnerSide :: Maybe GameWinnerSideType
+  , gameComplexityScore :: Maybe Double
   , gameTurnsPlayed :: Maybe Int
   , gameDurationSeconds :: Maybe Int
   , gameEndedBy :: Maybe GameEndedByType
@@ -745,7 +765,7 @@ instance FromJSON Game where
   parseJSON = genericParseJSON _gameOpts
 
 instance FromRow Game where
-  fromRow = Game <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Game <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newGameOpts :: Options
 _newGameOpts = defaultOptions
@@ -754,6 +774,7 @@ _newGameOpts = defaultOptions
 data NewGame = NewGame
   { bGameGameNumber :: Int
   , bGameWinnerSide :: Maybe GameWinnerSideType
+  , bGameComplexityScore :: Maybe Double
   , bGameTurnsPlayed :: Maybe Int
   , bGameDurationSeconds :: Maybe Int
   , bGameEndedBy :: Maybe GameEndedByType
@@ -768,7 +789,7 @@ instance FromJSON NewGame where
   parseJSON = genericParseJSON _newGameOpts
 
 instance ToRow NewGame where
-  toRow b = [toField (bGameGameNumber b), toField (bGameWinnerSide b), toField (bGameTurnsPlayed b), toField (bGameDurationSeconds b), toField (bGameEndedBy b), toField (bGameReplayUrl b), toField (bGameMatchId b), toField (bGameWinnerId b)]
+  toRow b = [toField (bGameGameNumber b), toField (bGameWinnerSide b), toField (bGameComplexityScore b), toField (bGameTurnsPlayed b), toField (bGameDurationSeconds b), toField (bGameEndedBy b), toField (bGameReplayUrl b), toField (bGameMatchId b), toField (bGameWinnerId b)]
 
 data TournamentPrizePrizeTypeType
   = TournamentPrizePrizeTypeType_Currency

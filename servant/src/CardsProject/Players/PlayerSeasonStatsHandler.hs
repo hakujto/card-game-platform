@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.PlayerSeasonStatsService as PlayerSeasonStatsSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)

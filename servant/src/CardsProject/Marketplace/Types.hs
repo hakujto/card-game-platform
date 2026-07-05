@@ -4,9 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Marketplace.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=), Value(..), encode, decode)
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.ByteString.Lazy as BSL
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
 import Database.SQLite.Simple.ToField (ToField(..))
 import Database.SQLite.Simple.FromField (FromField(..), returnError, ResultError(ConversionFailed))
@@ -226,7 +229,6 @@ instance ToJSON Order where
     , "discount_applied" .= rec.orderDiscountApplied
     , "currency" .= rec.orderCurrency
     , "payment_method" .= rec.orderPaymentMethod
-    , "payment_reference" .= rec.orderPaymentReference
     , "shipping_address" .= rec.orderShippingAddress
     , "tracking_number" .= rec.orderTrackingNumber
     , "createdAt" .= rec.orderCreatedAt
@@ -251,7 +253,6 @@ data NewOrder = NewOrder
   , bOrderDiscountApplied :: Double
   , bOrderCurrency :: Text
   , bOrderPaymentMethod :: Maybe OrderPaymentMethodType
-  , bOrderPaymentReference :: Maybe Text
   , bOrderShippingAddress :: Maybe Text
   , bOrderTrackingNumber :: Maybe Text
   , bOrderCreatedAt :: Text
@@ -267,7 +268,7 @@ instance FromJSON NewOrder where
   parseJSON = genericParseJSON _newOrderOpts
 
 instance ToRow NewOrder where
-  toRow b = [toField (bOrderStatus b), toField (bOrderTotal b), toField (bOrderDiscountApplied b), toField (bOrderCurrency b), toField (bOrderPaymentMethod b), toField (bOrderPaymentReference b), toField (bOrderShippingAddress b), toField (bOrderTrackingNumber b), toField (bOrderCreatedAt b), toField (bOrderPaidAt b), toField (bOrderShippedAt b), toField (bOrderPlayerId b), toField (bOrderCouponId b)]
+  toRow b = [toField (bOrderStatus b), toField (bOrderTotal b), toField (bOrderDiscountApplied b), toField (bOrderCurrency b), toField (bOrderPaymentMethod b), toField (bOrderShippingAddress b), toField (bOrderTrackingNumber b), toField (bOrderCreatedAt b), toField (bOrderPaidAt b), toField (bOrderShippedAt b), toField (bOrderPlayerId b), toField (bOrderCouponId b)]
 
 _orderItemOpts :: Options
 _orderItemOpts = defaultOptions
@@ -354,7 +355,16 @@ data Coupon = Coupon
   } deriving (Show, Generic)
 
 instance ToJSON Coupon where
-  toJSON = genericToJSON _couponOpts
+  toJSON rec = object $ filter (\(k,_) -> k /= "") [
+    "id" .= rec.couponId
+    , "code" .= rec.couponCode
+    , "discount_type" .= rec.couponDiscountType
+    , "discount_value" .= rec.couponDiscountValue
+    , "min_order_value" .= rec.couponMinOrderValue
+    , "valid_from" .= rec.couponValidFrom
+    , "valid_until" .= rec.couponValidUntil
+    , "is_active" .= rec.couponIsActive
+    ]
 instance FromJSON Coupon where
   parseJSON = genericParseJSON _couponOpts
 
@@ -370,8 +380,6 @@ data NewCoupon = NewCoupon
   , bCouponDiscountType :: CouponDiscountTypeType
   , bCouponDiscountValue :: Double
   , bCouponMinOrderValue :: Double
-  , bCouponMaxUses :: Maybe Int
-  , bCouponUsesCount :: Int
   , bCouponValidFrom :: Text
   , bCouponValidUntil :: Text
   , bCouponIsActive :: Bool
@@ -383,7 +391,7 @@ instance FromJSON NewCoupon where
   parseJSON = genericParseJSON _newCouponOpts
 
 instance ToRow NewCoupon where
-  toRow b = [toField (bCouponCode b), toField (bCouponDiscountType b), toField (bCouponDiscountValue b), toField (bCouponMinOrderValue b), toField (bCouponMaxUses b), toField (bCouponUsesCount b), toField (bCouponValidFrom b), toField (bCouponValidUntil b), toField (bCouponIsActive b)]
+  toRow b = [toField (bCouponCode b), toField (bCouponDiscountType b), toField (bCouponDiscountValue b), toField (bCouponMinOrderValue b), toField (bCouponValidFrom b), toField (bCouponValidUntil b), toField (bCouponIsActive b)]
 
 data TradeListingStatusType
   = TradeListingStatusType_Active
@@ -504,6 +512,7 @@ _tradeListingOpts = defaultOptions
 
 data TradeListing = TradeListing
   { tradeListingId :: Int
+  , tradeListingPublicId :: Text
   , tradeListingStatus :: TradeListingStatusType
   , tradeListingListingType :: TradeListingListingTypeType
   , tradeListingAskingPrice :: Maybe Double
@@ -523,6 +532,7 @@ data TradeListing = TradeListing
 instance ToJSON TradeListing where
   toJSON rec = object $ filter (\(k,_) -> k /= "") [
     "id" .= rec.tradeListingId
+    , "public_id" .= rec.tradeListingPublicId
     , "status" .= rec.tradeListingStatus
     , "listing_type" .= rec.tradeListingListingType
     , "asking_price" .= rec.tradeListingAskingPrice
@@ -542,14 +552,15 @@ instance FromJSON TradeListing where
   parseJSON = genericParseJSON _tradeListingOpts
 
 instance FromRow TradeListing where
-  fromRow = TradeListing <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = TradeListing <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newTradeListingOpts :: Options
 _newTradeListingOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 13 }
 
 data NewTradeListing = NewTradeListing
-  { bTradeListingStatus :: TradeListingStatusType
+  { bTradeListingPublicId :: Text
+  , bTradeListingStatus :: TradeListingStatusType
   , bTradeListingListingType :: TradeListingListingTypeType
   , bTradeListingAskingPrice :: Maybe Double
   , bTradeListingAuctionStartPrice :: Maybe Double
@@ -571,7 +582,7 @@ instance FromJSON NewTradeListing where
   parseJSON = genericParseJSON _newTradeListingOpts
 
 instance ToRow NewTradeListing where
-  toRow b = [toField (bTradeListingStatus b), toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b)]
+  toRow b = [toField (bTradeListingPublicId b), toField (bTradeListingStatus b), toField (bTradeListingListingType b), toField (bTradeListingAskingPrice b), toField (bTradeListingAuctionStartPrice b), toField (bTradeListingAuctionCurrentBid b), toField (bTradeListingAuctionEndTime b), toField (bTradeListingFoil b), toField (bTradeListingCondition b), toField (bTradeListingQuantity b), toField (bTradeListingDescription b), toField (bTradeListingCreatedAt b), toField (bTradeListingExpiresAt b), toField (bTradeListingSellerId b), toField (bTradeListingCardId b)]
 
 _tradeBidOpts :: Options
 _tradeBidOpts = defaultOptions

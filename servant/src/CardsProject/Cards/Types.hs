@@ -4,9 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Cards.Types where
 
-import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=))
+import Data.Aeson (ToJSON(..), FromJSON(..), toJSON, parseJSON, withText, genericToJSON, genericParseJSON, defaultOptions, Options(..), object, (.=), Value(..), encode, decode)
 import Data.Aeson.Casing (camelCase)
 import Data.Text (Text)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TLE
+import qualified Data.ByteString.Lazy as BSL
 import Database.SQLite.Simple (FromRow(..), ToRow(..), field)
 import Database.SQLite.Simple.ToField (ToField(..))
 import Database.SQLite.Simple.FromField (FromField(..), returnError, ResultError(ConversionFailed))
@@ -15,6 +18,16 @@ import GHC.Generics (Generic)
 
 _toCamel :: String -> String
 _toCamel = camelCase
+
+instance ToField Value where
+  toField v = toField (TL.toStrict (TLE.decodeUtf8 (encode v)))
+
+instance FromField Value where
+  fromField f = do
+    txt <- fromField f :: Ok Text
+    case decode (TLE.encodeUtf8 (TL.fromStrict txt)) of
+      Just v  -> return v
+      Nothing -> returnError ConversionFailed f "Invalid JSON"
 
 data CardCardTypeType
   = CardCardTypeType_Creature
@@ -201,6 +214,7 @@ _cardOpts = defaultOptions
 
 data Card = Card
   { cardId :: Int
+  , cardPublicId :: Text
   , cardName :: Text
   , cardCardType :: CardCardTypeType
   , cardRarity :: CardRarityType
@@ -217,6 +231,8 @@ data Card = Card
   , cardIsBanned :: Bool
   , cardIsRestricted :: Bool
   , cardPowerLevel :: Int
+  , cardMetadata :: Maybe Value
+  , cardTotalCopiesInCirculation :: Integer
   , cardSetId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -226,14 +242,15 @@ instance FromJSON Card where
   parseJSON = genericParseJSON _cardOpts
 
 instance FromRow Card where
-  fromRow = Card <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Card <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
 _newCardOpts :: Options
 _newCardOpts = defaultOptions
   { fieldLabelModifier = _toCamel . drop 5 }
 
 data NewCard = NewCard
-  { bCardName :: Text
+  { bCardPublicId :: Text
+  , bCardName :: Text
   , bCardCardType :: CardCardTypeType
   , bCardRarity :: CardRarityType
   , bCardManaCost :: Int
@@ -249,6 +266,8 @@ data NewCard = NewCard
   , bCardIsBanned :: Bool
   , bCardIsRestricted :: Bool
   , bCardPowerLevel :: Int
+  , bCardMetadata :: Maybe Value
+  , bCardTotalCopiesInCirculation :: Integer
   , bCardSetId :: Maybe Int
   } deriving (Show, Generic)
 
@@ -258,7 +277,7 @@ instance FromJSON NewCard where
   parseJSON = genericParseJSON _newCardOpts
 
 instance ToRow NewCard where
-  toRow b = [toField (bCardName b), toField (bCardCardType b), toField (bCardRarity b), toField (bCardManaCost b), toField (bCardManaColors b), toField (bCardAttack b), toField (bCardDefense b), toField (bCardLoyalty b), toField (bCardDescription b), toField (bCardFlavorText b), toField (bCardImageUrl b), toField (bCardArtistName b), toField (bCardLegalFormats b), toField (bCardIsBanned b), toField (bCardIsRestricted b), toField (bCardPowerLevel b), toField (bCardSetId b)]
+  toRow b = [toField (bCardPublicId b), toField (bCardName b), toField (bCardCardType b), toField (bCardRarity b), toField (bCardManaCost b), toField (bCardManaColors b), toField (bCardAttack b), toField (bCardDefense b), toField (bCardLoyalty b), toField (bCardDescription b), toField (bCardFlavorText b), toField (bCardImageUrl b), toField (bCardArtistName b), toField (bCardLegalFormats b), toField (bCardIsBanned b), toField (bCardIsRestricted b), toField (bCardPowerLevel b), toField (bCardMetadata b), toField (bCardTotalCopiesInCirculation b), toField (bCardSetId b)]
 
 data CardSetSetTypeType
   = CardSetSetTypeType_Core
@@ -746,6 +765,7 @@ _deckTagOpts = defaultOptions
 data DeckTag = DeckTag
   { deckTagId :: Int
   , deckTagName :: Text
+  , deckTagSlug :: Maybe Text
   , deckTagColor :: Maybe Text
   } deriving (Show, Generic)
 
@@ -755,7 +775,7 @@ instance FromJSON DeckTag where
   parseJSON = genericParseJSON _deckTagOpts
 
 instance FromRow DeckTag where
-  fromRow = DeckTag <$> field <*> field <*> field
+  fromRow = DeckTag <$> field <*> field <*> field <*> field
 
 _newDeckTagOpts :: Options
 _newDeckTagOpts = defaultOptions
@@ -763,6 +783,7 @@ _newDeckTagOpts = defaultOptions
 
 data NewDeckTag = NewDeckTag
   { bDeckTagName :: Text
+  , bDeckTagSlug :: Maybe Text
   , bDeckTagColor :: Maybe Text
   } deriving (Show, Generic)
 
@@ -772,7 +793,7 @@ instance FromJSON NewDeckTag where
   parseJSON = genericParseJSON _newDeckTagOpts
 
 instance ToRow NewDeckTag where
-  toRow b = [toField (bDeckTagName b), toField (bDeckTagColor b)]
+  toRow b = [toField (bDeckTagName b), toField (bDeckTagSlug b), toField (bDeckTagColor b)]
 
 _deckTagAssignmentOpts :: Options
 _deckTagAssignmentOpts = defaultOptions

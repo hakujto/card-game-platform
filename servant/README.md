@@ -124,6 +124,9 @@ Base URL: `http://localhost:8080`
 - `GET/POST` `/api/streams`
 - `GET/PUT/PATCH/DELETE` `/api/streams/:id`
 
+### Wallet BC
+
+
 ## Tests
 
 The test suite writes to `db/test.db` without resetting it between runs.
@@ -147,6 +150,7 @@ Bounded Contexts:
 - **Tournaments BC** (`src/CardsProject/Tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`src/CardsProject/Marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`src/CardsProject/Content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+- **Wallet BC** (`src/CardsProject/Wallet/`) — 
 
 ## Docker
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module CardsProject.Content.ArticleService
-  ( validateArticle, publish, archive, increment_view, like, unlike, reading_time_minutes, enumToText, assertTransition, allowedTransitions, transitionDraftToPublished, transitionPublishedToArchived, transitionArchivedToDraft, transitionPublishedToDraft
+  ( validateArticle, publish, archive, replace, increment_view, like, unlike, reading_time_minutes, enumToText, assertTransition, allowedTransitions, transitionDraftToPublished, transitionPublishedToArchived, transitionArchivedToDraft, transitionPublishedToDraft
   ) where
 
 import CardsProject.Content.Types
@@ -25,13 +25,20 @@ validateArticleImplies body
   | (bArticleStatus body == ArticleStatusType_Published) && not (bArticlePublishedAt body /= Nothing) = Left "Published article must have a published_at timestamp"
   | otherwise = Right body
 
+-- @allow [editor, admin] — check user role before calling
 -- @invoke behavior stub (no-op)
 publish :: Int -> IO ()
 publish _eid = throwIO (userError "publish not implemented")
 
+-- @allow [editor, admin] — check user role before calling
 -- @invoke behavior stub (no-op)
 archive :: Int -> IO ()
 archive _eid = throwIO (userError "archive not implemented")
+
+-- @allow [editor, admin] — check user role before calling
+-- @invoke behavior stub (no-op)
+replace :: Int -> IO Bool
+replace _eid = throwIO (userError "replace not implemented")
 
 -- @invoke behavior stub (no-op)
 increment_view :: Int -> IO ()
@@ -70,48 +77,48 @@ assertTransition current to_ = do
 
 transitionDraftToPublished :: Int -> IO Article
 transitionDraftToPublished eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
   case rows of
     [] -> throwIO (userError "Article not found")
     (record:_) -> do
       assertTransition (enumToText (articleStatus record)) "Published"
       execute conn "UPDATE articles SET status = ? WHERE id = ?" ("Published" :: Text, eid)
       publish eid  -- @after
-      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Article not found after update")
 
 transitionPublishedToArchived :: Int -> IO Article
 transitionPublishedToArchived eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
   case rows of
     [] -> throwIO (userError "Article not found")
     (record:_) -> do
       assertTransition (enumToText (articleStatus record)) "Archived"
       execute conn "UPDATE articles SET status = ? WHERE id = ?" ("Archived" :: Text, eid)
       archive eid  -- @after
-      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Article not found after update")
 
 transitionArchivedToDraft :: Int -> IO Article
 transitionArchivedToDraft eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
   case rows of
     [] -> throwIO (userError "Article not found")
     (record:_) -> do
       assertTransition (enumToText (articleStatus record)) "Draft"
       execute conn "UPDATE articles SET status = ? WHERE id = ?" ("Draft" :: Text, eid)
-      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+      updated <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case updated of
         (r:_) -> return r
         []    -> throwIO (userError "Article not found after update")
 
 transitionPublishedToDraft :: Int -> IO Article
 transitionPublishedToDraft eid = withDb $ \conn -> do
-  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+  rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
   case rows of
     [] -> throwIO (userError "Article not found")
     (record:_) -> do

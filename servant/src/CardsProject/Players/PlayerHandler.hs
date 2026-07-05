@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Players.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Players.PlayerService as PlayerSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -25,7 +26,7 @@ type PlayerAPI
   :<|> "api" :> "players" :> Capture "id" Int :> "win" :> PostNoContent
   :<|> "api" :> "players" :> Capture "id" Int :> "loss" :> PostNoContent
   :<|> "api" :> "players" :> Capture "id" Int :> "win-rate" :> Get '[JSON] Text
-  :<|> "api" :> "players" :> Capture "id" Int :> "verify" :> PostNoContent
+  :<|> "api" :> "players" :> Capture "id" Int :> "verify" :> Header "X-User-Role" Text :> PostNoContent
   :<|> "api" :> "players" :> Capture "id" Int :> "rating" :> ReqBody '[JSON] Object :> PatchNoContent
 
 playerServer :: Server PlayerAPI
@@ -42,18 +43,18 @@ playerServer = listAll
   :<|> behaviorUpdateRating
   where
     listAll mq = liftIO $ withDb $ \conn -> case mq of
-      Nothing -> query_ conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players" :: IO [Player]
+      Nothing -> query_ conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players" :: IO [Player]
       Just q  -> let qp = "%" <> q <> "%" in
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE display_name LIKE ?" (Only qp) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE display_name LIKE ?" (Only qp) :: IO [Player]
 
     create body = do
       case PlayerSvc.validatePlayer body of
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           mRow <- liftIO $ withDb $ \conn -> do
-            execute conn "INSERT INTO players (display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            execute conn "INSERT INTO players (public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
             rowId <- lastInsertRowId conn
-            rows <- query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Player]
+            rows <- query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Player]
             return $ case rows of { (r:_) -> Just r; [] -> Nothing }
           case mRow of
             Just r  -> return r
@@ -61,7 +62,7 @@ playerServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -71,16 +72,16 @@ playerServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
-            execute conn "UPDATE players SET display_name = ?, rank = ?, rating = ?, peak_rating = ?, bio = ?, country_code = ?, avatar_url = ?, preferred_format = ?, is_verified = ?, created_at = ?, last_active_at = ?, user_id = ? WHERE id = ?" bodyRow
-            query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+            let bodyRow = [toField (bPlayerPublicId validBody), toField (bPlayerDisplayName validBody), toField (bPlayerRank validBody), toField (bPlayerBio validBody), toField (bPlayerCountryCode validBody), toField (bPlayerAvatarUrl validBody), toField (bPlayerPreferredFormat validBody), toField (bPlayerContactEmail validBody), toField (bPlayerWinRateCached validBody), toField (bPlayerIsVerified validBody), toField (bPlayerLastActiveAt validBody), toField (bPlayerUserId validBody), toField eid]
+            execute conn "UPDATE players SET public_id = ?, display_name = ?, rank = ?, bio = ?, country_code = ?, avatar_url = ?, preferred_format = ?, contact_email = ?, win_rate_cached = ?, is_verified = ?, last_active_at = ?, user_id = ? WHERE id = ?" bodyRow
+            query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
           case rows of
             (r:_) -> return r
             []    -> throwError err404
 
     behaviorPromote eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -92,7 +93,7 @@ playerServer = listAll
 
     behaviorDemote eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -104,7 +105,7 @@ playerServer = listAll
 
     behaviorRecordWin eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -116,7 +117,7 @@ playerServer = listAll
 
     behaviorRecordLoss eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -128,7 +129,7 @@ playerServer = listAll
 
     behaviorWinRate eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -138,9 +139,15 @@ playerServer = listAll
             Right result -> return result
             Left _       -> throwError err500
 
-    behaviorVerify eid = do
+    behaviorVerify eid mRole = do
+      let allowedRoles = ["admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -152,7 +159,7 @@ playerServer = listAll
 
     behaviorUpdateRating eid _body = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
+        query conn "SELECT id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, created_at, last_active_at, user_id FROM players WHERE id = ?" (Only eid) :: IO [Player]
       case rows of
         []    -> throwError err404
         (_:_) -> do

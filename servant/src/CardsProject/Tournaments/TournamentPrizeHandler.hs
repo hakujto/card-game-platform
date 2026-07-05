@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Tournaments.TournamentPrizeService as TournamentPrizeSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -63,7 +64,7 @@ tournamentPrizeServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bTournamentPrizePlacementFrom validBody), toField (bTournamentPrizePlacementTo validBody), toField (bTournamentPrizePrizeType validBody), toField (bTournamentPrizeAmount validBody), toField (bTournamentPrizeDescription validBody), toField (bTournamentPrizePacksCount validBody), toField (bTournamentPrizeSeasonPoints validBody), toField (bTournamentPrizeTournamentId validBody), toField eid]
             execute conn "UPDATE tournament_prizes SET placement_from = ?, placement_to = ?, prize_type = ?, amount = ?, description = ?, packs_count = ?, season_points = ?, tournament_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, placement_from, placement_to, prize_type, amount, description, packs_count, season_points, tournament_id FROM tournament_prizes WHERE id = ?" (Only eid) :: IO [TournamentPrize]
           case rows of

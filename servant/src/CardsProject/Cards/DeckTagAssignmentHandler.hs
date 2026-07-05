@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Cards.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 
 type DeckTagAssignmentAPI
   =    "api" :> "deck_tag_assignments" :> Get '[JSON] [DeckTagAssignment]

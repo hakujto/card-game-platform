@@ -14,6 +14,8 @@ import CardsProject.Db (withDb)
 -- Domain service for TournamentPrize
 validateTournamentPrize :: NewTournamentPrize -> Either String NewTournamentPrize
 validateTournamentPrize body
+  | bTournamentPrizePlacementFrom body < 1 = Left "placement_from: must be >= 1"
+  | bTournamentPrizePlacementTo body < 1 = Left "placement_to: must be >= 1"
   | not (bTournamentPrizePlacementTo body >= bTournamentPrizePlacementFrom body) = Left "placement_to must be greater than or equal to placement_from"
   | not (bTournamentPrizePlacementFrom body > 0) = Left "placement_from must be greater than zero"
   | not (bTournamentPrizeAmount body >= 0) = Left "Prize amount must not be negative"

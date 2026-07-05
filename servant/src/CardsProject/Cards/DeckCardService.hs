@@ -15,6 +15,8 @@ import CardsProject.Db (withDb)
 -- Domain service for DeckCard
 validateDeckCard :: NewDeckCard -> Either String NewDeckCard
 validateDeckCard body
+  | bDeckCardQuantity body < 1 = Left "quantity: must be >= 1"
+  | bDeckCardQuantity body > 4 = Left "quantity: must be <= 4"
   | not ((bDeckCardQuantity body >= 1 && bDeckCardQuantity body <= 4)) = Left "A deck can contain between 1 and 4 copies of a card"
   | otherwise = validateDeckCardImplies body
 

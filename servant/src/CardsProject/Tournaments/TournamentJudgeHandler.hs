@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Tournaments.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Tournaments.TournamentJudgeService as TournamentJudgeSvc
 import Control.Exception (catch, IOException)
 import Data.Text (Text)

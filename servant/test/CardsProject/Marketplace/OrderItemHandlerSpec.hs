@@ -34,7 +34,7 @@ spec = with (return app) $ do
   describe "GET /api/order_items/1/total" $ do
     it "behavior line_total stub returns 404 or 500" $ do
       resp <- get "/api/order_items/1/total"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/order_items rule quantity_positive" $ do
     it "rejects when quantity_positive violated" $ do

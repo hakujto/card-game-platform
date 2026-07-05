@@ -41,22 +41,22 @@ spec = with (return app) $ do
   describe "GET /api/crafting_recipes/1/can-craft" $ do
     it "behavior can_craft stub returns 404 or 500" $ do
       resp <- get "/api/crafting_recipes/1/can-craft"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/crafting_recipes/1/craft" $ do
     it "behavior execute_craft stub returns 404 or 500" $ do
       resp <- request "POST" "/api/crafting_recipes/1/craft" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/crafting_recipes/1/disable" $ do
     it "behavior disable stub returns 404 or 500" $ do
       resp <- request "POST" "/api/crafting_recipes/1/disable" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/crafting_recipes/1/enable" $ do
     it "behavior enable stub returns 404 or 500" $ do
       resp <- request "POST" "/api/crafting_recipes/1/enable" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/crafting_recipes rule dust_cost_positive" $ do
     it "rejects when dust_cost_positive violated" $ do

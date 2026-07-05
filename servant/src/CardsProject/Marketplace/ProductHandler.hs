@@ -9,6 +9,7 @@ import Servant hiding (Stream)
 import CardsProject.Marketplace.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Marketplace.ProductService as ProductSvc
 import qualified Data.ByteString.Lazy.Char8
 import Control.Exception (catch, IOException)
@@ -71,7 +72,7 @@ productServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
+            let bodyRow = [toField (bProductName validBody), toField (bProductProductType validBody), toField (bProductPrice validBody), toField (bProductStock validBody), toField (bProductActive validBody), toField (bProductDiscountPercent validBody), toField (bProductDescription validBody), toField (bProductImageUrl validBody), toField (bProductFeatured validBody), toField (bProductCardId validBody), toField (bProductCardSetId validBody), toField eid]
             execute conn "UPDATE products SET name = ?, product_type = ?, price = ?, stock = ?, active = ?, discount_percent = ?, description = ?, image_url = ?, featured = ?, card_id = ?, card_set_id = ? WHERE id = ?" bodyRow
             query conn "SELECT id, name, product_type, price, stock, active, discount_percent, description, image_url, featured, card_id, card_set_id FROM products WHERE id = ?" (Only eid) :: IO [Product]
           case rows of

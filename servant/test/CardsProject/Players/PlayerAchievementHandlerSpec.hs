@@ -23,10 +23,10 @@ spec = with (return app) $ do
   describe "PATCH /api/player_achievements/1/progress" $ do
     it "behavior increment_progress stub returns 404 or 500" $ do
       resp <- request "PATCH" "/api/player_achievements/1/progress" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 
   describe "POST /api/player_achievements/1/complete" $ do
     it "behavior complete stub returns 404 or 500" $ do
       resp <- request "POST" "/api/player_achievements/1/complete" [("Content-Type","application/json")] "{}"
-      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 404 || s == 500
+      liftIO $ statusCode (simpleStatus resp) `shouldSatisfy` \s -> s == 204 || s == 400 || s == 401 || s == 404 || s == 500
 

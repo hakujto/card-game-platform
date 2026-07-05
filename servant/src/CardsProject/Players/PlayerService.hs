@@ -39,6 +39,7 @@ record_loss _eid = throwIO (userError "record_loss not implemented")
 win_rate :: Int -> IO Text
 win_rate _eid = throwIO (userError "win_rate not implemented")
 
+-- @allow [admin] — check user role before calling
 -- @invoke behavior stub (no-op)
 verify :: Int -> IO ()
 verify _eid = throwIO (userError "verify not implemented")

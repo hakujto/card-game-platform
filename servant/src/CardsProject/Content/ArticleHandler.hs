@@ -9,10 +9,12 @@ import Servant hiding (Stream)
 import CardsProject.Content.Types
 import CardsProject.Db (withDb)
 import Database.SQLite.Simple
+import Database.SQLite.Simple.ToField (toField)
 import qualified CardsProject.Content.ArticleService as ArticleSvc
 import qualified Data.ByteString.Lazy.Char8
 import Data.Text (Text)
 import Control.Exception (catch, IOException)
+import Data.Aeson (Object)
 import Data.Text (Text)
 
 type ArticleAPI
@@ -21,8 +23,9 @@ type ArticleAPI
   :<|> "api" :> "articles" :> Capture "id" Int :> Get '[JSON] Article
   :<|> "api" :> "articles" :> Capture "id" Int :> ReqBody '[JSON] NewArticle :> Put '[JSON] Article
   :<|> "api" :> "articles" :> Capture "id" Int :> ReqBody '[JSON] NewArticle :> Patch '[JSON] Article
-  :<|> "api" :> "articles" :> Capture "id" Int :> "publish" :> PostNoContent
-  :<|> "api" :> "articles" :> Capture "id" Int :> "archive" :> PostNoContent
+  :<|> "api" :> "articles" :> Capture "id" Int :> "publish" :> Header "X-User-Role" Text :> PostNoContent
+  :<|> "api" :> "articles" :> Capture "id" Int :> "archive" :> Header "X-User-Role" Text :> PostNoContent
+  :<|> "api" :> "articles" :> Capture "id" Int :> ReqBody '[JSON] Object :> Header "X-User-Role" Text :> Put '[JSON] Bool
   :<|> "api" :> "articles" :> Capture "id" Int :> "view" :> PostNoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "like" :> PostNoContent
   :<|> "api" :> "articles" :> Capture "id" Int :> "like" :> DeleteNoContent
@@ -40,6 +43,7 @@ articleServer = listAll
   :<|> partialUpdate
   :<|> behaviorPublish
   :<|> behaviorArchive
+  :<|> behaviorReplace
   :<|> behaviorIncrementView
   :<|> behaviorLike
   :<|> behaviorUnlike
@@ -50,18 +54,18 @@ articleServer = listAll
   :<|> transitionHandlerPublishedToDraft
   where
     listAll mq = liftIO $ withDb $ \conn -> case mq of
-      Nothing -> query_ conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles" :: IO [Article]
+      Nothing -> query_ conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles" :: IO [Article]
       Just q  -> let qp = "%" <> q <> "%" in
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE title LIKE ? OR excerpt LIKE ?" ((qp, qp)) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE title LIKE ? OR excerpt LIKE ?" ((qp, qp)) :: IO [Article]
 
     create body = do
       case ArticleSvc.validateArticle body of
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           mRow <- liftIO $ withDb $ \conn -> do
-            execute conn "INSERT INTO articles (title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
+            execute conn "INSERT INTO articles (title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" validBody
             rowId <- lastInsertRowId conn
-            rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Article]
+            rows <- query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only (fromIntegral rowId :: Int)) :: IO [Article]
             return $ case rows of { (r:_) -> Just r; [] -> Nothing }
           case mRow of
             Just r  -> return r
@@ -69,7 +73,7 @@ articleServer = listAll
 
     getOne eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         (r:_) -> return r
         []    -> throwError err404
@@ -79,18 +83,24 @@ articleServer = listAll
         Left err -> throwError $ err400 { errBody = "Validation failed: " <> (Data.ByteString.Lazy.Char8.pack err) }
         Right validBody -> do
           rows <- liftIO $ withDb $ \conn -> do
-            let bodyRow = toRow validBody ++ toRow (Only eid)
-            execute conn "UPDATE articles SET title = ?, slug = ?, body = ?, excerpt = ?, cover_image_url = ?, status = ?, article_type = ?, language = ?, view_count = ?, likes_count = ?, is_featured = ?, published_at = ?, created_at = ?, updated_at = ?, author_id = ?, featured_deck_id = ? WHERE id = ?" bodyRow
-            query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+            let bodyRow = [toField (bArticleTitle validBody), toField (bArticleSlug validBody), toField (bArticleBody validBody), toField (bArticleExcerpt validBody), toField (bArticleCoverImageUrl validBody), toField (bArticleArticleType validBody), toField (bArticleLanguage validBody), toField (bArticleTotalViewsAlltime validBody), toField (bArticleIsFeatured validBody), toField (bArticlePublishedAt validBody), toField (bArticleUpdatedAt validBody), toField (bArticleAuthorId validBody), toField (bArticleFeaturedDeckId validBody), toField eid]
+            execute conn "UPDATE articles SET title = ?, slug = ?, body = ?, excerpt = ?, cover_image_url = ?, article_type = ?, language = ?, total_views_alltime = ?, is_featured = ?, published_at = ?, updated_at = ?, author_id = ?, featured_deck_id = ? WHERE id = ?" bodyRow
+            query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
           case rows of
             (r:_) -> return r
             []    -> throwError err404
 
     partialUpdate = update
 
-    behaviorPublish eid = do
+    behaviorPublish eid mRole = do
+      let allowedRoles = ["editor", "admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -100,9 +110,15 @@ articleServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
-    behaviorArchive eid = do
+    behaviorArchive eid mRole = do
+      let allowedRoles = ["editor", "admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -112,9 +128,27 @@ articleServer = listAll
             Right _ -> return NoContent
             Left _  -> throwError err500
 
+    behaviorReplace eid _body mRole = do
+      let allowedRoles = ["editor", "admin"] :: [Text]
+      case mRole of
+        Nothing   -> throwError err401
+        Just role -> if role `notElem` allowedRoles
+          then throwError err403
+          else return ()
+      rows <- liftIO $ withDb $ \conn ->
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+      case rows of
+        []    -> throwError err404
+        (_:_) -> do
+          eResult <- liftIO $ (Right <$> ArticleSvc.replace eid)
+            `Control.Exception.catch` (\e -> return . Left $ show (e :: IOError))
+          case eResult of
+            Right result -> return result
+            Left _       -> throwError err500
+
     behaviorIncrementView eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -126,7 +160,7 @@ articleServer = listAll
 
     behaviorLike eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -138,7 +172,7 @@ articleServer = listAll
 
     behaviorUnlike eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
@@ -150,7 +184,7 @@ articleServer = listAll
 
     behaviorReadingTimeMinutes eid = do
       rows <- liftIO $ withDb $ \conn ->
-        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
+        query conn "SELECT id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, created_at, updated_at, author_id, featured_deck_id FROM articles WHERE id = ?" (Only eid) :: IO [Article]
       case rows of
         []    -> throwError err404
         (_:_) -> do
