@@ -14,6 +14,13 @@ fn validate_card(payload: &CardCreateRequest) -> Vec<String> {
     if !((payload.mana_cost >= 0 && payload.mana_cost <= 20)) { errors.push("mana_cost must be between 0 and 20".to_string()); }
     if !((payload.power_level >= 1 && payload.power_level <= 10)) { errors.push("power_level must be between 1 and 10".to_string()); }
     if !((!(payload.is_banned == true) || true /* unsupported: unknown enum variant CardLegalFormats::Message */)) { errors.push("Validation failed: banned_card_not_in_legal_formats".to_string()); }
+    if payload.mana_cost < 0 { errors.push("mana_cost must be >= 0".to_string()); }
+    if payload.mana_cost > 20 { errors.push("mana_cost must be <= 20".to_string()); }
+    if payload.power_level < 1 { errors.push("power_level must be >= 1".to_string()); }
+    if payload.power_level > 10 { errors.push("power_level must be <= 10".to_string()); }
+    // @required_when: attack — {"type":"eq","field":"card_type","value":"Creature"}
+    // @required_when: defense — {"type":"eq","field":"card_type","value":"Creature"}
+    // @required_when: loyalty — {"type":"eq","field":"card_type","value":"Planeswalker"}
     errors
 }
 
@@ -49,10 +56,11 @@ pub async fn create_card(
     let errors = validate_card(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(Card,
-        "INSERT INTO cards (name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, datetime('now'), datetime('now')) RETURNING *",
-        payload.name, payload.card_type, payload.rarity, payload.mana_cost, payload.mana_colors, payload.attack, payload.defense, payload.loyalty, payload.description, payload.flavor_text, payload.image_url, payload.artist_name, payload.legal_formats, payload.is_banned, payload.is_restricted, payload.power_level, payload.set_id
+        "INSERT INTO cards (public_id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, metadata, total_copies_in_circulation, set_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, datetime('now'), datetime('now')) RETURNING *",
+        payload.public_id, payload.name, payload.card_type, payload.rarity, payload.mana_cost, payload.mana_colors, payload.attack, payload.defense, payload.loyalty, payload.description, payload.flavor_text, payload.image_url, payload.artist_name, payload.legal_formats, payload.is_banned, payload.is_restricted, payload.power_level, payload.metadata, payload.total_copies_in_circulation, payload.set_id
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: public_id
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -79,8 +87,8 @@ pub async fn update_card(
     Json(payload): Json<CardCreateRequest>,
 ) -> Result<Json<Card>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Card,
-        "UPDATE cards SET name = $1, card_type = $2, rarity = $3, mana_cost = $4, mana_colors = $5, attack = $6, defense = $7, loyalty = $8, description = $9, flavor_text = $10, image_url = $11, artist_name = $12, legal_formats = $13, is_banned = $14, is_restricted = $15, power_level = $16, set_id = $17, updated_at = datetime('now') WHERE id = $18 RETURNING *",
-        payload.name, payload.card_type, payload.rarity, payload.mana_cost, payload.mana_colors, payload.attack, payload.defense, payload.loyalty, payload.description, payload.flavor_text, payload.image_url, payload.artist_name, payload.legal_formats, payload.is_banned, payload.is_restricted, payload.power_level, payload.set_id, id
+        "UPDATE cards SET public_id = $1, name = $2, card_type = $3, rarity = $4, mana_cost = $5, mana_colors = $6, attack = $7, defense = $8, loyalty = $9, description = $10, flavor_text = $11, image_url = $12, artist_name = $13, legal_formats = $14, power_level = $15, metadata = $16, total_copies_in_circulation = $17, set_id = $18, updated_at = datetime('now') WHERE id = $19 RETURNING *",
+        payload.public_id, payload.name, payload.card_type, payload.rarity, payload.mana_cost, payload.mana_colors, payload.attack, payload.defense, payload.loyalty, payload.description, payload.flavor_text, payload.image_url, payload.artist_name, payload.legal_formats, payload.power_level, payload.metadata, payload.total_copies_in_circulation, payload.set_id, id
     ).fetch_optional(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
     .ok_or((StatusCode::NOT_FOUND, "Card not found".to_string()))?;
@@ -97,6 +105,7 @@ pub async fn patch_card(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Card not found".to_string()))?;
+    if let Some(v) = payload.public_id { row.public_id = v; }
     if let Some(v) = payload.name { row.name = v; }
     if let Some(v) = payload.card_type { row.card_type = v; }
     if let Some(v) = payload.rarity { row.rarity = v; }
@@ -110,13 +119,13 @@ pub async fn patch_card(
     if let Some(v) = payload.image_url { row.image_url = Some(v); }
     if let Some(v) = payload.artist_name { row.artist_name = Some(v); }
     if let Some(v) = payload.legal_formats { row.legal_formats = v; }
-    if let Some(v) = payload.is_banned { row.is_banned = v as i64; }
-    if let Some(v) = payload.is_restricted { row.is_restricted = v as i64; }
     if let Some(v) = payload.power_level { row.power_level = v; }
+    if let Some(v) = payload.metadata { row.metadata = Some(v); }
+    if let Some(v) = payload.total_copies_in_circulation { row.total_copies_in_circulation = v; }
     if let Some(v) = payload.set_id { row.set_id = v; }
     sqlx::query_unchecked!(
-        "UPDATE cards SET name = $1, card_type = $2, rarity = $3, mana_cost = $4, mana_colors = $5, attack = $6, defense = $7, loyalty = $8, description = $9, flavor_text = $10, image_url = $11, artist_name = $12, legal_formats = $13, is_banned = $14, is_restricted = $15, power_level = $16, set_id = $17, updated_at = datetime('now') WHERE id = $18",
-        row.name, row.card_type, row.rarity, row.mana_cost, row.mana_colors, row.attack, row.defense, row.loyalty, row.description, row.flavor_text, row.image_url, row.artist_name, row.legal_formats, row.is_banned, row.is_restricted, row.power_level, row.set_id, id
+        "UPDATE cards SET public_id = $1, name = $2, card_type = $3, rarity = $4, mana_cost = $5, mana_colors = $6, attack = $7, defense = $8, loyalty = $9, description = $10, flavor_text = $11, image_url = $12, artist_name = $13, legal_formats = $14, power_level = $15, metadata = $16, total_copies_in_circulation = $17, set_id = $18, updated_at = datetime('now') WHERE id = $19",
+        row.public_id, row.name, row.card_type, row.rarity, row.mana_cost, row.mana_colors, row.attack, row.defense, row.loyalty, row.description, row.flavor_text, row.image_url, row.artist_name, row.legal_formats, row.power_level, row.metadata, row.total_copies_in_circulation, row.set_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -126,6 +135,8 @@ pub async fn ban_card(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, moderator
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Card, "SELECT * FROM cards WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -138,6 +149,8 @@ pub async fn unban_card(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, moderator
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Card, "SELECT * FROM cards WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -150,6 +163,8 @@ pub async fn restrict_card(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, moderator
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Card, "SELECT * FROM cards WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -162,11 +177,27 @@ pub async fn unrestrict_card(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, moderator
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Card, "SELECT * FROM cards WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Card not found".to_string()))?;
     // TODO: implement unrestrict business logic
+    Ok(StatusCode::OK)
+}
+
+pub async fn replace_card(
+    State(pool): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin
+    // TODO: extract role from request and check against allowed roles
+    let _row = sqlx::query_as_unchecked!(Card, "SELECT * FROM cards WHERE id = $1", id)
+        .fetch_optional(&pool).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Card not found".to_string()))?;
+    // TODO: implement replace business logic
     Ok(StatusCode::OK)
 }
 
@@ -272,16 +303,18 @@ mod tests {
     async fn test_create_card() {
         let pool = setup_pool().await;
         let body = json!({
-        "name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "name": "Test Lightning Bolt",
         "card_type": "Spell",
         "rarity": "Common",
-        "mana_cost": 2,
+        "mana_cost": 1,
         "mana_colors": "White",
         "description": "test",
         "legal_formats": "Standard",
         "is_banned": false,
         "is_restricted": false,
-        "power_level": 2,
+        "power_level": 3,
+        "total_copies_in_circulation": 2,
         "set_id": 1
     });
         let resp = app(pool).oneshot(
@@ -308,16 +341,18 @@ mod tests {
         let pool = setup_pool().await;
         // First create
         let body = json!({
-        "name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "name": "Test Lightning Bolt",
         "card_type": "Spell",
         "rarity": "Common",
-        "mana_cost": 2,
+        "mana_cost": 1,
         "mana_colors": "White",
         "description": "test",
         "legal_formats": "Standard",
         "is_banned": false,
         "is_restricted": false,
-        "power_level": 2,
+        "power_level": 3,
+        "total_copies_in_circulation": 2,
         "set_id": 1
     });
         let _ = app(pool.clone()).oneshot(
@@ -325,7 +360,7 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(Body::from(body.to_string())).unwrap()
         ).await.unwrap();
-        let patch_body = json!({ "name": "updated" });
+        let patch_body = json!({ "flavor_text": "updated" });
         let resp = app(pool).oneshot(
             Request::builder().method("PATCH").uri("/api/cards/1")
                 .header("content-type", "application/json")

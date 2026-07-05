@@ -123,6 +123,9 @@ Base URL: `http://localhost:8080`
 - `GET/POST` `/api/streams/`
 - `GET/PUT/PATCH/DELETE` `/api/streams/{id}`
 
+### Wallet BC
+
+
 ## Testing
 
 ```bash
@@ -138,6 +141,7 @@ Bounded Contexts:
 - **Tournaments BC** (`src/models/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`src/models/marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`src/models/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+- **Wallet BC** (`src/models/wallet/`) — 
 
 ## Docker
 

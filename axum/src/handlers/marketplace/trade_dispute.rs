@@ -75,6 +75,8 @@ pub async fn resolve_trade_dispute(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, moderator
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(TradeDispute, "SELECT * FROM trade_disputes WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?

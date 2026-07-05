@@ -10,6 +10,7 @@ fn validate_player(payload: &PlayerCreateRequest) -> Vec<String> {
     if !((payload.rating >= 0 && payload.rating <= 9999)) { errors.push("Rating must be between 0 and 9999".to_string()); }
     if !(payload.peak_rating >= payload.rating) { errors.push("Peak rating must be greater than or equal to current rating".to_string()); }
     if !(!payload.display_name.is_empty()) { errors.push("Display name must not be empty".to_string()); }
+    // @pattern: country_code must match /[A-Z]{2}/
     errors
 }
 
@@ -45,11 +46,11 @@ pub async fn create_player(
     let errors = validate_player(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(Player,
-        "INSERT INTO players (display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, last_active_at, user_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, datetime('now'), datetime('now')) RETURNING *",
-        payload.display_name, payload.rank, payload.rating, payload.peak_rating, payload.bio, payload.country_code, payload.avatar_url, payload.preferred_format, payload.is_verified, payload.last_active_at, payload.user_id
+        "INSERT INTO players (public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, last_active_at, user_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, datetime('now'), datetime('now')) RETURNING *",
+        payload.public_id, payload.display_name, payload.rank, payload.rating, payload.peak_rating, payload.bio, payload.country_code, payload.avatar_url, payload.preferred_format, payload.contact_email, payload.win_rate_cached, payload.is_verified, payload.last_active_at, payload.user_id
     ).fetch_one(&pool).await
     .map_err(|e| {
-        // @unique fields: display_name
+        // @unique fields: public_id, display_name
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -80,20 +81,21 @@ pub async fn patch_player(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Player not found".to_string()))?;
+    if let Some(v) = payload.public_id { row.public_id = v; }
     if let Some(v) = payload.display_name { row.display_name = v; }
     if let Some(v) = payload.rank { row.rank = v; }
-    if let Some(v) = payload.rating { row.rating = v; }
-    if let Some(v) = payload.peak_rating { row.peak_rating = v; }
     if let Some(v) = payload.bio { row.bio = Some(v); }
     if let Some(v) = payload.country_code { row.country_code = Some(v); }
     if let Some(v) = payload.avatar_url { row.avatar_url = Some(v); }
     if let Some(v) = payload.preferred_format { row.preferred_format = Some(v); }
+    if let Some(v) = payload.contact_email { row.contact_email = Some(v); }
+    if let Some(v) = payload.win_rate_cached { row.win_rate_cached = Some(v); }
     if let Some(v) = payload.is_verified { row.is_verified = v as i64; }
     if let Some(v) = payload.last_active_at { row.last_active_at = Some(v); }
     if let Some(v) = payload.user_id { row.user_id = Some(v); }
     sqlx::query_unchecked!(
-        "UPDATE players SET display_name = $1, rank = $2, rating = $3, peak_rating = $4, bio = $5, country_code = $6, avatar_url = $7, preferred_format = $8, is_verified = $9, last_active_at = $10, user_id = $11, updated_at = datetime('now') WHERE id = $12",
-        row.display_name, row.rank, row.rating, row.peak_rating, row.bio, row.country_code, row.avatar_url, row.preferred_format, row.is_verified, row.last_active_at, row.user_id, id
+        "UPDATE players SET public_id = $1, display_name = $2, rank = $3, bio = $4, country_code = $5, avatar_url = $6, preferred_format = $7, contact_email = $8, win_rate_cached = $9, is_verified = $10, last_active_at = $11, user_id = $12, updated_at = datetime('now') WHERE id = $13",
+        row.public_id, row.display_name, row.rank, row.bio, row.country_code, row.avatar_url, row.preferred_format, row.contact_email, row.win_rate_cached, row.is_verified, row.last_active_at, row.user_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -163,6 +165,8 @@ pub async fn verify_player(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Player, "SELECT * FROM players WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -249,10 +253,11 @@ mod tests {
     async fn test_create_player() {
         let pool = setup_pool().await;
         let body = json!({
-        "display_name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "display_name": "test_player_001",
         "rank": "Bronze",
-        "rating": 2,
-        "peak_rating": 2,
+        "rating": 1000,
+        "peak_rating": 1000,
         "is_verified": false,
         "user_id": 1
     });
@@ -280,10 +285,11 @@ mod tests {
         let pool = setup_pool().await;
         // First create
         let body = json!({
-        "display_name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "display_name": "test_player_001",
         "rank": "Bronze",
-        "rating": 2,
-        "peak_rating": 2,
+        "rating": 1000,
+        "peak_rating": 1000,
         "is_verified": false,
         "user_id": 1
     });
@@ -292,7 +298,7 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(Body::from(body.to_string())).unwrap()
         ).await.unwrap();
-        let patch_body = json!({ "display_name": "updated" });
+        let patch_body = json!({ "bio": "updated" });
         let resp = app(pool).oneshot(
             Request::builder().method("PATCH").uri("/api/players/1")
                 .header("content-type", "application/json")

@@ -92,6 +92,7 @@ pub struct Game {
     pub updated_at: String,
     pub game_number: i64,
     pub winner_side: Option<GameWinnerSide>,
+    pub complexity_score: Option<f64>,
     pub turns_played: Option<i64>,
     pub duration_seconds: Option<i64>,
     pub ended_by: Option<GameEndedBy>,
@@ -104,6 +105,7 @@ pub struct Game {
 pub struct GameCreateRequest {
     pub game_number: i64,
     pub winner_side: Option<GameWinnerSide>,
+    pub complexity_score: Option<f64>,
     pub turns_played: Option<i64>,
     pub duration_seconds: Option<i64>,
     pub ended_by: Option<GameEndedBy>,

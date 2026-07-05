@@ -204,6 +204,7 @@ pub struct Card {
     pub id: i64,
     pub created_at: String,
     pub updated_at: String,
+    pub public_id: String,
     pub name: String,
     pub card_type: CardCardType,
     pub rarity: CardRarity,
@@ -222,11 +223,14 @@ pub struct Card {
     #[serde(serialize_with = "crate::serde_utils::serialize_i64_as_bool")]
     pub is_restricted: i64,
     pub power_level: i64,
+    pub metadata: Option<serde_json::Value>,
+    pub total_copies_in_circulation: i64,
     pub set_id: i64,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct CardCreateRequest {
+    pub public_id: String,
     pub name: String,
     pub card_type: CardCardType,
     pub rarity: CardRarity,
@@ -243,11 +247,14 @@ pub struct CardCreateRequest {
     pub is_banned: bool,
     pub is_restricted: bool,
     pub power_level: i64,
+    pub metadata: Option<serde_json::Value>,
+    pub total_copies_in_circulation: i64,
     pub set_id: i64,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct CardUpdateRequest {
+    pub public_id: Option<String>,
     pub name: Option<String>,
     pub card_type: Option<CardCardType>,
     pub rarity: Option<CardRarity>,
@@ -261,8 +268,18 @@ pub struct CardUpdateRequest {
     pub image_url: Option<String>,
     pub artist_name: Option<String>,
     pub legal_formats: Option<CardLegalFormats>,
-    pub is_banned: Option<bool>,
-    pub is_restricted: Option<bool>,
     pub power_level: Option<i64>,
+    pub metadata: Option<serde_json::Value>,
+    pub total_copies_in_circulation: Option<i64>,
     pub set_id: Option<i64>,
+}
+
+#[derive(Debug, sqlx::FromRow, serde::Serialize)]
+pub struct CardAuditLog {
+    pub id: i64,
+    pub record_id: i64,
+    pub field: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+    pub changed_at: String,
 }

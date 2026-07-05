@@ -49,7 +49,7 @@ pub fn draft_pick_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/draft_picks", axum::routing::get(list_draft_pick))
         .route("/api/draft_picks/:id", axum::routing::MethodRouter::new().get(get_draft_pick))
-        .route("/api/draft_picks/:id/api/draft-picks/{id}/first-pick", axum::routing::get(is_first_pick_draft_pick))
+        .route("/api/draft_picks/:id/first-pick", axum::routing::get(is_first_pick_draft_pick))
 }
 
 #[cfg(test)]

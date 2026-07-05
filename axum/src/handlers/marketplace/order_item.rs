@@ -89,7 +89,7 @@ pub fn order_item_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/order_items", axum::routing::get(list_order_item).post(create_order_item))
         .route("/api/order_items/:id", axum::routing::MethodRouter::new().get(get_order_item).delete(delete_order_item))
-        .route("/api/order_items/:id/api/order-items/{id}/total", axum::routing::get(line_total_order_item))
+        .route("/api/order_items/:id/total", axum::routing::get(line_total_order_item))
 }
 
 #[cfg(test)]

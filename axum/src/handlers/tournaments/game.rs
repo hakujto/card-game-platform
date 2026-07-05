@@ -11,6 +11,8 @@ fn validate_game(payload: &GameCreateRequest) -> Vec<String> {
     if !((!(payload.turns_played.is_some()) || payload.turns_played.map_or(false, |v| v > 0))) { errors.push("Turns played must be greater than zero".to_string()); }
     if !((!(payload.duration_seconds.is_some()) || payload.duration_seconds.map_or(false, |v| v > 0))) { errors.push("Game duration must be greater than zero".to_string()); }
     if !((!(payload.winner_side.as_ref() == Some(&GameWinnerSide::Draw)) || payload.winner_id.is_none())) { errors.push("A draw cannot have a winner".to_string()); }
+    if payload.game_number < 1 { errors.push("game_number must be >= 1".to_string()); }
+    if payload.game_number > 3 { errors.push("game_number must be <= 3".to_string()); }
     errors
 }
 
@@ -38,8 +40,8 @@ pub async fn create_game(
     let errors = validate_game(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(Game,
-        "INSERT INTO games (game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, datetime('now'), datetime('now')) RETURNING *",
-        payload.game_number, payload.winner_side, payload.turns_played, payload.duration_seconds, payload.ended_by, payload.replay_url, payload.match_id, payload.winner_id
+        "INSERT INTO games (game_number, winner_side, complexity_score, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, datetime('now'), datetime('now')) RETURNING *",
+        payload.game_number, payload.winner_side, payload.complexity_score, payload.turns_played, payload.duration_seconds, payload.ended_by, payload.replay_url, payload.match_id, payload.winner_id
     ).fetch_one(&pool).await
     .map_err(|e| {
         if e.to_string().contains("UNIQUE") {

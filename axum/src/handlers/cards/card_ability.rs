@@ -145,8 +145,8 @@ pub fn card_ability_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/card_abilities", axum::routing::get(list_card_ability).post(create_card_ability))
         .route("/api/card_abilities/:id", axum::routing::MethodRouter::new().get(get_card_ability).put(update_card_ability).patch(patch_card_ability).delete(delete_card_ability))
-        .route("/api/card_abilities/:id/api/card-abilities/{id}/usable", axum::routing::get(is_usable_at_card_ability))
-        .route("/api/card_abilities/:id/api/card-abilities/{id}/describe", axum::routing::get(describe_card_ability))
+        .route("/api/card_abilities/:id/usable", axum::routing::get(is_usable_at_card_ability))
+        .route("/api/card_abilities/:id/describe", axum::routing::get(describe_card_ability))
 }
 
 #[cfg(test)]

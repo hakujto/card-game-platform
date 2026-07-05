@@ -84,8 +84,8 @@ pub fn player_achievement_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/player_achievements", axum::routing::get(list_player_achievement))
         .route("/api/player_achievements/:id", axum::routing::MethodRouter::new().get(get_player_achievement))
-        .route("/api/player_achievements/:id/api/player-achievements/{id}/progress", axum::routing::patch(increment_progress_player_achievement))
-        .route("/api/player_achievements/:id/api/player-achievements/{id}/complete", axum::routing::post(complete_player_achievement))
+        .route("/api/player_achievements/:id/progress", axum::routing::patch(increment_progress_player_achievement))
+        .route("/api/player_achievements/:id/complete", axum::routing::post(complete_player_achievement))
         .route("/api/player_achievements/:id/is_completed", axum::routing::patch(set_is_completed_player_achievement))
 }
 

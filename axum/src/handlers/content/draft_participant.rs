@@ -87,8 +87,8 @@ pub fn draft_participant_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/draft_participants", axum::routing::get(list_draft_participant).post(create_draft_participant))
         .route("/api/draft_participants/:id", axum::routing::MethodRouter::new().get(get_draft_participant))
-        .route("/api/draft_participants/:id/api/draft-participants/{id}/pick", axum::routing::post(pick_card_draft_participant))
-        .route("/api/draft_participants/:id/api/draft-participants/{id}/card-count", axum::routing::get(drafted_card_count_draft_participant))
+        .route("/api/draft_participants/:id/pick", axum::routing::post(pick_card_draft_participant))
+        .route("/api/draft_participants/:id/card-count", axum::routing::get(drafted_card_count_draft_participant))
 }
 
 #[cfg(test)]

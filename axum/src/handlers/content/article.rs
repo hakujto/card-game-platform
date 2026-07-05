@@ -45,8 +45,8 @@ pub async fn create_article(
     let errors = validate_article(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(Article,
-        "INSERT INTO articles (title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, author_id, featured_deck_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, datetime('now'), datetime('now')) RETURNING *",
-        payload.title, payload.slug, payload.body, payload.excerpt, payload.cover_image_url, payload.status, payload.article_type, payload.language, payload.view_count, payload.likes_count, payload.is_featured, payload.published_at, payload.author_id, payload.featured_deck_id
+        "INSERT INTO articles (title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, author_id, featured_deck_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, datetime('now'), datetime('now')) RETURNING *",
+        payload.title, payload.slug, payload.body, payload.excerpt, payload.cover_image_url, payload.status, payload.article_type, payload.language, payload.view_count, payload.likes_count, payload.total_views_alltime, payload.is_featured, payload.published_at, payload.author_id, payload.featured_deck_id
     ).fetch_one(&pool).await
     .map_err(|e| {
         // @unique fields: slug
@@ -76,8 +76,8 @@ pub async fn update_article(
     Json(payload): Json<ArticleCreateRequest>,
 ) -> Result<Json<Article>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Article,
-        "UPDATE articles SET title = $1, slug = $2, body = $3, excerpt = $4, cover_image_url = $5, status = $6, article_type = $7, language = $8, view_count = $9, likes_count = $10, is_featured = $11, published_at = $12, author_id = $13, featured_deck_id = $14, updated_at = datetime('now') WHERE id = $15 RETURNING *",
-        payload.title, payload.slug, payload.body, payload.excerpt, payload.cover_image_url, payload.status, payload.article_type, payload.language, payload.view_count, payload.likes_count, payload.is_featured, payload.published_at, payload.author_id, payload.featured_deck_id, id
+        "UPDATE articles SET title = $1, slug = $2, body = $3, excerpt = $4, cover_image_url = $5, article_type = $6, language = $7, total_views_alltime = $8, is_featured = $9, published_at = $10, author_id = $11, featured_deck_id = $12, updated_at = datetime('now') WHERE id = $13 RETURNING *",
+        payload.title, payload.slug, payload.body, payload.excerpt, payload.cover_image_url, payload.article_type, payload.language, payload.total_views_alltime, payload.is_featured, payload.published_at, payload.author_id, payload.featured_deck_id, id
     ).fetch_optional(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
     .ok_or((StatusCode::NOT_FOUND, "Article not found".to_string()))?;
@@ -99,18 +99,16 @@ pub async fn patch_article(
     if let Some(v) = payload.body { row.body = v; }
     if let Some(v) = payload.excerpt { row.excerpt = Some(v); }
     if let Some(v) = payload.cover_image_url { row.cover_image_url = Some(v); }
-    if let Some(v) = payload.status { row.status = v; }
     if let Some(v) = payload.article_type { row.article_type = v; }
     if let Some(v) = payload.language { row.language = v; }
-    if let Some(v) = payload.view_count { row.view_count = v; }
-    if let Some(v) = payload.likes_count { row.likes_count = v; }
+    if let Some(v) = payload.total_views_alltime { row.total_views_alltime = v; }
     if let Some(v) = payload.is_featured { row.is_featured = v as i64; }
     if let Some(v) = payload.published_at { row.published_at = Some(v); }
     if let Some(v) = payload.author_id { row.author_id = v; }
     if let Some(v) = payload.featured_deck_id { row.featured_deck_id = Some(v); }
     sqlx::query_unchecked!(
-        "UPDATE articles SET title = $1, slug = $2, body = $3, excerpt = $4, cover_image_url = $5, status = $6, article_type = $7, language = $8, view_count = $9, likes_count = $10, is_featured = $11, published_at = $12, author_id = $13, featured_deck_id = $14, updated_at = datetime('now') WHERE id = $15",
-        row.title, row.slug, row.body, row.excerpt, row.cover_image_url, row.status, row.article_type, row.language, row.view_count, row.likes_count, row.is_featured, row.published_at, row.author_id, row.featured_deck_id, id
+        "UPDATE articles SET title = $1, slug = $2, body = $3, excerpt = $4, cover_image_url = $5, article_type = $6, language = $7, total_views_alltime = $8, is_featured = $9, published_at = $10, author_id = $11, featured_deck_id = $12, updated_at = datetime('now') WHERE id = $13",
+        row.title, row.slug, row.body, row.excerpt, row.cover_image_url, row.article_type, row.language, row.total_views_alltime, row.is_featured, row.published_at, row.author_id, row.featured_deck_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -120,6 +118,8 @@ pub async fn publish_article(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: editor, admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Article, "SELECT * FROM articles WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -132,11 +132,27 @@ pub async fn archive_article(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: editor, admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Article, "SELECT * FROM articles WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Article not found".to_string()))?;
     // TODO: implement archive business logic
+    Ok(StatusCode::OK)
+}
+
+pub async fn replace_article(
+    State(pool): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: editor, admin
+    // TODO: extract role from request and check against allowed roles
+    let _row = sqlx::query_as_unchecked!(Article, "SELECT * FROM articles WHERE id = $1", id)
+        .fetch_optional(&pool).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Article not found".to_string()))?;
+    // TODO: implement replace business logic
     Ok(StatusCode::OK)
 }
 
@@ -306,13 +322,14 @@ mod tests {
         let pool = setup_pool().await;
         let body = json!({
         "title": "test",
-        "slug": "test",
+        "slug": "test-slug",
         "body": "test",
         "status": "Draft",
         "article_type": "Guide",
         "language": "EN",
         "view_count": 2,
         "likes_count": 2,
+        "total_views_alltime": 2,
         "is_featured": false,
         "author_id": 1,
         "featured_deck_id": 1
@@ -342,13 +359,14 @@ mod tests {
         // First create
         let body = json!({
         "title": "test",
-        "slug": "test",
+        "slug": "test-slug",
         "body": "test",
         "status": "Draft",
         "article_type": "Guide",
         "language": "EN",
         "view_count": 2,
         "likes_count": 2,
+        "total_views_alltime": 2,
         "is_featured": false,
         "author_id": 1,
         "featured_deck_id": 1
@@ -358,7 +376,7 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(Body::from(body.to_string())).unwrap()
         ).await.unwrap();
-        let patch_body = json!({ "title": "updated" });
+        let patch_body = json!({ "excerpt": "updated" });
         let resp = app(pool).oneshot(
             Request::builder().method("PATCH").uri("/api/articles/1")
                 .header("content-type", "application/json")

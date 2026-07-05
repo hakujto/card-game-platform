@@ -10,6 +10,7 @@ fn validate_trade_listing(payload: &TradeListingCreateRequest) -> Vec<String> {
     if !((!(payload.listing_type == TradeListingListingType::FixedPrice) || payload.asking_price.is_some())) { errors.push("Fixed price listing must have an asking price".to_string()); }
     if !((!(payload.listing_type == TradeListingListingType::Auction) || (payload.auction_start_price.is_some() && payload.auction_end_time.is_some()))) { errors.push("Auction listing must have a start price and end time".to_string()); }
     if !((payload.quantity >= 1 && payload.quantity <= 9999)) { errors.push("Listing quantity must be between 1 and 9999".to_string()); }
+    // @required_when: asking_price — {"type":"eq","field":"listing_type","value":"FixedPrice"}
     errors
 }
 
@@ -45,10 +46,11 @@ pub async fn create_trade_listing(
     let errors = validate_trade_listing(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(TradeListing,
-        "INSERT INTO trade_listings (status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, expires_at, seller_id, card_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, datetime('now'), datetime('now')) RETURNING *",
-        payload.status, payload.listing_type, payload.asking_price, payload.auction_start_price, payload.auction_current_bid, payload.auction_end_time, payload.foil, payload.condition, payload.quantity, payload.description, payload.expires_at, payload.seller_id, payload.card_id
+        "INSERT INTO trade_listings (public_id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, expires_at, seller_id, card_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, datetime('now'), datetime('now')) RETURNING *",
+        payload.public_id, payload.status, payload.listing_type, payload.asking_price, payload.auction_start_price, payload.auction_current_bid, payload.auction_end_time, payload.foil, payload.condition, payload.quantity, payload.description, payload.expires_at, payload.seller_id, payload.card_id
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: public_id
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -79,7 +81,7 @@ pub async fn patch_trade_listing(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "TradeListing not found".to_string()))?;
-    if let Some(v) = payload.status { row.status = v; }
+    if let Some(v) = payload.public_id { row.public_id = v; }
     if let Some(v) = payload.listing_type { row.listing_type = v; }
     if let Some(v) = payload.asking_price { row.asking_price = Some(v); }
     if let Some(v) = payload.auction_start_price { row.auction_start_price = Some(v); }
@@ -93,8 +95,8 @@ pub async fn patch_trade_listing(
     if let Some(v) = payload.seller_id { row.seller_id = v; }
     if let Some(v) = payload.card_id { row.card_id = v; }
     sqlx::query_unchecked!(
-        "UPDATE trade_listings SET status = $1, listing_type = $2, asking_price = $3, auction_start_price = $4, auction_current_bid = $5, auction_end_time = $6, foil = $7, condition = $8, quantity = $9, description = $10, expires_at = $11, seller_id = $12, card_id = $13, updated_at = datetime('now') WHERE id = $14",
-        row.status, row.listing_type, row.asking_price, row.auction_start_price, row.auction_current_bid, row.auction_end_time, row.foil, row.condition, row.quantity, row.description, row.expires_at, row.seller_id, row.card_id, id
+        "UPDATE trade_listings SET public_id = $1, listing_type = $2, asking_price = $3, auction_start_price = $4, auction_current_bid = $5, auction_end_time = $6, foil = $7, condition = $8, quantity = $9, description = $10, expires_at = $11, seller_id = $12, card_id = $13, updated_at = datetime('now') WHERE id = $14",
+        row.public_id, row.listing_type, row.asking_price, row.auction_start_price, row.auction_current_bid, row.auction_end_time, row.foil, row.condition, row.quantity, row.description, row.expires_at, row.seller_id, row.card_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -154,6 +156,8 @@ pub async fn finalize_auction_trade_listing(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin, seller
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(TradeListing, "SELECT * FROM trade_listings WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -259,11 +263,11 @@ pub fn trade_listing_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/trade_listings", axum::routing::get(list_trade_listing).post(create_trade_listing))
         .route("/api/trade_listings/:id", axum::routing::MethodRouter::new().get(get_trade_listing).patch(patch_trade_listing))
-        .route("/api/trade_listings/:id/api/trade-listings/{id}/close", axum::routing::post(close_trade_listing))
-        .route("/api/trade_listings/:id/api/trade-listings/{id}/extend", axum::routing::patch(extend_trade_listing))
-        .route("/api/trade_listings/:id/api/trade-listings/{id}/cancel", axum::routing::delete(cancel_trade_listing))
-        .route("/api/trade_listings/:id/api/trade-listings/{id}/expired", axum::routing::get(is_expired_trade_listing))
-        .route("/api/trade_listings/:id/api/trade-listings/{id}/finalize", axum::routing::post(finalize_auction_trade_listing))
+        .route("/api/trade_listings/:id/close", axum::routing::post(close_trade_listing))
+        .route("/api/trade_listings/:id/extend", axum::routing::patch(extend_trade_listing))
+        .route("/api/trade_listings/:id/cancel", axum::routing::delete(cancel_trade_listing))
+        .route("/api/trade_listings/:id/expired", axum::routing::get(is_expired_trade_listing))
+        .route("/api/trade_listings/:id/finalize", axum::routing::post(finalize_auction_trade_listing))
         .route("/api/trade_listings/:id/status", axum::routing::patch(set_status_trade_listing))
         .route("/api/trade_listings/:id/transitions/pending-to-active", axum::routing::patch(transition_trade_listing_pending_to_active))
         .route("/api/trade_listings/:id/transitions/active-to-sold", axum::routing::patch(transition_trade_listing_active_to_sold))
@@ -313,6 +317,7 @@ mod tests {
     async fn test_create_trade_listing() {
         let pool = setup_pool().await;
         let body = json!({
+        "public_id": "00000000-0000-0000-0000-000000000001",
         "status": "Active",
         "listing_type": "TradeOffer",
         "foil": false,
@@ -345,6 +350,7 @@ mod tests {
         let pool = setup_pool().await;
         // First create
         let body = json!({
+        "public_id": "00000000-0000-0000-0000-000000000001",
         "status": "Active",
         "listing_type": "TradeOffer",
         "foil": false,

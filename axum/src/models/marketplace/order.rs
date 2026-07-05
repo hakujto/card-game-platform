@@ -107,6 +107,7 @@ pub struct Order {
     pub discount_applied: f64,
     pub currency: String,
     pub payment_method: Option<OrderPaymentMethod>,
+    #[serde(skip_serializing)]
     pub payment_reference: Option<String>,
     pub shipping_address: Option<String>,
     pub tracking_number: Option<String>,
@@ -152,4 +153,14 @@ impl Order {
             Err(format!("transition {} -> {} not allowed", current, to))
         }
     }
+}
+
+#[derive(Debug, sqlx::FromRow, serde::Serialize)]
+pub struct OrderAuditLog {
+    pub id: i64,
+    pub record_id: i64,
+    pub field: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+    pub changed_at: String,
 }

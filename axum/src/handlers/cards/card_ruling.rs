@@ -92,8 +92,8 @@ pub fn card_ruling_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/card_rulings", axum::routing::get(list_card_ruling).post(create_card_ruling))
         .route("/api/card_rulings/:id", axum::routing::MethodRouter::new().get(get_card_ruling).delete(delete_card_ruling))
-        .route("/api/card_rulings/:id/api/card-rulings/{id}/current", axum::routing::get(is_current_card_ruling))
-        .route("/api/card_rulings/:id/api/card-rulings/{id}/supersedes", axum::routing::get(supersedes_previous_card_ruling))
+        .route("/api/card_rulings/:id/current", axum::routing::get(is_current_card_ruling))
+        .route("/api/card_rulings/:id/supersedes", axum::routing::get(supersedes_previous_card_ruling))
 }
 
 #[cfg(test)]

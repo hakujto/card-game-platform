@@ -72,7 +72,7 @@ pub fn awarded_prize_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/awarded_prizes", axum::routing::get(list_awarded_prize))
         .route("/api/awarded_prizes/:id", axum::routing::MethodRouter::new().get(get_awarded_prize))
-        .route("/api/awarded_prizes/:id/api/awarded-prizes/{id}/claim", axum::routing::post(claim_awarded_prize))
+        .route("/api/awarded_prizes/:id/claim", axum::routing::post(claim_awarded_prize))
         .route("/api/awarded_prizes/:id/claimed", axum::routing::patch(set_claimed_awarded_prize))
 }
 

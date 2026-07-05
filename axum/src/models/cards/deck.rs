@@ -141,8 +141,5 @@ pub struct DeckUpdateRequest {
     pub is_public: Option<bool>,
     pub is_tournament_legal: Option<bool>,
     pub archetype: Option<DeckArchetype>,
-    pub wins: Option<i64>,
-    pub losses: Option<i64>,
-    pub draws: Option<i64>,
     pub player_id: Option<i64>,
 }

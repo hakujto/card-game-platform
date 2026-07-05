@@ -9,6 +9,8 @@ fn validate_deck_card(payload: &DeckCardCreateRequest) -> Vec<String> {
     let mut errors: Vec<String> = Vec::new();
     if !((payload.quantity >= 1 && payload.quantity <= 4)) { errors.push("A deck can contain between 1 and 4 copies of a card".to_string()); }
     if !((!(payload.is_commander == true) || payload.quantity == 1)) { errors.push("Commander card must appear exactly once in the deck".to_string()); }
+    if payload.quantity < 1 { errors.push("quantity must be >= 1".to_string()); }
+    if payload.quantity > 4 { errors.push("quantity must be <= 4".to_string()); }
     errors
 }
 
@@ -123,8 +125,8 @@ pub fn deck_card_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/deck_cards", axum::routing::get(list_deck_card).post(create_deck_card))
         .route("/api/deck_cards/:id", axum::routing::MethodRouter::new().get(get_deck_card).patch(patch_deck_card).delete(delete_deck_card))
-        .route("/api/deck_cards/:id/api/deck-cards/{id}/increment", axum::routing::patch(increment_deck_card))
-        .route("/api/deck_cards/:id/api/deck-cards/{id}/decrement", axum::routing::patch(decrement_deck_card))
+        .route("/api/deck_cards/:id/increment", axum::routing::patch(increment_deck_card))
+        .route("/api/deck_cards/:id/decrement", axum::routing::patch(decrement_deck_card))
 }
 
 #[cfg(test)]

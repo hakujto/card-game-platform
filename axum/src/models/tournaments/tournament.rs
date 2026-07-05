@@ -147,9 +147,11 @@ pub struct Tournament {
     pub id: i64,
     pub created_at: String,
     pub updated_at: String,
+    pub public_id: String,
     pub name: String,
     pub description: Option<String>,
     pub status: TournamentStatus,
+    pub bracket_data: Option<serde_json::Value>,
     pub format: TournamentFormat,
     pub tournament_type: TournamentTournamentType,
     pub max_players: i64,
@@ -169,9 +171,11 @@ pub struct Tournament {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct TournamentCreateRequest {
+    pub public_id: String,
     pub name: String,
     pub description: Option<String>,
     pub status: TournamentStatus,
+    pub bracket_data: Option<serde_json::Value>,
     pub format: TournamentFormat,
     pub tournament_type: TournamentTournamentType,
     pub max_players: i64,
@@ -188,9 +192,10 @@ pub struct TournamentCreateRequest {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct TournamentUpdateRequest {
+    pub public_id: Option<String>,
     pub name: Option<String>,
     pub description: Option<String>,
-    pub status: Option<TournamentStatus>,
+    pub bracket_data: Option<serde_json::Value>,
     pub format: Option<TournamentFormat>,
     pub tournament_type: Option<TournamentTournamentType>,
     pub max_players: Option<i64>,
@@ -221,4 +226,14 @@ impl Tournament {
             Err(format!("transition {} -> {} not allowed", current, to))
         }
     }
+}
+
+#[derive(Debug, sqlx::FromRow, serde::Serialize)]
+pub struct TournamentAuditLog {
+    pub id: i64,
+    pub record_id: i64,
+    pub field: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+    pub changed_at: String,
 }

@@ -121,8 +121,8 @@ pub fn article_tag_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/article_tags", axum::routing::get(list_article_tag).post(create_article_tag))
         .route("/api/article_tags/:id", axum::routing::MethodRouter::new().get(get_article_tag).patch(patch_article_tag).delete(delete_article_tag))
-        .route("/api/article_tags/:id/api/article-tags/{id}/rename", axum::routing::patch(rename_article_tag))
-        .route("/api/article_tags/:id/api/article-tags/{id}/article-count", axum::routing::get(article_count_article_tag))
+        .route("/api/article_tags/:id/rename", axum::routing::patch(rename_article_tag))
+        .route("/api/article_tags/:id/article-count", axum::routing::get(article_count_article_tag))
 }
 
 #[cfg(test)]
@@ -168,7 +168,7 @@ mod tests {
         let pool = setup_pool().await;
         let body = json!({
         "name": "test",
-        "slug": "test"
+        "slug": "test-slug"
     });
         let resp = app(pool).oneshot(
             Request::builder()
@@ -195,7 +195,7 @@ mod tests {
         // First create
         let body = json!({
         "name": "test",
-        "slug": "test"
+        "slug": "test-slug"
     });
         let _ = app(pool.clone()).oneshot(
             Request::builder().method("POST").uri("/api/article_tags")

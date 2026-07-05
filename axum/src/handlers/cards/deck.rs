@@ -76,8 +76,8 @@ pub async fn update_deck(
     Json(payload): Json<DeckCreateRequest>,
 ) -> Result<Json<Deck>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Deck,
-        "UPDATE decks SET name = $1, description = $2, format = $3, is_public = $4, is_tournament_legal = $5, archetype = $6, wins = $7, losses = $8, draws = $9, player_id = $10, updated_at = datetime('now') WHERE id = $11 RETURNING *",
-        payload.name, payload.description, payload.format, payload.is_public, payload.is_tournament_legal, payload.archetype, payload.wins, payload.losses, payload.draws, payload.player_id, id
+        "UPDATE decks SET name = $1, description = $2, format = $3, is_public = $4, is_tournament_legal = $5, archetype = $6, player_id = $7, updated_at = datetime('now') WHERE id = $8 RETURNING *",
+        payload.name, payload.description, payload.format, payload.is_public, payload.is_tournament_legal, payload.archetype, payload.player_id, id
     ).fetch_optional(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
     .ok_or((StatusCode::NOT_FOUND, "Deck not found".to_string()))?;
@@ -100,13 +100,10 @@ pub async fn patch_deck(
     if let Some(v) = payload.is_public { row.is_public = v as i64; }
     if let Some(v) = payload.is_tournament_legal { row.is_tournament_legal = v as i64; }
     if let Some(v) = payload.archetype { row.archetype = Some(v); }
-    if let Some(v) = payload.wins { row.wins = v; }
-    if let Some(v) = payload.losses { row.losses = v; }
-    if let Some(v) = payload.draws { row.draws = v; }
     if let Some(v) = payload.player_id { row.player_id = v; }
     sqlx::query_unchecked!(
-        "UPDATE decks SET name = $1, description = $2, format = $3, is_public = $4, is_tournament_legal = $5, archetype = $6, wins = $7, losses = $8, draws = $9, player_id = $10, updated_at = datetime('now') WHERE id = $11",
-        row.name, row.description, row.format, row.is_public, row.is_tournament_legal, row.archetype, row.wins, row.losses, row.draws, row.player_id, id
+        "UPDATE decks SET name = $1, description = $2, format = $3, is_public = $4, is_tournament_legal = $5, archetype = $6, player_id = $7, updated_at = datetime('now') WHERE id = $8",
+        row.name, row.description, row.format, row.is_public, row.is_tournament_legal, row.archetype, row.player_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))

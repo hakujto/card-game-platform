@@ -141,6 +141,7 @@ pub struct TradeListing {
     pub id: i64,
     pub created_at: String,
     pub updated_at: String,
+    pub public_id: String,
     pub status: TradeListingStatus,
     pub listing_type: TradeListingListingType,
     pub asking_price: Option<f64>,
@@ -161,6 +162,7 @@ pub struct TradeListing {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct TradeListingCreateRequest {
+    pub public_id: String,
     pub status: TradeListingStatus,
     pub listing_type: TradeListingListingType,
     pub asking_price: Option<f64>,
@@ -178,7 +180,7 @@ pub struct TradeListingCreateRequest {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct TradeListingUpdateRequest {
-    pub status: Option<TradeListingStatus>,
+    pub public_id: Option<String>,
     pub listing_type: Option<TradeListingListingType>,
     pub asking_price: Option<f64>,
     pub auction_start_price: Option<f64>,

@@ -11,6 +11,7 @@ fn validate_coupon(payload: &CouponCreateRequest) -> Vec<String> {
     if !(payload.discount_value > 0.0) { errors.push("Discount value must be greater than zero".to_string()); }
     if !((!(payload.discount_type == CouponDiscountType::Percent) || (payload.discount_value >= 1.0 && payload.discount_value <= 100.0))) { errors.push("Percent discount must be between 1 and 100".to_string()); }
     if !((!(payload.max_uses.is_some()) || payload.max_uses.map_or(true, |r| payload.uses_count <= r))) { errors.push("Coupon uses count cannot exceed max_uses".to_string()); }
+    if payload.discount_value < 0.01 { errors.push("discount_value must be >= 0.01".to_string()); }
     errors
 }
 

@@ -35,8 +35,8 @@ pub async fn create_deck_tag(
     Json(payload): Json<DeckTagCreateRequest>,
 ) -> Result<(StatusCode, Json<DeckTag>), (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(DeckTag,
-        "INSERT INTO deck_tags (name, color, created_at, updated_at) VALUES ($1, $2, datetime('now'), datetime('now')) RETURNING *",
-        payload.name, payload.color
+        "INSERT INTO deck_tags (name, slug, color, created_at, updated_at) VALUES ($1, $2, $3, datetime('now'), datetime('now')) RETURNING *",
+        payload.name, payload.slug, payload.color
     ).fetch_one(&pool).await
     .map_err(|e| {
         if e.to_string().contains("UNIQUE") {
@@ -70,10 +70,11 @@ pub async fn patch_deck_tag(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "DeckTag not found".to_string()))?;
     if let Some(v) = payload.name { row.name = v; }
+    if let Some(v) = payload.slug { row.slug = Some(v); }
     if let Some(v) = payload.color { row.color = Some(v); }
     sqlx::query_unchecked!(
-        "UPDATE deck_tags SET name = $1, color = $2, updated_at = datetime('now') WHERE id = $3",
-        row.name, row.color, id
+        "UPDATE deck_tags SET name = $1, slug = $2, color = $3, updated_at = datetime('now') WHERE id = $4",
+        row.name, row.slug, row.color, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -120,8 +121,8 @@ pub fn deck_tag_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/deck_tags", axum::routing::get(list_deck_tag).post(create_deck_tag))
         .route("/api/deck_tags/:id", axum::routing::MethodRouter::new().get(get_deck_tag).patch(patch_deck_tag).delete(delete_deck_tag))
-        .route("/api/deck_tags/:id/api/deck-tags/{id}/rename", axum::routing::patch(rename_deck_tag))
-        .route("/api/deck_tags/:id/api/deck-tags/{id}/merge", axum::routing::post(merge_into_deck_tag))
+        .route("/api/deck_tags/:id/rename", axum::routing::patch(rename_deck_tag))
+        .route("/api/deck_tags/:id/merge", axum::routing::post(merge_into_deck_tag))
 }
 
 #[cfg(test)]

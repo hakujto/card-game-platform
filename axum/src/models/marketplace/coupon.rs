@@ -46,7 +46,9 @@ pub struct Coupon {
     pub discount_type: CouponDiscountType,
     pub discount_value: f64,
     pub min_order_value: f64,
+    #[serde(skip_serializing)]
     pub max_uses: Option<i64>,
+    #[serde(skip_serializing)]
     pub uses_count: i64,
     pub valid_from: String,
     pub valid_until: String,

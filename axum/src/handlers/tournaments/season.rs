@@ -109,6 +109,8 @@ pub async fn activate_season(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Season, "SELECT * FROM seasons WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -121,6 +123,8 @@ pub async fn deactivate_season(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Season, "SELECT * FROM seasons WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -133,6 +137,8 @@ pub async fn finalize_rewards_season(
     State(pool): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    // RBAC: allowed roles: admin
+    // TODO: extract role from request and check against allowed roles
     let _row = sqlx::query_as_unchecked!(Season, "SELECT * FROM seasons WHERE id = $1", id)
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?

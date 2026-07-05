@@ -57,3 +57,13 @@ pub struct TradeTransaction {
     pub buyer_id: i64,
     pub seller_id: i64,
 }
+
+#[derive(Debug, sqlx::FromRow, serde::Serialize)]
+pub struct TradeTransactionAuditLog {
+    pub id: i64,
+    pub record_id: i64,
+    pub field: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+    pub changed_at: String,
+}

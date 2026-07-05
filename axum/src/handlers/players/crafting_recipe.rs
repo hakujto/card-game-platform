@@ -146,10 +146,10 @@ pub fn crafting_recipe_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/crafting_recipes", axum::routing::get(list_crafting_recipe).post(create_crafting_recipe))
         .route("/api/crafting_recipes/:id", axum::routing::MethodRouter::new().get(get_crafting_recipe).put(update_crafting_recipe).patch(patch_crafting_recipe))
-        .route("/api/crafting_recipes/:id/api/crafting-recipes/{id}/can-craft", axum::routing::get(can_craft_crafting_recipe))
-        .route("/api/crafting_recipes/:id/api/crafting-recipes/{id}/craft", axum::routing::post(execute_craft_crafting_recipe))
-        .route("/api/crafting_recipes/:id/api/crafting-recipes/{id}/disable", axum::routing::post(disable_crafting_recipe))
-        .route("/api/crafting_recipes/:id/api/crafting-recipes/{id}/enable", axum::routing::post(enable_crafting_recipe))
+        .route("/api/crafting_recipes/:id/can-craft", axum::routing::get(can_craft_crafting_recipe))
+        .route("/api/crafting_recipes/:id/craft", axum::routing::post(execute_craft_crafting_recipe))
+        .route("/api/crafting_recipes/:id/disable", axum::routing::post(disable_crafting_recipe))
+        .route("/api/crafting_recipes/:id/enable", axum::routing::post(enable_crafting_recipe))
 }
 
 #[cfg(test)]

@@ -160,6 +160,7 @@ pub struct Article {
     pub language: ArticleLanguage,
     pub view_count: i64,
     pub likes_count: i64,
+    pub total_views_alltime: i64,
     #[serde(serialize_with = "crate::serde_utils::serialize_i64_as_bool")]
     pub is_featured: i64,
     #[serde(rename = "publishedAt")]
@@ -180,6 +181,7 @@ pub struct ArticleCreateRequest {
     pub language: ArticleLanguage,
     pub view_count: i64,
     pub likes_count: i64,
+    pub total_views_alltime: i64,
     pub is_featured: bool,
     pub published_at: Option<String>,
     pub author_id: i64,
@@ -193,11 +195,9 @@ pub struct ArticleUpdateRequest {
     pub body: Option<String>,
     pub excerpt: Option<String>,
     pub cover_image_url: Option<String>,
-    pub status: Option<ArticleStatus>,
     pub article_type: Option<ArticleArticleType>,
     pub language: Option<ArticleLanguage>,
-    pub view_count: Option<i64>,
-    pub likes_count: Option<i64>,
+    pub total_views_alltime: Option<i64>,
     pub is_featured: Option<bool>,
     pub published_at: Option<String>,
     pub author_id: Option<i64>,

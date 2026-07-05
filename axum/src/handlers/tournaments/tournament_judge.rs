@@ -92,8 +92,7 @@ pub fn tournament_judge_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/tournament_judges", axum::routing::get(list_tournament_judge).post(create_tournament_judge))
         .route("/api/tournament_judges/:id", axum::routing::MethodRouter::new().get(get_tournament_judge).delete(delete_tournament_judge))
-        .route("/api/tournament_judges/:id/api/tournament-judges/{id}/promote", axum::routing::post(promote_to_head_tournament_judge))
-        .route("/api/tournament_judges/:id/api/tournament-judges/{id}", axum::routing::delete(remove_tournament_judge))
+        .route("/api/tournament_judges/:id/promote", axum::routing::post(promote_to_head_tournament_judge))
 }
 
 #[cfg(test)]

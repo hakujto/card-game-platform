@@ -11,6 +11,8 @@ fn validate_tournament(payload: &TournamentCreateRequest) -> Vec<String> {
     if !(payload.entry_fee >= 0.0) { errors.push("Entry fee must not be negative".to_string()); }
     if !(payload.prize_pool >= 0.0) { errors.push("Prize pool must not be negative".to_string()); }
     if !((!(payload.end_time.is_some()) || payload.end_time.as_deref() > Some(payload.start_time.as_str()))) { errors.push("End time must be after start time".to_string()); }
+    if payload.max_players < 2 { errors.push("max_players must be >= 2".to_string()); }
+    if payload.max_players > 512 { errors.push("max_players must be <= 512".to_string()); }
     errors
 }
 
@@ -46,10 +48,11 @@ pub async fn create_tournament(
     let errors = validate_tournament(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(Tournament,
-        "INSERT INTO tournaments (name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, season_id, organizer_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, datetime('now'), datetime('now')) RETURNING *",
-        payload.name, payload.description, payload.status, payload.format, payload.tournament_type, payload.max_players, payload.entry_fee, payload.prize_pool, payload.start_time, payload.end_time, payload.is_online, payload.location, payload.rules_text, payload.season_id, payload.organizer_id
+        "INSERT INTO tournaments (public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, season_id, organizer_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, datetime('now'), datetime('now')) RETURNING *",
+        payload.public_id, payload.name, payload.description, payload.status, payload.bracket_data, payload.format, payload.tournament_type, payload.max_players, payload.entry_fee, payload.prize_pool, payload.start_time, payload.end_time, payload.is_online, payload.location, payload.rules_text, payload.season_id, payload.organizer_id
     ).fetch_one(&pool).await
     .map_err(|e| {
+        // @unique fields: public_id
         if e.to_string().contains("UNIQUE") {
             (StatusCode::UNPROCESSABLE_ENTITY, "Value must be unique".to_string())
         } else {
@@ -76,8 +79,8 @@ pub async fn update_tournament(
     Json(payload): Json<TournamentCreateRequest>,
 ) -> Result<Json<Tournament>, (StatusCode, String)> {
     let row = sqlx::query_as_unchecked!(Tournament,
-        "UPDATE tournaments SET name = $1, description = $2, status = $3, format = $4, tournament_type = $5, max_players = $6, entry_fee = $7, prize_pool = $8, start_time = $9, end_time = $10, is_online = $11, location = $12, rules_text = $13, season_id = $14, organizer_id = $15, updated_at = datetime('now') WHERE id = $16 RETURNING *",
-        payload.name, payload.description, payload.status, payload.format, payload.tournament_type, payload.max_players, payload.entry_fee, payload.prize_pool, payload.start_time, payload.end_time, payload.is_online, payload.location, payload.rules_text, payload.season_id, payload.organizer_id, id
+        "UPDATE tournaments SET public_id = $1, name = $2, description = $3, bracket_data = $4, format = $5, tournament_type = $6, max_players = $7, entry_fee = $8, prize_pool = $9, start_time = $10, end_time = $11, is_online = $12, location = $13, rules_text = $14, season_id = $15, organizer_id = $16, updated_at = datetime('now') WHERE id = $17 RETURNING *",
+        payload.public_id, payload.name, payload.description, payload.bracket_data, payload.format, payload.tournament_type, payload.max_players, payload.entry_fee, payload.prize_pool, payload.start_time, payload.end_time, payload.is_online, payload.location, payload.rules_text, payload.season_id, payload.organizer_id, id
     ).fetch_optional(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
     .ok_or((StatusCode::NOT_FOUND, "Tournament not found".to_string()))?;
@@ -94,9 +97,10 @@ pub async fn patch_tournament(
         .fetch_optional(&pool).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Tournament not found".to_string()))?;
+    if let Some(v) = payload.public_id { row.public_id = v; }
     if let Some(v) = payload.name { row.name = v; }
     if let Some(v) = payload.description { row.description = Some(v); }
-    if let Some(v) = payload.status { row.status = v; }
+    if let Some(v) = payload.bracket_data { row.bracket_data = Some(v); }
     if let Some(v) = payload.format { row.format = v; }
     if let Some(v) = payload.tournament_type { row.tournament_type = v; }
     if let Some(v) = payload.max_players { row.max_players = v; }
@@ -110,8 +114,8 @@ pub async fn patch_tournament(
     if let Some(v) = payload.season_id { row.season_id = v; }
     if let Some(v) = payload.organizer_id { row.organizer_id = v; }
     sqlx::query_unchecked!(
-        "UPDATE tournaments SET name = $1, description = $2, status = $3, format = $4, tournament_type = $5, max_players = $6, entry_fee = $7, prize_pool = $8, start_time = $9, end_time = $10, is_online = $11, location = $12, rules_text = $13, season_id = $14, organizer_id = $15, updated_at = datetime('now') WHERE id = $16",
-        row.name, row.description, row.status, row.format, row.tournament_type, row.max_players, row.entry_fee, row.prize_pool, row.start_time, row.end_time, row.is_online, row.location, row.rules_text, row.season_id, row.organizer_id, id
+        "UPDATE tournaments SET public_id = $1, name = $2, description = $3, bracket_data = $4, format = $5, tournament_type = $6, max_players = $7, entry_fee = $8, prize_pool = $9, start_time = $10, end_time = $11, is_online = $12, location = $13, rules_text = $14, season_id = $15, organizer_id = $16, updated_at = datetime('now') WHERE id = $17",
+        row.public_id, row.name, row.description, row.bracket_data, row.format, row.tournament_type, row.max_players, row.entry_fee, row.prize_pool, row.start_time, row.end_time, row.is_online, row.location, row.rules_text, row.season_id, row.organizer_id, id
     ).execute(&pool).await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(Json(row))
@@ -362,13 +366,14 @@ mod tests {
     async fn test_create_tournament() {
         let pool = setup_pool().await;
         let body = json!({
-        "name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "name": "Test Tournament Alpha",
         "status": "Draft",
         "format": "Standard",
         "tournament_type": "Swiss",
-        "max_players": 2,
-        "entry_fee": 1.0,
-        "prize_pool": 1.0,
+        "max_players": 8,
+        "entry_fee": 0,
+        "prize_pool": 0,
         "start_time": "2024-01-01T00:00:00Z",
         "is_online": false,
         "season_id": 1,
@@ -398,13 +403,14 @@ mod tests {
         let pool = setup_pool().await;
         // First create
         let body = json!({
-        "name": "test",
+        "public_id": "00000000-0000-0000-0000-000000000001",
+        "name": "Test Tournament Alpha",
         "status": "Draft",
         "format": "Standard",
         "tournament_type": "Swiss",
-        "max_players": 2,
-        "entry_fee": 1.0,
-        "prize_pool": 1.0,
+        "max_players": 8,
+        "entry_fee": 0,
+        "prize_pool": 0,
         "start_time": "2024-01-01T00:00:00Z",
         "is_online": false,
         "season_id": 1,
@@ -415,7 +421,7 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(Body::from(body.to_string())).unwrap()
         ).await.unwrap();
-        let patch_body = json!({ "name": "updated" });
+        let patch_body = json!({ "description": "updated" });
         let resp = app(pool).oneshot(
             Request::builder().method("PATCH").uri("/api/tournaments/1")
                 .header("content-type", "application/json")

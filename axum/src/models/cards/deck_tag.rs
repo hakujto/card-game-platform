@@ -4,17 +4,20 @@ pub struct DeckTag {
     pub created_at: String,
     pub updated_at: String,
     pub name: String,
+    pub slug: Option<String>,
     pub color: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct DeckTagCreateRequest {
     pub name: String,
+    pub slug: Option<String>,
     pub color: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct DeckTagUpdateRequest {
     pub name: Option<String>,
+    pub slug: Option<String>,
     pub color: Option<String>,
 }

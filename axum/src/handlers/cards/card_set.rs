@@ -10,6 +10,7 @@ fn validate_card_set(payload: &CardSetCreateRequest) -> Vec<String> {
     if !(payload.total_cards > 0) { errors.push("Card set must have at least one card".to_string()); }
     if !((!(payload.rotation_date.is_some()) || payload.rotation_date.as_deref() > Some(payload.release_date.as_str()))) { errors.push("Rotation date must be after release date".to_string()); }
     if !((!(payload.is_rotated == true) || payload.rotation_date.is_some())) { errors.push("Rotated set must have a rotation date".to_string()); }
+    // @pattern: code must match /[A-Z]{2,6}/
     errors
 }
 
@@ -163,10 +164,10 @@ pub fn card_set_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/card_sets", axum::routing::get(list_card_set).post(create_card_set))
         .route("/api/card_sets/:id", axum::routing::MethodRouter::new().get(get_card_set).put(update_card_set).patch(patch_card_set))
-        .route("/api/card_sets/:id/api/card-sets/{id}/standard-legal", axum::routing::get(is_legal_in_standard_card_set))
-        .route("/api/card_sets/:id/api/card-sets/{id}/legal", axum::routing::get(is_legal_in_format_card_set))
-        .route("/api/card_sets/:id/api/card-sets/{id}/rarity-count", axum::routing::get(card_count_by_rarity_card_set))
-        .route("/api/card_sets/:id/api/card-sets/{id}/rotate", axum::routing::post(rotate_out_card_set))
+        .route("/api/card_sets/:id/standard-legal", axum::routing::get(is_legal_in_standard_card_set))
+        .route("/api/card_sets/:id/legal", axum::routing::get(is_legal_in_format_card_set))
+        .route("/api/card_sets/:id/rarity-count", axum::routing::get(card_count_by_rarity_card_set))
+        .route("/api/card_sets/:id/rotate", axum::routing::post(rotate_out_card_set))
 }
 
 #[cfg(test)]

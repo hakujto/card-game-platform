@@ -10,6 +10,8 @@ fn validate_tournament_prize(payload: &TournamentPrizeCreateRequest) -> Vec<Stri
     if !(payload.placement_to >= payload.placement_from) { errors.push("placement_to must be greater than or equal to placement_from".to_string()); }
     if !(payload.placement_from > 0) { errors.push("placement_from must be greater than zero".to_string()); }
     if !(payload.amount >= 0.0) { errors.push("Prize amount must not be negative".to_string()); }
+    if payload.placement_from < 1 { errors.push("placement_from must be >= 1".to_string()); }
+    if payload.placement_to < 1 { errors.push("placement_to must be >= 1".to_string()); }
     errors
 }
 

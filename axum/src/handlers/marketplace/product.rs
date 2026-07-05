@@ -10,6 +10,8 @@ fn validate_product(payload: &ProductCreateRequest) -> Vec<String> {
     if !(payload.price > 0.0) { errors.push("Product price must be greater than zero".to_string()); }
     if !(payload.stock >= 0) { errors.push("Product stock must not be negative".to_string()); }
     if !((payload.discount_percent >= 0 && payload.discount_percent <= 100)) { errors.push("Product discount percent must be between 0 and 100".to_string()); }
+    if payload.discount_percent < 0 { errors.push("discount_percent must be >= 0".to_string()); }
+    if payload.discount_percent > 100 { errors.push("discount_percent must be <= 100".to_string()); }
     errors
 }
 
@@ -287,7 +289,7 @@ mod tests {
                 .header("content-type", "application/json")
                 .body(Body::from(body.to_string())).unwrap()
         ).await.unwrap();
-        let patch_body = json!({ "name": "updated" });
+        let patch_body = json!({ "description": "updated" });
         let resp = app(pool).oneshot(
             Request::builder().method("PATCH").uri("/api/products/1")
                 .header("content-type", "application/json")

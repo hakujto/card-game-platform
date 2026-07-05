@@ -108,6 +108,7 @@ pub struct Player {
     pub id: i64,
     pub created_at: String,
     pub updated_at: String,
+    pub public_id: String,
     pub display_name: String,
     pub rank: PlayerRank,
     pub rating: i64,
@@ -116,6 +117,8 @@ pub struct Player {
     pub country_code: Option<String>,
     pub avatar_url: Option<String>,
     pub preferred_format: Option<PlayerPreferredFormat>,
+    pub contact_email: Option<String>,
+    pub win_rate_cached: Option<f64>,
     #[serde(serialize_with = "crate::serde_utils::serialize_i64_as_bool")]
     pub is_verified: i64,
     #[serde(rename = "lastActiveAt")]
@@ -125,6 +128,7 @@ pub struct Player {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct PlayerCreateRequest {
+    pub public_id: String,
     pub display_name: String,
     pub rank: PlayerRank,
     pub rating: i64,
@@ -133,6 +137,8 @@ pub struct PlayerCreateRequest {
     pub country_code: Option<String>,
     pub avatar_url: Option<String>,
     pub preferred_format: Option<PlayerPreferredFormat>,
+    pub contact_email: Option<String>,
+    pub win_rate_cached: Option<f64>,
     pub is_verified: bool,
     pub last_active_at: Option<String>,
     pub user_id: Option<i64>,
@@ -140,14 +146,15 @@ pub struct PlayerCreateRequest {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct PlayerUpdateRequest {
+    pub public_id: Option<String>,
     pub display_name: Option<String>,
     pub rank: Option<PlayerRank>,
-    pub rating: Option<i64>,
-    pub peak_rating: Option<i64>,
     pub bio: Option<String>,
     pub country_code: Option<String>,
     pub avatar_url: Option<String>,
     pub preferred_format: Option<PlayerPreferredFormat>,
+    pub contact_email: Option<String>,
+    pub win_rate_cached: Option<f64>,
     pub is_verified: Option<bool>,
     pub last_active_at: Option<String>,
     pub user_id: Option<i64>,

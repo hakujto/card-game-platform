@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS cards (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+,    public_id TEXT NOT NULL UNIQUE
 ,    name TEXT NOT NULL
 ,    card_type TEXT NOT NULL DEFAULT 'Creature'
 ,    rarity TEXT NOT NULL DEFAULT 'Common'
@@ -30,7 +31,18 @@ CREATE TABLE IF NOT EXISTS cards (
 ,    is_banned BOOLEAN NOT NULL DEFAULT 0
 ,    is_restricted BOOLEAN NOT NULL DEFAULT 0
 ,    power_level INTEGER NOT NULL DEFAULT 1
+,    metadata TEXT
+,    total_copies_in_circulation INTEGER NOT NULL DEFAULT 0
 ,    set_id INTEGER NOT NULL REFERENCES card_sets(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS cards_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS card_sets (
@@ -109,6 +121,7 @@ CREATE TABLE IF NOT EXISTS deck_tags (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    name TEXT NOT NULL
+,    slug TEXT
 ,    color TEXT
 );
 
@@ -124,6 +137,7 @@ CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+,    public_id TEXT NOT NULL UNIQUE
 ,    display_name TEXT NOT NULL UNIQUE
 ,    rank TEXT NOT NULL DEFAULT 'Bronze'
 ,    rating INTEGER NOT NULL DEFAULT 1000
@@ -132,6 +146,8 @@ CREATE TABLE IF NOT EXISTS players (
 ,    country_code TEXT
 ,    avatar_url TEXT
 ,    preferred_format TEXT
+,    contact_email TEXT
+,    win_rate_cached REAL
 ,    is_verified BOOLEAN NOT NULL DEFAULT 0
 ,    last_active_at TEXT
 ,    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE
@@ -230,9 +246,11 @@ CREATE TABLE IF NOT EXISTS tournaments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+,    public_id TEXT NOT NULL UNIQUE
 ,    name TEXT NOT NULL
 ,    description TEXT
 ,    status TEXT NOT NULL DEFAULT 'Draft'
+,    bracket_data TEXT
 ,    format TEXT NOT NULL DEFAULT 'Standard'
 ,    tournament_type TEXT NOT NULL DEFAULT 'Swiss'
 ,    max_players INTEGER NOT NULL
@@ -245,6 +263,15 @@ CREATE TABLE IF NOT EXISTS tournaments (
 ,    rules_text TEXT
 ,    season_id INTEGER NOT NULL REFERENCES seasons(id) ON DELETE RESTRICT
 ,    organizer_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS tournaments_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS tournament_judges (
@@ -304,6 +331,7 @@ CREATE TABLE IF NOT EXISTS games (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    game_number INTEGER NOT NULL
 ,    winner_side TEXT
+,    complexity_score REAL
 ,    turns_played INTEGER
 ,    duration_seconds INTEGER
 ,    ended_by TEXT
@@ -373,6 +401,15 @@ CREATE TABLE IF NOT EXISTS orders (
 ,    coupon_id INTEGER REFERENCES coupons(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS orders_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS order_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -403,6 +440,7 @@ CREATE TABLE IF NOT EXISTS trade_listings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+,    public_id TEXT NOT NULL UNIQUE
 ,    status TEXT NOT NULL DEFAULT 'Active'
 ,    listing_type TEXT NOT NULL DEFAULT 'FixedPrice'
 ,    asking_price REAL
@@ -442,6 +480,15 @@ CREATE TABLE IF NOT EXISTS trade_transactions (
 ,    seller_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT
 );
 
+CREATE TABLE IF NOT EXISTS trade_transactions_audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_id INTEGER NOT NULL,
+    field TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS card_price_histories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -476,6 +523,7 @@ CREATE TABLE IF NOT EXISTS draft_sessions (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 ,    status TEXT NOT NULL DEFAULT 'WaitingForPlayers'
 ,    draft_type TEXT NOT NULL DEFAULT 'Booster'
+,    pack_contents TEXT
 ,    seats INTEGER NOT NULL DEFAULT 8
 ,    time_per_pick_seconds INTEGER NOT NULL DEFAULT 30
 ,    completed_at TEXT
@@ -517,6 +565,7 @@ CREATE TABLE IF NOT EXISTS articles (
 ,    language TEXT NOT NULL DEFAULT 'EN'
 ,    view_count INTEGER NOT NULL DEFAULT 0
 ,    likes_count INTEGER NOT NULL DEFAULT 0
+,    total_views_alltime INTEGER NOT NULL DEFAULT 0
 ,    is_featured BOOLEAN NOT NULL DEFAULT 0
 ,    published_at TEXT
 ,    author_id INTEGER NOT NULL REFERENCES players(id) ON DELETE RESTRICT

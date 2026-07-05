@@ -12,6 +12,9 @@ fn validate_order(payload: &OrderCreateRequest) -> Vec<String> {
     if !((!(payload.shipped_at.is_some()) || payload.status == OrderStatus::Shipped)) { errors.push("Validation failed: shipped_at_requires_shipped_status".to_string()); }
     if !(payload.total >= 0.0) { errors.push("Order total must not be negative".to_string()); }
     if !(payload.discount_applied <= payload.total) { errors.push("Discount applied cannot exceed order total".to_string()); }
+    // @pattern: currency must match /[A-Z]{3}/
+    // @required_when: tracking_number — {"type":"eq","field":"status","value":"Shipped"}
+    // @required_when: paid_at — {"type":"eq","field":"status","value":"Paid"}
     errors
 }
 
@@ -354,9 +357,9 @@ mod tests {
         let pool = setup_pool().await;
         let body = json!({
         "status": "Pending",
-        "total": 1.0,
+        "total": 29.99,
         "discount_applied": 1.0,
-        "currency": "test",
+        "currency": "USD",
         "player_id": 1,
         "coupon_id": 1
     });

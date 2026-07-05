@@ -92,6 +92,7 @@ pub struct DraftSession {
     pub updated_at: String,
     pub status: DraftSessionStatus,
     pub draft_type: DraftSessionDraftType,
+    pub pack_contents: Option<serde_json::Value>,
     pub seats: i64,
     pub time_per_pick_seconds: i64,
     #[serde(rename = "completedAt")]
@@ -103,6 +104,7 @@ pub struct DraftSession {
 pub struct DraftSessionCreateRequest {
     pub status: DraftSessionStatus,
     pub draft_type: DraftSessionDraftType,
+    pub pack_contents: Option<serde_json::Value>,
     pub seats: i64,
     pub time_per_pick_seconds: i64,
     pub completed_at: Option<String>,

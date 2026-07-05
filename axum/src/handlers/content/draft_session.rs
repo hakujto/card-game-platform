@@ -37,8 +37,8 @@ pub async fn create_draft_session(
     let errors = validate_draft_session(&payload);
     if !errors.is_empty() { return Err((StatusCode::BAD_REQUEST, errors.join(", "))); }
     let row = sqlx::query_as_unchecked!(DraftSession,
-        "INSERT INTO draft_sessions (status, draft_type, seats, time_per_pick_seconds, completed_at, card_set_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, datetime('now'), datetime('now')) RETURNING *",
-        payload.status, payload.draft_type, payload.seats, payload.time_per_pick_seconds, payload.completed_at, payload.card_set_id
+        "INSERT INTO draft_sessions (status, draft_type, pack_contents, seats, time_per_pick_seconds, completed_at, card_set_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, datetime('now'), datetime('now')) RETURNING *",
+        payload.status, payload.draft_type, payload.pack_contents, payload.seats, payload.time_per_pick_seconds, payload.completed_at, payload.card_set_id
     ).fetch_one(&pool).await
     .map_err(|e| {
         if e.to_string().contains("UNIQUE") {
@@ -183,10 +183,10 @@ pub fn draft_session_router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/draft_sessions", axum::routing::get(list_draft_session).post(create_draft_session))
         .route("/api/draft_sessions/:id", axum::routing::MethodRouter::new().get(get_draft_session))
-        .route("/api/draft_sessions/:id/api/draft-sessions/{id}/start", axum::routing::post(start_draft_session))
-        .route("/api/draft_sessions/:id/api/draft-sessions/{id}/abandon", axum::routing::post(abandon_draft_session))
-        .route("/api/draft_sessions/:id/api/draft-sessions/{id}/complete", axum::routing::post(complete_draft_session))
-        .route("/api/draft_sessions/:id/api/draft-sessions/{id}/full", axum::routing::get(is_full_draft_session))
+        .route("/api/draft_sessions/:id/start", axum::routing::post(start_draft_session))
+        .route("/api/draft_sessions/:id/abandon", axum::routing::post(abandon_draft_session))
+        .route("/api/draft_sessions/:id/complete", axum::routing::post(complete_draft_session))
+        .route("/api/draft_sessions/:id/full", axum::routing::get(is_full_draft_session))
         .route("/api/draft_sessions/:id/transitions/waitingforplayers-to-drafting", axum::routing::patch(transition_draft_session_waitingforplayers_to_drafting))
         .route("/api/draft_sessions/:id/transitions/drafting-to-completed", axum::routing::patch(transition_draft_session_drafting_to_completed))
         .route("/api/draft_sessions/:id/transitions/drafting-to-abandoned", axum::routing::patch(transition_draft_session_drafting_to_abandoned))
