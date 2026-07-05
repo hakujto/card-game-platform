@@ -79,7 +79,7 @@ public class ProductApiTests : IClassFixture<ProductApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200Or404()
     {
-        var payload = new { Name = "test" };
+        var payload = new { Description = "test" };
         var response = await _client.PatchAsJsonAsync("/api/products/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||

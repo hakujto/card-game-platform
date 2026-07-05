@@ -33,9 +33,11 @@ public class TournamentService
     public async Task<Tournament> CreateAsync(TournamentDto dto)
     {
         var entity = new Tournament();
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Description is not null) entity.Description = dto.Description;
         if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.BracketData is not null) entity.BracketData = dto.BracketData;
         if (dto.Format is not null && Enum.TryParse<TournamentFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.TournamentType is not null && Enum.TryParse<TournamentTournamentTypeType>(dto.TournamentType, out var tournamentTypeVal)) entity.TournamentType = tournamentTypeVal;
         if (dto.MaxPlayers is not null) entity.MaxPlayers = dto.MaxPlayers.Value;
@@ -52,7 +54,9 @@ public class TournamentService
         Validate(entity);
         ValidateEntity(entity);
         _db.Tournaments.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -60,9 +64,10 @@ public class TournamentService
     {
         var entity = await _db.Tournaments.FindAsync(id);
         if (entity is null) return null;
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.Status is not null && Enum.TryParse<TournamentStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.BracketData is not null) entity.BracketData = dto.BracketData;
         if (dto.Format is not null && Enum.TryParse<TournamentFormatType>(dto.Format, out var formatVal)) entity.Format = formatVal;
         if (dto.TournamentType is not null && Enum.TryParse<TournamentTournamentTypeType>(dto.TournamentType, out var tournamentTypeVal)) entity.TournamentType = tournamentTypeVal;
         if (dto.MaxPlayers is not null) entity.MaxPlayers = dto.MaxPlayers.Value;
@@ -73,12 +78,13 @@ public class TournamentService
         if (dto.IsOnline is not null) entity.IsOnline = dto.IsOnline.Value;
         if (dto.Location is not null) entity.Location = dto.Location;
         if (dto.RulesText is not null) entity.RulesText = dto.RulesText;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.SeasonId is not null) entity.SeasonId = dto.SeasonId;
         if (dto.OrganizerId is not null) entity.OrganizerId = dto.OrganizerId;
         Validate(entity);
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 

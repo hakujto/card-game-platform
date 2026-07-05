@@ -17,7 +17,9 @@ public class TournamentPrize : IValidatableObject
 {
     public int Id { get; set; }
 
+    [Range(1, int.MaxValue)]
     public int PlacementFrom { get; set; } = 0;
+    [Range(1, int.MaxValue)]
     public int PlacementTo { get; set; } = 0;
     public TournamentPrizePrizeTypeType PrizeType { get; set; }
     public decimal Amount { get; set; } = 0.00m;

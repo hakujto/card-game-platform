@@ -48,6 +48,7 @@ public class Article : IValidatableObject
     public ArticleLanguageType Language { get; set; }
     public int ViewCount { get; set; } = 0;
     public int LikesCount { get; set; } = 0;
+    public long TotalViewsAlltime { get; set; } = 0;
     public bool IsFeatured { get; set; } = false;
     [JsonPropertyName("publishedAt")]
     public DateTime? PublishedAt { get; set; } = null;
@@ -76,6 +77,12 @@ public class Article : IValidatableObject
     public void Archive()
     {
         // TODO: implement archive
+    }
+
+    public bool Replace(string data)
+    {
+        // TODO: implement replace
+        return default;
     }
 
     public void IncrementView()

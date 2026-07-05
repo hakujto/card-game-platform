@@ -33,6 +33,7 @@ public class CardService
     public async Task<Card> CreateAsync(CardDto dto)
     {
         var entity = new Card();
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.CardType is not null && Enum.TryParse<CardCardTypeType>(dto.CardType, out var cardTypeVal)) entity.CardType = cardTypeVal;
         if (dto.Rarity is not null && Enum.TryParse<CardRarityType>(dto.Rarity, out var rarityVal)) entity.Rarity = rarityVal;
@@ -49,11 +50,15 @@ public class CardService
         if (dto.IsBanned is not null) entity.IsBanned = dto.IsBanned.Value;
         if (dto.IsRestricted is not null) entity.IsRestricted = dto.IsRestricted.Value;
         if (dto.PowerLevel is not null) entity.PowerLevel = dto.PowerLevel.Value;
+        if (dto.Metadata is not null) entity.Metadata = dto.Metadata;
+        if (dto.TotalCopiesInCirculation is not null) entity.TotalCopiesInCirculation = dto.TotalCopiesInCirculation.Value;
         if (dto.SetId is not null) entity.SetId = dto.SetId;
         Validate(entity);
         ValidateEntity(entity);
         _db.Cards.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -61,6 +66,7 @@ public class CardService
     {
         var entity = await _db.Cards.FindAsync(id);
         if (entity is null) return null;
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.Name is not null) entity.Name = dto.Name;
         if (dto.CardType is not null && Enum.TryParse<CardCardTypeType>(dto.CardType, out var cardTypeVal)) entity.CardType = cardTypeVal;
         if (dto.Rarity is not null && Enum.TryParse<CardRarityType>(dto.Rarity, out var rarityVal)) entity.Rarity = rarityVal;
@@ -74,13 +80,15 @@ public class CardService
         if (dto.ImageUrl is not null) entity.ImageUrl = dto.ImageUrl;
         if (dto.ArtistName is not null) entity.ArtistName = dto.ArtistName;
         if (dto.LegalFormats is not null && Enum.TryParse<CardLegalFormatsType>(dto.LegalFormats, out var legalFormatsVal)) entity.LegalFormats = legalFormatsVal;
-        if (dto.IsBanned is not null) entity.IsBanned = dto.IsBanned.Value;
-        if (dto.IsRestricted is not null) entity.IsRestricted = dto.IsRestricted.Value;
         if (dto.PowerLevel is not null) entity.PowerLevel = dto.PowerLevel.Value;
+        if (dto.Metadata is not null) entity.Metadata = dto.Metadata;
+        if (dto.TotalCopiesInCirculation is not null) entity.TotalCopiesInCirculation = dto.TotalCopiesInCirculation.Value;
         if (dto.SetId is not null) entity.SetId = dto.SetId;
         Validate(entity);
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -125,6 +133,14 @@ public class CardService
         await _db.SaveChangesAsync();
         return true;
     }
+    public async System.Threading.Tasks.Task<bool> ReplaceAsync(int id, string data)
+    {
+        var entity = await _db.Cards.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Card not found: " + id);
+        var result = entity.Replace(data);
+        await _db.SaveChangesAsync();
+        return result;
+    }
     public async System.Threading.Tasks.Task<decimal> CalculateValueAsync(int id)
     {
         var entity = await _db.Cards.FindAsync(id);
@@ -151,6 +167,9 @@ public class CardService
     }
     public void Validate(Card entity)
     {
+        if (entity.CardType == CardCardTypeType.Creature && entity.Attack == null) throw new InvalidOperationException("attack is required");
+        if (entity.CardType == CardCardTypeType.Creature && entity.Defense == null) throw new InvalidOperationException("defense is required");
+        if (entity.CardType == CardCardTypeType.Planeswalker && entity.Loyalty == null) throw new InvalidOperationException("loyalty is required");
         if (entity.CardType == CardCardTypeType.Creature && !(entity.Attack != null && entity.Defense != null)) throw new InvalidOperationException("Creature card must have attack and defense");
         if (entity.CardType == CardCardTypeType.Planeswalker && entity.Loyalty == null) throw new InvalidOperationException("Planeswalker card must have loyalty");
         if (entity.CardType == CardCardTypeType.Land && !(entity.ManaCost == 0)) throw new InvalidOperationException("Land card must have zero mana cost");

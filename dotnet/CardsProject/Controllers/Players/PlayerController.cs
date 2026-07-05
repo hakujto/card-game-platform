@@ -118,6 +118,7 @@ public class PlayerController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
     [HttpPost("{id:int}/verify")]
     public async System.Threading.Tasks.Task<IActionResult> Verify(int id)
     {

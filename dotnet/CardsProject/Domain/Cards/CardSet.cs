@@ -18,6 +18,7 @@ public class CardSet : IValidatableObject
     public int Id { get; set; }
 
     public string Name { get; set; } = "";
+    [RegularExpression(@"[A-Z]{2,6}")]
     public string Code { get; set; } = "";
     public DateOnly? ReleaseDate { get; set; } = null;
     public DateOnly? RotationDate { get; set; } = null;

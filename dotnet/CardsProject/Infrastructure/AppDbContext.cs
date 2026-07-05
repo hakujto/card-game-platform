@@ -15,6 +15,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
     public DbSet<Card> Cards { get; set; }
+    public DbSet<CardAuditLog> CardsAuditLogs { get; set; }
     public DbSet<CardSet> CardSets { get; set; }
     public DbSet<CardRuling> CardRulings { get; set; }
     public DbSet<CardAbility> CardAbilities { get; set; }
@@ -33,6 +34,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CraftingIngredient> CraftingIngredients { get; set; }
     public DbSet<Season> Seasons { get; set; }
     public DbSet<Tournament> Tournaments { get; set; }
+    public DbSet<TournamentAuditLog> TournamentsAuditLogs { get; set; }
     public DbSet<TournamentJudge> TournamentJudges { get; set; }
     public DbSet<TournamentRegistration> TournamentRegistrations { get; set; }
     public DbSet<TournamentRound> TournamentRounds { get; set; }
@@ -42,11 +44,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AwardedPrize> AwardedPrizes { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderAuditLog> OrdersAuditLogs { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Coupon> Coupons { get; set; }
     public DbSet<TradeListing> TradeListings { get; set; }
     public DbSet<TradeBid> TradeBids { get; set; }
     public DbSet<TradeTransaction> TradeTransactions { get; set; }
+    public DbSet<TradeTransactionAuditLog> TradeTransactionsAuditLogs { get; set; }
     public DbSet<CardPriceHistory> CardPriceHistories { get; set; }
     public DbSet<TradeDispute> TradeDisputes { get; set; }
     public DbSet<DraftSession> DraftSessions { get; set; }
@@ -134,9 +138,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ArticleComment>().HasOne(e => e.ParentComment).WithMany(e => e.Replies).HasForeignKey(e => e.ParentCommentId).OnDelete(DeleteBehavior.SetNull);
         builder.Entity<Stream>().HasOne(e => e.Tournament).WithMany(e => e.Streams).HasForeignKey(e => e.TournamentId).OnDelete(DeleteBehavior.SetNull);
         builder.Entity<Stream>().HasOne(e => e.Streamer).WithMany(e => e.Streams).HasForeignKey(e => e.StreamerId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Card>().HasIndex(e => e.PublicId).IsUnique();
         builder.Entity<CardSet>().HasIndex(e => e.Code).IsUnique();
+        builder.Entity<Player>().HasIndex(e => e.PublicId).IsUnique();
         builder.Entity<Player>().HasIndex(e => e.DisplayName).IsUnique();
+        builder.Entity<Tournament>().HasIndex(e => e.PublicId).IsUnique();
         builder.Entity<Coupon>().HasIndex(e => e.Code).IsUnique();
+        builder.Entity<TradeListing>().HasIndex(e => e.PublicId).IsUnique();
         builder.Entity<Article>().HasIndex(e => e.Slug).IsUnique();
         builder.Entity<ArticleTag>().HasIndex(e => e.Slug).IsUnique();
     }

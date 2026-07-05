@@ -101,6 +101,7 @@ public class TradeTransactionService
     }
     public void Validate(TradeTransaction entity)
     {
+        if (entity.Status == TradeTransactionStatusType.Completed && entity.CompletedAt == null) throw new InvalidOperationException("completed_at is required");
         if (entity.Status == TradeTransactionStatusType.Completed && entity.CompletedAt == null) throw new InvalidOperationException("Completed transaction must have a completed_at timestamp");
     }
 }

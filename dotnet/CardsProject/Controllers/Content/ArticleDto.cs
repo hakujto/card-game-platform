@@ -7,14 +7,19 @@ public class ArticleDto
     public string? Body { get; set; }
     public string? Excerpt { get; set; }
     public string? CoverImageUrl { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public string? Status { get; set; }
     public string? ArticleType { get; set; }
     public string? Language { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public int? ViewCount { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public int? LikesCount { get; set; }
+    public long? TotalViewsAlltime { get; set; }
     public bool? IsFeatured { get; set; }
     [System.Text.Json.Serialization.JsonPropertyName("publishedAt")]
     public DateTime? PublishedAt { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
     [System.Text.Json.Serialization.JsonPropertyName("updatedAt")]

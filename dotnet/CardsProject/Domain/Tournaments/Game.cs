@@ -23,8 +23,10 @@ public class Game : IValidatableObject
 {
     public int Id { get; set; }
 
+    [Range(1, 3)]
     public int GameNumber { get; set; } = 0;
     public GameWinnerSideType? WinnerSide { get; set; }
+    public double? ComplexityScore { get; set; } = null;
     public int? TurnsPlayed { get; set; } = null;
     public int? DurationSeconds { get; set; } = null;
     public GameEndedByType? EndedBy { get; set; }

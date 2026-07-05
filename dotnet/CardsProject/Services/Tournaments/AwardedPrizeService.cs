@@ -44,8 +44,6 @@ public class AwardedPrizeService
     {
         var entity = await _db.AwardedPrizes.FindAsync(id);
         if (entity is null) return null;
-        if (dto.FinalPlacement is not null) entity.FinalPlacement = dto.FinalPlacement.Value;
-        if (dto.AwardedAt is not null) entity.AwardedAt = dto.AwardedAt.Value;
         if (dto.Claimed is not null) entity.Claimed = dto.Claimed.Value;
         if (dto.ClaimedAt is not null) entity.ClaimedAt = dto.ClaimedAt.Value;
         if (dto.PrizeId is not null) entity.PrizeId = dto.PrizeId;
@@ -87,6 +85,7 @@ public class AwardedPrizeService
     }
     public void Validate(AwardedPrize entity)
     {
+        if (entity.Claimed == true && entity.ClaimedAt == null) throw new InvalidOperationException("claimed_at is required");
         if (entity.Claimed == true && entity.ClaimedAt == null) throw new InvalidOperationException("Claimed prize must have a claimed_at timestamp");
     }
 }

@@ -34,14 +34,18 @@ public class Player : IValidatableObject
 {
     public int Id { get; set; }
 
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public string DisplayName { get; set; } = "";
     public PlayerRankType Rank { get; set; }
     public int Rating { get; set; } = 1000;
     public int PeakRating { get; set; } = 1000;
     public string? Bio { get; set; }
+    [RegularExpression(@"[A-Z]{2}")]
     public string? CountryCode { get; set; }
     public string? AvatarUrl { get; set; }
     public PlayerPreferredFormatType? PreferredFormat { get; set; }
+    public string? ContactEmail { get; set; }
+    public double? WinRateCached { get; set; } = null;
     public bool IsVerified { get; set; } = false;
     [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; } = null;

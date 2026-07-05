@@ -2,9 +2,12 @@ namespace CardsProject.Controllers.Tournaments;
 
 public class TournamentDto
 {
+    public Guid? PublicId { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public string? Status { get; set; }
+    public string? BracketData { get; set; }
     public string? Format { get; set; }
     public string? TournamentType { get; set; }
     public int? MaxPlayers { get; set; }
@@ -17,6 +20,7 @@ public class TournamentDto
     public bool? IsOnline { get; set; }
     public string? Location { get; set; }
     public string? RulesText { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
     public int? SeasonId { get; set; }

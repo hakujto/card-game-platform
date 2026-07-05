@@ -4,6 +4,7 @@ public class DraftSessionDto
 {
     public string? Status { get; set; }
     public string? DraftType { get; set; }
+    public string? PackContents { get; set; }
     public int? Seats { get; set; }
     public int? TimePerPickSeconds { get; set; }
     [System.Text.Json.Serialization.JsonPropertyName("createdAt")]

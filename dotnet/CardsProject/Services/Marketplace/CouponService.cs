@@ -37,8 +37,6 @@ public class CouponService
         if (dto.DiscountType is not null && Enum.TryParse<CouponDiscountTypeType>(dto.DiscountType, out var discountTypeVal)) entity.DiscountType = discountTypeVal;
         if (dto.DiscountValue is not null) entity.DiscountValue = dto.DiscountValue.Value;
         if (dto.MinOrderValue is not null) entity.MinOrderValue = dto.MinOrderValue.Value;
-        if (dto.MaxUses is not null) entity.MaxUses = dto.MaxUses.Value;
-        if (dto.UsesCount is not null) entity.UsesCount = dto.UsesCount.Value;
         if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
         if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;
@@ -59,8 +57,6 @@ public class CouponService
         if (dto.DiscountType is not null && Enum.TryParse<CouponDiscountTypeType>(dto.DiscountType, out var discountTypeVal)) entity.DiscountType = discountTypeVal;
         if (dto.DiscountValue is not null) entity.DiscountValue = dto.DiscountValue.Value;
         if (dto.MinOrderValue is not null) entity.MinOrderValue = dto.MinOrderValue.Value;
-        if (dto.MaxUses is not null) entity.MaxUses = dto.MaxUses.Value;
-        if (dto.UsesCount is not null) entity.UsesCount = dto.UsesCount.Value;
         if (dto.ValidFrom is not null) entity.ValidFrom = dto.ValidFrom.Value;
         if (dto.ValidUntil is not null) entity.ValidUntil = dto.ValidUntil.Value;
         if (dto.IsActive is not null) entity.IsActive = dto.IsActive.Value;

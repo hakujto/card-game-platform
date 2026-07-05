@@ -26,6 +26,7 @@ public class DraftSession : IValidatableObject
 
     public DraftSessionStatusType Status { get; set; }
     public DraftSessionDraftTypeType DraftType { get; set; }
+    public string? PackContents { get; set; }
     public int Seats { get; set; } = 8;
     public int TimePerPickSeconds { get; set; } = 30;
     [JsonPropertyName("createdAt")]

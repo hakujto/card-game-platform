@@ -4,6 +4,7 @@ public class GameDto
 {
     public int? GameNumber { get; set; }
     public string? WinnerSide { get; set; }
+    public double? ComplexityScore { get; set; }
     public int? TurnsPlayed { get; set; }
     public int? DurationSeconds { get; set; }
     public string? EndedBy { get; set; }

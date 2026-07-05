@@ -63,7 +63,8 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
         var payload = new
         {
             MaxPlayers = 2,
-            Name = "test",
+            PublicId = Guid.NewGuid(),
+            Name = "Test Tournament Alpha",
             StartTime = "2024-01-01T00:00:00",
             CreatedAt = "2024-01-01T00:00:00",
             SeasonId = 1,
@@ -83,7 +84,7 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200Or404()
     {
-        var payload = new { Name = "test" };
+        var payload = new { Description = "test" };
         var response = await _client.PatchAsJsonAsync("/api/tournaments/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -99,7 +100,7 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
     public async Task Create_Fails_When_MaxPlayersPositive_Violated()
     {
         // Tournament must allow between 2 and 512 players → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""EntryFee"": 0.00, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""MaxPlayers"": 513 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""PublicId"": ""00000000-0000-0000-0000-000000000001"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""EntryFee"": 0.00, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""MaxPlayers"": 513 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/tournaments", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -108,7 +109,7 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
     public async Task Create_Fails_When_EntryFeeNotNegative_Violated()
     {
         // Entry fee must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""EntryFee"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""PublicId"": ""00000000-0000-0000-0000-000000000001"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""EntryFee"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/tournaments", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -117,7 +118,7 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
     public async Task Create_Fails_When_PrizePoolNotNegative_Violated()
     {
         // Prize pool must not be negative → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""EntryFee"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""PrizePool"": -1 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""endTime"": ""2024-01-01T00:00:00"", ""PublicId"": ""00000000-0000-0000-0000-000000000001"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""EntryFee"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""PrizePool"": -1 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/tournaments", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -126,7 +127,7 @@ public class TournamentApiTests : IClassFixture<TournamentApiTests.TestFactory>
     public async Task Create_Fails_When_EndTimeAfterStart_Violated()
     {
         // End time must be after start time: antecedent true, consequent missing → 400
-        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""EntryFee"": 0.00, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""endTime"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""SeasonId"": 1, ""OrganizerId"": 1, ""PublicId"": ""00000000-0000-0000-0000-000000000001"", ""Name"": ""test"", ""Status"": ""test"", ""Format"": ""test"", ""TournamentType"": ""test"", ""MaxPlayers"": 1, ""EntryFee"": 0.00, ""PrizePool"": 0.00, ""StartTime"": ""2024-01-01T00:00:00"", ""IsOnline"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""endTime"": ""2024-01-01T00:00:00"" }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/tournaments", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

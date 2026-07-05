@@ -49,9 +49,11 @@ public class Card : IValidatableObject
 {
     public int Id { get; set; }
 
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = "";
     public CardCardTypeType CardType { get; set; }
     public CardRarityType Rarity { get; set; }
+    [Range(0, 20)]
     public int ManaCost { get; set; } = 0;
     public CardManaColorsType ManaColors { get; set; }
     public int? Attack { get; set; } = null;
@@ -64,7 +66,10 @@ public class Card : IValidatableObject
     public CardLegalFormatsType LegalFormats { get; set; }
     public bool IsBanned { get; set; } = false;
     public bool IsRestricted { get; set; } = false;
+    [Range(1, 10)]
     public int PowerLevel { get; set; } = 1;
+    public string? Metadata { get; set; }
+    public long TotalCopiesInCirculation { get; set; } = 0;
 
     public int? SetId { get; set; }
     [ForeignKey(nameof(SetId))]
@@ -102,6 +107,12 @@ public class Card : IValidatableObject
     public void Unrestrict()
     {
         // TODO: implement unrestrict
+    }
+
+    public bool Replace(string data)
+    {
+        // TODO: implement replace
+        return default;
     }
 
     public decimal CalculateValue()

@@ -29,6 +29,7 @@ public class DraftSessionService
         var entity = new DraftSession();
         if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
+        if (dto.PackContents is not null) entity.PackContents = dto.PackContents;
         if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
         if (dto.TimePerPickSeconds is not null) entity.TimePerPickSeconds = dto.TimePerPickSeconds.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
@@ -47,6 +48,7 @@ public class DraftSessionService
         if (entity is null) return null;
         if (dto.Status is not null && Enum.TryParse<DraftSessionStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.DraftType is not null && Enum.TryParse<DraftSessionDraftTypeType>(dto.DraftType, out var draftTypeVal)) entity.DraftType = draftTypeVal;
+        if (dto.PackContents is not null) entity.PackContents = dto.PackContents;
         if (dto.Seats is not null) entity.Seats = dto.Seats.Value;
         if (dto.TimePerPickSeconds is not null) entity.TimePerPickSeconds = dto.TimePerPickSeconds.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;

@@ -32,7 +32,6 @@ public class OrderService
         if (dto.DiscountApplied is not null) entity.DiscountApplied = dto.DiscountApplied.Value;
         if (dto.Currency is not null) entity.Currency = dto.Currency;
         if (dto.PaymentMethod is not null && Enum.TryParse<OrderPaymentMethodType>(dto.PaymentMethod, out var paymentMethodVal)) entity.PaymentMethod = paymentMethodVal;
-        if (dto.PaymentReference is not null) entity.PaymentReference = dto.PaymentReference;
         if (dto.ShippingAddress is not null) entity.ShippingAddress = dto.ShippingAddress;
         if (dto.TrackingNumber is not null) entity.TrackingNumber = dto.TrackingNumber;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
@@ -51,16 +50,12 @@ public class OrderService
     {
         var entity = await _db.Orders.FindAsync(id);
         if (entity is null) return null;
-        if (dto.Status is not null && Enum.TryParse<OrderStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.Total is not null) entity.Total = dto.Total.Value;
         if (dto.DiscountApplied is not null) entity.DiscountApplied = dto.DiscountApplied.Value;
         if (dto.Currency is not null) entity.Currency = dto.Currency;
         if (dto.PaymentMethod is not null && Enum.TryParse<OrderPaymentMethodType>(dto.PaymentMethod, out var paymentMethodVal)) entity.PaymentMethod = paymentMethodVal;
-        if (dto.PaymentReference is not null) entity.PaymentReference = dto.PaymentReference;
         if (dto.ShippingAddress is not null) entity.ShippingAddress = dto.ShippingAddress;
         if (dto.TrackingNumber is not null) entity.TrackingNumber = dto.TrackingNumber;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
-        if (dto.PaidAt is not null) entity.PaidAt = dto.PaidAt.Value;
         if (dto.ShippedAt is not null) entity.ShippedAt = dto.ShippedAt.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         if (dto.CouponId is not null) entity.CouponId = dto.CouponId;
@@ -235,6 +230,8 @@ public class OrderService
     }
     public void Validate(Order entity)
     {
+        if (entity.Status == OrderStatusType.Shipped && entity.TrackingNumber == null) throw new InvalidOperationException("tracking_number is required");
+        if (entity.Status == OrderStatusType.Paid && entity.PaidAt == null) throw new InvalidOperationException("paid_at is required");
         if (entity.Status == OrderStatusType.Paid && entity.PaidAt == null) throw new InvalidOperationException("Paid order must have paid_at set");
         if (entity.Status == OrderStatusType.Shipped && entity.TrackingNumber == null) throw new InvalidOperationException("Shipped order must have a tracking number");
         if (entity.ShippedAt != null && !(entity.Status == OrderStatusType.Shipped)) throw new InvalidOperationException("shipped_at_requires_shipped_status");

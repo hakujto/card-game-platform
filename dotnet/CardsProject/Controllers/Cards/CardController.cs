@@ -59,6 +59,7 @@ public class CardController : ControllerBase
         catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,moderator")]
     [HttpPost("{id:int}/ban")]
     public async System.Threading.Tasks.Task<IActionResult> Ban(int id)
     {
@@ -71,6 +72,7 @@ public class CardController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,moderator")]
     [HttpPost("{id:int}/unban")]
     public async System.Threading.Tasks.Task<IActionResult> Unban(int id)
     {
@@ -83,6 +85,7 @@ public class CardController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,moderator")]
     [HttpPost("{id:int}/restrict")]
     public async System.Threading.Tasks.Task<IActionResult> Restrict(int id)
     {
@@ -95,6 +98,7 @@ public class CardController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,moderator")]
     [HttpPost("{id:int}/unrestrict")]
     public async System.Threading.Tasks.Task<IActionResult> Unrestrict(int id)
     {
@@ -102,6 +106,20 @@ public class CardController : ControllerBase
         {
             await _svc.UnrestrictAsync(id);
             return NoContent();
+        }
+        catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
+    [HttpPut("{id:int}/replace")]
+    public async System.Threading.Tasks.Task<IActionResult> Replace(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
+    {
+        try
+        {
+            var data = (string)body["data"];
+            var result = await _svc.ReplaceAsync(id, data);
+            return Ok(result);
         }
         catch (ArgumentException ex) { return UnprocessableEntity(new { error = ex.Message }); }
         catch (KeyNotFoundException) { return NotFound(); }

@@ -110,6 +110,7 @@ public class TradeListingController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,seller")]
     [HttpPost("{id:int}/finalize")]
     public async System.Threading.Tasks.Task<IActionResult> FinalizeAuction(int id)
     {

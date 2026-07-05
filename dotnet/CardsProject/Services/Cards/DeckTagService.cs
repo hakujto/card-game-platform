@@ -34,6 +34,7 @@ public class DeckTagService
     {
         var entity = new DeckTag();
         if (dto.Name is not null) entity.Name = dto.Name;
+        if (dto.Slug is not null) entity.Slug = dto.Slug;
         if (dto.Color is not null) entity.Color = dto.Color;
         ValidateEntity(entity);
         _db.DeckTags.Add(entity);
@@ -46,6 +47,7 @@ public class DeckTagService
         var entity = await _db.DeckTags.FindAsync(id);
         if (entity is null) return null;
         if (dto.Name is not null) entity.Name = dto.Name;
+        if (dto.Slug is not null) entity.Slug = dto.Slug;
         if (dto.Color is not null) entity.Color = dto.Color;
         ValidateEntity(entity);
         await _db.SaveChangesAsync();

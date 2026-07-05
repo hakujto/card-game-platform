@@ -56,6 +56,7 @@ public class TradeDisputeController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,moderator")]
     [HttpPost("{id:int}/resolve")]
     public async System.Threading.Tasks.Task<IActionResult> Resolve(int id, [FromBody] System.Collections.Generic.Dictionary<string, object> body)
     {

@@ -2,6 +2,7 @@ namespace CardsProject.Controllers.Cards;
 
 public class CardDto
 {
+    public Guid? PublicId { get; set; }
     public string? Name { get; set; }
     public string? CardType { get; set; }
     public string? Rarity { get; set; }
@@ -15,8 +16,12 @@ public class CardDto
     public string? ImageUrl { get; set; }
     public string? ArtistName { get; set; }
     public string? LegalFormats { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public bool? IsBanned { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public bool? IsRestricted { get; set; }
     public int? PowerLevel { get; set; }
+    public string? Metadata { get; set; }
+    public long? TotalCopiesInCirculation { get; set; }
     public int? SetId { get; set; }
 }

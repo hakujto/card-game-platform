@@ -35,6 +35,7 @@ public class TradeListing : IValidatableObject
 {
     public int Id { get; set; }
 
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public TradeListingStatusType Status { get; set; }
     public TradeListingListingTypeType ListingType { get; set; }
     public decimal? AskingPrice { get; set; } = null;

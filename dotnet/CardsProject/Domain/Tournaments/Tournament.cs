@@ -37,11 +37,14 @@ public class Tournament : IValidatableObject
 {
     public int Id { get; set; }
 
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = "";
     public string? Description { get; set; }
     public TournamentStatusType Status { get; set; }
+    public string? BracketData { get; set; }
     public TournamentFormatType Format { get; set; }
     public TournamentTournamentTypeType TournamentType { get; set; }
+    [Range(2, 512)]
     public int MaxPlayers { get; set; } = 0;
     public decimal EntryFee { get; set; } = 0.00m;
     public decimal PrizePool { get; set; } = 0.00m;

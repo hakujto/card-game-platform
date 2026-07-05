@@ -62,10 +62,6 @@ public class DeckService
         if (dto.IsPublic is not null) entity.IsPublic = dto.IsPublic.Value;
         if (dto.IsTournamentLegal is not null) entity.IsTournamentLegal = dto.IsTournamentLegal.Value;
         if (dto.Archetype is not null && Enum.TryParse<DeckArchetypeType>(dto.Archetype, out var archetypeVal)) entity.Archetype = archetypeVal;
-        if (dto.Wins is not null) entity.Wins = dto.Wins.Value;
-        if (dto.Losses is not null) entity.Losses = dto.Losses.Value;
-        if (dto.Draws is not null) entity.Draws = dto.Draws.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.PlayerId is not null) entity.PlayerId = dto.PlayerId;
         Validate(entity);

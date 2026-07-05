@@ -29,6 +29,7 @@ public class GameService
         var entity = new Game();
         if (dto.GameNumber is not null) entity.GameNumber = dto.GameNumber.Value;
         if (dto.WinnerSide is not null && Enum.TryParse<GameWinnerSideType>(dto.WinnerSide, out var winnerSideVal)) entity.WinnerSide = winnerSideVal;
+        if (dto.ComplexityScore is not null) entity.ComplexityScore = dto.ComplexityScore.Value;
         if (dto.TurnsPlayed is not null) entity.TurnsPlayed = dto.TurnsPlayed.Value;
         if (dto.DurationSeconds is not null) entity.DurationSeconds = dto.DurationSeconds.Value;
         if (dto.EndedBy is not null && Enum.TryParse<GameEndedByType>(dto.EndedBy, out var endedByVal)) entity.EndedBy = endedByVal;
@@ -48,6 +49,7 @@ public class GameService
         if (entity is null) return null;
         if (dto.GameNumber is not null) entity.GameNumber = dto.GameNumber.Value;
         if (dto.WinnerSide is not null && Enum.TryParse<GameWinnerSideType>(dto.WinnerSide, out var winnerSideVal)) entity.WinnerSide = winnerSideVal;
+        if (dto.ComplexityScore is not null) entity.ComplexityScore = dto.ComplexityScore.Value;
         if (dto.TurnsPlayed is not null) entity.TurnsPlayed = dto.TurnsPlayed.Value;
         if (dto.DurationSeconds is not null) entity.DurationSeconds = dto.DurationSeconds.Value;
         if (dto.EndedBy is not null && Enum.TryParse<GameEndedByType>(dto.EndedBy, out var endedByVal)) entity.EndedBy = endedByVal;

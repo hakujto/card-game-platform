@@ -6,6 +6,9 @@ set -e
 echo "→ Restoring packages..."
 dotnet restore
 
+echo "→ Resetting local database..."
+rm -f CardsProject/app.db
+
 echo "→ Applying migrations (EnsureCreated via Program.cs startup)..."
 dotnet run --project CardsProject/CardsProject.csproj &
 SERVER_PID=$!

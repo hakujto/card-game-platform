@@ -22,6 +22,7 @@ public class Product : IValidatableObject
     public decimal Price { get; set; } = 0.00m;
     public int Stock { get; set; } = 0;
     public bool Active { get; set; } = true;
+    [Range(0, 100)]
     public int DiscountPercent { get; set; } = 0;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }

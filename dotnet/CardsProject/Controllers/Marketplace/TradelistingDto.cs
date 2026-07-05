@@ -2,6 +2,8 @@ namespace CardsProject.Controllers.Marketplace;
 
 public class TradeListingDto
 {
+    public Guid? PublicId { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public string? Status { get; set; }
     public string? ListingType { get; set; }
     public decimal? AskingPrice { get; set; }
@@ -13,6 +15,7 @@ public class TradeListingDto
     public string? Condition { get; set; }
     public int? Quantity { get; set; }
     public string? Description { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
     [System.Text.Json.Serialization.JsonPropertyName("expiresAt")]

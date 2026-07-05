@@ -33,6 +33,7 @@ public class TradeListingService
     public async Task<TradeListing> CreateAsync(TradeListingDto dto)
     {
         var entity = new TradeListing();
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.ListingType is not null && Enum.TryParse<TradeListingListingTypeType>(dto.ListingType, out var listingTypeVal)) entity.ListingType = listingTypeVal;
         if (dto.AskingPrice is not null) entity.AskingPrice = dto.AskingPrice.Value;
@@ -50,7 +51,9 @@ public class TradeListingService
         Validate(entity);
         ValidateEntity(entity);
         _db.TradeListings.Add(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -58,7 +61,7 @@ public class TradeListingService
     {
         var entity = await _db.TradeListings.FindAsync(id);
         if (entity is null) return null;
-        if (dto.Status is not null && Enum.TryParse<TradeListingStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.ListingType is not null && Enum.TryParse<TradeListingListingTypeType>(dto.ListingType, out var listingTypeVal)) entity.ListingType = listingTypeVal;
         if (dto.AskingPrice is not null) entity.AskingPrice = dto.AskingPrice.Value;
         if (dto.AuctionStartPrice is not null) entity.AuctionStartPrice = dto.AuctionStartPrice.Value;
@@ -68,13 +71,14 @@ public class TradeListingService
         if (dto.Condition is not null && Enum.TryParse<TradeListingConditionType>(dto.Condition, out var conditionVal)) entity.Condition = conditionVal;
         if (dto.Quantity is not null) entity.Quantity = dto.Quantity.Value;
         if (dto.Description is not null) entity.Description = dto.Description;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.ExpiresAt is not null) entity.ExpiresAt = dto.ExpiresAt.Value;
         if (dto.SellerId is not null) entity.SellerId = dto.SellerId;
         if (dto.CardId is not null) entity.CardId = dto.CardId;
         Validate(entity);
         ValidateEntity(entity);
-        await _db.SaveChangesAsync();
+        try { await _db.SaveChangesAsync(); }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) when (ex.InnerException?.Message?.Contains("UNIQUE") == true)
+            { throw new InvalidOperationException("Value must be unique", ex); }
         return entity;
     }
 
@@ -201,6 +205,7 @@ public class TradeListingService
     }
     public void Validate(TradeListing entity)
     {
+        if (entity.ListingType == TradeListingListingTypeType.FixedPrice && entity.AskingPrice == null) throw new InvalidOperationException("asking_price is required");
         if (entity.ListingType == TradeListingListingTypeType.FixedPrice && entity.AskingPrice == null) throw new InvalidOperationException("Fixed price listing must have an asking price");
         if (entity.ListingType == TradeListingListingTypeType.Auction && !(entity.AuctionStartPrice != null && entity.AuctionEndTime != null)) throw new InvalidOperationException("Auction listing must have a start price and end time");
     }

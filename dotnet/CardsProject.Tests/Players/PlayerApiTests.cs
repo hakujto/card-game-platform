@@ -63,7 +63,8 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
         var payload = new
         {
             PeakRating = 1000,
-            DisplayName = "test",
+            PublicId = Guid.NewGuid(),
+            DisplayName = "test_player_001",
             CreatedAt = "2024-01-01T00:00:00"
         };
         var response = await _client.PostAsJsonAsync("/api/players", payload);
@@ -80,7 +81,7 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
     [Fact]
     public async Task Update_Returns200Or404()
     {
-        var payload = new { DisplayName = "test" };
+        var payload = new { Bio = "test" };
         var response = await _client.PatchAsJsonAsync("/api/players/1", payload);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -96,7 +97,7 @@ public class PlayerApiTests : IClassFixture<PlayerApiTests.TestFactory>
     public async Task Create_Fails_When_RatingRange_Violated()
     {
         // Rating must be between 0 and 9999 → 400 (IValidatableObject)
-        var content = new StringContent(@"{ ""DisplayName"": ""test"", ""Rank"": ""test"", ""PeakRating"": 1, ""IsVerified"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""Rating"": 10000 }", System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(@"{ ""PublicId"": ""00000000-0000-0000-0000-000000000001"", ""DisplayName"": ""test"", ""Rank"": ""test"", ""PeakRating"": 1, ""IsVerified"": true, ""CreatedAt"": ""2024-01-01T00:00:00"", ""Rating"": 10000 }", System.Text.Encoding.UTF8, "application/json");
         var response = await _client.PostAsync("/api/players", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

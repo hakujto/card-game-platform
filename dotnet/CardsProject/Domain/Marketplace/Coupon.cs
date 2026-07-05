@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CardsProject.Domain.Marketplace;
 
@@ -14,9 +15,12 @@ public class Coupon : IValidatableObject
 
     public string Code { get; set; } = "";
     public CouponDiscountTypeType DiscountType { get; set; }
+    [Range(0.01, int.MaxValue)]
     public decimal DiscountValue { get; set; } = 0.00m;
     public decimal MinOrderValue { get; set; } = 0.00m;
+    [JsonIgnore]
     public int? MaxUses { get; set; } = null;
+    [JsonIgnore]
     public int UsesCount { get; set; } = 0;
     public DateTime? ValidFrom { get; set; } = null;
     public DateTime? ValidUntil { get; set; } = null;

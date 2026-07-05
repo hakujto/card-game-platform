@@ -65,7 +65,7 @@ public class CardSetApiTests : IClassFixture<CardSetApiTests.TestFactory>
             TotalCards = 1,
             IsRotated = false,
             Name = "test",
-            Code = "test",
+            Code = "AB",
             ReleaseDate = "2024-01-01"
         };
         var response = await _client.PostAsJsonAsync("/api/card_sets", payload);

@@ -59,6 +59,7 @@ public class SeasonController : ControllerBase
         catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) { return BadRequest(new { error = ex.InnerException?.Message ?? ex.Message }); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
     [HttpPost("{id:int}/activate")]
     public async System.Threading.Tasks.Task<IActionResult> Activate(int id)
     {
@@ -71,6 +72,7 @@ public class SeasonController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
     [HttpPost("{id:int}/deactivate")]
     public async System.Threading.Tasks.Task<IActionResult> Deactivate(int id)
     {
@@ -83,6 +85,7 @@ public class SeasonController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
     [HttpPost("{id:int}/finalize")]
     public async System.Threading.Tasks.Task<IActionResult> FinalizeRewards(int id)
     {

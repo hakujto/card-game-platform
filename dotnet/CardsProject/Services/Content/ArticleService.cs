@@ -43,6 +43,7 @@ public class ArticleService
         if (dto.Language is not null && Enum.TryParse<ArticleLanguageType>(dto.Language, out var languageVal)) entity.Language = languageVal;
         if (dto.ViewCount is not null) entity.ViewCount = dto.ViewCount.Value;
         if (dto.LikesCount is not null) entity.LikesCount = dto.LikesCount.Value;
+        if (dto.TotalViewsAlltime is not null) entity.TotalViewsAlltime = dto.TotalViewsAlltime.Value;
         if (dto.IsFeatured is not null) entity.IsFeatured = dto.IsFeatured.Value;
         if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
@@ -67,14 +68,11 @@ public class ArticleService
         if (dto.Body is not null) entity.Body = dto.Body;
         if (dto.Excerpt is not null) entity.Excerpt = dto.Excerpt;
         if (dto.CoverImageUrl is not null) entity.CoverImageUrl = dto.CoverImageUrl;
-        if (dto.Status is not null && Enum.TryParse<ArticleStatusType>(dto.Status, out var statusVal)) entity.Status = statusVal;
         if (dto.ArticleType is not null && Enum.TryParse<ArticleArticleTypeType>(dto.ArticleType, out var articleTypeVal)) entity.ArticleType = articleTypeVal;
         if (dto.Language is not null && Enum.TryParse<ArticleLanguageType>(dto.Language, out var languageVal)) entity.Language = languageVal;
-        if (dto.ViewCount is not null) entity.ViewCount = dto.ViewCount.Value;
-        if (dto.LikesCount is not null) entity.LikesCount = dto.LikesCount.Value;
+        if (dto.TotalViewsAlltime is not null) entity.TotalViewsAlltime = dto.TotalViewsAlltime.Value;
         if (dto.IsFeatured is not null) entity.IsFeatured = dto.IsFeatured.Value;
         if (dto.PublishedAt is not null) entity.PublishedAt = dto.PublishedAt.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.UpdatedAt is not null) entity.UpdatedAt = dto.UpdatedAt.Value;
         if (dto.AuthorId is not null) entity.AuthorId = dto.AuthorId;
         if (dto.FeaturedDeckId is not null) entity.FeaturedDeckId = dto.FeaturedDeckId;
@@ -110,6 +108,14 @@ public class ArticleService
         entity.Archive();
         await _db.SaveChangesAsync();
         return true;
+    }
+    public async System.Threading.Tasks.Task<bool> ReplaceAsync(int id, string data)
+    {
+        var entity = await _db.Articles.FindAsync(id);
+        if (entity is null) throw new KeyNotFoundException("Article not found: " + id);
+        var result = entity.Replace(data);
+        await _db.SaveChangesAsync();
+        return result;
     }
     public async System.Threading.Tasks.Task<bool> IncrementViewAsync(int id)
     {

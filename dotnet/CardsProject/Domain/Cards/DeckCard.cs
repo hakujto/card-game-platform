@@ -7,6 +7,7 @@ public class DeckCard : IValidatableObject
 {
     public int Id { get; set; }
 
+    [Range(1, 4)]
     public int Quantity { get; set; } = 1;
     public bool IsCommander { get; set; } = false;
 

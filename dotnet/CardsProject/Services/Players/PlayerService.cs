@@ -33,6 +33,7 @@ public class PlayerService
     public async Task<Player> CreateAsync(PlayerDto dto)
     {
         var entity = new Player();
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.DisplayName is not null) entity.DisplayName = dto.DisplayName;
         if (dto.Rank is not null && Enum.TryParse<PlayerRankType>(dto.Rank, out var rankVal)) entity.Rank = rankVal;
         if (dto.Rating is not null) entity.Rating = dto.Rating.Value;
@@ -41,6 +42,8 @@ public class PlayerService
         if (dto.CountryCode is not null) entity.CountryCode = dto.CountryCode;
         if (dto.AvatarUrl is not null) entity.AvatarUrl = dto.AvatarUrl;
         if (dto.PreferredFormat is not null && Enum.TryParse<PlayerPreferredFormatType>(dto.PreferredFormat, out var preferredFormatVal)) entity.PreferredFormat = preferredFormatVal;
+        if (dto.ContactEmail is not null) entity.ContactEmail = dto.ContactEmail;
+        if (dto.WinRateCached is not null) entity.WinRateCached = dto.WinRateCached.Value;
         if (dto.IsVerified is not null) entity.IsVerified = dto.IsVerified.Value;
         if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.LastActiveAt is not null) entity.LastActiveAt = dto.LastActiveAt.Value;
@@ -57,16 +60,16 @@ public class PlayerService
     {
         var entity = await _db.Players.FindAsync(id);
         if (entity is null) return null;
+        if (dto.PublicId is not null) entity.PublicId = dto.PublicId.Value;
         if (dto.DisplayName is not null) entity.DisplayName = dto.DisplayName;
         if (dto.Rank is not null && Enum.TryParse<PlayerRankType>(dto.Rank, out var rankVal)) entity.Rank = rankVal;
-        if (dto.Rating is not null) entity.Rating = dto.Rating.Value;
-        if (dto.PeakRating is not null) entity.PeakRating = dto.PeakRating.Value;
         if (dto.Bio is not null) entity.Bio = dto.Bio;
         if (dto.CountryCode is not null) entity.CountryCode = dto.CountryCode;
         if (dto.AvatarUrl is not null) entity.AvatarUrl = dto.AvatarUrl;
         if (dto.PreferredFormat is not null && Enum.TryParse<PlayerPreferredFormatType>(dto.PreferredFormat, out var preferredFormatVal)) entity.PreferredFormat = preferredFormatVal;
+        if (dto.ContactEmail is not null) entity.ContactEmail = dto.ContactEmail;
+        if (dto.WinRateCached is not null) entity.WinRateCached = dto.WinRateCached.Value;
         if (dto.IsVerified is not null) entity.IsVerified = dto.IsVerified.Value;
-        if (dto.CreatedAt is not null) entity.CreatedAt = dto.CreatedAt.Value;
         if (dto.LastActiveAt is not null) entity.LastActiveAt = dto.LastActiveAt.Value;
         if (dto.UserId is not null) entity.UserId = dto.UserId;
         ValidateEntity(entity);

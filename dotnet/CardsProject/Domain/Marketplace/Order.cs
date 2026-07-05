@@ -31,8 +31,10 @@ public class Order : IValidatableObject
     public OrderStatusType Status { get; set; }
     public decimal Total { get; set; } = 0.00m;
     public decimal DiscountApplied { get; set; } = 0.00m;
+    [RegularExpression(@"[A-Z]{3}")]
     public string Currency { get; set; } = "USD";
     public OrderPaymentMethodType? PaymentMethod { get; set; }
+    [JsonIgnore]
     public string? PaymentReference { get; set; }
     public string? ShippingAddress { get; set; }
     public string? TrackingNumber { get; set; }
