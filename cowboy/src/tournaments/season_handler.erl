@@ -139,24 +139,42 @@ validate_season_rules(M) ->
 
 %% ── Behavior endpoints ──────────────────────────────────────────────
 handle_activate(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for activate">>}), Req), {stop, Req, State};
+        true  ->
     _ = activate_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 activate_behavior(_Record) ->
     %% TODO: implement activate
     ok.
 
 handle_deactivate(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for deactivate">>}), Req), {stop, Req, State};
+        true  ->
     _ = deactivate_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 deactivate_behavior(_Record) ->
     %% TODO: implement deactivate
     ok.
 
 handle_finalize_rewards(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for finalize_rewards">>}), Req), {stop, Req, State};
+        true  ->
     _ = finalize_rewards_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 finalize_rewards_behavior(_Record) ->
     %% TODO: implement finalize_rewards

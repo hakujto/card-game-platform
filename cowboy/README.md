@@ -34,6 +34,7 @@ rebar3 eunit
 - `POST` `/api/cards/{id}/unban`
 - `POST` `/api/cards/{id}/restrict`
 - `POST` `/api/cards/{id}/unrestrict`
+- `PUT` `/api/cards/{id}`
 - `GET` `/api/cards/{id}/value`
 - `POST` `/api/cards/{id}/rarity-bonus`
 - `GET` `/api/cards/{id}/legal`
@@ -271,6 +272,7 @@ rebar3 eunit
 - `POST` `/api/articles/{id}/transition/archived-to-draft`
 - `POST` `/api/articles/{id}/publish`
 - `POST` `/api/articles/{id}/archive`
+- `PUT` `/api/articles/{id}`
 - `POST` `/api/articles/{id}/view`
 - `POST` `/api/articles/{id}/like`
 - `DELETE` `/api/articles/{id}/like`
@@ -295,6 +297,8 @@ rebar3 eunit
 - `PATCH` `/api/streams/{id}/viewers`
 - `GET` `/api/streams/{id}/duration`
 
+### Wallet BC
+
 ## Architecture
 
 Bounded Contexts:
@@ -304,6 +308,7 @@ Bounded Contexts:
 - **Tournaments BC** (`tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+- **Wallet BC** (`wallet/`) — 
 
 ## Docker
 

@@ -54,13 +54,14 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_card_set_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_card_set_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_card_set_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = card_set_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = card_set_store:insert(Record),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 handle_put(Req0, State) ->
@@ -157,6 +158,16 @@ validate_card_set_implies(M) ->
     Checks = [
         fun() -> case ((maps:get(<<"rotation_date">>, M, undefined) =/= undefined andalso maps:get(<<"rotation_date">>, M, undefined) =/= null)) andalso not ((maps:get(<<"rotation_date">>, M, undefined) > maps:get(<<"release_date">>, M, undefined))) of true -> {true, <<"Rotation date must be after release date">>}; _ -> false end end,
         fun() -> case ((maps:get(<<"is_rotated">>, M, undefined) =:= true)) andalso not ((maps:get(<<"rotation_date">>, M, undefined) =/= undefined andalso maps:get(<<"rotation_date">>, M, undefined) =/= null)) of true -> {true, <<"Rotated set must have a rotation date">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_card_set_fields(M) ->
+    Checks = [
+        fun() -> case re:run(maps:get(<<"code">>, M, undefined), <<"[A-Z]{2,6}">>) of nomatch -> {true, <<"code does not match pattern">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

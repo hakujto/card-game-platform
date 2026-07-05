@@ -9,7 +9,6 @@ valid_params() ->
         <<"discount_type">> => <<"Percent">>,
         <<"discount_value">> => 1,
         <<"min_order_value">> => 0.0,
-        <<"uses_count">> => 1,
         <<"valid_from">> => <<"2024-01-01T00:00:00Z">>,
         <<"valid_until">> => <<"2024-01-01T00:00:01">>,
         <<"is_active">> => true

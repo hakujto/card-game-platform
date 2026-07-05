@@ -40,10 +40,11 @@ delete(Id) ->
 next_id() ->
     mnesia:dirty_update_counter(id_seq, deck_tag, 1).
 
-record_to_map(#deck_tag{id = Id, name = Name, color = Color, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#deck_tag{id = Id, name = Name, slug = Slug, color = Color, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"name">> => Name,
+        <<"slug">> => Slug,
         <<"color">> => Color,
         <<"created_at">> => CreatedAt,
         <<"updated_at">> => UpdatedAt

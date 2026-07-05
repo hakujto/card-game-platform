@@ -50,9 +50,10 @@ find_by_card_id(FKId) ->
     {atomic, Records} = mnesia:transaction(F),
     [record_to_map(R) || R <- Records].
 
-record_to_map(#trade_listing{id = Id, status = Status, listing_type = ListingType, asking_price = AskingPrice, auction_start_price = AuctionStartPrice, auction_current_bid = AuctionCurrentBid, auction_end_time = AuctionEndTime, foil = Foil, condition = Condition, quantity = Quantity, description = Description, expires_at = ExpiresAt, seller_id = SellerId, card_id = CardId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#trade_listing{id = Id, public_id = PublicId, status = Status, listing_type = ListingType, asking_price = AskingPrice, auction_start_price = AuctionStartPrice, auction_current_bid = AuctionCurrentBid, auction_end_time = AuctionEndTime, foil = Foil, condition = Condition, quantity = Quantity, description = Description, expires_at = ExpiresAt, seller_id = SellerId, card_id = CardId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"status">> => Status,
         <<"listing_type">> => ListingType,
         <<"asking_price">> => AskingPrice,

@@ -60,6 +60,7 @@ params_to_record(Id, Params) ->
         id         = Id,
         status     = maps:get(<<"status">>, Params, <<"WaitingForPlayers">>),
         draft_type = maps:get(<<"draft_type">>, Params, <<"Booster">>),
+        pack_contents = maps:get(<<"pack_contents">>, Params, undefined),
         seats      = maps:get(<<"seats">>, Params, 8),
         time_per_pick_seconds = maps:get(<<"time_per_pick_seconds">>, Params, 30),
         completed_at = maps:get(<<"completed_at">>, Params, undefined),
@@ -68,11 +69,12 @@ params_to_record(Id, Params) ->
         updated_at = iso_now()
     }.
 
-record_to_map(#draft_session{id = Id, status = Status, draft_type = DraftType, seats = Seats, time_per_pick_seconds = TimePerPickSeconds, completed_at = CompletedAt, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#draft_session{id = Id, status = Status, draft_type = DraftType, pack_contents = PackContents, seats = Seats, time_per_pick_seconds = TimePerPickSeconds, completed_at = CompletedAt, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"status">> => Status,
         <<"draft_type">> => DraftType,
+        <<"pack_contents">> => PackContents,
         <<"seats">> => Seats,
         <<"time_per_pick_seconds">> => TimePerPickSeconds,
         <<"completed_at">> => CompletedAt,

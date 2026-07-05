@@ -17,6 +17,9 @@ valid_params() ->
         <<"player_id">> => 1
     }.
 
+patch_params() ->
+    #{<<"name">> => <<"test">>}.
+
 setup_suite() ->
     application:ensure_all_started(cards_project),
     inets:start().
@@ -63,7 +66,7 @@ update_deck() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    PatchBody = jsone:encode(valid_params()),
+    PatchBody = jsone:encode(patch_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(put,
         {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).

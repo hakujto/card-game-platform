@@ -5,6 +5,7 @@
 
 valid_params() ->
     #{
+        <<"public_id">> => <<"00000000-0000-0000-0000-000000000001">>,
         <<"display_name">> => <<"test">>,
         <<"rank">> => <<"Bronze">>,
         <<"rating">> => 1,
@@ -13,6 +14,9 @@ valid_params() ->
         <<"created_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"user_id">> => 1
     }.
+
+patch_params() ->
+    #{<<"bio">> => <<"test">>}.
 
 setup_suite() ->
     application:ensure_all_started(cards_project),
@@ -59,7 +63,7 @@ update_player() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    PatchBody = jsone:encode(valid_params()),
+    PatchBody = jsone:encode(patch_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(patch,
         {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).

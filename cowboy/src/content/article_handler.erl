@@ -1,7 +1,7 @@
 -module(article_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_publish/2, handle_archive/2, handle_increment_view/2, handle_like/2, handle_unlike/2, handle_reading_time_minutes/2, handle_transition_draft_to_published/2, handle_transition_published_to_archived/2, handle_transition_archived_to_draft/2, handle_transition_published_to_draft/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_publish/2, handle_archive/2, handle_replace/2, handle_increment_view/2, handle_like/2, handle_unlike/2, handle_reading_time_minutes/2, handle_transition_draft_to_published/2, handle_transition_published_to_archived/2, handle_transition_archived_to_draft/2, handle_transition_published_to_draft/2]).
 
 -include("records.hrl").
 
@@ -96,6 +96,7 @@ params_to_record(Id, Params) ->
         language   = maps:get(<<"language">>, Params, <<"EN">>),
         view_count = maps:get(<<"view_count">>, Params, 0),
         likes_count = maps:get(<<"likes_count">>, Params, 0),
+        total_views_alltime = maps:get(<<"total_views_alltime">>, Params, 0),
         is_featured = maps:get(<<"is_featured">>, Params, false),
         published_at = maps:get(<<"published_at">>, Params, undefined),
         author_id  = maps:get(<<"author_id">>, Params, undefined),
@@ -112,11 +113,9 @@ merge_record(Record, Params) ->
         body       = maps:get(<<"body">>, Params, Record#article.body),
         excerpt    = maps:get(<<"excerpt">>, Params, Record#article.excerpt),
         cover_image_url = maps:get(<<"cover_image_url">>, Params, Record#article.cover_image_url),
-        status     = maps:get(<<"status">>, Params, Record#article.status),
         article_type = maps:get(<<"article_type">>, Params, Record#article.article_type),
         language   = maps:get(<<"language">>, Params, Record#article.language),
-        view_count = maps:get(<<"view_count">>, Params, Record#article.view_count),
-        likes_count = maps:get(<<"likes_count">>, Params, Record#article.likes_count),
+        total_views_alltime = maps:get(<<"total_views_alltime">>, Params, Record#article.total_views_alltime),
         is_featured = maps:get(<<"is_featured">>, Params, Record#article.is_featured),
         published_at = maps:get(<<"published_at">>, Params, Record#article.published_at),
         author_id  = maps:get(<<"author_id">>, Params, Record#article.author_id),
@@ -125,7 +124,7 @@ merge_record(Record, Params) ->
         updated_at = iso_now()
     }.
 
-record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt = Excerpt, cover_image_url = CoverImageUrl, status = Status, article_type = ArticleType, language = Language, view_count = ViewCount, likes_count = LikesCount, is_featured = IsFeatured, published_at = PublishedAt, author_id = AuthorId, featured_deck_id = FeaturedDeckId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt = Excerpt, cover_image_url = CoverImageUrl, status = Status, article_type = ArticleType, language = Language, view_count = ViewCount, likes_count = LikesCount, total_views_alltime = TotalViewsAlltime, is_featured = IsFeatured, published_at = PublishedAt, author_id = AuthorId, featured_deck_id = FeaturedDeckId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"title">> => Title,
@@ -138,6 +137,7 @@ record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt
         <<"language">> => Language,
         <<"view_count">> => ViewCount,
         <<"likes_count">> => LikesCount,
+        <<"total_views_alltime">> => TotalViewsAlltime,
         <<"is_featured">> => IsFeatured,
         <<"published_at">> => PublishedAt,
         <<"author_id">> => AuthorId,
@@ -184,20 +184,49 @@ validate_article_implies(M) ->
 
 %% ── Behavior endpoints ──────────────────────────────────────────────
 handle_publish(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"editor">>, <<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for publish">>}), Req), {stop, Req, State};
+        true  ->
     _ = publish_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 publish_behavior(_Record) ->
     %% TODO: implement publish
     ok.
 
 handle_archive(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"editor">>, <<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for archive">>}), Req), {stop, Req, State};
+        true  ->
     _ = archive_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 archive_behavior(_Record) ->
     %% TODO: implement archive
     ok.
+
+handle_replace(Req0, State) ->
+    {ok, Body, Req1} = cowboy_req:read_body(Req0),
+    Params = jsone:decode(Body, [{object_format, map}]),
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req1, undefined),
+    case lists:member(UserRole, [<<"editor">>, <<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for replace">>}), Req1), {stop, Req1, State};
+        true  ->
+    Result = replace_behavior(State, Params),
+    Resp = jsone:encode(#{<<"result">> => Result}),
+    {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1), State}
+    end.
+
+replace_behavior(_Record, _Params) ->
+    %% TODO: implement replace(data)
+    null.
 
 handle_increment_view(Req, State) ->
     _ = increment_view_behavior(State),

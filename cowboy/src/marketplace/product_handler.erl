@@ -53,13 +53,14 @@ handle_post(Req0, State) ->
     {ok, Body, Req1} = cowboy_req:read_body(Req0),
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_product_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_product_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = product_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = product_store:insert(Record),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end
+    end end
 .
 
 handle_put(Req0, State) ->
@@ -153,6 +154,17 @@ validate_product_rules(M) ->
         fun() -> case (to_number(maps:get(<<"price">>, M, undefined)) > 0) of false -> {true, <<"Product price must be greater than zero">>}; _ -> false end end,
         fun() -> case (to_number(maps:get(<<"stock">>, M, undefined)) >= 0) of false -> {true, <<"Product stock must not be negative">>}; _ -> false end end,
         fun() -> case (to_number(maps:get(<<"discount_percent">>, M, undefined)) >= 0 andalso to_number(maps:get(<<"discount_percent">>, M, undefined)) =< 100) of false -> {true, <<"Product discount percent must be between 0 and 100">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_product_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"discount_percent">>, M, undefined) of V when is_number(V), V < 0 -> {true, <<"discount_percent must be >= 0">>}; _ -> false end end,
+        fun() -> case maps:get(<<"discount_percent">>, M, undefined) of V when is_number(V), V > 100 -> {true, <<"discount_percent must be <= 100">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

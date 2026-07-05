@@ -54,11 +54,12 @@ delete_by_match_id(FKId) ->
     Records = find_by_match_id(FKId),
     lists:foreach(fun(R) -> delete(maps:get(<<"id">>, R)) end, Records).
 
-record_to_map(#game{id = Id, game_number = GameNumber, winner_side = WinnerSide, turns_played = TurnsPlayed, duration_seconds = DurationSeconds, ended_by = EndedBy, replay_url = ReplayUrl, match_id = MatchId, winner_id = WinnerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#game{id = Id, game_number = GameNumber, winner_side = WinnerSide, complexity_score = ComplexityScore, turns_played = TurnsPlayed, duration_seconds = DurationSeconds, ended_by = EndedBy, replay_url = ReplayUrl, match_id = MatchId, winner_id = WinnerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"game_number">> => GameNumber,
         <<"winner_side">> => WinnerSide,
+        <<"complexity_score">> => ComplexityScore,
         <<"turns_played">> => TurnsPlayed,
         <<"duration_seconds">> => DurationSeconds,
         <<"ended_by">> => EndedBy,

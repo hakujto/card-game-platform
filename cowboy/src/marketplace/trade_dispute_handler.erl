@@ -117,8 +117,14 @@ escalate_behavior(_Record) ->
 handle_resolve(Req0, State) ->
     {ok, Body, Req1} = cowboy_req:read_body(Req0),
     Params = jsone:decode(Body, [{object_format, map}]),
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req1, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for resolve">>}), Req1), {stop, Req1, State};
+        true  ->
     _ = resolve_behavior(State, Params),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req1), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req1), State}
+    end.
 
 resolve_behavior(_Record, _Params) ->
     %% TODO: implement resolve(resolution_text)

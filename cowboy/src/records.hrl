@@ -1,6 +1,7 @@
 %% Mnesia table: cards
 -record(card, {
     id         :: integer(),
+    public_id  :: binary(),
     name       :: binary(),
     card_type  :: atom(),
     rarity     :: atom(),
@@ -17,9 +18,21 @@
     is_banned  :: boolean(),
     is_restricted :: boolean(),
     power_level :: integer(),
+    metadata   :: binary() | undefined,
+    total_copies_in_circulation :: integer(),
     set_id     :: binary(),
     created_at :: binary(),
     updated_at :: binary()
+}).
+
+%% Mnesia table: card_audit_logs
+-record(card_audit_log, {
+    id         :: integer(),
+    record_id  :: integer(),
+    action     :: binary(),
+    actor      :: binary() | undefined,
+    changes    :: binary(),
+    inserted_at :: binary()
 }).
 
 %% Mnesia table: card_sets
@@ -103,6 +116,7 @@
 -record(deck_tag, {
     id         :: integer(),
     name       :: binary(),
+    slug       :: binary() | undefined,
     color      :: binary() | undefined,
     created_at :: binary(),
     updated_at :: binary()
@@ -120,6 +134,7 @@
 %% Mnesia table: players
 -record(player, {
     id         :: integer(),
+    public_id  :: binary(),
     display_name :: binary(),
     rank       :: atom(),
     rating     :: integer(),
@@ -128,6 +143,8 @@
     country_code :: binary() | undefined,
     avatar_url :: binary() | undefined,
     preferred_format :: atom() | undefined,
+    contact_email :: binary() | undefined,
+    win_rate_cached :: float() | undefined,
     is_verified :: boolean(),
     last_active_at :: binary() | undefined,
     user_id    :: binary(),
@@ -235,9 +252,11 @@
 %% Mnesia table: tournaments
 -record(tournament, {
     id         :: integer(),
+    public_id  :: binary(),
     name       :: binary(),
     description :: binary() | undefined,
     status     :: atom(),
+    bracket_data :: binary() | undefined,
     format     :: atom(),
     tournament_type :: atom(),
     max_players :: integer(),
@@ -252,6 +271,16 @@
     organizer_id :: binary(),
     created_at :: binary(),
     updated_at :: binary()
+}).
+
+%% Mnesia table: tournament_audit_logs
+-record(tournament_audit_log, {
+    id         :: integer(),
+    record_id  :: integer(),
+    action     :: binary(),
+    actor      :: binary() | undefined,
+    changes    :: binary(),
+    inserted_at :: binary()
 }).
 
 %% Mnesia table: tournament_judges
@@ -314,6 +343,7 @@
     id         :: integer(),
     game_number :: integer(),
     winner_side :: atom() | undefined,
+    complexity_score :: float() | undefined,
     turns_played :: integer() | undefined,
     duration_seconds :: integer() | undefined,
     ended_by   :: atom() | undefined,
@@ -389,6 +419,16 @@
     updated_at :: binary()
 }).
 
+%% Mnesia table: order_audit_logs
+-record(order_audit_log, {
+    id         :: integer(),
+    record_id  :: integer(),
+    action     :: binary(),
+    actor      :: binary() | undefined,
+    changes    :: binary(),
+    inserted_at :: binary()
+}).
+
 %% Mnesia table: order_items
 -record(order_item, {
     id         :: integer(),
@@ -420,6 +460,7 @@
 %% Mnesia table: trade_listings
 -record(trade_listing, {
     id         :: integer(),
+    public_id  :: binary(),
     status     :: atom(),
     listing_type :: atom(),
     asking_price :: float() | undefined,
@@ -463,6 +504,16 @@
     updated_at :: binary()
 }).
 
+%% Mnesia table: trade_transaction_audit_logs
+-record(trade_transaction_audit_log, {
+    id         :: integer(),
+    record_id  :: integer(),
+    action     :: binary(),
+    actor      :: binary() | undefined,
+    changes    :: binary(),
+    inserted_at :: binary()
+}).
+
 %% Mnesia table: card_price_histories
 -record(card_price_history, {
     id         :: integer(),
@@ -498,6 +549,7 @@
     id         :: integer(),
     status     :: atom(),
     draft_type :: atom(),
+    pack_contents :: binary() | undefined,
     seats      :: integer(),
     time_per_pick_seconds :: integer(),
     completed_at :: binary() | undefined,
@@ -542,6 +594,7 @@
     language   :: atom(),
     view_count :: integer(),
     likes_count :: integer(),
+    total_views_alltime :: integer(),
     is_featured :: boolean(),
     published_at :: binary() | undefined,
     author_id  :: binary(),

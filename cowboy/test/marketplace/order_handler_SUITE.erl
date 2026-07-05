@@ -8,7 +8,7 @@ valid_params() ->
         <<"status">> => <<"Pending">>,
         <<"total">> => 0.0,
         <<"discount_applied">> => 0.0,
-        <<"currency">> => <<"test">>,
+        <<"currency">> => <<"AAA">>,
         <<"created_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"player_id">> => <<"owner-1">>
     }.

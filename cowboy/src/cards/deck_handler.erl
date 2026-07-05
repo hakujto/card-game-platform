@@ -116,9 +116,6 @@ merge_record(Record, Params) ->
         is_public  = maps:get(<<"is_public">>, Params, Record#deck.is_public),
         is_tournament_legal = maps:get(<<"is_tournament_legal">>, Params, Record#deck.is_tournament_legal),
         archetype  = maps:get(<<"archetype">>, Params, Record#deck.archetype),
-        wins       = maps:get(<<"wins">>, Params, Record#deck.wins),
-        losses     = maps:get(<<"losses">>, Params, Record#deck.losses),
-        draws      = maps:get(<<"draws">>, Params, Record#deck.draws),
         player_id  = maps:get(<<"player_id">>, Params, Record#deck.player_id),
         created_at = Record#deck.created_at,
         updated_at = iso_now()

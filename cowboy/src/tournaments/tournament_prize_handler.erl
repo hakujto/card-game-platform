@@ -50,13 +50,14 @@ handle_post(Req0, State) ->
     {ok, Body, Req1} = cowboy_req:read_body(Req0),
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_tournament_prize_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_tournament_prize_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = tournament_prize_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = tournament_prize_store:insert(Record),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end
+    end end
 .
 
 handle_put(Req0, State) ->
@@ -148,6 +149,17 @@ validate_tournament_prize_rules(M) ->
         fun() -> case (to_number(maps:get(<<"placement_to">>, M, undefined)) >= to_number(maps:get(<<"placement_from">>, M, undefined))) of false -> {true, <<"placement_to must be greater than or equal to placement_from">>}; _ -> false end end,
         fun() -> case (to_number(maps:get(<<"placement_from">>, M, undefined)) > 0) of false -> {true, <<"placement_from must be greater than zero">>}; _ -> false end end,
         fun() -> case (to_number(maps:get(<<"amount">>, M, undefined)) >= 0) of false -> {true, <<"Prize amount must not be negative">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_tournament_prize_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"placement_from">>, M, undefined) of V when is_number(V), V < 1 -> {true, <<"placement_from must be >= 1">>}; _ -> false end end,
+        fun() -> case maps:get(<<"placement_to">>, M, undefined) of V when is_number(V), V < 1 -> {true, <<"placement_to must be >= 1">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

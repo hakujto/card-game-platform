@@ -87,6 +87,7 @@ params_to_record(Id, Params) ->
     #deck_tag{
         id         = Id,
         name       = maps:get(<<"name">>, Params, undefined),
+        slug       = maps:get(<<"slug">>, Params, undefined),
         color      = maps:get(<<"color">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()
@@ -96,15 +97,17 @@ merge_record(Record, Params) ->
     #deck_tag{
         id         = Record#deck_tag.id,
         name       = maps:get(<<"name">>, Params, Record#deck_tag.name),
+        slug       = maps:get(<<"slug">>, Params, Record#deck_tag.slug),
         color      = maps:get(<<"color">>, Params, Record#deck_tag.color),
         created_at = Record#deck_tag.created_at,
         updated_at = iso_now()
     }.
 
-record_to_map(#deck_tag{id = Id, name = Name, color = Color, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#deck_tag{id = Id, name = Name, slug = Slug, color = Color, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"name">> => Name,
+        <<"slug">> => Slug,
         <<"color">> => Color,
         <<"created_at">> => CreatedAt,
         <<"updated_at">> => UpdatedAt

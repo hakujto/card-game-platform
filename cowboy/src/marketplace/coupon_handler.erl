@@ -35,6 +35,9 @@ resource_exists(Req, State) ->
 
 allow_missing_post(Req, State) -> {false, Req, State}.
 
+apply_projection(Map) ->
+    maps:remove(max_uses, maps:remove(uses_count, Map)).
+
 handle_get(Req, State) ->
     case cowboy_req:binding(id, Req) of
         undefined ->
@@ -42,10 +45,10 @@ handle_get(Req, State) ->
             Q  = proplists:get_value(<<"q">>, Qs, <<"">>),
             All = coupon_store:all(),
             Filtered = [R || R <- All, Q =:= <<"">> orelse binary:match(maps:get(code, R, <<"">>), Q) =/= nomatch],
-            Body = jsone:encode(Filtered),
+            Body = jsone:encode(lists:map(fun apply_projection/1, Filtered)),
             {Body, Req, State};
         _Id ->
-            Body = jsone:encode(State),
+            Body = jsone:encode(apply_projection(State)),
             {Body, Req, State}
     end.
 
@@ -54,13 +57,14 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_coupon_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_coupon_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_coupon_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = coupon_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = coupon_store:insert(Record),
-    Resp   = jsone:encode(record_to_map(Record)),
+    Resp   = jsone:encode(apply_projection(record_to_map(Record))),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 handle_put(Req0, State) ->
@@ -73,7 +77,7 @@ handle_put(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     Updated = merge_record(ExistingRecord, Params),
     ok = coupon_store:update(Updated),
-    Resp = jsone:encode(record_to_map(Updated)),
+    Resp = jsone:encode(apply_projection(record_to_map(Updated))),
     Req2 = cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, Updated}
     end.
@@ -158,6 +162,16 @@ validate_coupon_implies(M) ->
     Checks = [
         fun() -> case ((maps:get(<<"discount_type">>, M, undefined) =:= <<"Percent">>)) andalso not ((to_number(maps:get(<<"discount_value">>, M, undefined)) >= 1 andalso to_number(maps:get(<<"discount_value">>, M, undefined)) =< 100)) of true -> {true, <<"Percent discount must be between 1 and 100">>}; _ -> false end end,
         fun() -> case ((maps:get(<<"max_uses">>, M, undefined) =/= undefined andalso maps:get(<<"max_uses">>, M, undefined) =/= null)) andalso not ((to_number(maps:get(<<"uses_count">>, M, undefined)) =< to_number(maps:get(<<"max_uses">>, M, undefined)))) of true -> {true, <<"Coupon uses count cannot exceed max_uses">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_coupon_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"discount_value">>, M, undefined) of V when is_number(V), V < 0.01 -> {true, <<"discount_value must be >= 0.01">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

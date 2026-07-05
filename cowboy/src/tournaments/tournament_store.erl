@@ -50,12 +50,14 @@ find_by_organizer_id(FKId) ->
     {atomic, Records} = mnesia:transaction(F),
     [record_to_map(R) || R <- Records].
 
-record_to_map(#tournament{id = Id, name = Name, description = Description, status = Status, format = Format, tournament_type = TournamentType, max_players = MaxPlayers, entry_fee = EntryFee, prize_pool = PrizePool, start_time = StartTime, end_time = EndTime, is_online = IsOnline, location = Location, rules_text = RulesText, season_id = SeasonId, organizer_id = OrganizerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#tournament{id = Id, public_id = PublicId, name = Name, description = Description, status = Status, bracket_data = BracketData, format = Format, tournament_type = TournamentType, max_players = MaxPlayers, entry_fee = EntryFee, prize_pool = PrizePool, start_time = StartTime, end_time = EndTime, is_online = IsOnline, location = Location, rules_text = RulesText, season_id = SeasonId, organizer_id = OrganizerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"name">> => Name,
         <<"description">> => Description,
         <<"status">> => Status,
+        <<"bracket_data">> => BracketData,
         <<"format">> => Format,
         <<"tournament_type">> => TournamentType,
         <<"max_players">> => MaxPlayers,

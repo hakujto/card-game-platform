@@ -50,7 +50,7 @@ find_by_featured_deck_id(FKId) ->
     {atomic, Records} = mnesia:transaction(F),
     [record_to_map(R) || R <- Records].
 
-record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt = Excerpt, cover_image_url = CoverImageUrl, status = Status, article_type = ArticleType, language = Language, view_count = ViewCount, likes_count = LikesCount, is_featured = IsFeatured, published_at = PublishedAt, author_id = AuthorId, featured_deck_id = FeaturedDeckId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt = Excerpt, cover_image_url = CoverImageUrl, status = Status, article_type = ArticleType, language = Language, view_count = ViewCount, likes_count = LikesCount, total_views_alltime = TotalViewsAlltime, is_featured = IsFeatured, published_at = PublishedAt, author_id = AuthorId, featured_deck_id = FeaturedDeckId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"title">> => Title,
@@ -63,6 +63,7 @@ record_to_map(#article{id = Id, title = Title, slug = Slug, body = Body, excerpt
         <<"language">> => Language,
         <<"view_count">> => ViewCount,
         <<"likes_count">> => LikesCount,
+        <<"total_views_alltime">> => TotalViewsAlltime,
         <<"is_featured">> => IsFeatured,
         <<"published_at">> => PublishedAt,
         <<"author_id">> => AuthorId,

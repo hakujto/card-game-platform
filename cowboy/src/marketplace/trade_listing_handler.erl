@@ -56,6 +56,7 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_trade_listing_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_trade_listing_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_trade_listing_required_when(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = trade_listing_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = trade_listing_store:insert(Record),
@@ -63,7 +64,7 @@ handle_post(Req0, State) ->
     Resp   = jsone:encode(apply_projection(record_to_map(Record))),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 handle_put(Req0, State) ->
@@ -87,6 +88,7 @@ handle_patch(Req0, State) -> handle_put(Req0, State).
 params_to_record(Id, Params) ->
     #trade_listing{
         id         = Id,
+        public_id  = maps:get(<<"public_id">>, Params, undefined),
         status     = maps:get(<<"status">>, Params, <<"Active">>),
         listing_type = maps:get(<<"listing_type">>, Params, <<"FixedPrice">>),
         asking_price = maps:get(<<"asking_price">>, Params, undefined),
@@ -107,7 +109,7 @@ params_to_record(Id, Params) ->
 merge_record(Record, Params) ->
     #trade_listing{
         id         = Record#trade_listing.id,
-        status     = maps:get(<<"status">>, Params, Record#trade_listing.status),
+        public_id  = maps:get(<<"public_id">>, Params, Record#trade_listing.public_id),
         listing_type = maps:get(<<"listing_type">>, Params, Record#trade_listing.listing_type),
         asking_price = maps:get(<<"asking_price">>, Params, Record#trade_listing.asking_price),
         auction_start_price = maps:get(<<"auction_start_price">>, Params, Record#trade_listing.auction_start_price),
@@ -124,9 +126,10 @@ merge_record(Record, Params) ->
         updated_at = iso_now()
     }.
 
-record_to_map(#trade_listing{id = Id, status = Status, listing_type = ListingType, asking_price = AskingPrice, auction_start_price = AuctionStartPrice, auction_current_bid = AuctionCurrentBid, auction_end_time = AuctionEndTime, foil = Foil, condition = Condition, quantity = Quantity, description = Description, expires_at = ExpiresAt, seller_id = SellerId, card_id = CardId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#trade_listing{id = Id, public_id = PublicId, status = Status, listing_type = ListingType, asking_price = AskingPrice, auction_start_price = AuctionStartPrice, auction_current_bid = AuctionCurrentBid, auction_end_time = AuctionEndTime, foil = Foil, condition = Condition, quantity = Quantity, description = Description, expires_at = ExpiresAt, seller_id = SellerId, card_id = CardId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"status">> => Status,
         <<"listing_type">> => ListingType,
         <<"asking_price">> => AskingPrice,
@@ -180,6 +183,16 @@ validate_trade_listing_implies(M) ->
         _  -> {error, Errors}
     end.
 
+validate_trade_listing_required_when(M) ->
+    Checks = [
+        fun() -> case (maps:get(<<"listing_type">>, M, undefined) =:= <<"FixedPrice">>) andalso maps:get(<<"asking_price">>, M, undefined) =:= undefined of true -> {true, <<"asking_price is required">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
 %% ── Behavior endpoints ──────────────────────────────────────────────
 handle_close(Req, State) ->
     _ = close_behavior(State),
@@ -225,8 +238,14 @@ is_expired_behavior(_Record) ->
     null.
 
 handle_finalize_auction(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"seller">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for finalize_auction">>}), Req), {stop, Req, State};
+        true  ->
     _ = finalize_auction_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 finalize_auction_behavior(_Record) ->
     %% TODO: implement finalize_auction

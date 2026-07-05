@@ -5,6 +5,7 @@
 
 valid_params() ->
     #{
+        <<"public_id">> => <<"00000000-0000-0000-0000-000000000001">>,
         <<"status">> => <<"Active">>,
         <<"listing_type">> => <<"FixedPrice">>,
         <<"asking_price">> => 1,

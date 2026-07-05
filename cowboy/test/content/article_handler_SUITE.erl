@@ -13,11 +13,15 @@ valid_params() ->
         <<"language">> => <<"EN">>,
         <<"view_count">> => 1,
         <<"likes_count">> => 1,
+        <<"total_views_alltime">> => 1,
         <<"is_featured">> => true,
         <<"created_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"updated_at">> => <<"2024-01-01T00:00:00Z">>,
         <<"author_id">> => 1
     }.
+
+patch_params() ->
+    #{<<"excerpt">> => <<"test">>}.
 
 setup_suite() ->
     application:ensure_all_started(cards_project),
@@ -64,7 +68,7 @@ update_article() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    PatchBody = jsone:encode(valid_params()),
+    PatchBody = jsone:encode(patch_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(put,
         {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).

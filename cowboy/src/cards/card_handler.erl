@@ -1,7 +1,7 @@
 -module(card_handler).
 -behaviour(cowboy_rest).
 
--export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_ban/2, handle_unban/2, handle_restrict/2, handle_unrestrict/2, handle_calculate_value/2, handle_apply_rarity_bonus/2, handle_is_legal_in_format/2]).
+-export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_ban/2, handle_unban/2, handle_restrict/2, handle_unrestrict/2, handle_replace/2, handle_calculate_value/2, handle_apply_rarity_bonus/2, handle_is_legal_in_format/2]).
 
 -include("records.hrl").
 
@@ -54,14 +54,17 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_card_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_card_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_card_required_when(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_card_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = card_store:next_id(),
     Record = params_to_record(Id, Params),
     Record1 = validate_legality_hook(Record),
     ok     = card_store:insert(Record1),
+    write_card_audit_log(Record, <<"create">>),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end end
 .
 
 handle_put(Req0, State) ->
@@ -75,6 +78,7 @@ handle_put(Req0, State) ->
     Updated = merge_record(ExistingRecord, Params),
     Updated1 = validate_legality_hook(Updated),
     ok = card_store:update(Updated1),
+    write_card_audit_log(Updated, <<"update">>),
     Resp = jsone:encode(record_to_map(Updated)),
     Req2 = cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, Updated}
@@ -85,6 +89,7 @@ handle_patch(Req0, State) -> handle_put(Req0, State).
 params_to_record(Id, Params) ->
     #card{
         id         = Id,
+        public_id  = maps:get(<<"public_id">>, Params, undefined),
         name       = maps:get(<<"name">>, Params, undefined),
         card_type  = maps:get(<<"card_type">>, Params, <<"Creature">>),
         rarity     = maps:get(<<"rarity">>, Params, <<"Common">>),
@@ -101,6 +106,8 @@ params_to_record(Id, Params) ->
         is_banned  = maps:get(<<"is_banned">>, Params, false),
         is_restricted = maps:get(<<"is_restricted">>, Params, false),
         power_level = maps:get(<<"power_level">>, Params, 1),
+        metadata   = maps:get(<<"metadata">>, Params, undefined),
+        total_copies_in_circulation = maps:get(<<"total_copies_in_circulation">>, Params, 0),
         set_id     = maps:get(<<"set_id">>, Params, undefined),
         created_at = iso_now(),
         updated_at = iso_now()
@@ -109,6 +116,7 @@ params_to_record(Id, Params) ->
 merge_record(Record, Params) ->
     #card{
         id         = Record#card.id,
+        public_id  = maps:get(<<"public_id">>, Params, Record#card.public_id),
         name       = maps:get(<<"name">>, Params, Record#card.name),
         card_type  = maps:get(<<"card_type">>, Params, Record#card.card_type),
         rarity     = maps:get(<<"rarity">>, Params, Record#card.rarity),
@@ -122,17 +130,18 @@ merge_record(Record, Params) ->
         image_url  = maps:get(<<"image_url">>, Params, Record#card.image_url),
         artist_name = maps:get(<<"artist_name">>, Params, Record#card.artist_name),
         legal_formats = maps:get(<<"legal_formats">>, Params, Record#card.legal_formats),
-        is_banned  = maps:get(<<"is_banned">>, Params, Record#card.is_banned),
-        is_restricted = maps:get(<<"is_restricted">>, Params, Record#card.is_restricted),
         power_level = maps:get(<<"power_level">>, Params, Record#card.power_level),
+        metadata   = maps:get(<<"metadata">>, Params, Record#card.metadata),
+        total_copies_in_circulation = maps:get(<<"total_copies_in_circulation">>, Params, Record#card.total_copies_in_circulation),
         set_id     = maps:get(<<"set_id">>, Params, Record#card.set_id),
         created_at = Record#card.created_at,
         updated_at = iso_now()
     }.
 
-record_to_map(#card{id = Id, name = Name, card_type = CardType, rarity = Rarity, mana_cost = ManaCost, mana_colors = ManaColors, attack = Attack, defense = Defense, loyalty = Loyalty, description = Description, flavor_text = FlavorText, image_url = ImageUrl, artist_name = ArtistName, legal_formats = LegalFormats, is_banned = IsBanned, is_restricted = IsRestricted, power_level = PowerLevel, set_id = SetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#card{id = Id, public_id = PublicId, name = Name, card_type = CardType, rarity = Rarity, mana_cost = ManaCost, mana_colors = ManaColors, attack = Attack, defense = Defense, loyalty = Loyalty, description = Description, flavor_text = FlavorText, image_url = ImageUrl, artist_name = ArtistName, legal_formats = LegalFormats, is_banned = IsBanned, is_restricted = IsRestricted, power_level = PowerLevel, metadata = Metadata, total_copies_in_circulation = TotalCopiesInCirculation, set_id = SetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"name">> => Name,
         <<"card_type">> => CardType,
         <<"rarity">> => Rarity,
@@ -149,6 +158,8 @@ record_to_map(#card{id = Id, name = Name, card_type = CardType, rarity = Rarity,
         <<"is_banned">> => IsBanned,
         <<"is_restricted">> => IsRestricted,
         <<"power_level">> => PowerLevel,
+        <<"metadata">> => Metadata,
+        <<"total_copies_in_circulation">> => TotalCopiesInCirculation,
         <<"set_id">> => SetId,
         <<"created_at">> => CreatedAt,
         <<"updated_at">> => UpdatedAt
@@ -162,6 +173,21 @@ reply_422(Req, Errors, State) ->
     Body = jsone:encode(#{<<"errors">> => Errors}),
     Req2 = cowboy_req:reply(422, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req2, State}.
+
+%% ── Audit log ───────────────────────────────────────────────────────
+write_card_audit_log(Record, Action) ->
+    AuditId = erlang:unique_integer([positive]),
+    AuditRecord = #card_audit_log{
+        id         = AuditId,
+        record_id  = maps:get(<<"id">>, record_to_map(Record), undefined),
+        action     = Action,
+        actor      = undefined,
+        changes    = jsone:encode(record_to_map(Record)),
+        inserted_at = iso_now()
+    },
+    F = fun() -> mnesia:write(AuditRecord) end,
+    {atomic, ok} = mnesia:transaction(F),
+    ok.
 
 %% ── Lifecycle hooks ──────────────────────────────────────────────────
 validate_legality_hook(Record) ->
@@ -200,38 +226,104 @@ validate_card_implies(M) ->
         _  -> {error, Errors}
     end.
 
+validate_card_required_when(M) ->
+    Checks = [
+        fun() -> case (maps:get(<<"card_type">>, M, undefined) =:= <<"Creature">>) andalso maps:get(<<"attack">>, M, undefined) =:= undefined of true -> {true, <<"attack is required">>}; _ -> false end end,
+        fun() -> case (maps:get(<<"card_type">>, M, undefined) =:= <<"Creature">>) andalso maps:get(<<"defense">>, M, undefined) =:= undefined of true -> {true, <<"defense is required">>}; _ -> false end end,
+        fun() -> case (maps:get(<<"card_type">>, M, undefined) =:= <<"Planeswalker">>) andalso maps:get(<<"loyalty">>, M, undefined) =:= undefined of true -> {true, <<"loyalty is required">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_card_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"mana_cost">>, M, undefined) of V when is_number(V), V < 0 -> {true, <<"mana_cost must be >= 0">>}; _ -> false end end,
+        fun() -> case maps:get(<<"mana_cost">>, M, undefined) of V when is_number(V), V > 20 -> {true, <<"mana_cost must be <= 20">>}; _ -> false end end,
+        fun() -> case maps:get(<<"power_level">>, M, undefined) of V when is_number(V), V < 1 -> {true, <<"power_level must be >= 1">>}; _ -> false end end,
+        fun() -> case maps:get(<<"power_level">>, M, undefined) of V when is_number(V), V > 10 -> {true, <<"power_level must be <= 10">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
 %% ── Behavior endpoints ──────────────────────────────────────────────
 handle_ban(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for ban">>}), Req), {stop, Req, State};
+        true  ->
     _ = ban_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 ban_behavior(_Record) ->
     %% TODO: implement ban
     ok.
 
 handle_unban(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for unban">>}), Req), {stop, Req, State};
+        true  ->
     _ = unban_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 unban_behavior(_Record) ->
     %% TODO: implement unban
     ok.
 
 handle_restrict(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for restrict">>}), Req), {stop, Req, State};
+        true  ->
     _ = restrict_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 restrict_behavior(_Record) ->
     %% TODO: implement restrict
     ok.
 
 handle_unrestrict(Req, State) ->
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req, undefined),
+    case lists:member(UserRole, [<<"admin">>, <<"moderator">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for unrestrict">>}), Req), {stop, Req, State};
+        true  ->
     _ = unrestrict_behavior(State),
-    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}.
+    {true, cowboy_req:reply(204, #{}, <<>>, Req), State}
+    end.
 
 unrestrict_behavior(_Record) ->
     %% TODO: implement unrestrict
     ok.
+
+handle_replace(Req0, State) ->
+    {ok, Body, Req1} = cowboy_req:read_body(Req0),
+    Params = jsone:decode(Body, [{object_format, map}]),
+    UserRole = cowboy_req:header(<<"x-user-role">>, Req1, undefined),
+    case lists:member(UserRole, [<<"admin">>]) of
+        false -> cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>},
+            jsone:encode(#{<<"error">> => <<"Insufficient role for replace">>}), Req1), {stop, Req1, State};
+        true  ->
+    Result = replace_behavior(State, Params),
+    Resp = jsone:encode(#{<<"result">> => Result}),
+    {true, cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1), State}
+    end.
+
+replace_behavior(_Record, _Params) ->
+    %% TODO: implement replace(data)
+    null.
 
 handle_calculate_value(Req, State) ->
     Result = calculate_value_behavior(State),

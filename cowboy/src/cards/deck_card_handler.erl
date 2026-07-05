@@ -50,13 +50,14 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_deck_card_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_deck_card_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_deck_card_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = deck_card_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = deck_card_store:insert(Record),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 handle_put(Req0, State) ->
@@ -144,6 +145,17 @@ validate_deck_card_rules(M) ->
 validate_deck_card_implies(M) ->
     Checks = [
         fun() -> case ((maps:get(<<"is_commander">>, M, undefined) =:= true)) andalso not ((maps:get(<<"quantity">>, M, undefined) =:= 1)) of true -> {true, <<"Commander card must appear exactly once in the deck">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_deck_card_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"quantity">>, M, undefined) of V when is_number(V), V < 1 -> {true, <<"quantity must be >= 1">>}; _ -> false end end,
+        fun() -> case maps:get(<<"quantity">>, M, undefined) of V when is_number(V), V > 4 -> {true, <<"quantity must be <= 4">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

@@ -4,6 +4,7 @@
 -export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, handle_cancel/2, handle_pay/2, handle_process_payment/2, handle_calculate_total/2, handle_apply_discount/2, handle_refund/2, handle_transition_pending_to_paid/2, handle_transition_paid_to_processing/2, handle_transition_processing_to_shipped/2, handle_transition_shipped_to_completed/2, handle_transition_pending_to_cancelled/2, handle_transition_paid_to_cancelled/2, handle_transition_completed_to_refunded/2, handle_transition_refunded_to_completed/2, handle_transition_completed_to_cancelled/2]).
 
 -include("records.hrl").
+-include("marketplace_events.hrl").
 
 init(Req, State) ->
     {cowboy_rest, Req, State}.
@@ -28,7 +29,7 @@ resource_exists(Req, State) ->
     end.
 
 apply_projection(Map) ->
-    (fun(M) -> maps:put(shipped_at, maps:get(shipped_at, M, undefined), maps:remove(shipped_at, M)) end)((fun(M) -> maps:put(paid_at, maps:get(paid_at, M, undefined), maps:remove(paid_at, M)) end)((fun(M) -> maps:put(created_at, maps:get(created_at, M, undefined), maps:remove(created_at, M)) end)(Map))).
+    (fun(M) -> maps:put(shipped_at, maps:get(shipped_at, M, undefined), maps:remove(shipped_at, M)) end)((fun(M) -> maps:put(paid_at, maps:get(paid_at, M, undefined), maps:remove(paid_at, M)) end)((fun(M) -> maps:put(created_at, maps:get(created_at, M, undefined), maps:remove(created_at, M)) end)(maps:remove(payment_reference, Map)))).
 
 handle_get(Req, State) ->
     case cowboy_req:binding(id, Req) of
@@ -39,7 +40,7 @@ handle_get(Req, State) ->
         _Id ->
             UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
             OwnerId = maps:get(<<"player_id">>, State, undefined),
-            case UserId =:= OwnerId of
+            case UserId =:= (if is_integer(OwnerId) -> integer_to_binary(OwnerId); true -> OwnerId end) of
                 false ->
                     Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
                     {stop, Req2, State};
@@ -54,14 +55,21 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_order_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_order_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_order_required_when(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_order_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = order_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = order_store:insert(Record),
     check_on_notify_shipped(record_to_map(Record)),
+    RecordMap = record_to_map(Record),
+    catch gen_event:notify(event_bus, #orderpaid{order_id = maps:get(<<"order_id">>, RecordMap, undefined), player_id = maps:get(<<"player_id">>, RecordMap, undefined), total = maps:get(<<"total">>, RecordMap, undefined), payment_method = maps:get(<<"payment_method">>, RecordMap, undefined), paid_at = maps:get(<<"paid_at">>, RecordMap, undefined)}),
+    catch gen_event:notify(event_bus, #ordershipped{order_id = maps:get(<<"order_id">>, RecordMap, undefined), tracking_number = maps:get(<<"tracking_number">>, RecordMap, undefined), shipped_at = maps:get(<<"shipped_at">>, RecordMap, undefined)}),
+    catch gen_event:notify(event_bus, #orderrefunded{order_id = maps:get(<<"order_id">>, RecordMap, undefined), refunded_at = maps:get(<<"refunded_at">>, RecordMap, undefined)}),
+    write_order_audit_log(Record, <<"create">>),
     Resp   = jsone:encode(apply_projection(record_to_map(Record))),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end end
 .
 
 params_to_record(Id, Params) ->
@@ -111,6 +119,21 @@ reply_422(Req, Errors, State) ->
     Req2 = cowboy_req:reply(422, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req2, State}.
 
+%% ── Audit log ───────────────────────────────────────────────────────
+write_order_audit_log(Record, Action) ->
+    AuditId = erlang:unique_integer([positive]),
+    AuditRecord = #order_audit_log{
+        id         = AuditId,
+        record_id  = maps:get(<<"id">>, record_to_map(Record), undefined),
+        action     = Action,
+        actor      = undefined,
+        changes    = jsone:encode(record_to_map(Record)),
+        inserted_at = iso_now()
+    },
+    F = fun() -> mnesia:write(AuditRecord) end,
+    {atomic, ok} = mnesia:transaction(F),
+    ok.
+
 to_number(V) when is_integer(V) -> float(V);
 to_number(V) when is_float(V)   -> V;
 to_number(V) when is_binary(V)  ->
@@ -133,6 +156,27 @@ validate_order_implies(M) ->
         fun() -> case ((maps:get(<<"status">>, M, undefined) =:= <<"Paid">>)) andalso not ((maps:get(<<"paid_at">>, M, undefined) =/= undefined andalso maps:get(<<"paid_at">>, M, undefined) =/= null)) of true -> {true, <<"Paid order must have paid_at set">>}; _ -> false end end,
         fun() -> case ((maps:get(<<"status">>, M, undefined) =:= <<"Shipped">>)) andalso not ((maps:get(<<"tracking_number">>, M, undefined) =/= undefined andalso maps:get(<<"tracking_number">>, M, undefined) =/= null)) of true -> {true, <<"Shipped order must have a tracking number">>}; _ -> false end end,
         fun() -> case ((maps:get(<<"shipped_at">>, M, undefined) =/= undefined andalso maps:get(<<"shipped_at">>, M, undefined) =/= null)) andalso not ((maps:get(<<"status">>, M, undefined) =:= <<"Shipped">>)) of true -> {true, <<"shipped_at_requires_shipped_status">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_order_required_when(M) ->
+    Checks = [
+        fun() -> case (maps:get(<<"status">>, M, undefined) =:= <<"Shipped">>) andalso maps:get(<<"tracking_number">>, M, undefined) =:= undefined of true -> {true, <<"tracking_number is required">>}; _ -> false end end,
+        fun() -> case (maps:get(<<"status">>, M, undefined) =:= <<"Paid">>) andalso maps:get(<<"paid_at">>, M, undefined) =:= undefined of true -> {true, <<"paid_at is required">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_order_fields(M) ->
+    Checks = [
+        fun() -> case re:run(maps:get(<<"currency">>, M, undefined), <<"[A-Z]{3}">>) of nomatch -> {true, <<"currency does not match pattern">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

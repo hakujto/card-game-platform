@@ -4,6 +4,7 @@
 -export([init/2, allowed_methods/2, content_types_provided/2, content_types_accepted/2, resource_exists/2, handle_get/2, handle_post/2, allow_missing_post/2, handle_put/2, handle_patch/2, handle_start/2, handle_cancel/2, handle_complete/2, handle_generate_round/2, handle_calculate_prize_distribution/2, handle_register_player/2, handle_is_full/2, handle_transition_draft_to_registration/2, handle_transition_registration_to_ongoing/2, handle_transition_registration_to_cancelled/2, handle_transition_ongoing_to_completed/2, handle_transition_ongoing_to_cancelled/2, handle_transition_completed_to_draft/2, handle_transition_cancelled_to_draft/2]).
 
 -include("records.hrl").
+-include("tournaments_events.hrl").
 
 init(Req, State) ->
     {cowboy_rest, Req, State}.
@@ -57,13 +58,18 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_tournament_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_tournament_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_tournament_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = tournament_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = tournament_store:insert(Record),
+    RecordMap = record_to_map(Record),
+    catch gen_event:notify(event_bus, #tournamentcompleted{tournament_id = maps:get(<<"tournament_id">>, RecordMap, undefined), season_id = maps:get(<<"season_id">>, RecordMap, undefined), completed_at = maps:get(<<"completed_at">>, RecordMap, undefined)}),
+    catch gen_event:notify(event_bus, #playerregistered{tournament_id = maps:get(<<"tournament_id">>, RecordMap, undefined), player_id = maps:get(<<"player_id">>, RecordMap, undefined), registered_at = maps:get(<<"registered_at">>, RecordMap, undefined)}),
+    write_tournament_audit_log(Record, <<"create">>),
     Resp   = jsone:encode(apply_projection(record_to_map(Record))),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 handle_put(Req0, State) ->
@@ -77,6 +83,10 @@ handle_put(Req0, State) ->
     Updated = merge_record(ExistingRecord, Params),
     ok = tournament_store:update(Updated),
     sync_season_stats_hook(Updated),
+    UpdatedMap = record_to_map(Updated),
+    catch gen_event:notify(event_bus, #tournamentcompleted{tournament_id = maps:get(<<"tournament_id">>, UpdatedMap, undefined), season_id = maps:get(<<"season_id">>, UpdatedMap, undefined), completed_at = maps:get(<<"completed_at">>, UpdatedMap, undefined)}),
+    catch gen_event:notify(event_bus, #playerregistered{tournament_id = maps:get(<<"tournament_id">>, UpdatedMap, undefined), player_id = maps:get(<<"player_id">>, UpdatedMap, undefined), registered_at = maps:get(<<"registered_at">>, UpdatedMap, undefined)}),
+    write_tournament_audit_log(Updated, <<"update">>),
     Resp = jsone:encode(apply_projection(record_to_map(Updated))),
     Req2 = cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, Updated}
@@ -87,9 +97,11 @@ handle_patch(Req0, State) -> handle_put(Req0, State).
 params_to_record(Id, Params) ->
     #tournament{
         id         = Id,
+        public_id  = maps:get(<<"public_id">>, Params, undefined),
         name       = maps:get(<<"name">>, Params, undefined),
         description = maps:get(<<"description">>, Params, undefined),
         status     = maps:get(<<"status">>, Params, <<"Draft">>),
+        bracket_data = maps:get(<<"bracket_data">>, Params, undefined),
         format     = maps:get(<<"format">>, Params, <<"Standard">>),
         tournament_type = maps:get(<<"tournament_type">>, Params, <<"Swiss">>),
         max_players = maps:get(<<"max_players">>, Params, undefined),
@@ -109,9 +121,10 @@ params_to_record(Id, Params) ->
 merge_record(Record, Params) ->
     #tournament{
         id         = Record#tournament.id,
+        public_id  = maps:get(<<"public_id">>, Params, Record#tournament.public_id),
         name       = maps:get(<<"name">>, Params, Record#tournament.name),
         description = maps:get(<<"description">>, Params, Record#tournament.description),
-        status     = maps:get(<<"status">>, Params, Record#tournament.status),
+        bracket_data = maps:get(<<"bracket_data">>, Params, Record#tournament.bracket_data),
         format     = maps:get(<<"format">>, Params, Record#tournament.format),
         tournament_type = maps:get(<<"tournament_type">>, Params, Record#tournament.tournament_type),
         max_players = maps:get(<<"max_players">>, Params, Record#tournament.max_players),
@@ -128,12 +141,14 @@ merge_record(Record, Params) ->
         updated_at = iso_now()
     }.
 
-record_to_map(#tournament{id = Id, name = Name, description = Description, status = Status, format = Format, tournament_type = TournamentType, max_players = MaxPlayers, entry_fee = EntryFee, prize_pool = PrizePool, start_time = StartTime, end_time = EndTime, is_online = IsOnline, location = Location, rules_text = RulesText, season_id = SeasonId, organizer_id = OrganizerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#tournament{id = Id, public_id = PublicId, name = Name, description = Description, status = Status, bracket_data = BracketData, format = Format, tournament_type = TournamentType, max_players = MaxPlayers, entry_fee = EntryFee, prize_pool = PrizePool, start_time = StartTime, end_time = EndTime, is_online = IsOnline, location = Location, rules_text = RulesText, season_id = SeasonId, organizer_id = OrganizerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"name">> => Name,
         <<"description">> => Description,
         <<"status">> => Status,
+        <<"bracket_data">> => BracketData,
         <<"format">> => Format,
         <<"tournament_type">> => TournamentType,
         <<"max_players">> => MaxPlayers,
@@ -158,6 +173,21 @@ reply_422(Req, Errors, State) ->
     Body = jsone:encode(#{<<"errors">> => Errors}),
     Req2 = cowboy_req:reply(422, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req2, State}.
+
+%% ── Audit log ───────────────────────────────────────────────────────
+write_tournament_audit_log(Record, Action) ->
+    AuditId = erlang:unique_integer([positive]),
+    AuditRecord = #tournament_audit_log{
+        id         = AuditId,
+        record_id  = maps:get(<<"id">>, record_to_map(Record), undefined),
+        action     = Action,
+        actor      = undefined,
+        changes    = jsone:encode(record_to_map(Record)),
+        inserted_at = iso_now()
+    },
+    F = fun() -> mnesia:write(AuditRecord) end,
+    {atomic, ok} = mnesia:transaction(F),
+    ok.
 
 %% ── Lifecycle hooks ──────────────────────────────────────────────────
 sync_season_stats_hook(Record) ->
@@ -185,6 +215,17 @@ validate_tournament_rules(M) ->
 validate_tournament_implies(M) ->
     Checks = [
         fun() -> case ((maps:get(<<"end_time">>, M, undefined) =/= undefined andalso maps:get(<<"end_time">>, M, undefined) =/= null)) andalso not ((maps:get(<<"end_time">>, M, undefined) > maps:get(<<"start_time">>, M, undefined))) of true -> {true, <<"End time must be after start time">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_tournament_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"max_players">>, M, undefined) of V when is_number(V), V < 2 -> {true, <<"max_players must be >= 2">>}; _ -> false end end,
+        fun() -> case maps:get(<<"max_players">>, M, undefined) of V when is_number(V), V > 512 -> {true, <<"max_players must be <= 512">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

@@ -40,9 +40,10 @@ delete(Id) ->
 next_id() ->
     mnesia:dirty_update_counter(id_seq, player, 1).
 
-record_to_map(#player{id = Id, display_name = DisplayName, rank = Rank, rating = Rating, peak_rating = PeakRating, bio = Bio, country_code = CountryCode, avatar_url = AvatarUrl, preferred_format = PreferredFormat, is_verified = IsVerified, last_active_at = LastActiveAt, user_id = UserId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#player{id = Id, public_id = PublicId, display_name = DisplayName, rank = Rank, rating = Rating, peak_rating = PeakRating, bio = Bio, country_code = CountryCode, avatar_url = AvatarUrl, preferred_format = PreferredFormat, contact_email = ContactEmail, win_rate_cached = WinRateCached, is_verified = IsVerified, last_active_at = LastActiveAt, user_id = UserId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"display_name">> => DisplayName,
         <<"rank">> => Rank,
         <<"rating">> => Rating,
@@ -51,6 +52,8 @@ record_to_map(#player{id = Id, display_name = DisplayName, rank = Rank, rating =
         <<"country_code">> => CountryCode,
         <<"avatar_url">> => AvatarUrl,
         <<"preferred_format">> => PreferredFormat,
+        <<"contact_email">> => ContactEmail,
+        <<"win_rate_cached">> => WinRateCached,
         <<"is_verified">> => IsVerified,
         <<"last_active_at">> => LastActiveAt,
         <<"user_id">> => UserId,

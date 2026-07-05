@@ -5,6 +5,7 @@
 
 valid_params() ->
     #{
+        <<"public_id">> => <<"00000000-0000-0000-0000-000000000001">>,
         <<"name">> => <<"test">>,
         <<"status">> => <<"Draft">>,
         <<"format">> => <<"Standard">>,
@@ -18,6 +19,9 @@ valid_params() ->
         <<"season_id">> => 1,
         <<"organizer_id">> => 1
     }.
+
+patch_params() ->
+    #{<<"description">> => <<"test">>}.
 
 setup_suite() ->
     application:ensure_all_started(cards_project),
@@ -64,7 +68,7 @@ update_tournament() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    PatchBody = jsone:encode(valid_params()),
+    PatchBody = jsone:encode(patch_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(put,
         {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).

@@ -5,6 +5,7 @@
 
 valid_params() ->
     #{
+        <<"public_id">> => <<"00000000-0000-0000-0000-000000000001">>,
         <<"name">> => <<"test">>,
         <<"card_type">> => <<"Creature">>,
         <<"rarity">> => <<"Common">>,
@@ -17,8 +18,12 @@ valid_params() ->
         <<"is_banned">> => false,
         <<"is_restricted">> => false,
         <<"power_level">> => 1,
+        <<"total_copies_in_circulation">> => 1,
         <<"set_id">> => 1
     }.
+
+patch_params() ->
+    #{<<"flavor_text">> => <<"test">>}.
 
 setup_suite() ->
     application:ensure_all_started(cards_project),
@@ -65,7 +70,7 @@ update_card() ->
         {?BASE_URL, [], "application/json", Body}, [], []),
     #{<<"id">> := Id} = jsone:decode(list_to_binary(RespBody)),
     Url = ?BASE_URL ++ "/" ++ integer_to_list(Id),
-    PatchBody = jsone:encode(valid_params()),
+    PatchBody = jsone:encode(patch_params()),
     {ok, {{_, Code, _}, _, _}} = httpc:request(put,
         {Url, [], "application/json", PatchBody}, [], []),
     ?assertEqual(200, Code).

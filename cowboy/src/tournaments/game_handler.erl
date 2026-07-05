@@ -43,13 +43,14 @@ handle_post(Req0, State) ->
     Params = jsone:decode(Body, [{object_format, map}]),
     case validate_game_rules(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     case validate_game_implies(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
+    case validate_game_fields(Params) of {error, Errs} -> reply_422(Req1, Errs, State); ok ->
     Id     = game_store:next_id(),
     Record = params_to_record(Id, Params),
     ok     = game_store:insert(Record),
     Resp   = jsone:encode(record_to_map(Record)),
     Req2   = cowboy_req:reply(201, #{<<"content-type">> => <<"application/json">>}, Resp, Req1),
     {stop, Req2, State}
-    end end
+    end end end
 .
 
 params_to_record(Id, Params) ->
@@ -57,6 +58,7 @@ params_to_record(Id, Params) ->
         id         = Id,
         game_number = maps:get(<<"game_number">>, Params, undefined),
         winner_side = maps:get(<<"winner_side">>, Params, undefined),
+        complexity_score = maps:get(<<"complexity_score">>, Params, undefined),
         turns_played = maps:get(<<"turns_played">>, Params, undefined),
         duration_seconds = maps:get(<<"duration_seconds">>, Params, undefined),
         ended_by   = maps:get(<<"ended_by">>, Params, undefined),
@@ -67,11 +69,12 @@ params_to_record(Id, Params) ->
         updated_at = iso_now()
     }.
 
-record_to_map(#game{id = Id, game_number = GameNumber, winner_side = WinnerSide, turns_played = TurnsPlayed, duration_seconds = DurationSeconds, ended_by = EndedBy, replay_url = ReplayUrl, match_id = MatchId, winner_id = WinnerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#game{id = Id, game_number = GameNumber, winner_side = WinnerSide, complexity_score = ComplexityScore, turns_played = TurnsPlayed, duration_seconds = DurationSeconds, ended_by = EndedBy, replay_url = ReplayUrl, match_id = MatchId, winner_id = WinnerId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"game_number">> => GameNumber,
         <<"winner_side">> => WinnerSide,
+        <<"complexity_score">> => ComplexityScore,
         <<"turns_played">> => TurnsPlayed,
         <<"duration_seconds">> => DurationSeconds,
         <<"ended_by">> => EndedBy,
@@ -113,6 +116,17 @@ validate_game_implies(M) ->
         fun() -> case ((maps:get(<<"duration_seconds">>, M, undefined) =/= undefined andalso maps:get(<<"duration_seconds">>, M, undefined) =/= null)) andalso not ((to_number(maps:get(<<"duration_seconds">>, M, undefined)) > 0)) of true -> {true, <<"Game duration must be greater than zero">>}; _ -> false end end,
         fun() -> case ((maps:get(<<"winner_side">>, M, undefined) =:= <<"Draw">>)) andalso not ((maps:get(<<"winner">>, M, undefined) =:= undefined orelse maps:get(<<"winner">>, M, undefined) =:= null)) of true -> {true, <<"A draw cannot have a winner">>}; _ -> false end end,
         fun() -> case (((maps:get(<<"winner_side">>, M, undefined) =/= undefined andalso maps:get(<<"winner_side">>, M, undefined) =/= null) andalso (maps:get(<<"winner_side">>, M, undefined) =/= <<"Draw">>))) andalso not ((maps:get(<<"winner">>, M, undefined) =/= undefined andalso maps:get(<<"winner">>, M, undefined) =/= null)) of true -> {true, <<"A decisive game must have a winner player set">>}; _ -> false end end
+    ],
+    Errors = lists:filtermap(fun(F) -> F() end, Checks),
+    case Errors of
+        [] -> ok;
+        _  -> {error, Errors}
+    end.
+
+validate_game_fields(M) ->
+    Checks = [
+        fun() -> case maps:get(<<"game_number">>, M, undefined) of V when is_number(V), V < 1 -> {true, <<"game_number must be >= 1">>}; _ -> false end end,
+        fun() -> case maps:get(<<"game_number">>, M, undefined) of V when is_number(V), V > 3 -> {true, <<"game_number must be <= 3">>}; _ -> false end end
     ],
     Errors = lists:filtermap(fun(F) -> F() end, Checks),
     case Errors of

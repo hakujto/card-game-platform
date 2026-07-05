@@ -5,7 +5,12 @@
 
 create_tables() ->
     case mnesia:create_table(card, [
-        {attributes, [id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, set_id, created_at, updated_at]},
+        {attributes, [id, public_id, name, card_type, rarity, mana_cost, mana_colors, attack, defense, loyalty, description, flavor_text, image_url, artist_name, legal_formats, is_banned, is_restricted, power_level, metadata, total_copies_in_circulation, set_id, created_at, updated_at]},
+        {ram_copies, [node()]},
+        {type, set}
+    ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
+    case mnesia:create_table(card_audit_log, [
+        {attributes, [id, record_id, action, actor, changes, inserted_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -40,7 +45,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(deck_tag, [
-        {attributes, [id, name, color, created_at, updated_at]},
+        {attributes, [id, name, slug, color, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -50,7 +55,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(player, [
-        {attributes, [id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, is_verified, last_active_at, user_id, created_at, updated_at]},
+        {attributes, [id, public_id, display_name, rank, rating, peak_rating, bio, country_code, avatar_url, preferred_format, contact_email, win_rate_cached, is_verified, last_active_at, user_id, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -95,7 +100,12 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(tournament, [
-        {attributes, [id, name, description, status, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, season_id, organizer_id, created_at, updated_at]},
+        {attributes, [id, public_id, name, description, status, bracket_data, format, tournament_type, max_players, entry_fee, prize_pool, start_time, end_time, is_online, location, rules_text, season_id, organizer_id, created_at, updated_at]},
+        {ram_copies, [node()]},
+        {type, set}
+    ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
+    case mnesia:create_table(tournament_audit_log, [
+        {attributes, [id, record_id, action, actor, changes, inserted_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -120,7 +130,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(game, [
-        {attributes, [id, game_number, winner_side, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id, created_at, updated_at]},
+        {attributes, [id, game_number, winner_side, complexity_score, turns_played, duration_seconds, ended_by, replay_url, match_id, winner_id, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -144,6 +154,11 @@ create_tables() ->
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
+    case mnesia:create_table(order_audit_log, [
+        {attributes, [id, record_id, action, actor, changes, inserted_at]},
+        {ram_copies, [node()]},
+        {type, set}
+    ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(order_item, [
         {attributes, [id, quantity, price_at_purchase, foil, order_id, product_id, created_at, updated_at]},
         {ram_copies, [node()]},
@@ -155,7 +170,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(trade_listing, [
-        {attributes, [id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, expires_at, seller_id, card_id, created_at, updated_at]},
+        {attributes, [id, public_id, status, listing_type, asking_price, auction_start_price, auction_current_bid, auction_end_time, foil, condition, quantity, description, expires_at, seller_id, card_id, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -166,6 +181,11 @@ create_tables() ->
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(trade_transaction, [
         {attributes, [id, final_price, platform_fee, status, completed_at, listing_id, buyer_id, seller_id, created_at, updated_at]},
+        {ram_copies, [node()]},
+        {type, set}
+    ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
+    case mnesia:create_table(trade_transaction_audit_log, [
+        {attributes, [id, record_id, action, actor, changes, inserted_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -180,7 +200,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(draft_session, [
-        {attributes, [id, status, draft_type, seats, time_per_pick_seconds, completed_at, card_set_id, created_at, updated_at]},
+        {attributes, [id, status, draft_type, pack_contents, seats, time_per_pick_seconds, completed_at, card_set_id, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -195,7 +215,7 @@ create_tables() ->
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
     case mnesia:create_table(article, [
-        {attributes, [id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, is_featured, published_at, author_id, featured_deck_id, created_at, updated_at]},
+        {attributes, [id, title, slug, body, excerpt, cover_image_url, status, article_type, language, view_count, likes_count, total_views_alltime, is_featured, published_at, author_id, featured_deck_id, created_at, updated_at]},
         {ram_copies, [node()]},
         {type, set}
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end,
@@ -226,9 +246,13 @@ create_tables() ->
     ]) of {atomic, ok} -> ok; {aborted, {already_exists, _}} -> ok end.
 
 create_unique_indexes() ->
+    mnesia:add_table_index(card, public_id),
     mnesia:add_table_index(card_set, code),
+    mnesia:add_table_index(player, public_id),
     mnesia:add_table_index(player, display_name),
+    mnesia:add_table_index(tournament, public_id),
     mnesia:add_table_index(coupon, code),
+    mnesia:add_table_index(trade_listing, public_id),
     mnesia:add_table_index(article, slug),
     mnesia:add_table_index(article_tag, slug),
     ok.

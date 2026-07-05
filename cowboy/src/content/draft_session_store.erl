@@ -45,11 +45,12 @@ find_by_card_set_id(FKId) ->
     {atomic, Records} = mnesia:transaction(F),
     [record_to_map(R) || R <- Records].
 
-record_to_map(#draft_session{id = Id, status = Status, draft_type = DraftType, seats = Seats, time_per_pick_seconds = TimePerPickSeconds, completed_at = CompletedAt, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#draft_session{id = Id, status = Status, draft_type = DraftType, pack_contents = PackContents, seats = Seats, time_per_pick_seconds = TimePerPickSeconds, completed_at = CompletedAt, card_set_id = CardSetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
         <<"status">> => Status,
         <<"draft_type">> => DraftType,
+        <<"pack_contents">> => PackContents,
         <<"seats">> => Seats,
         <<"time_per_pick_seconds">> => TimePerPickSeconds,
         <<"completed_at">> => CompletedAt,

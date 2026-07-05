@@ -45,9 +45,10 @@ find_by_set_id(FKId) ->
     {atomic, Records} = mnesia:transaction(F),
     [record_to_map(R) || R <- Records].
 
-record_to_map(#card{id = Id, name = Name, card_type = CardType, rarity = Rarity, mana_cost = ManaCost, mana_colors = ManaColors, attack = Attack, defense = Defense, loyalty = Loyalty, description = Description, flavor_text = FlavorText, image_url = ImageUrl, artist_name = ArtistName, legal_formats = LegalFormats, is_banned = IsBanned, is_restricted = IsRestricted, power_level = PowerLevel, set_id = SetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
+record_to_map(#card{id = Id, public_id = PublicId, name = Name, card_type = CardType, rarity = Rarity, mana_cost = ManaCost, mana_colors = ManaColors, attack = Attack, defense = Defense, loyalty = Loyalty, description = Description, flavor_text = FlavorText, image_url = ImageUrl, artist_name = ArtistName, legal_formats = LegalFormats, is_banned = IsBanned, is_restricted = IsRestricted, power_level = PowerLevel, metadata = Metadata, total_copies_in_circulation = TotalCopiesInCirculation, set_id = SetId, created_at = CreatedAt, updated_at = UpdatedAt}) ->
     #{
         <<"id">> => Id,
+        <<"public_id">> => PublicId,
         <<"name">> => Name,
         <<"card_type">> => CardType,
         <<"rarity">> => Rarity,
@@ -64,6 +65,8 @@ record_to_map(#card{id = Id, name = Name, card_type = CardType, rarity = Rarity,
         <<"is_banned">> => IsBanned,
         <<"is_restricted">> => IsRestricted,
         <<"power_level">> => PowerLevel,
+        <<"metadata">> => Metadata,
+        <<"total_copies_in_circulation">> => TotalCopiesInCirculation,
         <<"set_id">> => SetId,
         <<"created_at">> => CreatedAt,
         <<"updated_at">> => UpdatedAt

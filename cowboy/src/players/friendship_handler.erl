@@ -39,7 +39,7 @@ handle_get(Req, State) ->
         _Id ->
             UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
             OwnerId = maps:get(<<"requester_id">>, State, undefined),
-            case UserId =:= OwnerId of
+            case UserId =:= (if is_integer(OwnerId) -> integer_to_binary(OwnerId); true -> OwnerId end) of
                 false ->
                     Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
                     {stop, Req2, State};
@@ -66,7 +66,7 @@ handle_delete(Req, State) ->
 delete_resource(Req, State) ->
     UserId = cowboy_req:header(<<"x-user-id">>, Req, undefined),
     OwnerId = maps:get(<<"requester_id">>, State, undefined),
-    case UserId =:= OwnerId of
+    case UserId =:= (if is_integer(OwnerId) -> integer_to_binary(OwnerId); true -> OwnerId end) of
         false ->
             Req2 = cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, <<"{\"error\":\"You do not own this resource.\"}">>, Req),
             {stop, Req2, State};
