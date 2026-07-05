@@ -16,7 +16,6 @@ class OrderResource extends JsonResource
             'discount_applied' => $this->discount_applied,
             'currency' => $this->currency,
             'payment_method' => $this->payment_method,
-            'payment_reference' => $this->payment_reference,
             'shipping_address' => $this->shipping_address,
             'tracking_number' => $this->tracking_number,
             'createdAt' => $this->created_at,

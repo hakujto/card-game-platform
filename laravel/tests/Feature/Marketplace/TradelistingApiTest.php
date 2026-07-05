@@ -24,24 +24,26 @@ class TradeListingApiTest extends TestCase
     {
         parent::setUp();
         $this->depSeller = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $this->auxCardSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
             'is_rotated' => true,
         ]);
         $this->depCard = Card::create([
-            'name' => 'test',
-            'card_type' => 'Creature',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'name' => 'Test Lightning Bolt',
+            'card_type' => 'Spell',
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
@@ -49,10 +51,12 @@ class TradeListingApiTest extends TestCase
             'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
-            'power_level' => 1,
+            'power_level' => 3,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
         $entity = TradeListing::create([
+            'public_id' => '00000000-0000-0000-0000-000000000001',
             'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'asking_price' => '0.00',
@@ -83,6 +87,7 @@ class TradeListingApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/trade_listings', [
+            'public_id' => '00000000-0000-0000-0000-0000000000012',
             'status' => 'Active',
             'listing_type' => 'FixedPrice',
             'asking_price' => '0.00',
@@ -107,7 +112,7 @@ class TradeListingApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/trade_listings/{$this->entityId}", [
-            'auction_end_time' => '2024-01-01 00:00:00',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
         ]);
         $response->assertStatus(200);
     }
@@ -115,21 +120,21 @@ class TradeListingApiTest extends TestCase
     public function test_create_fails_when_fixed_price_requires_asking_price_violated(): void
     {
         // Fixed price listing must have an asking price
-        $response = $this->postJson('/api/trade_listings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => null]);
+        $response = $this->postJson('/api/trade_listings', ['public_id' => '00000000-0000-0000-0000-000000000001', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => null]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_auction_requires_start_price_and_end_time_violated(): void
     {
         // Auction listing must have a start price and end time
-        $response = $this->postJson('/api/trade_listings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'Auction', 'auction_start_price' => null]);
+        $response = $this->postJson('/api/trade_listings', ['public_id' => '00000000-0000-0000-0000-000000000001', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'Auction', 'auction_start_price' => null]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_quantity_positive_violated(): void
     {
         // Listing quantity must be between 1 and 9999
-        $response = $this->postJson('/api/trade_listings', ['created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => '0.00', 'listing_type' => 'Auction', 'auction_start_price' => '0.00', 'auction_end_time' => '2024-01-01 00:00:00', 'quantity' => 10000]);
+        $response = $this->postJson('/api/trade_listings', ['public_id' => '00000000-0000-0000-0000-000000000001', 'created_at' => '2024-01-01 00:00:00', 'seller_id' => 1, 'card_id' => 1, 'listing_type' => 'FixedPrice', 'asking_price' => '0.00', 'listing_type' => 'Auction', 'auction_start_price' => '0.00', 'auction_end_time' => '2024-01-01 00:00:00', 'quantity' => 10000]);
         $response->assertStatus(422);
     }
     public function test_transition_pending_to_active(): void

@@ -28,12 +28,14 @@ class TournamentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'public_id' => 'required|unique:tournaments,public_id',
             'name' => 'required|string|max:200',
             'description' => 'nullable|string|max:200',
             'status' => 'required|string|in:Draft,Registration,Ongoing,Completed,Cancelled|max:20',
+            'bracket_data' => 'nullable',
             'format' => 'required|string|in:Standard,Extended,Legacy,Vintage,Commander,Draft|max:20',
             'tournament_type' => 'required|string|in:Swiss,SingleElimination,DoubleElimination,RoundRobin|max:20',
-            'max_players' => 'required|integer',
+            'max_players' => 'required|integer|min:2|max:512',
             'entry_fee' => 'required',
             'prize_pool' => 'required',
             'start_time' => 'required|date',
@@ -64,9 +66,10 @@ class TournamentController extends Controller
     public function update(Request $request, Tournament $tournament): JsonResponse
     {
         $validated = $request->validate([
+            'public_id' => 'sometimes|nullable',
             'name' => 'sometimes|nullable|string|max:200',
             'description' => 'sometimes|nullable|string|max:200',
-            'status' => 'sometimes|nullable|string|max:20',
+            'bracket_data' => 'sometimes|nullable',
             'format' => 'sometimes|nullable|string|max:20',
             'tournament_type' => 'sometimes|nullable|string|max:20',
             'max_players' => 'sometimes|nullable|integer',
@@ -77,7 +80,6 @@ class TournamentController extends Controller
             'is_online' => 'sometimes|nullable|boolean',
             'location' => 'sometimes|nullable|string|max:300',
             'rules_text' => 'sometimes|nullable|string|max:200',
-            'created_at' => 'sometimes|nullable|date',
             'season_id' => 'sometimes|nullable|exists:seasons,id',
             'organizer_id' => 'sometimes|nullable|exists:players,id',
         ]);

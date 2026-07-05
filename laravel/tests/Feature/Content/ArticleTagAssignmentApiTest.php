@@ -23,9 +23,10 @@ class ArticleTagAssignmentApiTest extends TestCase
     {
         parent::setUp();
         $this->auxPlayer = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
@@ -39,6 +40,7 @@ class ArticleTagAssignmentApiTest extends TestCase
             'language' => 'EN',
             'view_count' => 1,
             'likes_count' => 1,
+            'total_views_alltime' => 1,
             'is_featured' => true,
             'created_at' => '2024-01-01 00:00:00',
             'updated_at' => '2024-01-01 00:00:00',

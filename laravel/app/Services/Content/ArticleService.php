@@ -29,6 +29,14 @@ class ArticleService
         $article->save();
     }
 
+    public function replace(int $id, $data): bool
+    {
+        $article = Article::findOrFail($id);
+        $result = $article->replace($data);
+        $article->save();
+        return $result;
+    }
+
     public function incrementView(int $id): void
     {
         $article = Article::findOrFail($id);

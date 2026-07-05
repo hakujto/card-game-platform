@@ -14,9 +14,10 @@ class TradeListing extends Model
 {
     protected $table = 'trade_listings';
 
-    protected $fillable = ['status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'expires_at', 'seller_id', 'card_id'];
+    protected $fillable = ['public_id', 'status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'expires_at', 'seller_id', 'card_id'];
 
     protected $casts = [
+        'public_id' => 'string',
         'asking_price' => 'decimal:2',
         'auction_start_price' => 'decimal:2',
         'auction_current_bid' => 'decimal:2',

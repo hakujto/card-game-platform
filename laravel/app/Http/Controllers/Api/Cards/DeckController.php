@@ -65,10 +65,6 @@ class DeckController extends Controller
             'is_public' => 'sometimes|nullable|boolean',
             'is_tournament_legal' => 'sometimes|nullable|boolean',
             'archetype' => 'sometimes|nullable|string|max:20',
-            'wins' => 'sometimes|nullable|integer',
-            'losses' => 'sometimes|nullable|integer',
-            'draws' => 'sometimes|nullable|integer',
-            'created_at' => 'sometimes|nullable|date',
             'updated_at' => 'sometimes|nullable|date',
             'player_id' => 'sometimes|nullable|exists:players,id',
         ]);

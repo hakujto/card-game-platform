@@ -11,6 +11,7 @@ class PlayerResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'public_id' => $this->public_id,
             'display_name' => $this->display_name,
             'rank' => $this->rank,
             'rating' => $this->rating,
@@ -19,6 +20,8 @@ class PlayerResource extends JsonResource
             'country_code' => $this->country_code,
             'avatar_url' => $this->avatar_url,
             'preferred_format' => $this->preferred_format,
+            'contact_email' => $this->contact_email,
+            'win_rate_cached' => $this->win_rate_cached,
             'is_verified' => $this->is_verified,
             'createdAt' => $this->created_at,
             'lastActiveAt' => $this->last_active_at,

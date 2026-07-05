@@ -54,6 +54,9 @@ class TradeDisputeController extends Controller
 
     public function resolve(Request $request, TradeDispute $tradeDispute): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin', 'moderator'], true)) {
+            return response()->json(['error' => 'Insufficient role for resolve'], 403);
+        }
         $resolution_text = $request->input('resolution_text');
         $tradeDispute->resolve($resolution_text);
         $tradeDispute->save();

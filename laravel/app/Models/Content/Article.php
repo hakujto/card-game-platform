@@ -13,7 +13,7 @@ class Article extends Model
 {
     protected $table = 'articles';
 
-    protected $fillable = ['title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'is_featured', 'published_at', 'author_id', 'featured_deck_id'];
+    protected $fillable = ['title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'total_views_alltime', 'is_featured', 'published_at', 'author_id', 'featured_deck_id'];
 
     protected $casts = [
         'is_featured' => 'boolean',
@@ -100,6 +100,12 @@ class Article extends Model
     public function archive(): void
     {
         // TODO: implement archive
+    }
+
+    public function replace($data): ?bool
+    {
+        // TODO: implement replace
+        return null;
     }
 
     public function incrementView(): void

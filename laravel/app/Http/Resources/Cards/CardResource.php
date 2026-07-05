@@ -11,6 +11,7 @@ class CardResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'public_id' => $this->public_id,
             'name' => $this->name,
             'card_type' => $this->card_type,
             'rarity' => $this->rarity,
@@ -27,6 +28,8 @@ class CardResource extends JsonResource
             'is_banned' => $this->is_banned,
             'is_restricted' => $this->is_restricted,
             'power_level' => $this->power_level,
+            'metadata' => $this->metadata,
+            'total_copies_in_circulation' => $this->total_copies_in_circulation,
             'set_id' => $this->set_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

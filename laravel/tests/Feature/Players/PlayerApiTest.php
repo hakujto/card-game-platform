@@ -16,6 +16,7 @@ class PlayerApiTest extends TestCase
     {
         parent::setUp();
         $entity = Player::create([
+            'public_id' => '00000000-0000-0000-0000-000000000001',
             'display_name' => 'test',
             'rank' => 'Bronze',
             'rating' => 1,
@@ -41,6 +42,7 @@ class PlayerApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/players', [
+            'public_id' => '00000000-0000-0000-0000-0000000000012',
             'display_name' => 'test2',
             'rank' => 'Bronze',
             'rating' => 1,
@@ -60,7 +62,7 @@ class PlayerApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/players/{$this->entityId}", [
-            'display_name' => 'test',
+            'bio' => 'test',
         ]);
         $response->assertStatus(200);
     }
@@ -68,7 +70,7 @@ class PlayerApiTest extends TestCase
     public function test_create_fails_when_rating_range_violated(): void
     {
         // Rating must be between 0 and 9999
-        $response = $this->postJson('/api/players', ['display_name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'rating' => 10000]);
+        $response = $this->postJson('/api/players', ['public_id' => '00000000-0000-0000-0000-000000000001', 'display_name' => 'test', 'created_at' => '2024-01-01 00:00:00', 'rating' => 10000]);
         $response->assertStatus(422);
     }
 }

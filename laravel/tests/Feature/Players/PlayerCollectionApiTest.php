@@ -28,24 +28,26 @@ class PlayerCollectionApiTest extends TestCase
         $this->ownerId = $owner->id;
         $this->actingAs($owner);
         $this->depPlayer = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $this->auxCardSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
             'is_rotated' => true,
         ]);
         $this->depCard = Card::create([
-            'name' => 'test',
-            'card_type' => 'Creature',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'name' => 'Test Lightning Bolt',
+            'card_type' => 'Spell',
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
@@ -53,7 +55,8 @@ class PlayerCollectionApiTest extends TestCase
             'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
-            'power_level' => 1,
+            'power_level' => 3,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
         $entity = PlayerCollection::create([

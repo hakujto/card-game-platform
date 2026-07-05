@@ -13,9 +13,11 @@ class Tournament extends Model
 {
     protected $table = 'tournaments';
 
-    protected $fillable = ['name', 'description', 'status', 'format', 'tournament_type', 'max_players', 'entry_fee', 'prize_pool', 'start_time', 'end_time', 'is_online', 'location', 'rules_text', 'season_id', 'organizer_id'];
+    protected $fillable = ['public_id', 'name', 'description', 'status', 'bracket_data', 'format', 'tournament_type', 'max_players', 'entry_fee', 'prize_pool', 'start_time', 'end_time', 'is_online', 'location', 'rules_text', 'season_id', 'organizer_id'];
 
     protected $casts = [
+        'public_id' => 'string',
+        'bracket_data' => 'array',
         'entry_fee' => 'decimal:2',
         'prize_pool' => 'decimal:2',
         'start_time' => 'datetime',

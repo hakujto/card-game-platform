@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('articles', function (Blueprint $table) {
+            $table->id();
+            $table->string('title', 300);
+            $table->string('slug', 300)->unique();
+            $table->text('body');
+            $table->text('excerpt')->nullable();
+            $table->string('cover_image_url', 200)->nullable();
+            $table->string('status', 20)->default('Draft');
+            $table->string('article_type', 20)->default('Guide');
+            $table->string('language', 20)->default('EN');
+            $table->integer('view_count')->default(0);
+            $table->integer('likes_count')->default(0);
+            $table->bigInteger('total_views_alltime')->default(0);
+            $table->boolean('is_featured')->default(false);
+            $table->dateTime('published_at')->nullable();
+            $table->unsignedBigInteger('author_id');
+            $table->foreign('author_id')->references('id')->on('players')->restrictOnDelete();
+            $table->unsignedBigInteger('featured_deck_id')->nullable();
+            $table->foreign('featured_deck_id')->references('id')->on('decks')->nullOnDelete();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('articles');
+    }
+};

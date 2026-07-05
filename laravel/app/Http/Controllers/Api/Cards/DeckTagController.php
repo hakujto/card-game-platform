@@ -26,6 +26,7 @@ class DeckTagController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50',
+            'slug' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:7',
         ]);
         $item = DeckTag::create($validated);
@@ -41,6 +42,7 @@ class DeckTagController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|nullable|string|max:50',
+            'slug' => 'sometimes|nullable|string|max:50',
             'color' => 'sometimes|nullable|string|max:7',
         ]);
         $deckTag->update($validated);

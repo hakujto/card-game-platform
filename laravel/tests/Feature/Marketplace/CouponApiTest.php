@@ -48,8 +48,6 @@ class CouponApiTest extends TestCase
             'discount_type' => 'Percent',
             'discount_value' => '1.00',
             'min_order_value' => '0.00',
-            'max_uses' => null,
-            'uses_count' => 1,
             'valid_from' => '2024-01-01 00:00:00',
             'valid_until' => '2024-01-01 00:00:01',
             'is_active' => true,

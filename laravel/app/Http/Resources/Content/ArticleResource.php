@@ -21,6 +21,7 @@ class ArticleResource extends JsonResource
             'language' => $this->language,
             'view_count' => $this->view_count,
             'likes_count' => $this->likes_count,
+            'total_views_alltime' => $this->total_views_alltime,
             'is_featured' => $this->is_featured,
             'publishedAt' => $this->published_at,
             'createdAt' => $this->created_at,

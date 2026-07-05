@@ -21,6 +21,7 @@ class DraftSessionController extends Controller
         $validated = $request->validate([
             'status' => 'required|string|in:WaitingForPlayers,Drafting,Completed,Abandoned|max:20',
             'draft_type' => 'required|string|in:Booster,Cube,Rochester|max:20',
+            'pack_contents' => 'nullable',
             'seats' => 'required|integer',
             'time_per_pick_seconds' => 'required|integer',
             'created_at' => 'required|date',

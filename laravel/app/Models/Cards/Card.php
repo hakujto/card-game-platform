@@ -19,11 +19,13 @@ class Card extends Model
 {
     protected $table = 'cards';
 
-    protected $fillable = ['name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'is_banned', 'is_restricted', 'power_level', 'set_id'];
+    protected $fillable = ['public_id', 'name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'is_banned', 'is_restricted', 'power_level', 'metadata', 'total_copies_in_circulation', 'set_id'];
 
     protected $casts = [
+        'public_id' => 'string',
         'is_banned' => 'boolean',
         'is_restricted' => 'boolean',
+        'metadata' => 'array',
     ];
 
     const CARD_TYPE_VALUES = ['Creature', 'Spell', 'Land', 'Artifact', 'Enchantment', 'Planeswalker'];
@@ -152,6 +154,12 @@ class Card extends Model
     public function unrestrict(): void
     {
         // TODO: implement unrestrict
+    }
+
+    public function replace($data): ?bool
+    {
+        // TODO: implement replace
+        return null;
     }
 
     public function calculateValue(): ?string

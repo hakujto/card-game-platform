@@ -244,6 +244,8 @@ API: http://localhost:8000/api/
 - `PUT/PATCH` `/api/streams/{id}` — update
 - `DELETE` `/api/streams/{id}` — delete
 
+### Wallet BC
+
 ## Tests
 
 ```bash

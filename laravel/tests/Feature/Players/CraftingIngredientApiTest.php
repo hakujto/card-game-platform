@@ -25,15 +25,16 @@ class CraftingIngredientApiTest extends TestCase
         parent::setUp();
         $this->auxCardSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
             'is_rotated' => true,
         ]);
         $this->auxCard = Card::create([
-            'name' => 'test',
-            'card_type' => 'Creature',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'name' => 'Test Lightning Bolt',
+            'card_type' => 'Spell',
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
@@ -41,7 +42,8 @@ class CraftingIngredientApiTest extends TestCase
             'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
-            'power_level' => 1,
+            'power_level' => 3,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
         $this->depRecipe = CraftingRecipe::create([
@@ -50,8 +52,9 @@ class CraftingIngredientApiTest extends TestCase
             'result_card_id' => $this->auxCard->id,
         ]);
         $this->depCard = Card::create([
-            'name' => 'test',
-            'card_type' => 'Creature',
+            'public_id' => '00000000-0000-0000-0000-0000000000012',
+            'name' => 'Test Lightning Bolt',
+            'card_type' => 'Spell',
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
@@ -59,7 +62,8 @@ class CraftingIngredientApiTest extends TestCase
             'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
-            'power_level' => 1,
+            'power_level' => 3,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
         $entity = CraftingIngredient::create([

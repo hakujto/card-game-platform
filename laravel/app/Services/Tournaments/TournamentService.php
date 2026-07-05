@@ -34,6 +34,7 @@ class TournamentService
         $tournament = Tournament::findOrFail($id);
         $tournament->complete();
         $tournament->save();
+        // TODO: event(new \App\Events\Tournaments\TournamentCompleted(/* ... */));
     }
 
     public function generateRound(int $id): void
@@ -56,6 +57,7 @@ class TournamentService
         $tournament = Tournament::findOrFail($id);
         $tournament->registerPlayer($player_id, $deck_id);
         $tournament->save();
+        // TODO: event(new \App\Events\Tournaments\PlayerRegistered(/* ... */));
     }
 
     public function isFull(int $id): bool

@@ -12,7 +12,7 @@ class Game extends Model
 {
     protected $table = 'games';
 
-    protected $fillable = ['game_number', 'winner_side', 'turns_played', 'duration_seconds', 'ended_by', 'replay_url', 'match_id', 'winner_id'];
+    protected $fillable = ['game_number', 'winner_side', 'complexity_score', 'turns_played', 'duration_seconds', 'ended_by', 'replay_url', 'match_id', 'winner_id'];
 
     const WINNER_SIDE_VALUES = ['Player1', 'Player2', 'Draw'];
     const ENDED_BY_VALUES = ['Normal', 'Timeout', 'Concession', 'DrawOffer'];

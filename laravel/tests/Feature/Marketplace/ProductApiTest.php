@@ -62,7 +62,7 @@ class ProductApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/products/{$this->entityId}", [
-            'name' => 'test',
+            'description' => 'test',
         ]);
         $response->assertStatus(200);
     }

@@ -22,15 +22,16 @@ class CraftingRecipeApiTest extends TestCase
         parent::setUp();
         $this->auxCardSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
             'is_rotated' => true,
         ]);
         $this->depResultCard = Card::create([
-            'name' => 'test',
-            'card_type' => 'Creature',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'name' => 'Test Lightning Bolt',
+            'card_type' => 'Spell',
             'rarity' => 'Common',
             'mana_cost' => 1,
             'mana_colors' => 'White',
@@ -38,7 +39,8 @@ class CraftingRecipeApiTest extends TestCase
             'legal_formats' => 'Standard',
             'is_banned' => true,
             'is_restricted' => true,
-            'power_level' => 1,
+            'power_level' => 3,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->auxCardSet->id,
         ]);
         $entity = CraftingRecipe::create([

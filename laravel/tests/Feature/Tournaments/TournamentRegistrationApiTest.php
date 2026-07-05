@@ -38,21 +38,23 @@ class TournamentRegistrationApiTest extends TestCase
             'is_active' => true,
         ]);
         $this->auxPlayer = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
         ]);
         $this->depTournament = Tournament::create([
-            'name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'name' => 'Test Tournament Alpha',
             'status' => 'Draft',
             'format' => 'Standard',
             'tournament_type' => 'Swiss',
-            'max_players' => 1,
-            'entry_fee' => '0.00',
-            'prize_pool' => '0.00',
+            'max_players' => 8,
+            'entry_fee' => 0,
+            'prize_pool' => 0,
             'start_time' => '2024-01-01 00:00:00',
             'is_online' => true,
             'created_at' => '2024-01-01 00:00:00',
@@ -60,9 +62,10 @@ class TournamentRegistrationApiTest extends TestCase
             'organizer_id' => $this->auxPlayer->id,
         ]);
         $this->depPlayer = Player::create([
-            'display_name' => 'test2',
+            'public_id' => '00000000-0000-0000-0000-0000000000012',
+            'display_name' => 'test_player_0012',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',

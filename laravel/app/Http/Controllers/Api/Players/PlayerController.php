@@ -26,18 +26,21 @@ class PlayerController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'public_id' => 'required|unique:players,public_id',
             'display_name' => 'required|string|max:50|unique:players,display_name',
             'rank' => 'required|string|in:Bronze,Silver,Gold,Platinum,Diamond,Master,Grandmaster|max:20',
             'rating' => 'required|integer',
             'peak_rating' => 'required|integer',
             'bio' => 'nullable|string|max:200',
-            'country_code' => 'nullable|string|max:2',
+            'country_code' => 'nullable|string|max:2|regex:/[A-Z]{2}/',
             'avatar_url' => 'nullable|string|url|max:200',
             'preferred_format' => 'nullable|string|in:Standard,Extended,Legacy,Vintage,Commander,Draft|max:20',
+            'contact_email' => 'nullable|string|email|max:254',
+            'win_rate_cached' => 'nullable',
             'is_verified' => 'required|boolean',
             'created_at' => 'required|date',
             'last_active_at' => 'nullable|date',
-            'user_id' => 'nullable|exists:users,id',
+            'user_id' => 'nullable|integer',
         ]);
         $item = Player::create($validated);
         $item->validateRules();
@@ -53,18 +56,18 @@ class PlayerController extends Controller
     public function update(Request $request, Player $player): JsonResponse
     {
         $validated = $request->validate([
+            'public_id' => 'sometimes|nullable',
             'display_name' => 'sometimes|nullable|string|max:50',
             'rank' => 'sometimes|nullable|string|max:20',
-            'rating' => 'sometimes|nullable|integer',
-            'peak_rating' => 'sometimes|nullable|integer',
             'bio' => 'sometimes|nullable|string|max:200',
             'country_code' => 'sometimes|nullable|string|max:2',
             'avatar_url' => 'sometimes|nullable|string|url|max:200',
             'preferred_format' => 'sometimes|nullable|string|max:20',
+            'contact_email' => 'sometimes|nullable|string|email|max:254',
+            'win_rate_cached' => 'sometimes|nullable',
             'is_verified' => 'sometimes|nullable|boolean',
-            'created_at' => 'sometimes|nullable|date',
             'last_active_at' => 'sometimes|nullable|date',
-            'user_id' => 'sometimes|nullable|exists:users,id',
+            'user_id' => 'sometimes|nullable|integer',
         ]);
         $player->update($validated);
         $player->validateRules();
@@ -109,6 +112,9 @@ class PlayerController extends Controller
 
     public function verify(Request $request, Player $player): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for verify'], 403);
+        }
         $player->verify();
         $player->save();
         return response()->json(null, 204);

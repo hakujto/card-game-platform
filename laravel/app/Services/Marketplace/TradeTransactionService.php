@@ -20,6 +20,7 @@ class TradeTransactionService
         $tradeTransaction = TradeTransaction::findOrFail($id);
         $tradeTransaction->complete();
         $tradeTransaction->save();
+        // TODO: event(new \App\Events\Marketplace\TransactionCompleted(/* ... */));
     }
 
     public function refund(int $id): void

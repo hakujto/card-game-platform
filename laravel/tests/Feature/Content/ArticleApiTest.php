@@ -20,9 +20,10 @@ class ArticleApiTest extends TestCase
     {
         parent::setUp();
         $this->depAuthor = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
@@ -36,6 +37,7 @@ class ArticleApiTest extends TestCase
             'language' => 'EN',
             'view_count' => 1,
             'likes_count' => 1,
+            'total_views_alltime' => 1,
             'is_featured' => true,
             'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
@@ -68,6 +70,7 @@ class ArticleApiTest extends TestCase
             'language' => 'EN',
             'view_count' => 1,
             'likes_count' => 1,
+            'total_views_alltime' => 1,
             'is_featured' => true,
             'published_at' => '2024-01-01 00:00:00',
             'created_at' => '2024-01-01 00:00:00',
@@ -86,7 +89,7 @@ class ArticleApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/articles/{$this->entityId}", [
-            'title' => 'test',
+            'excerpt' => 'test',
         ]);
         $response->assertStatus(200);
     }

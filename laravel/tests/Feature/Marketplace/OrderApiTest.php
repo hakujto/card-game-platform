@@ -24,9 +24,10 @@ class OrderApiTest extends TestCase
         $this->ownerId = $owner->id;
         $this->actingAs($owner);
         $this->depPlayer = Player::create([
-            'display_name' => 'test',
+            'public_id' => '00000000-0000-0000-0000-000000000001',
+            'display_name' => 'test_player_001',
             'rank' => 'Bronze',
-            'rating' => 1,
+            'rating' => 1000,
             'peak_rating' => 1,
             'is_verified' => true,
             'created_at' => '2024-01-01 00:00:00',
@@ -35,7 +36,7 @@ class OrderApiTest extends TestCase
             'status' => 'Shipped',
             'total' => '0.00',
             'discount_applied' => '0.00',
-            'currency' => 'xxx',
+            'currency' => 'AAA',
             'tracking_number' => 'test',
             'created_at' => '2024-01-01 00:00:00',
             'paid_at' => '2024-01-01 00:00:00',
@@ -58,7 +59,7 @@ class OrderApiTest extends TestCase
             'status' => 'Shipped',
             'total' => '0.00',
             'discount_applied' => '0.00',
-            'currency' => 'xxx',
+            'currency' => 'AAA',
             'tracking_number' => 'test',
             'created_at' => '2024-01-01 00:00:00',
             'paid_at' => '2024-01-01 00:00:00',

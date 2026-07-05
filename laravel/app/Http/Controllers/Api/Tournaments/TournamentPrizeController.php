@@ -19,8 +19,8 @@ class TournamentPrizeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'placement_from' => 'required|integer',
-            'placement_to' => 'required|integer',
+            'placement_from' => 'required|integer|min:1',
+            'placement_to' => 'required|integer|min:1',
             'prize_type' => 'required|string|in:Currency,Cards,BoosterPacks,Trophy,SeasonPoints,Mixed|max:20',
             'amount' => 'required',
             'description' => 'nullable|string|max:200',

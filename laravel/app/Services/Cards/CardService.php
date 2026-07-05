@@ -43,6 +43,14 @@ class CardService
         $card->save();
     }
 
+    public function replace(int $id, $data): bool
+    {
+        $card = Card::findOrFail($id);
+        $result = $card->replace($data);
+        $card->save();
+        return $result;
+    }
+
     public function calculateValue(int $id): string
     {
         $card = Card::findOrFail($id);

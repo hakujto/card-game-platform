@@ -51,6 +51,7 @@ Route::post('cards/{card}/ban', [CardController::class, 'ban']);
 Route::post('cards/{card}/unban', [CardController::class, 'unban']);
 Route::post('cards/{card}/restrict', [CardController::class, 'restrict']);
 Route::post('cards/{card}/unrestrict', [CardController::class, 'unrestrict']);
+Route::put('cards/{card}/replace', [CardController::class, 'replace']);
 Route::get('cards/{card}/value', [CardController::class, 'calculateValue']);
 Route::post('cards/{card}/rarity-bonus', [CardController::class, 'applyRarityBonus']);
 Route::get('cards/{card}/legal', [CardController::class, 'isLegalInFormat']);
@@ -251,6 +252,7 @@ Route::get('draft_picks/{draftPick}/first-pick', [DraftPickController::class, 'i
 Route::apiResource('articles', ArticleController::class)->only(['index', 'show', 'store', 'update']);
 Route::post('articles/{article}/publish', [ArticleController::class, 'publish']);
 Route::post('articles/{article}/archive', [ArticleController::class, 'archive']);
+Route::put('articles/{article}/replace', [ArticleController::class, 'replace']);
 Route::post('articles/{article}/view', [ArticleController::class, 'incrementView']);
 Route::post('articles/{article}/like', [ArticleController::class, 'like']);
 Route::delete('articles/{article}/like', [ArticleController::class, 'unlike']);

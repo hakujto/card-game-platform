@@ -13,6 +13,7 @@ class DraftSessionResource extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'draft_type' => $this->draft_type,
+            'pack_contents' => $this->pack_contents,
             'seats' => $this->seats,
             'time_per_pick_seconds' => $this->time_per_pick_seconds,
             'createdAt' => $this->created_at,

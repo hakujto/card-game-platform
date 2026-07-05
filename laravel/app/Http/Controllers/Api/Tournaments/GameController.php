@@ -20,8 +20,9 @@ class GameController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'game_number' => 'required|integer',
+            'game_number' => 'required|integer|min:1|max:3',
             'winner_side' => 'nullable|string|in:Player1,Player2,Draw|max:20',
+            'complexity_score' => 'nullable',
             'turns_played' => 'nullable|integer',
             'duration_seconds' => 'nullable|integer',
             'ended_by' => 'nullable|string|in:Normal,Timeout,Concession,DrawOffer|max:20',

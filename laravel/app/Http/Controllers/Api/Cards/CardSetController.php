@@ -27,7 +27,7 @@ class CardSetController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:200',
-            'code' => 'required|string|max:10|unique:card_sets,code',
+            'code' => 'required|string|max:10|regex:/[A-Z]{2,6}/|unique:card_sets,code',
             'release_date' => 'required|date',
             'rotation_date' => 'nullable|date',
             'set_type' => 'required|string|in:Core,Expansion,Supplemental,Masters,Draft|max:20',

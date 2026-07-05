@@ -11,6 +11,7 @@ class TradeListingResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'public_id' => $this->public_id,
             'status' => $this->status,
             'listing_type' => $this->listing_type,
             'asking_price' => $this->asking_price,

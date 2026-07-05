@@ -20,7 +20,7 @@ class DeckCardController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer',
+            'quantity' => 'required|integer|min:1|max:4',
             'is_commander' => 'required|boolean',
             'deck_id' => 'required|exists:decks,id',
             'card_id' => 'required|exists:cards,id',

@@ -28,9 +28,10 @@ class Player extends Model
 {
     protected $table = 'players';
 
-    protected $fillable = ['display_name', 'rank', 'rating', 'peak_rating', 'bio', 'country_code', 'avatar_url', 'preferred_format', 'is_verified', 'last_active_at', 'user_id'];
+    protected $fillable = ['public_id', 'display_name', 'rank', 'rating', 'peak_rating', 'bio', 'country_code', 'avatar_url', 'preferred_format', 'contact_email', 'win_rate_cached', 'is_verified', 'last_active_at', 'user_id'];
 
     protected $casts = [
+        'public_id' => 'string',
         'is_verified' => 'boolean',
         'last_active_at' => 'datetime',
     ];

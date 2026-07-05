@@ -21,7 +21,7 @@ class DraftSessionApiTest extends TestCase
         parent::setUp();
         $this->depCardSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,

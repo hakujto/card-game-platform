@@ -27,9 +27,10 @@ class TradeListingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'public_id' => 'required|unique:trade_listings,public_id',
             'status' => 'required|string|in:Active,Sold,Expired,Cancelled,Pending|max:20',
             'listing_type' => 'required|string|in:FixedPrice,Auction,TradeOffer|max:20',
-            'asking_price' => 'nullable',
+            'asking_price' => 'required_if:listing_type,FixedPrice|nullable',
             'auction_start_price' => 'nullable',
             'auction_current_bid' => 'nullable',
             'auction_end_time' => 'nullable|date',
@@ -61,7 +62,7 @@ class TradeListingController extends Controller
     public function update(Request $request, TradeListing $tradeListing): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'sometimes|nullable|string|max:20',
+            'public_id' => 'sometimes|nullable',
             'listing_type' => 'sometimes|nullable|string|max:20',
             'asking_price' => 'sometimes|nullable',
             'auction_start_price' => 'sometimes|nullable',
@@ -71,7 +72,6 @@ class TradeListingController extends Controller
             'condition' => 'sometimes|nullable|string|max:20',
             'quantity' => 'sometimes|nullable|integer',
             'description' => 'sometimes|nullable|string|max:200',
-            'created_at' => 'sometimes|nullable|date',
             'expires_at' => 'sometimes|nullable|date',
             'seller_id' => 'sometimes|nullable|exists:players,id',
             'card_id' => 'sometimes|nullable|exists:cards,id',
@@ -121,6 +121,9 @@ class TradeListingController extends Controller
 
     public function finalizeAuction(Request $request, TradeListing $tradeListing): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin', 'seller'], true)) {
+            return response()->json(['error' => 'Insufficient role for finalize_auction'], 403);
+        }
         $tradeListing->finalizeAuction();
         $tradeListing->save();
         return response()->json(null, 204);

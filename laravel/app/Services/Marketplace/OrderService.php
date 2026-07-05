@@ -27,6 +27,7 @@ class OrderService
         $order = Order::findOrFail($id);
         $result = $order->pay($payment_ref);
         $order->save();
+        // TODO: event(new \App\Events\Marketplace\OrderPaid(/* ... */));
         return $result;
     }
 
@@ -59,6 +60,7 @@ class OrderService
         $order = Order::findOrFail($id);
         $order->refund();
         $order->save();
+        // TODO: event(new \App\Events\Marketplace\OrderRefunded(/* ... */));
     }
 
     // triggered by @on(status = Shipped)

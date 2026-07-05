@@ -11,7 +11,7 @@ class DeckTag extends Model
 {
     protected $table = 'deck_tags';
 
-    protected $fillable = ['name', 'color'];
+    protected $fillable = ['name', 'slug', 'color'];
 
     public function deckAssignments(): HasMany
     {

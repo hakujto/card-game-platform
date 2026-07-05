@@ -27,10 +27,10 @@ class CouponController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:coupons,code',
             'discount_type' => 'required|string|in:Percent,Fixed|max:20',
-            'discount_value' => 'required',
+            'discount_value' => 'required|min:0.01',
             'min_order_value' => 'required',
             'max_uses' => 'nullable|integer',
-            'uses_count' => 'required|integer',
+            'uses_count' => 'nullable|integer',
             'valid_from' => 'required|date',
             'valid_until' => 'required|date',
             'is_active' => 'required|boolean',

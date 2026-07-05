@@ -12,9 +12,10 @@ class DraftSession extends Model
 {
     protected $table = 'draft_sessions';
 
-    protected $fillable = ['status', 'draft_type', 'seats', 'time_per_pick_seconds', 'completed_at', 'card_set_id'];
+    protected $fillable = ['status', 'draft_type', 'pack_contents', 'seats', 'time_per_pick_seconds', 'completed_at', 'card_set_id'];
 
     protected $casts = [
+        'pack_contents' => 'array',
         'completed_at' => 'datetime',
     ];
 

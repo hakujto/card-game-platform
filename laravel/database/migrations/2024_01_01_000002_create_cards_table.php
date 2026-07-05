@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('cards', function (Blueprint $table) {
             $table->id();
+            $table->uuid('public_id')->unique();
             $table->string('name', 200);
             $table->string('card_type', 20)->default('Creature');
             $table->string('rarity', 20)->default('Common');
@@ -26,6 +27,8 @@ return new class extends Migration
             $table->boolean('is_banned')->default(false);
             $table->boolean('is_restricted')->default(false);
             $table->integer('power_level')->default(1);
+            $table->json('metadata')->nullable();
+            $table->bigInteger('total_copies_in_circulation')->default(0);
             $table->unsignedBigInteger('set_id');
             $table->foreign('set_id')->references('id')->on('card_sets')->restrictOnDelete();
             $table->timestamps();

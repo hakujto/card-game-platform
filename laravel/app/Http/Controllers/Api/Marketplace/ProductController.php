@@ -33,7 +33,7 @@ class ProductController extends Controller
             'price' => 'required',
             'stock' => 'required|integer',
             'active' => 'required|boolean',
-            'discount_percent' => 'required|integer',
+            'discount_percent' => 'required|integer|min:0|max:100',
             'description' => 'nullable|string|max:200',
             'image_url' => 'nullable|string|url|max:200',
             'featured' => 'required|boolean',

@@ -38,6 +38,7 @@ class ArticleController extends Controller
             'language' => 'required|string|in:EN,DE,FR,IT,ES,JP,PT|max:20',
             'view_count' => 'required|integer',
             'likes_count' => 'required|integer',
+            'total_views_alltime' => 'required',
             'is_featured' => 'required|boolean',
             'published_at' => 'nullable|date',
             'created_at' => 'required|date',
@@ -69,14 +70,11 @@ class ArticleController extends Controller
             'body' => 'sometimes|nullable|string|max:200',
             'excerpt' => 'sometimes|nullable|string|max:200',
             'cover_image_url' => 'sometimes|nullable|string|url|max:200',
-            'status' => 'sometimes|nullable|string|max:20',
             'article_type' => 'sometimes|nullable|string|max:20',
             'language' => 'sometimes|nullable|string|max:20',
-            'view_count' => 'sometimes|nullable|integer',
-            'likes_count' => 'sometimes|nullable|integer',
+            'total_views_alltime' => 'sometimes|nullable',
             'is_featured' => 'sometimes|nullable|boolean',
             'published_at' => 'sometimes|nullable|date',
-            'created_at' => 'sometimes|nullable|date',
             'updated_at' => 'sometimes|nullable|date',
             'author_id' => 'sometimes|nullable|exists:players,id',
             'featured_deck_id' => 'sometimes|nullable|exists:decks,id',
@@ -94,6 +92,9 @@ class ArticleController extends Controller
 
     public function publish(Request $request, Article $article): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['editor', 'admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for publish'], 403);
+        }
         $article->publish();
         $article->save();
         return response()->json(null, 204);
@@ -101,9 +102,23 @@ class ArticleController extends Controller
 
     public function archive(Request $request, Article $article): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['editor', 'admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for archive'], 403);
+        }
         $article->archive();
         $article->save();
         return response()->json(null, 204);
+    }
+
+    public function replace(Request $request, Article $article): JsonResponse
+    {
+        if (!in_array(auth()->user()?->role, ['editor', 'admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for replace'], 403);
+        }
+        $data = $request->input('data');
+        $result = $article->replace($data);
+        $article->save();
+        return response()->json(['result' => $result]);
     }
 
     public function incrementView(Request $request, Article $article): JsonResponse

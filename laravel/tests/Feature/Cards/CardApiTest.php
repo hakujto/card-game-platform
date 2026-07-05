@@ -20,13 +20,14 @@ class CardApiTest extends TestCase
         parent::setUp();
         $this->depSet = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'set_type' => 'Core',
             'total_cards' => 1,
             'is_rotated' => true,
         ]);
         $entity = Card::create([
+            'public_id' => '00000000-0000-0000-0000-000000000001',
             'name' => 'test',
             'card_type' => 'Creature',
             'rarity' => 'Common',
@@ -40,6 +41,7 @@ class CardApiTest extends TestCase
             'is_banned' => false,
             'is_restricted' => false,
             'power_level' => 1,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->depSet->id,
         ]);
         $this->entityId = $entity->id;
@@ -60,6 +62,7 @@ class CardApiTest extends TestCase
     public function test_create_returns_201(): void
     {
         $response = $this->postJson('/api/cards', [
+            'public_id' => '00000000-0000-0000-0000-0000000000012',
             'name' => 'test',
             'card_type' => 'Creature',
             'rarity' => 'Common',
@@ -73,6 +76,7 @@ class CardApiTest extends TestCase
             'is_banned' => false,
             'is_restricted' => false,
             'power_level' => 1,
+            'total_copies_in_circulation' => 1,
             'set_id' => $this->depSet->id,
         ]);
         $response->assertStatus(201);
@@ -87,7 +91,7 @@ class CardApiTest extends TestCase
     public function test_update_returns_200(): void
     {
         $response = $this->patchJson("/api/cards/{$this->entityId}", [
-            'name' => 'test',
+            'flavor_text' => 'test',
         ]);
         $response->assertStatus(200);
     }
@@ -95,56 +99,56 @@ class CardApiTest extends TestCase
     public function test_create_fails_when_creature_requires_stats_violated(): void
     {
         // Creature card must have attack and defense
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => null]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => null]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_planeswalker_requires_loyalty_violated(): void
     {
         // Planeswalker card must have loyalty
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Planeswalker', 'loyalty' => null]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Planeswalker', 'loyalty' => null]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_land_has_no_mana_cost_violated(): void
     {
         // Land card must have zero mana cost
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Land', 'mana_cost' => 1]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Land', 'mana_cost' => 1]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_spell_or_artifact_no_loyalty_violated(): void
     {
         // Only Planeswalker cards can have loyalty
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'loyalty' => 1]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'loyalty' => 1]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_mana_cost_range_violated(): void
     {
         // mana_cost must be between 0 and 20
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'loyalty' => null, 'is_banned' => true, 'mana_cost' => 21]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'loyalty' => null, 'is_banned' => true, 'mana_cost' => 21]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_power_level_range_violated(): void
     {
         // power_level must be between 1 and 10
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'mana_cost' => 0, 'loyalty' => null, 'is_banned' => true, 'power_level' => 11]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'mana_cost' => 0, 'loyalty' => null, 'is_banned' => true, 'power_level' => 11]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_not_banned_and_restricted_violated(): void
     {
         // Card cannot be both banned and restricted at the same time
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'mana_cost' => 0, 'loyalty' => null, 'is_banned' => true, 'is_restricted' => true]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'card_type' => 'Creature', 'attack' => 1, 'defense' => 1, 'card_type' => 'Planeswalker', 'loyalty' => 1, 'card_type' => 'Land', 'mana_cost' => 0, 'loyalty' => null, 'is_banned' => true, 'is_restricted' => true]);
         $response->assertStatus(422);
     }
 
     public function test_create_fails_when_banned_card_not_in_legal_formats_violated(): void
     {
         // banned_card_not_in_legal_formats
-        $response = $this->postJson('/api/cards', ['name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'is_banned' => true]);
+        $response = $this->postJson('/api/cards', ['public_id' => '00000000-0000-0000-0000-000000000001', 'name' => 'test', 'mana_colors' => 'White', 'description' => 'test', 'legal_formats' => 'Standard', 'set_id' => 1, 'is_banned' => true]);
         $response->assertStatus(422);
     }
 }

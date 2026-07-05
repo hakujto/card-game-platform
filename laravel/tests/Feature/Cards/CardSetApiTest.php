@@ -17,7 +17,7 @@ class CardSetApiTest extends TestCase
         parent::setUp();
         $entity = CardSet::create([
             'name' => 'test',
-            'code' => 'test',
+            'code' => 'AA',
             'release_date' => '2024-01-01',
             'rotation_date' => null,
             'set_type' => 'Core',
@@ -43,7 +43,7 @@ class CardSetApiTest extends TestCase
     {
         $response = $this->postJson('/api/card_sets', [
             'name' => 'test',
-            'code' => 'test2',
+            'code' => 'AAB',
             'release_date' => '2024-01-01',
             'rotation_date' => null,
             'set_type' => 'Core',

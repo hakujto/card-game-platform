@@ -61,6 +61,9 @@ class SeasonController extends Controller
 
     public function activate(Request $request, Season $season): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for activate'], 403);
+        }
         $season->activate();
         $season->save();
         return response()->json(null, 204);
@@ -68,6 +71,9 @@ class SeasonController extends Controller
 
     public function deactivate(Request $request, Season $season): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for deactivate'], 403);
+        }
         $season->deactivate();
         $season->save();
         return response()->json(null, 204);
@@ -75,6 +81,9 @@ class SeasonController extends Controller
 
     public function finalizeRewards(Request $request, Season $season): JsonResponse
     {
+        if (!in_array(auth()->user()?->role, ['admin'], true)) {
+            return response()->json(['error' => 'Insufficient role for finalize_rewards'], 403);
+        }
         $season->finalizeRewards();
         $season->save();
         return response()->json(null, 204);
