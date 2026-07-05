@@ -7,9 +7,11 @@ __PACKAGE__->table('tournaments');
 
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
+  public_id => { data_type => 'varchar', is_unique => 1 },
   name => { data_type => 'varchar', size => 200 },
   description => { data_type => 'text', is_nullable => 1 },
   status => { data_type => 'varchar', size => 50, default_value => 'Draft' },
+  bracket_data => { data_type => 'text', is_nullable => 1 },
   format => { data_type => 'varchar', size => 50, default_value => 'Standard' },
   tournament_type => { data_type => 'varchar', size => 50, default_value => 'Swiss' },
   max_players => { data_type => 'integer' },

@@ -73,6 +73,9 @@ sub deactivate ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{discount_value} && $data->{discount_value} < 0.01) {
+    push @errors, 'discount_value must be >= 0.01';
+  }
   if ((defined $data->{discount_type} && $data->{discount_type} eq 'Percent') && (!defined $data->{discount_value})) {
     push @errors, 'Percent discount must be between 1 and 100';
   }
@@ -89,8 +92,6 @@ sub _to_hash ($entity) {
     discount_type => $entity->discount_type,
     discount_value => $entity->discount_value,
     min_order_value => $entity->min_order_value,
-    max_uses => $entity->max_uses,
-    uses_count => $entity->uses_count,
     valid_from => $entity->valid_from,
     valid_until => $entity->valid_until,
     is_active => $entity->is_active

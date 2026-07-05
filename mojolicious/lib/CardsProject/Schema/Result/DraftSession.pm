@@ -9,6 +9,7 @@ __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
   status => { data_type => 'varchar', size => 50, default_value => 'WaitingForPlayers' },
   draft_type => { data_type => 'varchar', size => 50, default_value => 'Booster' },
+  pack_contents => { data_type => 'text', is_nullable => 1 },
   seats => { data_type => 'integer', default_value => 8 },
   time_per_pick_seconds => { data_type => 'integer', default_value => 30 },
   created_at => { data_type => 'datetime', default_value => \'CURRENT_TIMESTAMP' },

@@ -1,5 +1,6 @@
 package CardsProject::Controller::Content::DraftSession;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Mojo::JSON qw(encode_json decode_json);
 
 sub list ($c) {
   my @items = $c->schema->resultset('DraftSession')->all;
@@ -17,7 +18,8 @@ sub create ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'draft_type', 'seats', 'time_per_pick_seconds', 'created_at', 'completed_at', 'card_set_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'draft_type', 'pack_contents', 'seats', 'time_per_pick_seconds', 'created_at', 'completed_at', 'card_set_id');
+  $cols{pack_contents} = encode_json($cols{pack_contents}) if exists $cols{pack_contents};
   my $entity = $c->schema->resultset('DraftSession')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -133,6 +135,7 @@ sub _to_hash ($entity) {
     id => $entity->id,
     status => $entity->status,
     draft_type => $entity->draft_type,
+    pack_contents => (defined $entity->pack_contents ? decode_json($entity->pack_contents) : undef),
     seats => $entity->seats,
     time_per_pick_seconds => $entity->time_per_pick_seconds,
     createdAt => $entity->created_at,

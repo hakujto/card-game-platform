@@ -15,6 +15,8 @@ sub show ($c) {
 
 sub create ($c) {
   my $data = $c->req->json;
+  my $errors = _validate($data);
+  return $c->render(status => 422, json => { errors => $errors }) if @$errors;
   my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('placement_from', 'placement_to', 'prize_type', 'amount', 'description', 'packs_count', 'season_points', 'tournament_id');
   my $entity = $c->schema->resultset('TournamentPrize')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
@@ -25,6 +27,8 @@ sub update ($c) {
   my $entity = $c->schema->resultset('TournamentPrize')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
   my $data = $c->req->json;
+  my $errors = _validate($data);
+  return $c->render(status => 422, json => { errors => $errors }) if @$errors;
   my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('placement_from', 'placement_to', 'prize_type', 'amount', 'description', 'packs_count', 'season_points', 'tournament_id');
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
@@ -50,6 +54,17 @@ sub award_to_player ($c) {
   my $entity = $c->schema->resultset('TournamentPrize')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
   $c->render(json => { status => 'ok' });
+}
+
+sub _validate ($data) {
+  my @errors;
+  if (defined $data->{placement_from} && $data->{placement_from} < 1) {
+    push @errors, 'placement_from must be >= 1';
+  }
+  if (defined $data->{placement_to} && $data->{placement_to} < 1) {
+    push @errors, 'placement_to must be >= 1';
+  }
+  return \@errors;
 }
 
 sub _to_hash ($entity) {

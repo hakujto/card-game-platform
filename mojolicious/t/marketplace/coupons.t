@@ -20,9 +20,8 @@ subtest 'Coupon search returns 200' => sub {
 subtest 'Coupon create returns 201' => sub {
   $t->post_ok('/api/coupons' => json => {
   code => 'test',
-  discount_value => '0.00',
+  discount_value => 0.01,
   min_order_value => '0.00',
-  uses_count => 1,
   valid_from => '2024-01-01 00:00:00',
   valid_until => '2024-01-01 00:00:00',
   is_active => 1

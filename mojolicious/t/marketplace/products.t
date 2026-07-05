@@ -34,7 +34,7 @@ subtest 'Product show returns 200 or 404' => sub {
 };
 
 subtest 'Product update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/products/1' => json => { name => 'test' })->tx->res;
+  my $res = $t->patch_ok('/api/products/1' => json => { description => 'test' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

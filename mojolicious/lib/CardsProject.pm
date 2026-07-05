@@ -14,6 +14,12 @@ sub startup ($self) {
 
   $self->helper(schema => sub { $schema });
 
+  $self->helper(current_user => sub {
+    my $c = shift;
+    my $uid = $c->req->headers->header('X-User-Id');
+    return $uid ? { id => $uid } : undef;
+  });
+
   $self->plugin('DefaultHelpers');
 
   my $r = $self->routes;
@@ -28,6 +34,7 @@ sub startup ($self) {
   $r->any('/api/cards/:id/unban')->post->to('cards-card#unban');
   $r->any('/api/cards/:id/restrict')->post->to('cards-card#restrict');
   $r->any('/api/cards/:id/unrestrict')->post->to('cards-card#unrestrict');
+  $r->any('/api/cards/:id/replace')->post->to('cards-card#replace');
   $r->any('/api/cards/:id/calculate_value')->get->to('cards-card#calculate_value');
   $r->any('/api/cards/:id/apply_rarity_bonus')->post->to('cards-card#apply_rarity_bonus');
   $r->any('/api/cards/:id/is_legal_in_format')->get->to('cards-card#is_legal_in_format');
@@ -421,6 +428,7 @@ sub startup ($self) {
   $article_item->patch->to('content-article#update');
   $r->any('/api/articles/:id/publish')->post->to('content-article#publish');
   $r->any('/api/articles/:id/archive')->post->to('content-article#archive');
+  $r->any('/api/articles/:id/replace')->post->to('content-article#replace');
   $r->any('/api/articles/:id/increment_view')->post->to('content-article#increment_view');
   $r->any('/api/articles/:id/like')->post->to('content-article#like');
   $r->any('/api/articles/:id/unlike')->delete->to('content-article#unlike');

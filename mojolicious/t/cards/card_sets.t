@@ -20,7 +20,7 @@ subtest 'CardSet search returns 200' => sub {
 subtest 'CardSet create returns 201' => sub {
   $t->post_ok('/api/card_sets' => json => {
   name => 'test',
-  code => 'test',
+  code => 'ABC',
   release_date => '2024-01-01',
   total_cards => 1,
   is_rotated => 1

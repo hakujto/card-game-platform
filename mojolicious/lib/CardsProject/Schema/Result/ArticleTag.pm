@@ -8,7 +8,7 @@ __PACKAGE__->table('article_tags');
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
   name => { data_type => 'varchar', size => 100 },
-  slug => { data_type => 'varchar', size => 100, is_unique => 1 }
+  slug => { data_type => 'varchar', is_unique => 1 }
 );
 
 __PACKAGE__->set_primary_key('id');

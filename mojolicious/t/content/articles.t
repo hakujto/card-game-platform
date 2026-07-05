@@ -24,6 +24,7 @@ subtest 'Article create returns 201' => sub {
   body => 'test',
   view_count => 1,
   likes_count => 1,
+  total_views_alltime => 1,
   is_featured => 1
   })->status_is(201);
 };
@@ -34,7 +35,7 @@ subtest 'Article show returns 200 or 404' => sub {
 };
 
 subtest 'Article update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/articles/1' => json => { title => 'test' })->tx->res;
+  my $res = $t->patch_ok('/api/articles/1' => json => { excerpt => 'test' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

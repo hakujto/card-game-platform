@@ -7,6 +7,7 @@ __PACKAGE__->table('cards');
 
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
+  public_id => { data_type => 'varchar', is_unique => 1 },
   name => { data_type => 'varchar', size => 200 },
   card_type => { data_type => 'varchar', size => 50, default_value => 'Creature' },
   rarity => { data_type => 'varchar', size => 50, default_value => 'Common' },
@@ -23,6 +24,8 @@ __PACKAGE__->add_columns(
   is_banned => { data_type => 'boolean', default_value => 0 },
   is_restricted => { data_type => 'boolean', default_value => 0 },
   power_level => { data_type => 'integer', default_value => 1 },
+  metadata => { data_type => 'text', is_nullable => 1 },
+  total_copies_in_circulation => { data_type => 'bigint', default_value => 0 },
   set_id => { data_type => 'integer', is_nullable => 1 }
 );
 

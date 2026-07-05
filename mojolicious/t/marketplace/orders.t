@@ -14,9 +14,9 @@ subtest 'Order list returns 200' => sub {
 
 subtest 'Order create returns 201' => sub {
   $t->post_ok('/api/orders' => json => {
-  total => '0.00',
+  total => 29.99,
   discount_applied => '0.00',
-  currency => 'test',
+  currency => 'USD',
   player_id => 'owner-1'
   })->status_is(201);
 };

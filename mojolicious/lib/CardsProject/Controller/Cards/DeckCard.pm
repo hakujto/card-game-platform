@@ -58,6 +58,12 @@ sub decrement ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{quantity} && $data->{quantity} < 1) {
+    push @errors, 'quantity must be >= 1';
+  }
+  if (defined $data->{quantity} && $data->{quantity} > 4) {
+    push @errors, 'quantity must be <= 4';
+  }
   if ((defined $data->{is_commander} && $data->{is_commander} eq 'true') && (!defined $data->{quantity})) {
     push @errors, 'Commander card must appear exactly once in the deck';
   }

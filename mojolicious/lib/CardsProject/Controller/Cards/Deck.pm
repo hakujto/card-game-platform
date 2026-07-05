@@ -38,7 +38,7 @@ sub update ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'description', 'format', 'is_public', 'is_tournament_legal', 'archetype', 'wins', 'losses', 'draws', 'created_at', 'updated_at', 'player_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'description', 'format', 'is_public', 'is_tournament_legal', 'archetype', 'updated_at', 'player_id');
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
 }

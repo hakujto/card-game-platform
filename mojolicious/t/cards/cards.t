@@ -19,14 +19,16 @@ subtest 'Card search returns 200' => sub {
 
 subtest 'Card create returns 201' => sub {
   $t->post_ok('/api/cards' => json => {
-  name => 'test',
+  public_id => '00000000-0000-0000-0000-000000000001',
+  name => 'Test Lightning Bolt',
   mana_cost => 1,
   mana_colors => 'White',
   description => 'test',
   legal_formats => 'Standard',
   is_banned => 1,
   is_restricted => 1,
-  power_level => 1
+  power_level => 3,
+  total_copies_in_circulation => 1
   })->status_is(201);
 };
 
@@ -36,7 +38,7 @@ subtest 'Card show returns 200 or 404' => sub {
 };
 
 subtest 'Card update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/cards/1' => json => { name => 'test' })->tx->res;
+  my $res = $t->patch_ok('/api/cards/1' => json => { flavor_text => 'test' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

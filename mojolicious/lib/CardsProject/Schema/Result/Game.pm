@@ -9,6 +9,7 @@ __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
   game_number => { data_type => 'integer' },
   winner_side => { data_type => 'varchar', size => 50, is_nullable => 1 },
+  complexity_score => { data_type => 'float', is_nullable => 1 },
   turns_played => { data_type => 'integer', is_nullable => 1 },
   duration_seconds => { data_type => 'integer', is_nullable => 1 },
   ended_by => { data_type => 'varchar', size => 50, is_nullable => 1 },

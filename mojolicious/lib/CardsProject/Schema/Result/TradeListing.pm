@@ -7,6 +7,7 @@ __PACKAGE__->table('trade_listings');
 
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
+  public_id => { data_type => 'varchar', is_unique => 1 },
   status => { data_type => 'varchar', size => 50, default_value => 'Active' },
   listing_type => { data_type => 'varchar', size => 50, default_value => 'FixedPrice' },
   asking_price => { data_type => 'numeric', size => [10, 2], is_nullable => 1 },

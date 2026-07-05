@@ -1,5 +1,6 @@
 package CardsProject::Controller::Cards::Card;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Mojo::JSON qw(encode_json decode_json);
 
 sub list ($c) {
   my $q = $c->param('q');
@@ -24,9 +25,11 @@ sub show ($c) {
 
 sub create ($c) {
   my $data = $c->req->json;
+  $data->{created_by} = $c->current_user->{id} if $c->current_user;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'is_banned', 'is_restricted', 'power_level', 'set_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('public_id', 'name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'is_banned', 'is_restricted', 'power_level', 'metadata', 'total_copies_in_circulation', 'set_id');
+  $cols{metadata} = encode_json($cols{metadata}) if exists $cols{metadata};
   my $entity = $c->schema->resultset('Card')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -36,9 +39,11 @@ sub update ($c) {
   my $entity = $c->schema->resultset('Card')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
   my $data = $c->req->json;
+  $data->{updated_by} = $c->current_user->{id} if $c->current_user;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'is_banned', 'is_restricted', 'power_level', 'set_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('public_id', 'name', 'card_type', 'rarity', 'mana_cost', 'mana_colors', 'attack', 'defense', 'loyalty', 'description', 'flavor_text', 'image_url', 'artist_name', 'legal_formats', 'power_level', 'metadata', 'total_copies_in_circulation', 'set_id');
+  $cols{metadata} = encode_json($cols{metadata}) if exists $cols{metadata};
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
 }
@@ -71,6 +76,13 @@ sub unrestrict ($c) {
   $c->render(json => { status => 'ok' });
 }
 
+sub replace ($c) {
+  my $id = $c->param('id');
+  my $entity = $c->schema->resultset('Card')->find($id)
+    or return $c->render(status => 404, json => { error => 'Not found' });
+  $c->render(json => { status => 'ok' });
+}
+
 sub calculate_value ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Card')->find($id)
@@ -94,6 +106,18 @@ sub is_legal_in_format ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{mana_cost} && $data->{mana_cost} < 0) {
+    push @errors, 'mana_cost must be >= 0';
+  }
+  if (defined $data->{mana_cost} && $data->{mana_cost} > 20) {
+    push @errors, 'mana_cost must be <= 20';
+  }
+  if (defined $data->{power_level} && $data->{power_level} < 1) {
+    push @errors, 'power_level must be >= 1';
+  }
+  if (defined $data->{power_level} && $data->{power_level} > 10) {
+    push @errors, 'power_level must be <= 10';
+  }
   if ((defined $data->{card_type} && $data->{card_type} eq 'Creature') && (!defined $data->{attack})) {
     push @errors, 'Creature card must have attack and defense';
   }
@@ -120,6 +144,7 @@ sub validate_not_in_use { }
 sub _to_hash ($entity) {
   return {
     id => $entity->id,
+    public_id => $entity->public_id,
     name => $entity->name,
     card_type => $entity->card_type,
     rarity => $entity->rarity,
@@ -136,6 +161,8 @@ sub _to_hash ($entity) {
     is_banned => $entity->is_banned,
     is_restricted => $entity->is_restricted,
     power_level => $entity->power_level,
+    metadata => (defined $entity->metadata ? decode_json($entity->metadata) : undef),
+    total_copies_in_circulation => $entity->total_copies_in_circulation,
     set_id => $entity->set_id
   };
 }

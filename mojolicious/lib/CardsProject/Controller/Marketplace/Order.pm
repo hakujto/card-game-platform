@@ -19,6 +19,7 @@ sub show ($c) {
 
 sub create ($c) {
   my $data = $c->req->json;
+  $data->{created_by} = $c->current_user->{id} if $c->current_user;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
   my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'total', 'discount_applied', 'currency', 'payment_method', 'payment_reference', 'shipping_address', 'tracking_number', 'created_at', 'paid_at', 'shipped_at', 'player_id', 'coupon_id');
@@ -193,6 +194,9 @@ sub transition_completed_to_cancelled ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{currency} && $data->{currency} !~ /[A-Z]{3}/) {
+    push @errors, 'currency does not match required pattern';
+  }
   if ((defined $data->{status} && $data->{status} eq 'Paid') && (!defined $data->{paid_at})) {
     push @errors, 'Paid order must have paid_at set';
   }
@@ -217,7 +221,6 @@ sub _to_hash ($entity) {
     discount_applied => $entity->discount_applied,
     currency => $entity->currency,
     payment_method => $entity->payment_method,
-    payment_reference => $entity->payment_reference,
     shipping_address => $entity->shipping_address,
     tracking_number => $entity->tracking_number,
     createdAt => $entity->created_at,

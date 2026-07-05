@@ -73,6 +73,9 @@ sub rotate_out ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{code} && $data->{code} !~ /[A-Z]{2,6}/) {
+    push @errors, 'code does not match required pattern';
+  }
   if ((defined $data->{rotation_date}) && (!(defined $data->{rotation_date} && $data->{rotation_date} gt $data->{release_date}))) {
     push @errors, 'Rotation date must be after release date';
   }

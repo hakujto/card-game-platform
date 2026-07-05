@@ -7,6 +7,7 @@ __PACKAGE__->table('players');
 
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
+  public_id => { data_type => 'varchar', is_unique => 1 },
   display_name => { data_type => 'varchar', size => 50, is_unique => 1 },
   rank => { data_type => 'varchar', size => 50, default_value => 'Bronze' },
   rating => { data_type => 'integer', default_value => 1000 },
@@ -15,6 +16,8 @@ __PACKAGE__->add_columns(
   country_code => { data_type => 'varchar', size => 2, is_nullable => 1 },
   avatar_url => { data_type => 'varchar', is_nullable => 1 },
   preferred_format => { data_type => 'varchar', size => 50, is_nullable => 1 },
+  contact_email => { data_type => 'varchar', is_nullable => 1 },
+  win_rate_cached => { data_type => 'float', is_nullable => 1 },
   is_verified => { data_type => 'boolean', default_value => 0 },
   created_at => { data_type => 'datetime', default_value => \'CURRENT_TIMESTAMP' },
   last_active_at => { data_type => 'datetime', is_nullable => 1 },

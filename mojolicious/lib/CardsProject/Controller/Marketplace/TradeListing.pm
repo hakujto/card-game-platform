@@ -25,7 +25,7 @@ sub create ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'created_at', 'expires_at', 'seller_id', 'card_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('public_id', 'status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'created_at', 'expires_at', 'seller_id', 'card_id');
   my $entity = $c->schema->resultset('TradeListing')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -37,7 +37,7 @@ sub update ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('status', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'created_at', 'expires_at', 'seller_id', 'card_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('public_id', 'listing_type', 'asking_price', 'auction_start_price', 'auction_current_bid', 'auction_end_time', 'foil', 'condition', 'quantity', 'description', 'expires_at', 'seller_id', 'card_id');
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
 }
@@ -169,6 +169,7 @@ sub _validate ($data) {
 sub _to_hash ($entity) {
   return {
     id => $entity->id,
+    public_id => $entity->public_id,
     status => $entity->status,
     listing_type => $entity->listing_type,
     asking_price => $entity->asking_price,

@@ -23,7 +23,7 @@ sub show ($c) {
 
 sub create ($c) {
   my $data = $c->req->json;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'color');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'slug', 'color');
   my $entity = $c->schema->resultset('DeckTag')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -33,7 +33,7 @@ sub update ($c) {
   my $entity = $c->schema->resultset('DeckTag')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
   my $data = $c->req->json;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'color');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('name', 'slug', 'color');
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
 }
@@ -64,6 +64,7 @@ sub _to_hash ($entity) {
   return {
     id => $entity->id,
     name => $entity->name,
+    slug => $entity->slug,
     color => $entity->color
   };
 }

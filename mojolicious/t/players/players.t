@@ -19,8 +19,9 @@ subtest 'Player search returns 200' => sub {
 
 subtest 'Player create returns 201' => sub {
   $t->post_ok('/api/players' => json => {
-  display_name => 'test',
-  rating => 1,
+  public_id => '00000000-0000-0000-0000-000000000001',
+  display_name => 'test_player_001',
+  rating => 1000,
   peak_rating => 1,
   is_verified => 1
   })->status_is(201);
@@ -32,7 +33,7 @@ subtest 'Player show returns 200 or 404' => sub {
 };
 
 subtest 'Player update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/players/1' => json => { display_name => 'test' })->tx->res;
+  my $res = $t->patch_ok('/api/players/1' => json => { bio => 'test' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

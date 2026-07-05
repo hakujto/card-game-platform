@@ -19,10 +19,11 @@ subtest 'Tournament search returns 200' => sub {
 
 subtest 'Tournament create returns 201' => sub {
   $t->post_ok('/api/tournaments' => json => {
-  name => 'test',
-  max_players => 1,
-  entry_fee => '0.00',
-  prize_pool => '0.00',
+  public_id => '00000000-0000-0000-0000-000000000001',
+  name => 'Test Tournament Alpha',
+  max_players => 8,
+  entry_fee => 0,
+  prize_pool => 0,
   start_time => '2024-01-01 00:00:00',
   is_online => 1
   })->status_is(201);
@@ -34,7 +35,7 @@ subtest 'Tournament show returns 200 or 404' => sub {
 };
 
 subtest 'Tournament update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/tournaments/1' => json => { name => 'test' })->tx->res;
+  my $res = $t->patch_ok('/api/tournaments/1' => json => { description => 'test' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 

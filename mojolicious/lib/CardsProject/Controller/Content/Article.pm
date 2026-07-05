@@ -26,7 +26,7 @@ sub create ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'is_featured', 'published_at', 'created_at', 'updated_at', 'author_id', 'featured_deck_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'total_views_alltime', 'is_featured', 'published_at', 'created_at', 'updated_at', 'author_id', 'featured_deck_id');
   my $entity = $c->schema->resultset('Article')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -38,7 +38,7 @@ sub update ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('title', 'slug', 'body', 'excerpt', 'cover_image_url', 'status', 'article_type', 'language', 'view_count', 'likes_count', 'is_featured', 'published_at', 'created_at', 'updated_at', 'author_id', 'featured_deck_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('title', 'slug', 'body', 'excerpt', 'cover_image_url', 'article_type', 'language', 'total_views_alltime', 'is_featured', 'published_at', 'updated_at', 'author_id', 'featured_deck_id');
   $entity->update(\%cols);
   $c->render(json => _to_hash($entity));
 }
@@ -51,6 +51,13 @@ sub publish ($c) {
 }
 
 sub archive ($c) {
+  my $id = $c->param('id');
+  my $entity = $c->schema->resultset('Article')->find($id)
+    or return $c->render(status => 404, json => { error => 'Not found' });
+  $c->render(json => { status => 'ok' });
+}
+
+sub replace ($c) {
   my $id = $c->param('id');
   my $entity = $c->schema->resultset('Article')->find($id)
     or return $c->render(status => 404, json => { error => 'Not found' });
@@ -160,6 +167,7 @@ sub _to_hash ($entity) {
     language => $entity->language,
     view_count => $entity->view_count,
     likes_count => $entity->likes_count,
+    total_views_alltime => $entity->total_views_alltime,
     is_featured => $entity->is_featured,
     publishedAt => $entity->published_at,
     createdAt => $entity->created_at,

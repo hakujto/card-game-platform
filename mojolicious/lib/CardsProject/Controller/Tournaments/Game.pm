@@ -17,7 +17,7 @@ sub create ($c) {
   my $data = $c->req->json;
   my $errors = _validate($data);
   return $c->render(status => 422, json => { errors => $errors }) if @$errors;
-  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('game_number', 'winner_side', 'turns_played', 'duration_seconds', 'ended_by', 'replay_url', 'match_id', 'winner_id');
+  my %cols = map { $_ => $data->{$_} } grep { defined $data->{$_} } ('game_number', 'winner_side', 'complexity_score', 'turns_played', 'duration_seconds', 'ended_by', 'replay_url', 'match_id', 'winner_id');
   my $entity = $c->schema->resultset('Game')->create(\%cols);
   $c->render(status => 201, json => _to_hash($entity));
 }
@@ -38,6 +38,12 @@ sub duration_minutes ($c) {
 
 sub _validate ($data) {
   my @errors;
+  if (defined $data->{game_number} && $data->{game_number} < 1) {
+    push @errors, 'game_number must be >= 1';
+  }
+  if (defined $data->{game_number} && $data->{game_number} > 3) {
+    push @errors, 'game_number must be <= 3';
+  }
   if ((defined $data->{turns_played}) && (!(defined $data->{turns_played} && $data->{turns_played} gt 0))) {
     push @errors, 'Turns played must be greater than zero';
   }
@@ -58,6 +64,7 @@ sub _to_hash ($entity) {
     id => $entity->id,
     game_number => $entity->game_number,
     winner_side => $entity->winner_side,
+    complexity_score => $entity->complexity_score,
     turns_played => $entity->turns_played,
     duration_seconds => $entity->duration_seconds,
     ended_by => $entity->ended_by,

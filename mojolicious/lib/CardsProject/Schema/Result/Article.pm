@@ -8,7 +8,7 @@ __PACKAGE__->table('articles');
 __PACKAGE__->add_columns(
   id => { data_type => 'integer', is_auto_increment => 1 },
   title => { data_type => 'varchar', size => 300 },
-  slug => { data_type => 'varchar', size => 300, is_unique => 1 },
+  slug => { data_type => 'varchar', is_unique => 1 },
   body => { data_type => 'text' },
   excerpt => { data_type => 'text', is_nullable => 1 },
   cover_image_url => { data_type => 'varchar', is_nullable => 1 },
@@ -17,6 +17,7 @@ __PACKAGE__->add_columns(
   language => { data_type => 'varchar', size => 50, default_value => 'EN' },
   view_count => { data_type => 'integer', default_value => 0 },
   likes_count => { data_type => 'integer', default_value => 0 },
+  total_views_alltime => { data_type => 'bigint', default_value => 0 },
   is_featured => { data_type => 'boolean', default_value => 0 },
   published_at => { data_type => 'datetime', is_nullable => 1 },
   created_at => { data_type => 'datetime', default_value => \'CURRENT_TIMESTAMP' },

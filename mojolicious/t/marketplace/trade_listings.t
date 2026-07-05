@@ -19,6 +19,7 @@ subtest 'TradeListing search returns 200' => sub {
 
 subtest 'TradeListing create returns 201' => sub {
   $t->post_ok('/api/trade_listings' => json => {
+  public_id => '00000000-0000-0000-0000-000000000001',
   foil => 1,
   quantity => 1
   })->status_is(201);
@@ -30,7 +31,7 @@ subtest 'TradeListing show returns 200 or 404' => sub {
 };
 
 subtest 'TradeListing update returns 200 or 404' => sub {
-  my $res = $t->patch_ok('/api/trade_listings/1' => json => { asking_price => '0.00' })->tx->res;
+  my $res = $t->patch_ok('/api/trade_listings/1' => json => { public_id => '00000000-0000-0000-0000-000000000001' })->tx->res;
   ok($res->code == 200 || $res->code == 404, 'status 200 or 404');
 };
 
