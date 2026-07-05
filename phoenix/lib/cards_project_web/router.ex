@@ -14,6 +14,7 @@ defmodule CardsProjectWeb.Router do
       post "/unban", CardController, :unban
       post "/restrict", CardController, :restrict
       post "/unrestrict", CardController, :unrestrict
+      put "//api/cards/{id}", CardController, :replace
       get "/value", CardController, :calculate_value
       post "/rarity-bonus", CardController, :apply_rarity_bonus
       get "/legal", CardController, :is_legal_in_format
@@ -286,6 +287,7 @@ defmodule CardsProjectWeb.Router do
     scope "/articles/:id", CardsProjectWeb.Content, alias: false do
       post "/publish", ArticleController, :publish
       post "/archive", ArticleController, :archive
+      put "//api/articles/{id}", ArticleController, :replace
       post "/view", ArticleController, :increment_view
       post "/like", ArticleController, :like
       delete "/like", ArticleController, :unlike

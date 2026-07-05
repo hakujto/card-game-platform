@@ -4,7 +4,7 @@ defmodule CardsProjectWeb.Cards.CardSetControllerTest do
 
   @valid_params %{
     "name" => "test",
-    "code" => "test",
+    "code" => "AA",
     "release_date" => ~D[2024-01-01],
     "total_cards" => 1,
     "is_rotated" => true,

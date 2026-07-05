@@ -221,6 +221,13 @@ defmodule CardsProject.Content do
     Repo.update!(Article.changeset(article, %{}))
   end
 
+  def article_replace_behavior(id, data) do
+    article = Repo.get!(Article, id)
+    result = Article.replace(article, data)
+    Repo.update!(Article.changeset(article, %{}))
+    result
+  end
+
   def article_increment_view_behavior(id) do
     article = Repo.get!(Article, id)
     Article.increment_view(article)

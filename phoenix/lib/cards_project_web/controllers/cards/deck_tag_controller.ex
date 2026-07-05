@@ -64,7 +64,7 @@ defmodule CardsProjectWeb.Cards.DeckTagController do
   end
 
   defp serialize_deck_tag(%DeckTag{} = record) do
-    Map.take(record, [:id, :name, :color])
+    Map.take(record, [:id, :name, :slug, :color])
   end
 
   defp format_errors(changeset) do

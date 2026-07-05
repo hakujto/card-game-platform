@@ -17,7 +17,7 @@ defmodule CardsProject.Repo.Migrations.CreateProducts do
 
       timestamps()
     end
-    create index(:products, [:card_id])
+    create unique_index(:products, [:card_id])
     create index(:products, [:card_set_id])
   end
 end

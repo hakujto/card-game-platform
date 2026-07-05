@@ -74,7 +74,7 @@ defmodule CardsProjectWeb.Marketplace.CouponController do
   end
 
   defp serialize_coupon(%Coupon{} = record) do
-    Map.take(record, [:id, :code, :discount_type, :discount_value, :min_order_value, :max_uses, :uses_count, :valid_from, :valid_until, :is_active])
+    Map.take(record, [:id, :code, :discount_type, :discount_value, :min_order_value, :valid_from, :valid_until, :is_active])
   end
 
   defp format_errors(changeset) do

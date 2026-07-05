@@ -3,18 +3,18 @@ defmodule CardsProjectWeb.Cards.CardControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "name" => "test",
-    "mana_cost" => 0,
+    "public_id" => "00000000-0000-0000-0000-000000000001",
+    "name" => "Test Lightning Bolt",
+    "mana_cost" => 1,
     "description" => "test",
     "is_banned" => true,
     "is_restricted" => true,
-    "power_level" => 1,
-    "card_type" => "Creature",
+    "power_level" => 3,
+    "total_copies_in_circulation" => 0,
+    "card_type" => "Spell",
     "rarity" => "Common",
     "mana_colors" => "White",
-    "legal_formats" => "Standard",
-    "attack" => 0,
-    "defense" => 0
+    "legal_formats" => "Standard"
   }
 
   describe "GET /api/cards" do

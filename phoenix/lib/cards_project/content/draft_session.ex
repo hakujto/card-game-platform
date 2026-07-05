@@ -5,6 +5,7 @@ defmodule CardsProject.Content.DraftSession do
   schema "draft_sessions" do
     field :status, :string
     field :draft_type, :string
+    field :pack_contents, :map
     field :seats, :integer, default: 8
     field :time_per_pick_seconds, :integer, default: 30
     field :created_at, :naive_datetime
@@ -18,7 +19,7 @@ defmodule CardsProject.Content.DraftSession do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:seats, :time_per_pick_seconds, :created_at, :status, :draft_type, :completed_at, :card_set_id])
+    |> cast(attrs, [:seats, :time_per_pick_seconds, :created_at, :status, :draft_type, :pack_contents, :completed_at, :card_set_id])
     |> validate_required([:seats, :time_per_pick_seconds, :created_at])
     |> validate_inclusion(:status, ["WaitingForPlayers", "Drafting", "Completed", "Abandoned"])
     |> validate_inclusion(:draft_type, ["Booster", "Cube", "Rochester"])

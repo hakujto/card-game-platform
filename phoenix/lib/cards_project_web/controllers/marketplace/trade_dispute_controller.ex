@@ -37,9 +37,14 @@ defmodule CardsProjectWeb.Marketplace.TradeDisputeController do
 
   # POST /api/disputes/{id}/resolve
   def resolve(conn, %{"id" => id} = params) do
-    resolution_text = Map.get(params, "resolution_text")
-    Marketplace.trade_dispute_resolve_behavior(id, resolution_text)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "moderator"] do
+      resolution_text = Map.get(params, "resolution_text")
+      Marketplace.trade_dispute_resolve_behavior(id, resolution_text)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for resolve"}) |> halt()
+    end
   end
 
   # POST /api/disputes/{id}/close

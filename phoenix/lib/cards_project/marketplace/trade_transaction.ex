@@ -39,6 +39,13 @@ defmodule CardsProject.Marketplace.TradeTransaction do
         cs
       end
     end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Completed" and is_nil(get_field(cs, :completed_at)) do
+        Ecto.Changeset.add_error(cs, :completed_at, "completed_at is required")
+      else
+        cs
+      end
+    end)
   end
 
   # ── Business operations ────────────────────────────────────────────

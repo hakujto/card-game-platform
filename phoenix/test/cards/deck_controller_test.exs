@@ -58,10 +58,14 @@ defmodule CardsProjectWeb.Cards.DeckControllerTest do
     end
   end
 
+  @patch_params %{
+    "name" => "test"
+  }
+
   describe "PUT /api/decks/:id" do
     test "updates and returns 200", %{conn: conn} do
       {:ok, record} = CardsProject.Cards.create_deck(@valid_params)
-      conn = put(conn, "/api/decks/#{record.id}", @valid_params)
+      conn = put(conn, "/api/decks/#{record.id}", @patch_params)
       assert json_response(conn, 200)
     end
   end

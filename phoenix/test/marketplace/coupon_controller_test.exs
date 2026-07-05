@@ -6,7 +6,6 @@ defmodule CardsProjectWeb.Marketplace.CouponControllerTest do
     "code" => "test",
     "discount_value" => 1,
     "min_order_value" => "0.00",
-    "uses_count" => 0,
     "valid_from" => ~N[2024-01-01 00:00:00],
     "valid_until" => ~N[2024-12-31 23:59:59],
     "is_active" => true,

@@ -3,9 +3,10 @@ defmodule CardsProjectWeb.Players.PlayerControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "display_name" => "test",
-    "rating" => 0,
-    "peak_rating" => 1,
+    "public_id" => "00000000-0000-0000-0000-000000000001",
+    "display_name" => "test_player_001",
+    "rating" => 1000,
+    "peak_rating" => 1000,
     "is_verified" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
     "rank" => "Bronze"

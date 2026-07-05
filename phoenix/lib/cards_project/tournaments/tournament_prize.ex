@@ -22,6 +22,8 @@ defmodule CardsProject.Tournaments.TournamentPrize do
     |> cast(attrs, [:placement_from, :placement_to, :amount, :season_points, :prize_type, :description, :packs_count, :tournament_id])
     |> validate_required([:placement_from, :placement_to, :amount, :season_points])
     |> validate_inclusion(:prize_type, ["Currency", "Cards", "BoosterPacks", "Trophy", "SeasonPoints", "Mixed"])
+    |> validate_number(:placement_from, greater_than_or_equal_to: 1)
+    |> validate_number(:placement_to, greater_than_or_equal_to: 1)
     |> then(fn cs ->
       lv = get_field(cs, :placement_from)
       fv = get_field(cs, :placement_to)

@@ -3,8 +3,9 @@ defmodule CardsProjectWeb.Tournaments.TournamentControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "name" => "test",
-    "max_players" => 2,
+    "public_id" => "00000000-0000-0000-0000-000000000001",
+    "name" => "Test Tournament Alpha",
+    "max_players" => 8,
     "entry_fee" => 0,
     "prize_pool" => 0,
     "start_time" => ~N[2024-01-01 00:00:00],

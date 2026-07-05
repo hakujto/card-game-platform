@@ -44,6 +44,13 @@ defmodule CardsProject.Cards.Deck do
     end)
   end
 
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:name, :is_public, :is_tournament_legal, :description, :format, :archetype, :player_id])
+    |> validate_required([:name, :is_public, :is_tournament_legal])
+  end
+
   # ── Business operations ────────────────────────────────────────────
 
   def validate_size(_record) do

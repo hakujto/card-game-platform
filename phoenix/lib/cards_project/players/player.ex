@@ -3,6 +3,7 @@ defmodule CardsProject.Players.Player do
   import Ecto.Changeset
 
   schema "players" do
+    field :public_id, :string
     field :display_name, :string
     field :rank, :string
     field :rating, :integer, default: 1000
@@ -11,6 +12,8 @@ defmodule CardsProject.Players.Player do
     field :country_code, :string
     field :avatar_url, :string
     field :preferred_format, :string
+    field :contact_email, :string
+    field :win_rate_cached, :float
     field :is_verified, :boolean, default: false
     field :created_at, :naive_datetime
     field :last_active_at, :naive_datetime
@@ -49,10 +52,12 @@ defmodule CardsProject.Players.Player do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:display_name, :rating, :peak_rating, :is_verified, :created_at, :rank, :bio, :country_code, :avatar_url, :preferred_format, :last_active_at, :user_id])
-    |> validate_required([:display_name, :rating, :peak_rating, :is_verified, :created_at])
+    |> cast(attrs, [:public_id, :display_name, :rating, :peak_rating, :is_verified, :created_at, :rank, :bio, :country_code, :avatar_url, :preferred_format, :contact_email, :win_rate_cached, :last_active_at, :user_id])
+    |> validate_required([:public_id, :display_name, :rating, :peak_rating, :is_verified, :created_at])
     |> validate_inclusion(:rank, ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster"])
     |> validate_inclusion(:preferred_format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> validate_format(:country_code, ~r/[A-Z]{2}/)
+    |> unique_constraint(:public_id, message: "public_id must be unique")
     |> unique_constraint(:display_name, message: "display_name must be unique")
     |> validate_number(:rating, greater_than_or_equal_to: 0, less_than_or_equal_to: 9999, message: "Rating must be between 0 and 9999")
     |> then(fn cs ->
@@ -64,6 +69,13 @@ defmodule CardsProject.Players.Player do
         cs
       end
     end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:public_id, :display_name, :is_verified, :rank, :bio, :country_code, :avatar_url, :preferred_format, :contact_email, :win_rate_cached, :last_active_at, :user_id])
+    |> validate_required([:public_id, :display_name, :is_verified])
   end
 
   # ── Business operations ────────────────────────────────────────────

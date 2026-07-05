@@ -69,6 +69,13 @@ defmodule CardsProject.Cards do
     Repo.update!(Card.changeset(card, %{}))
   end
 
+  def card_replace_behavior(id, data) do
+    card = Repo.get!(Card, id)
+    result = Card.replace(card, data)
+    Repo.update!(Card.changeset(card, %{}))
+    result
+  end
+
   def card_calculate_value_behavior(id) do
     card = Repo.get!(Card, id)
     result = Card.calculate_value(card)

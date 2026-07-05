@@ -13,6 +13,7 @@ defmodule CardsProject.Content.Article do
     field :language, :string
     field :view_count, :integer, default: 0
     field :likes_count, :integer, default: 0
+    field :total_views_alltime, :integer, default: 0
     field :is_featured, :boolean, default: false
     field :published_at, :naive_datetime
     field :created_at, :naive_datetime
@@ -28,8 +29,8 @@ defmodule CardsProject.Content.Article do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:title, :slug, :body, :view_count, :likes_count, :is_featured, :created_at, :excerpt, :cover_image_url, :status, :article_type, :language, :published_at, :author_id, :featured_deck_id])
-    |> validate_required([:title, :slug, :body, :view_count, :likes_count, :is_featured, :created_at])
+    |> cast(attrs, [:title, :slug, :body, :view_count, :likes_count, :total_views_alltime, :is_featured, :created_at, :excerpt, :cover_image_url, :status, :article_type, :language, :published_at, :author_id, :featured_deck_id])
+    |> validate_required([:title, :slug, :body, :view_count, :likes_count, :total_views_alltime, :is_featured, :created_at])
     |> validate_inclusion(:status, ["Draft", "Published", "Archived"])
     |> validate_inclusion(:article_type, ["Guide", "Tierlist", "Matchup", "News", "Spotlight", "Decklist"])
     |> validate_inclusion(:language, ["EN", "DE", "FR", "IT", "ES", "JP", "PT"])
@@ -45,6 +46,13 @@ defmodule CardsProject.Content.Article do
     end)
   end
 
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:title, :slug, :body, :total_views_alltime, :is_featured, :excerpt, :cover_image_url, :article_type, :language, :published_at, :author_id, :featured_deck_id])
+    |> validate_required([:title, :slug, :body, :total_views_alltime, :is_featured])
+  end
+
   # ── Business operations ────────────────────────────────────────────
 
   def publish(_record) do
@@ -55,6 +63,11 @@ defmodule CardsProject.Content.Article do
   def archive(_record) do
     # TODO: implement Article.archive
     :ok
+  end
+
+  def replace(_record, _data) do
+    # TODO: implement Article.replace
+    {:error, :not_implemented}
   end
 
   def increment_view(_record) do

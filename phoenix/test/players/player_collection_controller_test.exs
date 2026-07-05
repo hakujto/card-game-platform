@@ -11,7 +11,7 @@ defmodule CardsProjectWeb.Players.PlayerCollectionControllerTest do
   }
 
   setup %{conn: conn} do
-    {:ok, owner} = CardsProject.Players.create_player(%{"display_name" => "test", "rank" => "Bronze", "rating" => 0, "peak_rating" => 0, "is_verified" => true, "created_at" => ~N[2024-01-01 00:00:00]})
+    {:ok, owner} = CardsProject.Players.create_player(%{"public_id" => "00000000-0000-0000-0000-000000000001", "display_name" => "test", "rank" => "Bronze", "rating" => 0, "peak_rating" => 0, "is_verified" => true, "created_at" => ~N[2024-01-01 00:00:00]})
     valid_params = Map.put(@valid_params, "player_id", owner.id)
     conn = assign(conn, :current_user, %{id: owner.id})
     {:ok, conn: conn, owner: owner, valid_params: valid_params}

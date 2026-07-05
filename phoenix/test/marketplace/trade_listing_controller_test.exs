@@ -3,6 +3,7 @@ defmodule CardsProjectWeb.Marketplace.TradeListingControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
+    "public_id" => "00000000-0000-0000-0000-000000000001",
     "foil" => true,
     "quantity" => 1,
     "created_at" => ~N[2024-01-01 00:00:00],

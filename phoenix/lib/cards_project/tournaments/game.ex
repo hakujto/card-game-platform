@@ -5,6 +5,7 @@ defmodule CardsProject.Tournaments.Game do
   schema "games" do
     field :game_number, :integer
     field :winner_side, :string
+    field :complexity_score, :float
     field :turns_played, :integer
     field :duration_seconds, :integer
     field :ended_by, :string
@@ -18,10 +19,11 @@ defmodule CardsProject.Tournaments.Game do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
+    |> cast(attrs, [:game_number, :winner_side, :complexity_score, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
     |> validate_required([:game_number])
     |> validate_inclusion(:winner_side, ["Player1", "Player2", "Draw"])
     |> validate_inclusion(:ended_by, ["Normal", "Timeout", "Concession", "DrawOffer"])
+    |> validate_number(:game_number, greater_than_or_equal_to: 1, less_than_or_equal_to: 3)
     |> validate_number(:game_number, greater_than_or_equal_to: 1, less_than_or_equal_to: 3, message: "Game number must be between 1 and 3 (best-of-3)")
     |> then(fn cs ->
       if not is_nil(get_field(cs, :turns_played)) and (not ((get_field(cs, :turns_played) || 0) > 0)) do

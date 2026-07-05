@@ -75,8 +75,13 @@ defmodule CardsProjectWeb.Players.PlayerController do
 
   # POST /api/players/{id}/verify
   def verify(conn, %{"id" => id}) do
-    Players.player_verify_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin"] do
+      Players.player_verify_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for verify"}) |> halt()
+    end
   end
 
   # PATCH /api/players/{id}/rating
@@ -88,7 +93,7 @@ defmodule CardsProjectWeb.Players.PlayerController do
 
   defp serialize_player(%Player{} = record) do
     record
-    |> Map.take([:id, :display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :is_verified, :created_at, :last_active_at, :user_id, :season_stats_id])
+    |> Map.take([:id, :public_id, :display_name, :rank, :rating, :peak_rating, :bio, :country_code, :avatar_url, :preferred_format, :contact_email, :win_rate_cached, :is_verified, :created_at, :last_active_at, :user_id, :season_stats_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :last_active_at), :last_active_at, Map.get(m, :last_active_at)) end).()
   end

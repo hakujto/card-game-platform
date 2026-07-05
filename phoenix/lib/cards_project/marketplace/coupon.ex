@@ -23,6 +23,7 @@ defmodule CardsProject.Marketplace.Coupon do
     |> cast(attrs, [:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active, :discount_type, :max_uses])
     |> validate_required([:code, :discount_value, :min_order_value, :uses_count, :valid_from, :valid_until, :is_active])
     |> validate_inclusion(:discount_type, ["Percent", "Fixed"])
+    |> validate_number(:discount_value, greater_than_or_equal_to: 0.01)
     |> unique_constraint(:code, message: "code must be unique")
     |> then(fn cs ->
       lv = get_field(cs, :valid_from)

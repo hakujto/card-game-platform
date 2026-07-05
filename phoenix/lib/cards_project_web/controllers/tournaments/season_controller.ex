@@ -45,20 +45,35 @@ defmodule CardsProjectWeb.Tournaments.SeasonController do
 
   # POST /api/seasons/{id}/activate
   def activate(conn, %{"id" => id}) do
-    Tournaments.season_activate_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin"] do
+      Tournaments.season_activate_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for activate"}) |> halt()
+    end
   end
 
   # POST /api/seasons/{id}/deactivate
   def deactivate(conn, %{"id" => id}) do
-    Tournaments.season_deactivate_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin"] do
+      Tournaments.season_deactivate_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for deactivate"}) |> halt()
+    end
   end
 
   # POST /api/seasons/{id}/finalize
   def finalize_rewards(conn, %{"id" => id}) do
-    Tournaments.season_finalize_rewards_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin"] do
+      Tournaments.season_finalize_rewards_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for finalize_rewards"}) |> halt()
+    end
   end
 
   # GET /api/seasons/{id}/ongoing

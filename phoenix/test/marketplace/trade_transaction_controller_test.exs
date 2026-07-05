@@ -3,7 +3,7 @@ defmodule CardsProjectWeb.Marketplace.TradeTransactionControllerTest do
   use CardsProjectWeb.ConnCase
 
   @valid_params %{
-    "final_price" => 2,
+    "final_price" => 1,
     "platform_fee" => 0,
     "status" => "Pending"
   }

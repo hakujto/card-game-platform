@@ -75,8 +75,13 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
   # POST /api/trade-listings/{id}/finalize
   def finalize_auction(conn, %{"id" => id}) do
-    Marketplace.trade_listing_finalize_auction_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "seller"] do
+      Marketplace.trade_listing_finalize_auction_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for finalize_auction"}) |> halt()
+    end
   end
 
   # PATCH /api/trade_listings/:id/transitions/pending-to-active
@@ -177,7 +182,7 @@ defmodule CardsProjectWeb.Marketplace.TradeListingController do
 
   defp serialize_trade_listing(%TradeListing{} = record) do
     record
-    |> Map.take([:id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
+    |> Map.take([:id, :public_id, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :foil, :condition, :quantity, :description, :created_at, :expires_at, :seller_id, :card_id, :bids_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :expires_at), :expires_at, Map.get(m, :expires_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :auction_end_time), :auction_end_time, Map.get(m, :auction_end_time)) end).()

@@ -25,6 +25,7 @@ defmodule CardsProject.Cards.CardSet do
     |> cast(attrs, [:name, :code, :release_date, :total_cards, :is_rotated, :rotation_date, :set_type, :description, :logo_url])
     |> validate_required([:name, :code, :release_date, :total_cards, :is_rotated])
     |> validate_inclusion(:set_type, ["Core", "Expansion", "Supplemental", "Masters", "Draft"])
+    |> validate_format(:code, ~r/[A-Z]{2,6}/)
     |> unique_constraint(:code, message: "code must be unique")
     |> validate_number(:total_cards, greater_than: 0, message: "Card set must have at least one card")
     |> then(fn cs ->

@@ -218,7 +218,7 @@ defmodule CardsProjectWeb.Tournaments.TournamentController do
 
   defp serialize_tournament(%Tournament{} = record) do
     record
-    |> Map.take([:id, :name, :description, :status, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
+    |> Map.take([:id, :public_id, :name, :description, :status, :bracket_data, :format, :tournament_type, :max_players, :entry_fee, :prize_pool, :start_time, :end_time, :is_online, :location, :rules_text, :created_at, :season_id, :organizer_id, :registrations_id, :rounds_id, :prizes_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :start_time), :start_time, Map.get(m, :start_time)) end).()
     |> (fn m -> Map.put(Map.delete(m, :end_time), :end_time, Map.get(m, :end_time)) end).()

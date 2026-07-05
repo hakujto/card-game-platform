@@ -56,10 +56,14 @@ defmodule CardsProjectWeb.Marketplace.ProductControllerTest do
     end
   end
 
+  @patch_params %{
+    "featured" => true
+  }
+
   describe "PUT /api/products/:id" do
     test "updates and returns 200", %{conn: conn} do
       {:ok, record} = CardsProject.Marketplace.create_product(@valid_params)
-      conn = put(conn, "/api/products/#{record.id}", @valid_params)
+      conn = put(conn, "/api/products/#{record.id}", @patch_params)
       assert json_response(conn, 200)
     end
   end

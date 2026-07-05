@@ -244,7 +244,7 @@ defmodule CardsProjectWeb.Marketplace.OrderController do
 
   defp serialize_order(%Order{} = record) do
     record
-    |> Map.take([:id, :status, :total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :created_at, :paid_at, :shipped_at, :player_id, :items_id, :coupon_id])
+    |> Map.take([:id, :status, :total, :discount_applied, :currency, :payment_method, :shipping_address, :tracking_number, :created_at, :paid_at, :shipped_at, :player_id, :items_id, :coupon_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :paid_at), :paid_at, Map.get(m, :paid_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :shipped_at), :shipped_at, Map.get(m, :shipped_at)) end).()

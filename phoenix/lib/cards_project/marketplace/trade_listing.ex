@@ -3,6 +3,7 @@ defmodule CardsProject.Marketplace.TradeListing do
   import Ecto.Changeset
 
   schema "trade_listings" do
+    field :public_id, :string
     field :status, :string
     field :listing_type, :string
     field :asking_price, :decimal
@@ -26,11 +27,12 @@ defmodule CardsProject.Marketplace.TradeListing do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:foil, :quantity, :created_at, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :description, :expires_at, :seller_id, :card_id])
-    |> validate_required([:foil, :quantity, :created_at])
+    |> cast(attrs, [:public_id, :foil, :quantity, :created_at, :status, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :description, :expires_at, :seller_id, :card_id])
+    |> validate_required([:public_id, :foil, :quantity, :created_at])
     |> validate_inclusion(:status, ["Active", "Sold", "Expired", "Cancelled", "Pending"])
     |> validate_inclusion(:listing_type, ["FixedPrice", "Auction", "TradeOffer"])
     |> validate_inclusion(:condition, ["Mint", "NearMint", "Excellent", "Good", "Played"])
+    |> unique_constraint(:public_id, message: "public_id must be unique")
     |> validate_number(:quantity, greater_than_or_equal_to: 1, less_than_or_equal_to: 9999, message: "Listing quantity must be between 1 and 9999")
     |> then(fn cs ->
       if get_field(cs, :listing_type) == "FixedPrice" and (is_nil(get_field(cs, :asking_price))) do
@@ -46,6 +48,20 @@ defmodule CardsProject.Marketplace.TradeListing do
         cs
       end
     end)
+    |> then(fn cs ->
+      if get_field(cs, :listing_type) == "FixedPrice" and is_nil(get_field(cs, :asking_price)) do
+        Ecto.Changeset.add_error(cs, :asking_price, "asking_price is required")
+      else
+        cs
+      end
+    end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:public_id, :foil, :quantity, :listing_type, :asking_price, :auction_start_price, :auction_current_bid, :auction_end_time, :condition, :description, :expires_at, :seller_id, :card_id])
+    |> validate_required([:public_id, :foil, :quantity])
   end
 
   # ── Business operations ────────────────────────────────────────────

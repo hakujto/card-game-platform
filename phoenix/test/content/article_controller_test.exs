@@ -8,6 +8,7 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
     "body" => "test",
     "view_count" => 0,
     "likes_count" => 0,
+    "total_views_alltime" => 0,
     "is_featured" => true,
     "created_at" => ~N[2024-01-01 00:00:00],
     "updated_at" => ~N[2024-01-01 00:00:00],
@@ -55,10 +56,14 @@ defmodule CardsProjectWeb.Content.ArticleControllerTest do
     end
   end
 
+  @patch_params %{
+    "is_featured" => true
+  }
+
   describe "PUT /api/articles/:id" do
     test "updates and returns 200", %{conn: conn} do
       {:ok, record} = CardsProject.Content.create_article(@valid_params)
-      conn = put(conn, "/api/articles/#{record.id}", @valid_params)
+      conn = put(conn, "/api/articles/#{record.id}", @patch_params)
       assert json_response(conn, 200)
     end
   end

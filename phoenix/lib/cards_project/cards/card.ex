@@ -3,6 +3,7 @@ defmodule CardsProject.Cards.Card do
   import Ecto.Changeset
 
   schema "cards" do
+    field :public_id, :string
     field :name, :string
     field :card_type, :string
     field :rarity, :string
@@ -19,6 +20,8 @@ defmodule CardsProject.Cards.Card do
     field :is_banned, :boolean, default: false
     field :is_restricted, :boolean, default: false
     field :power_level, :integer, default: 1
+    field :metadata, :map
+    field :total_copies_in_circulation, :integer, default: 0
     belongs_to :set, CardsProject.Cards.CardSet
     has_many :rulings, CardsProject.Cards.CardRuling, foreign_key: :card_id
     has_many :abilities, CardsProject.Cards.CardAbility, foreign_key: :card_id
@@ -39,12 +42,15 @@ defmodule CardsProject.Cards.Card do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :mana_cost, :description, :is_banned, :is_restricted, :power_level, :card_type, :rarity, :mana_colors, :attack, :defense, :loyalty, :flavor_text, :image_url, :artist_name, :legal_formats, :set_id])
-    |> validate_required([:name, :mana_cost, :description, :is_banned, :is_restricted, :power_level])
+    |> cast(attrs, [:public_id, :name, :mana_cost, :description, :is_banned, :is_restricted, :power_level, :total_copies_in_circulation, :card_type, :rarity, :mana_colors, :attack, :defense, :loyalty, :flavor_text, :image_url, :artist_name, :legal_formats, :metadata, :set_id])
+    |> validate_required([:public_id, :name, :mana_cost, :description, :is_banned, :is_restricted, :power_level, :total_copies_in_circulation])
     |> validate_inclusion(:card_type, ["Creature", "Spell", "Land", "Artifact", "Enchantment", "Planeswalker"])
     |> validate_inclusion(:rarity, ["Common", "Uncommon", "Rare", "MythicRare", "Legendary"])
     |> validate_inclusion(:mana_colors, ["White", "Blue", "Black", "Red", "Green", "Colorless"])
     |> validate_inclusion(:legal_formats, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
+    |> validate_number(:mana_cost, greater_than_or_equal_to: 0, less_than_or_equal_to: 20)
+    |> validate_number(:power_level, greater_than_or_equal_to: 1, less_than_or_equal_to: 10)
+    |> unique_constraint(:public_id, message: "public_id must be unique")
     |> validate_number(:mana_cost, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, message: "mana_cost must be between 0 and 20")
     |> validate_number(:power_level, greater_than_or_equal_to: 1, less_than_or_equal_to: 10, message: "power_level must be between 1 and 10")
     |> then(fn cs ->
@@ -82,6 +88,34 @@ defmodule CardsProject.Cards.Card do
         cs
       end
     end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Creature" and is_nil(get_field(cs, :attack)) do
+        Ecto.Changeset.add_error(cs, :attack, "attack is required")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Creature" and is_nil(get_field(cs, :defense)) do
+        Ecto.Changeset.add_error(cs, :defense, "defense is required")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :card_type) == "Planeswalker" and is_nil(get_field(cs, :loyalty)) do
+        Ecto.Changeset.add_error(cs, :loyalty, "loyalty is required")
+      else
+        cs
+      end
+    end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:public_id, :name, :mana_cost, :description, :power_level, :total_copies_in_circulation, :card_type, :rarity, :mana_colors, :attack, :defense, :loyalty, :flavor_text, :image_url, :artist_name, :legal_formats, :metadata, :set_id])
+    |> validate_required([:public_id, :name, :mana_cost, :description, :power_level, :total_copies_in_circulation])
   end
 
   # ── Business operations ────────────────────────────────────────────
@@ -104,6 +138,11 @@ defmodule CardsProject.Cards.Card do
   def unrestrict(_record) do
     # TODO: implement Card.unrestrict
     :ok
+  end
+
+  def replace(_record, _data) do
+    # TODO: implement Card.replace
+    {:error, :not_implemented}
   end
 
   def calculate_value(_record) do

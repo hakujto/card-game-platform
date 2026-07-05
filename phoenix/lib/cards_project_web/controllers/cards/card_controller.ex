@@ -45,26 +45,58 @@ defmodule CardsProjectWeb.Cards.CardController do
 
   # POST /api/cards/{id}/ban
   def ban(conn, %{"id" => id}) do
-    Cards.card_ban_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "moderator"] do
+      Cards.card_ban_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for ban"}) |> halt()
+    end
   end
 
   # POST /api/cards/{id}/unban
   def unban(conn, %{"id" => id}) do
-    Cards.card_unban_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "moderator"] do
+      Cards.card_unban_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for unban"}) |> halt()
+    end
   end
 
   # POST /api/cards/{id}/restrict
   def restrict(conn, %{"id" => id}) do
-    Cards.card_restrict_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "moderator"] do
+      Cards.card_restrict_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for restrict"}) |> halt()
+    end
   end
 
   # POST /api/cards/{id}/unrestrict
   def unrestrict(conn, %{"id" => id}) do
-    Cards.card_unrestrict_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin", "moderator"] do
+      Cards.card_unrestrict_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for unrestrict"}) |> halt()
+    end
+  end
+
+  # PUT /api/cards/{id}
+  def replace(conn, %{"id" => id} = params) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["admin"] do
+      data = Map.get(params, "data")
+      result = Cards.card_replace_behavior(id, data)
+      json(conn, %{result: result})
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for replace"}) |> halt()
+    end
   end
 
   # GET /api/cards/{id}/value
@@ -88,7 +120,7 @@ defmodule CardsProjectWeb.Cards.CardController do
   end
 
   defp serialize_card(%Card{} = record) do
-    Map.take(record, [:id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :set_id, :rulings_id, :abilities_id])
+    Map.take(record, [:id, :public_id, :name, :card_type, :rarity, :mana_cost, :mana_colors, :attack, :defense, :loyalty, :description, :flavor_text, :image_url, :artist_name, :legal_formats, :is_banned, :is_restricted, :power_level, :metadata, :total_copies_in_circulation, :set_id, :rulings_id, :abilities_id])
   end
 
   defp format_errors(changeset) do

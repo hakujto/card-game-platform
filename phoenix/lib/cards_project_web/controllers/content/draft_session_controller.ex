@@ -151,7 +151,7 @@ defmodule CardsProjectWeb.Content.DraftSessionController do
 
   defp serialize_draft_session(%DraftSession{} = record) do
     record
-    |> Map.take([:id, :status, :draft_type, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id, :participants_id])
+    |> Map.take([:id, :status, :draft_type, :pack_contents, :seats, :time_per_pick_seconds, :created_at, :completed_at, :card_set_id, :participants_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :completed_at), :completed_at, Map.get(m, :completed_at)) end).()
   end

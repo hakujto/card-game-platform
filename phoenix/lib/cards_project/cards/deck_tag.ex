@@ -4,6 +4,7 @@ defmodule CardsProject.Cards.DeckTag do
 
   schema "deck_tags" do
     field :name, :string
+    field :slug, :string
     field :color, :string
     has_many :deck_assignments, CardsProject.Cards.DeckTagAssignment, foreign_key: :tag_id
 
@@ -13,7 +14,7 @@ defmodule CardsProject.Cards.DeckTag do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :color])
+    |> cast(attrs, [:name, :slug, :color])
     |> validate_required([:name])
   end
 

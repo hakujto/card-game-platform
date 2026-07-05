@@ -45,14 +45,36 @@ defmodule CardsProjectWeb.Content.ArticleController do
 
   # POST /api/articles/{id}/publish
   def publish(conn, %{"id" => id}) do
-    Content.article_publish_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["editor", "admin"] do
+      Content.article_publish_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for publish"}) |> halt()
+    end
   end
 
   # POST /api/articles/{id}/archive
   def archive(conn, %{"id" => id}) do
-    Content.article_archive_behavior(id)
-    send_resp(conn, :no_content, "")
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["editor", "admin"] do
+      Content.article_archive_behavior(id)
+      send_resp(conn, :no_content, "")
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for archive"}) |> halt()
+    end
+  end
+
+  # PUT /api/articles/{id}
+  def replace(conn, %{"id" => id} = params) do
+    user_role = conn.assigns[:current_user] && conn.assigns[:current_user].role
+    if user_role in ["editor", "admin"] do
+      data = Map.get(params, "data")
+      result = Content.article_replace_behavior(id, data)
+      json(conn, %{result: result})
+    else
+      conn |> put_status(:forbidden) |> json(%{error: "Insufficient role for replace"}) |> halt()
+    end
   end
 
   # POST /api/articles/{id}/view
@@ -157,7 +179,7 @@ defmodule CardsProjectWeb.Content.ArticleController do
 
   defp serialize_article(%Article{} = record) do
     record
-    |> Map.take([:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
+    |> Map.take([:id, :title, :slug, :body, :excerpt, :cover_image_url, :status, :article_type, :language, :view_count, :likes_count, :total_views_alltime, :is_featured, :published_at, :created_at, :updated_at, :author_id, :featured_deck_id, :comments_id])
     |> (fn m -> Map.put(Map.delete(m, :created_at), :created_at, Map.get(m, :created_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :updated_at), :updated_at, Map.get(m, :updated_at)) end).()
     |> (fn m -> Map.put(Map.delete(m, :published_at), :published_at, Map.get(m, :published_at)) end).()

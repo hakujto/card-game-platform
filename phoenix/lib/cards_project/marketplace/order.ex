@@ -28,6 +28,7 @@ defmodule CardsProject.Marketplace.Order do
     |> validate_required([:total, :discount_applied, :currency, :created_at])
     |> validate_inclusion(:status, ["Pending", "Paid", "Processing", "Shipped", "Completed", "Cancelled", "Refunded"])
     |> validate_inclusion(:payment_method, ["Card", "PayPal", "Crypto", "PlatformCredits"])
+    |> validate_format(:currency, ~r/[A-Z]{3}/)
     |> validate_number(:total, greater_than_or_equal_to: 0, message: "Order total must not be negative")
     |> then(fn cs ->
       lv = get_field(cs, :total)
@@ -59,6 +60,27 @@ defmodule CardsProject.Marketplace.Order do
         cs
       end
     end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Shipped" and is_nil(get_field(cs, :tracking_number)) do
+        Ecto.Changeset.add_error(cs, :tracking_number, "tracking_number is required")
+      else
+        cs
+      end
+    end)
+    |> then(fn cs ->
+      if get_field(cs, :status) == "Paid" and is_nil(get_field(cs, :paid_at)) do
+        Ecto.Changeset.add_error(cs, :paid_at, "paid_at is required")
+      else
+        cs
+      end
+    end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:total, :discount_applied, :currency, :payment_method, :payment_reference, :shipping_address, :tracking_number, :shipped_at, :player_id, :coupon_id])
+    |> validate_required([:total, :discount_applied, :currency])
   end
 
   # ── Business operations ────────────────────────────────────────────

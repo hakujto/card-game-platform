@@ -3,9 +3,11 @@ defmodule CardsProject.Tournaments.Tournament do
   import Ecto.Changeset
 
   schema "tournaments" do
+    field :public_id, :string
     field :name, :string
     field :description, :string
     field :status, :string
+    field :bracket_data, :map
     field :format, :string
     field :tournament_type, :string
     field :max_players, :integer
@@ -32,11 +34,13 @@ defmodule CardsProject.Tournaments.Tournament do
   @doc false
   def changeset(record, attrs) do
     record
-    |> cast(attrs, [:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :status, :format, :tournament_type, :end_time, :location, :rules_text, :season_id, :organizer_id])
-    |> validate_required([:name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at])
+    |> cast(attrs, [:public_id, :name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at, :description, :status, :bracket_data, :format, :tournament_type, :end_time, :location, :rules_text, :season_id, :organizer_id])
+    |> validate_required([:public_id, :name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :created_at])
     |> validate_inclusion(:status, ["Draft", "Registration", "Ongoing", "Completed", "Cancelled"])
     |> validate_inclusion(:format, ["Standard", "Extended", "Legacy", "Vintage", "Commander", "Draft"])
     |> validate_inclusion(:tournament_type, ["Swiss", "SingleElimination", "DoubleElimination", "RoundRobin"])
+    |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 512)
+    |> unique_constraint(:public_id, message: "public_id must be unique")
     |> validate_number(:max_players, greater_than_or_equal_to: 2, less_than_or_equal_to: 512, message: "Tournament must allow between 2 and 512 players")
     |> validate_number(:entry_fee, greater_than_or_equal_to: 0, message: "Entry fee must not be negative")
     |> validate_number(:prize_pool, greater_than_or_equal_to: 0, message: "Prize pool must not be negative")
@@ -47,6 +51,13 @@ defmodule CardsProject.Tournaments.Tournament do
         cs
       end
     end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:public_id, :name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online, :description, :bracket_data, :format, :tournament_type, :end_time, :location, :rules_text, :season_id, :organizer_id])
+    |> validate_required([:public_id, :name, :max_players, :entry_fee, :prize_pool, :start_time, :is_online])
   end
 
   # ── Business operations ────────────────────────────────────────────

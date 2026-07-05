@@ -26,6 +26,20 @@ defmodule CardsProject.Tournaments.AwardedPrize do
         cs
       end
     end)
+    |> then(fn cs ->
+      if get_field(cs, :claimed) == "true" and is_nil(get_field(cs, :claimed_at)) do
+        Ecto.Changeset.add_error(cs, :claimed_at, "claimed_at is required")
+      else
+        cs
+      end
+    end)
+  end
+
+  @doc false
+  def update_changeset(record, attrs) do
+    record
+    |> cast(attrs, [:claimed, :claimed_at, :prize_id, :player_id])
+    |> validate_required([:claimed])
   end
 
   # ── Business operations ────────────────────────────────────────────

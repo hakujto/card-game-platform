@@ -43,7 +43,7 @@ defmodule CardsProjectWeb.Tournaments.GameController do
   end
 
   defp serialize_game(%Game{} = record) do
-    Map.take(record, [:id, :game_number, :winner_side, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
+    Map.take(record, [:id, :game_number, :winner_side, :complexity_score, :turns_played, :duration_seconds, :ended_by, :replay_url, :match_id, :winner_id])
   end
 
   defp format_errors(changeset) do
