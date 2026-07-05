@@ -30,7 +30,7 @@ class PlayerCollectionModelTest(TestCase):
     def setUp(self):
         _dep_player = Player.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = PlayerCollection.objects.create(player=_dep_player, card=_dep_card, quantity=1, acquired_at="2024-01-01T00:00:00Z")
@@ -81,7 +81,7 @@ class PlayerAchievementModelTest(TestCase):
 class CraftingRecipeModelTest(TestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = CraftingRecipe.objects.create(result_card=_dep_card, dust_cost=1)
@@ -96,7 +96,7 @@ class CraftingRecipeModelTest(TestCase):
 class CraftingIngredientModelTest(TestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_crafting_recipe = CraftingRecipe.objects.create(dust_cost=1, result_card=_dep_card)

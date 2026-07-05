@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+import uuid
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
@@ -24,14 +26,17 @@ class PlayerPreferredFormatChoices(models.TextChoices):
 
 
 class Player(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     display_name = models.CharField(max_length=50, unique=True)
     rank = models.CharField(max_length=20, choices=PlayerRankChoices.choices, default=PlayerRankChoices.BRONZE)
     rating = models.IntegerField(default=1000)
     peak_rating = models.IntegerField(default=1000)
     bio = models.TextField(null=True, blank=True)
-    country_code = models.CharField(max_length=2, null=True, blank=True)
+    country_code = models.CharField(max_length=2, null=True, blank=True, validators=[RegexValidator(r"[A-Z]{2}")])
     avatar_url = models.URLField(max_length=200, null=True, blank=True)
     preferred_format = models.CharField(max_length=20, choices=PlayerPreferredFormatChoices.choices, null=True, blank=True)
+    contact_email = models.EmailField(max_length=254, null=True, blank=True)
+    win_rate_cached = models.FloatField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField()
     last_active_at = models.DateTimeField(null=True, blank=True)
@@ -45,7 +50,7 @@ class Player(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.display_name)
+        return str(self.public_id)
 
     # ── Business operations ──────────────────────────────────────────
 
@@ -117,7 +122,7 @@ class PlayerSeasonStats(models.Model):
     tournament_wins = models.IntegerField(default=0)
     highest_rank = models.CharField(max_length=20, choices=PlayerSeasonStatsHighestRankChoices.choices, null=True, blank=True)
     season_points = models.IntegerField(default=0)
-    player = models.ForeignKey("Player", on_delete=models.CASCADE, null=True, blank=True)
+    player = models.ForeignKey("Player", on_delete=models.CASCADE, related_name="season_stats", null=True, blank=True)
     season = models.ForeignKey("tournaments.Season", on_delete=models.CASCADE, related_name="player_stats")
 
     class Meta:

@@ -81,6 +81,9 @@ class TournamentService:
         instance.complete()
         instance.save()
 
+        # TODO: emit TournamentCompleted event
+        # dispatch_event("TournamentCompleted", instance)
+
     @staticmethod
     def generate_round(id):
         from .models import Tournament
@@ -102,6 +105,9 @@ class TournamentService:
         instance = Tournament.objects.get(pk=id)
         instance.register_player(player_id, deck_id)
         instance.save()
+
+        # TODO: emit PlayerRegistered event
+        # dispatch_event("PlayerRegistered", instance)
 
     @staticmethod
     def is_full(id):

@@ -16,6 +16,9 @@ class CardViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="ban")
     def ban(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "moderator"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for ban")
         instance = self.get_object()
         result = instance.ban()
         from rest_framework.response import Response
@@ -23,6 +26,9 @@ class CardViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="unban")
     def unban(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "moderator"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for unban")
         instance = self.get_object()
         result = instance.unban()
         from rest_framework.response import Response
@@ -30,6 +36,9 @@ class CardViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="restrict")
     def restrict(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "moderator"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for restrict")
         instance = self.get_object()
         result = instance.restrict()
         from rest_framework.response import Response
@@ -37,10 +46,24 @@ class CardViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="unrestrict")
     def unrestrict(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "moderator"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for unrestrict")
         instance = self.get_object()
         result = instance.unrestrict()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["put"], url_path="replace")
+    def replace(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for replace")
+        instance = self.get_object()
+        data = request.data.get("data")
+        result = instance.replace(data)
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     @action(detail=True, methods=["get"], url_path="value")
     def calculate_value(self, request, pk=None):
@@ -214,7 +237,7 @@ class CardAbilityViewSet(viewsets.ModelViewSet):
 
 
 class DeckViewSet(viewsets.ModelViewSet):
-    queryset = Deck.objects.select_related().all()
+    queryset = Deck.objects.select_related("player").all()
     serializer_class = DeckSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "description"]

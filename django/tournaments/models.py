@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+import uuid
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
@@ -81,12 +83,14 @@ class TournamentTournamentTypeChoices(models.TextChoices):
 
 
 class Tournament(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=TournamentStatusChoices.choices, default=TournamentStatusChoices.DRAFT)
+    bracket_data = models.JSONField(default=dict, null=True, blank=True)
     format = models.CharField(max_length=20, choices=TournamentFormatChoices.choices, default=TournamentFormatChoices.STANDARD)
     tournament_type = models.CharField(max_length=20, choices=TournamentTournamentTypeChoices.choices, default=TournamentTournamentTypeChoices.SWISS)
-    max_players = models.IntegerField()
+    max_players = models.IntegerField(validators=[MinValueValidator(2), MaxValueValidator(512)])
     entry_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     prize_pool = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     start_time = models.DateTimeField()
@@ -105,7 +109,7 @@ class Tournament(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.name)
+        return str(self.public_id)
 
     # ── Business operations ──────────────────────────────────────────
 
@@ -178,6 +182,17 @@ class Tournament(models.Model):
         pass
 
 
+class TournamentAuditLog(models.Model):
+    record = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='audit_logs')
+    field = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+
 class TournamentJudgeRoleChoices(models.TextChoices):
     HEADJUDGE = "HeadJudge", "Headjudge"
     JUDGE = "Judge", "Judge"
@@ -221,7 +236,7 @@ class TournamentRegistration(models.Model):
     final_standing = models.IntegerField(null=True, blank=True)
     points_earned = models.IntegerField(default=0)
     registered_at = models.DateTimeField()
-    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE)
+    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE, related_name="registrations")
     player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="tournament_registrations")
     deck = models.ForeignKey("cards.Deck", on_delete=models.PROTECT, related_name="tournament_registrations")
 
@@ -275,7 +290,7 @@ class TournamentRound(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     time_limit_minutes = models.IntegerField(default=50)
-    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE)
+    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE, related_name="rounds")
 
     class Meta:
         verbose_name = "Tournament Round"
@@ -337,7 +352,7 @@ class Match(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     result_notes = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("TournamentRound", on_delete=models.CASCADE, null=True, blank=True)
+    round = models.ForeignKey("TournamentRound", on_delete=models.CASCADE, related_name="matches", null=True, blank=True)
     player1 = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="matches_as_player1")
     player2 = models.ForeignKey("players.Player", on_delete=models.SET_NULL, related_name="matches_as_player2", null=True, blank=True)
 
@@ -417,13 +432,14 @@ class GameEndedByChoices(models.TextChoices):
 
 
 class Game(models.Model):
-    game_number = models.IntegerField()
+    game_number = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(3)])
     winner_side = models.CharField(max_length=20, choices=GameWinnerSideChoices.choices, null=True, blank=True)
+    complexity_score = models.FloatField(null=True, blank=True)
     turns_played = models.IntegerField(null=True, blank=True)
     duration_seconds = models.IntegerField(null=True, blank=True)
     ended_by = models.CharField(max_length=20, choices=GameEndedByChoices.choices, null=True, blank=True)
     replay_url = models.URLField(max_length=200, null=True, blank=True)
-    match = models.ForeignKey("Match", on_delete=models.CASCADE)
+    match = models.ForeignKey("Match", on_delete=models.CASCADE, related_name="games")
     winner = models.ForeignKey("players.Player", on_delete=models.SET_NULL, related_name="won_games", null=True, blank=True)
 
     class Meta:
@@ -474,14 +490,14 @@ class TournamentPrizePrizeTypeChoices(models.TextChoices):
 
 
 class TournamentPrize(models.Model):
-    placement_from = models.IntegerField()
-    placement_to = models.IntegerField()
+    placement_from = models.IntegerField(validators=[MinValueValidator(1)])
+    placement_to = models.IntegerField(validators=[MinValueValidator(1)])
     prize_type = models.CharField(max_length=20, choices=TournamentPrizePrizeTypeChoices.choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     description = models.TextField(null=True, blank=True)
     packs_count = models.IntegerField(null=True, blank=True)
     season_points = models.IntegerField(default=0)
-    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE)
+    tournament = models.ForeignKey("Tournament", on_delete=models.CASCADE, related_name="prizes")
 
     class Meta:
         verbose_name = "Tournament Prize"
@@ -541,6 +557,8 @@ class AwardedPrize(models.Model):
         errors = {}
         if not ((self.final_placement is None or self.final_placement > 0)):
             errors["final_placement_positive"] = "Final placement must be greater than zero"
+        if (self.claimed is True) and self.claimed_at is None:
+            errors["claimed_at"] = "claimed_at is required"
         if errors:
             raise ValidationError(errors)
 
@@ -561,3 +579,18 @@ def _tournament_sync_season_stats(sender, instance, **kwargs):
 @receiver(pre_delete, sender=Tournament)
 def _tournament_prevent_delete_if_ongoing(sender, instance, **kwargs):
     instance._hook_prevent_delete_if_ongoing(**kwargs)
+@receiver(pre_save, sender=Tournament)
+def _audit_tournament(sender, instance, **kwargs):
+    if not instance.pk: return
+    try:
+        old = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    for field in []:
+        old_val = getattr(old, field, None)
+        new_val = getattr(instance, field, None)
+        if str(old_val) != str(new_val):
+            TournamentAuditLog.objects.create(
+                record=old, field=field,
+                old_value=str(old_val), new_value=str(new_val)
+            )

@@ -123,6 +123,9 @@ Base URL: `http://localhost:8000`
 - `GET/POST` `/api/streams/`
 - `GET/PUT/PATCH/DELETE` `/api/streams/{id}/`
 
+### Wallet BC
+
+
 ## Admin Panel
 
 `http://localhost:8000/admin/`
@@ -142,6 +145,7 @@ Bounded Contexts:
 - **Tournaments BC** (`tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+- **Wallet BC** (`wallet/`) — 
 
 ## Docker
 

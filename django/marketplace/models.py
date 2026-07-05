@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+import uuid
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
@@ -18,7 +20,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
     active = models.BooleanField(default=True)
-    discount_percent = models.IntegerField(default=0)
+    discount_percent = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=0)
     description = models.TextField(null=True, blank=True)
     image_url = models.URLField(max_length=200, null=True, blank=True)
     featured = models.BooleanField(default=False)
@@ -93,7 +95,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=OrderStatusChoices.choices, default=OrderStatusChoices.PENDING)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    currency = models.CharField(max_length=3, default="USD")
+    currency = models.CharField(max_length=3, validators=[RegexValidator(r"[A-Z]{3}")], default="USD")
     payment_method = models.CharField(max_length=20, choices=OrderPaymentMethodChoices.choices, null=True, blank=True)
     payment_reference = models.CharField(max_length=200, null=True, blank=True)
     shipping_address = models.TextField(null=True, blank=True)
@@ -149,6 +151,10 @@ class Order(models.Model):
             errors["total_not_negative"] = "Order total must not be negative"
         if not ((self.discount_applied is None or (self.total is not None and self.discount_applied <= self.total))):
             errors["discount_not_exceed_total"] = "Discount applied cannot exceed order total"
+        if (self.status == OrderStatusChoices.SHIPPED) and self.tracking_number is None:
+            errors["tracking_number"] = "tracking_number is required"
+        if (self.status == OrderStatusChoices.PAID) and self.paid_at is None:
+            errors["paid_at"] = "paid_at is required"
         if errors:
             raise ValidationError(errors)
 
@@ -187,11 +193,22 @@ class Order(models.Model):
         pass
 
 
+class OrderAuditLog(models.Model):
+    record = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='audit_logs')
+    field = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+
 class OrderItem(models.Model):
     quantity = models.IntegerField()
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
     foil = models.BooleanField(default=False)
-    order = models.ForeignKey("Order", on_delete=models.CASCADE, null=True, blank=True)
+    order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="items", null=True, blank=True)
     product = models.ForeignKey("Product", on_delete=models.PROTECT, related_name="order_items")
 
     class Meta:
@@ -227,7 +244,7 @@ class CouponDiscountTypeChoices(models.TextChoices):
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
     discount_type = models.CharField(max_length=20, choices=CouponDiscountTypeChoices.choices, default=CouponDiscountTypeChoices.PERCENT)
-    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
     min_order_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     max_uses = models.IntegerField(null=True, blank=True)
     uses_count = models.IntegerField(default=0)
@@ -302,6 +319,7 @@ class TradeListingConditionChoices(models.TextChoices):
 
 
 class TradeListing(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     status = models.CharField(max_length=20, choices=TradeListingStatusChoices.choices, default=TradeListingStatusChoices.ACTIVE)
     listing_type = models.CharField(max_length=20, choices=TradeListingListingTypeChoices.choices, default=TradeListingListingTypeChoices.FIXEDPRICE)
     asking_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -323,7 +341,7 @@ class TradeListing(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.status)
+        return str(self.public_id)
 
     # ── Business operations ──────────────────────────────────────────
 
@@ -352,6 +370,8 @@ class TradeListing(models.Model):
         errors = {}
         if not ((self.quantity is None or (self.quantity >= 1 and self.quantity <= 9999))):
             errors["quantity_positive"] = "Listing quantity must be between 1 and 9999"
+        if (self.listing_type == TradeListingListingTypeChoices.FIXEDPRICE) and self.asking_price is None:
+            errors["asking_price"] = "asking_price is required"
         if errors:
             raise ValidationError(errors)
 
@@ -379,7 +399,7 @@ class TradeBid(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     placed_at = models.DateTimeField()
     is_winning = models.BooleanField(default=False)
-    listing = models.ForeignKey("TradeListing", on_delete=models.CASCADE)
+    listing = models.ForeignKey("TradeListing", on_delete=models.CASCADE, related_name="bids")
     bidder = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="bids")
 
     class Meta:
@@ -460,6 +480,8 @@ class TradeTransaction(models.Model):
             errors["fee_not_negative"] = "Platform fee must not be negative"
         if not ((self.final_price is None or self.final_price > 0)):
             errors["final_price_positive"] = "Transaction final price must be greater than zero"
+        if (self.status == TradeTransactionStatusChoices.COMPLETED) and self.completed_at is None:
+            errors["completed_at"] = "completed_at is required"
         if errors:
             raise ValidationError(errors)
 
@@ -467,6 +489,17 @@ class TradeTransaction(models.Model):
         from django.core.exceptions import ValidationError
         if (self.status == TradeTransactionStatusChoices.COMPLETED) and (self.completed_at is None):
             raise ValidationError({"completed_requires_completed_at": "Completed transaction must have a completed_at timestamp"})
+
+
+class TradeTransactionAuditLog(models.Model):
+    record = models.ForeignKey(TradeTransaction, on_delete=models.CASCADE, related_name='audit_logs')
+    field = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
 
 
 class CardPriceHistory(models.Model):
@@ -591,3 +624,34 @@ def _order_assign_currency_default(sender, instance, **kwargs):
 def _order_notify_status_change(sender, instance, **kwargs):
     if not kwargs.get("created"):
         instance._hook_notify_status_change(**kwargs)
+@receiver(pre_save, sender=Order)
+def _audit_order(sender, instance, **kwargs):
+    if not instance.pk: return
+    try:
+        old = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    for field in []:
+        old_val = getattr(old, field, None)
+        new_val = getattr(instance, field, None)
+        if str(old_val) != str(new_val):
+            OrderAuditLog.objects.create(
+                record=old, field=field,
+                old_value=str(old_val), new_value=str(new_val)
+            )
+
+@receiver(pre_save, sender=TradeTransaction)
+def _audit_trade_transaction(sender, instance, **kwargs):
+    if not instance.pk: return
+    try:
+        old = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    for field in []:
+        old_val = getattr(old, field, None)
+        new_val = getattr(instance, field, None)
+        if str(old_val) != str(new_val):
+            TradeTransactionAuditLog.objects.create(
+                record=old, field=field,
+                old_value=str(old_val), new_value=str(new_val)
+            )

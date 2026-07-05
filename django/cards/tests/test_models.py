@@ -4,7 +4,7 @@ from ..models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, Dec
 
 class CardModelTest(TestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_cost=0, mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
 
     def test_str(self):
@@ -16,7 +16,7 @@ class CardModelTest(TestCase):
 
 class CardSetModelTest(TestCase):
     def setUp(self):
-        self.obj = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", rotation_date=None, total_cards=1)
+        self.obj = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", rotation_date=None, total_cards=1)
 
     def test_str(self):
         self.assertIsNotNone(str(self.obj))
@@ -27,7 +27,7 @@ class CardSetModelTest(TestCase):
 
 class CardRulingModelTest(TestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = CardRuling.objects.create(card=_dep_card, ruling_text="test", published_at="2024-01-01", source="test")
 
@@ -40,7 +40,7 @@ class CardRulingModelTest(TestCase):
 
 class CardAbilityModelTest(TestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = CardAbility.objects.create(card=_dep_card, keyword="test", ability_text="test")
 
@@ -69,7 +69,7 @@ class DeckCardModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = DeckCard.objects.create(deck=_dep_deck, card=_dep_card, quantity=1)
 
@@ -85,7 +85,7 @@ class DeckSideboardCardModelTest(TestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = DeckSideboardCard.objects.create(deck=_dep_deck, card=_dep_card, quantity=1)
 

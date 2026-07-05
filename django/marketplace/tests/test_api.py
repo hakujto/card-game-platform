@@ -32,7 +32,7 @@ class ProductAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"description": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_fails_when_price_positive_violated(self):
@@ -286,7 +286,6 @@ class CouponAPITest(APITestCase):
         data = {
             "code": "test2",
             "discount_value": 1,
-            "uses_count": 0,
             "valid_from": "2024-01-01T00:00:00Z",
             "valid_until": "2024-01-01T00:00:01Z"
         }
@@ -325,7 +324,7 @@ class TradeListingAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.player = _dep_player
@@ -443,7 +442,7 @@ class TradeBidAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_trade_listing = TradeListing.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
@@ -485,7 +484,7 @@ class TradeTransactionAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_trade_listing = TradeListing.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)
@@ -509,7 +508,7 @@ class TradeTransactionAPITest(APITestCase):
 class CardPriceHistoryAPITest(APITestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.cardset = _dep_card_set
@@ -532,7 +531,7 @@ class TradeDisputeAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_trade_listing = TradeListing.objects.create(created_at="2024-01-01T00:00:00Z", seller=_dep_player, card=_dep_card)

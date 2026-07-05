@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, DeckSideboardCard, DeckTag, DeckTagAssignment
+from players.models import Player
 
 
 class CardSerializer(serializers.ModelSerializer):
@@ -7,6 +8,7 @@ class CardSerializer(serializers.ModelSerializer):
         model = Card
         fields = [
             "id",
+            "public_id",
             "name",
             "card_type",
             "rarity",
@@ -23,9 +25,19 @@ class CardSerializer(serializers.ModelSerializer):
             "is_banned",
             "is_restricted",
             "power_level",
+            "metadata",
+            "total_copies_in_circulation",
             "set",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "is_banned" in fields: fields["is_banned"].read_only = True
+            if "is_restricted" in fields: fields["is_restricted"].read_only = True
+        return fields
 
 
 class CardSetSerializer(serializers.ModelSerializer):
@@ -73,7 +85,15 @@ class CardAbilitySerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class DeckPlayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ["id", "display_name", "avatar_url"]
+
+
 class DeckSerializer(serializers.ModelSerializer):
+    player_data = DeckPlayerSerializer(source="player", read_only=True)
+    player = serializers.PrimaryKeyRelatedField(queryset=Player.objects.all())
     createdAt = serializers.DateTimeField(source="created_at")
     updatedAt = serializers.DateTimeField(source="updated_at")
     class Meta:
@@ -95,8 +115,19 @@ class DeckSerializer(serializers.ModelSerializer):
             "cards",
             "sideboard_cards",
             "tags",
+            "player_data",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "wins" in fields: fields["wins"].read_only = True
+            if "losses" in fields: fields["losses"].read_only = True
+            if "draws" in fields: fields["draws"].read_only = True
+            if "created_at" in fields: fields["created_at"].read_only = True
+        return fields
 
 
 class DeckCardSerializer(serializers.ModelSerializer):
@@ -130,6 +161,7 @@ class DeckTagSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "slug",
             "color",
         ]
         read_only_fields = ["id"]

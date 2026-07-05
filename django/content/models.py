@@ -20,6 +20,7 @@ class DraftSessionDraftTypeChoices(models.TextChoices):
 class DraftSession(models.Model):
     status = models.CharField(max_length=20, choices=DraftSessionStatusChoices.choices, default=DraftSessionStatusChoices.WAITINGFORPLAYERS)
     draft_type = models.CharField(max_length=20, choices=DraftSessionDraftTypeChoices.choices, default=DraftSessionDraftTypeChoices.BOOSTER)
+    pack_contents = models.JSONField(default=dict, null=True, blank=True)
     seats = models.IntegerField(default=8)
     time_per_pick_seconds = models.IntegerField(default=30)
     created_at = models.DateTimeField()
@@ -83,7 +84,7 @@ class DraftSession(models.Model):
 class DraftParticipant(models.Model):
     seat_number = models.IntegerField()
     joined_at = models.DateTimeField()
-    session = models.ForeignKey("DraftSession", on_delete=models.CASCADE, null=True, blank=True)
+    session = models.ForeignKey("DraftSession", on_delete=models.CASCADE, related_name="participants", null=True, blank=True)
     player = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="draft_sessions")
 
     class Meta:
@@ -172,7 +173,7 @@ class ArticleLanguageChoices(models.TextChoices):
 
 class Article(models.Model):
     title = models.CharField(max_length=300)
-    slug = models.CharField(max_length=300, unique=True)
+    slug = models.SlugField(max_length=300, unique=True)
     body = models.TextField()
     excerpt = models.TextField(null=True, blank=True)
     cover_image_url = models.URLField(max_length=200, null=True, blank=True)
@@ -181,6 +182,7 @@ class Article(models.Model):
     language = models.CharField(max_length=20, choices=ArticleLanguageChoices.choices, default=ArticleLanguageChoices.EN)
     view_count = models.IntegerField(default=0)
     likes_count = models.IntegerField(default=0)
+    total_views_alltime = models.BigIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField()
@@ -206,6 +208,10 @@ class Article(models.Model):
     def archive(self):
         # TODO: implement archive
         pass
+
+    def replace(self, data):
+        # TODO: implement replace
+        return None
 
     def increment_view(self):
         # TODO: implement increment_view
@@ -260,7 +266,7 @@ class Article(models.Model):
 
 class ArticleTag(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
 
     class Meta:
         verbose_name = "Article Tag"
@@ -298,7 +304,7 @@ class ArticleComment(models.Model):
     body = models.TextField()
     is_hidden = models.BooleanField(default=False)
     created_at = models.DateTimeField()
-    article = models.ForeignKey("Article", on_delete=models.CASCADE, null=True, blank=True)
+    article = models.ForeignKey("Article", on_delete=models.CASCADE, related_name="comments", null=True, blank=True)
     author = models.ForeignKey("players.Player", on_delete=models.PROTECT, related_name="article_comments")
     parent_comment = models.ForeignKey("ArticleComment", on_delete=models.SET_NULL, related_name="replies", null=True, blank=True)
 

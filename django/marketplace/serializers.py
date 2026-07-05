@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
+from cards.models import Card
+from players.models import Player
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -22,7 +24,14 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class OrderItemsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["id", "quantity", "price_at_purchase", "foil"]
+
+
 class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemsSerializer(read_only=True, many=True)
     createdAt = serializers.DateTimeField(source="created_at")
     paidAt = serializers.DateTimeField(source="paid_at", required=False, allow_null=True)
     shippedAt = serializers.DateTimeField(source="shipped_at", required=False, allow_null=True)
@@ -35,7 +44,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "discount_applied",
             "currency",
             "payment_method",
-            "payment_reference",
             "shipping_address",
             "tracking_number",
             "createdAt",
@@ -43,8 +51,18 @@ class OrderSerializer(serializers.ModelSerializer):
             "shippedAt",
             "player",
             "coupon",
+            "items",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "status" in fields: fields["status"].read_only = True
+            if "created_at" in fields: fields["created_at"].read_only = True
+            if "paid_at" in fields: fields["paid_at"].read_only = True
+        return fields
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -70,8 +88,6 @@ class CouponSerializer(serializers.ModelSerializer):
             "discount_type",
             "discount_value",
             "min_order_value",
-            "max_uses",
-            "uses_count",
             "valid_from",
             "valid_until",
             "is_active",
@@ -79,7 +95,23 @@ class CouponSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class TradeListingCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ["id", "name", "rarity", "image_url"]
+
+
+class TradeListingSellerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ["id", "display_name", "avatar_url"]
+
+
 class TradeListingSerializer(serializers.ModelSerializer):
+    card_data = TradeListingCardSerializer(source="card", read_only=True)
+    card = serializers.PrimaryKeyRelatedField(queryset=Card.objects.all())
+    seller_data = TradeListingSellerSerializer(source="seller", read_only=True)
+    seller = serializers.PrimaryKeyRelatedField(queryset=Player.objects.all())
     createdAt = serializers.DateTimeField(source="created_at")
     expiresAt = serializers.DateTimeField(source="expires_at", required=False, allow_null=True)
     auctionEndTime = serializers.DateTimeField(source="auction_end_time", required=False, allow_null=True)
@@ -87,6 +119,7 @@ class TradeListingSerializer(serializers.ModelSerializer):
         model = TradeListing
         fields = [
             "id",
+            "public_id",
             "status",
             "listing_type",
             "asking_price",
@@ -101,8 +134,18 @@ class TradeListingSerializer(serializers.ModelSerializer):
             "expiresAt",
             "seller",
             "card",
+            "card_data",
+            "seller_data",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "status" in fields: fields["status"].read_only = True
+            if "created_at" in fields: fields["created_at"].read_only = True
+        return fields
 
 
 class TradeBidSerializer(serializers.ModelSerializer):

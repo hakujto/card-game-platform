@@ -46,6 +46,14 @@ class CardService:
         instance.save()
 
     @staticmethod
+    def replace(id, data):
+        from .models import Card
+        instance = Card.objects.get(pk=id)
+        result = instance.replace(data)
+        instance.save()
+        return result
+
+    @staticmethod
     def calculate_value(id):
         from .models import Card
         instance = Card.objects.get(pk=id)

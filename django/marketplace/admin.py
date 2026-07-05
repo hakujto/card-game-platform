@@ -31,7 +31,7 @@ class CouponAdmin(admin.ModelAdmin):
 
 @admin.register(TradeListing)
 class TradeListingAdmin(admin.ModelAdmin):
-    list_display = ["id", "status", "listing_type", "asking_price", "auction_start_price"]
+    list_display = ["id", "public_id", "status", "listing_type", "asking_price"]
     search_fields = ["status", "listing_type", "condition"]
     list_filter = ["status", "listing_type", "condition", "seller", "card"]
 

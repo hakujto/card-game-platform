@@ -92,6 +92,9 @@ class OrderService:
             raise ValidationError({"detail": "Guard condition not met for pay"})
         result = instance.pay(payment_ref)
         instance.save()
+
+        # TODO: emit OrderPaid event
+        # dispatch_event("OrderPaid", instance)
         return result
 
     @staticmethod
@@ -124,6 +127,9 @@ class OrderService:
         instance = Order.objects.get(pk=id)
         instance.refund()
         instance.save()
+
+        # TODO: emit OrderRefunded event
+        # dispatch_event("OrderRefunded", instance)
 
     # triggered by @on(status = Shipped)
     @staticmethod
@@ -316,6 +322,9 @@ class TradeTransactionService:
         instance = TradeTransaction.objects.get(pk=id)
         instance.complete()
         instance.save()
+
+        # TODO: emit TransactionCompleted event
+        # dispatch_event("TransactionCompleted", instance)
 
     @staticmethod
     def refund(id):

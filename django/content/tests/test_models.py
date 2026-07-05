@@ -5,7 +5,7 @@ from ..models import DraftSession, DraftParticipant, DraftPick, Article, Article
 class DraftSessionModelTest(TestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, time_per_pick_seconds=1, created_at="2024-01-01T00:00:00Z")
 
     def test_str(self):
@@ -34,7 +34,7 @@ class DraftPickModelTest(TestCase):
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_draft_participant = DraftParticipant.objects.create(seat_number=1, joined_at="2024-01-01T00:00:00Z", player=_dep_player)
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.obj = DraftPick.objects.create(participant=_dep_draft_participant, card=_dep_card, pick_number=1, pack_number=1, picked_at="2024-01-01T00:00:00Z")

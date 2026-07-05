@@ -51,6 +51,9 @@ class PlayerViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="verify")
     def verify(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for verify")
         instance = self.get_object()
         result = instance.verify()
         from rest_framework.response import Response
@@ -280,7 +283,7 @@ class AchievementViewSet(viewsets.ModelViewSet):
 
 
 class PlayerAchievementViewSet(viewsets.ModelViewSet):
-    queryset = PlayerAchievement.objects.select_related().all()
+    queryset = PlayerAchievement.objects.select_related("achievement").all()
     serializer_class = PlayerAchievementSerializer
     http_method_names = ['options', 'head', 'get']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]

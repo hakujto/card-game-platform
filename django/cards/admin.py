@@ -4,7 +4,7 @@ from .models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, Deck
 
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "card_type", "rarity", "mana_cost"]
+    list_display = ["id", "public_id", "name", "card_type", "rarity"]
     search_fields = ["name", "card_type", "rarity"]
     list_filter = ["card_type", "rarity", "mana_colors", "legal_formats", "set"]
 
@@ -51,8 +51,8 @@ class DeckSideboardCardAdmin(admin.ModelAdmin):
 
 @admin.register(DeckTag)
 class DeckTagAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "color"]
-    search_fields = ["name", "color"]
+    list_display = ["id", "name", "slug", "color"]
+    search_fields = ["name", "slug", "color"]
 
 
 @admin.register(DeckTagAssignment)

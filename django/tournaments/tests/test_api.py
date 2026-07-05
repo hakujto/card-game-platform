@@ -75,7 +75,7 @@ class TournamentAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"description": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_fails_when_max_players_positive_violated(self):

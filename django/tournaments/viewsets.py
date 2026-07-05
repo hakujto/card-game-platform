@@ -16,6 +16,9 @@ class SeasonViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="activate")
     def activate(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for activate")
         instance = self.get_object()
         result = instance.activate()
         from rest_framework.response import Response
@@ -23,6 +26,9 @@ class SeasonViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="deactivate")
     def deactivate(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for deactivate")
         instance = self.get_object()
         result = instance.deactivate()
         from rest_framework.response import Response
@@ -30,6 +36,9 @@ class SeasonViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="finalize")
     def finalize_rewards(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for finalize_rewards")
         instance = self.get_object()
         result = instance.finalize_rewards()
         from rest_framework.response import Response
@@ -409,7 +418,7 @@ class TournamentRoundViewSet(viewsets.ModelViewSet):
 
 
 class MatchViewSet(viewsets.ModelViewSet):
-    queryset = Match.objects.select_related().all()
+    queryset = Match.objects.select_related("player1", "player2").all()
     serializer_class = MatchSerializer
     http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]

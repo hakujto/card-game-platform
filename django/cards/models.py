@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+import uuid
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.dispatch import receiver
 
@@ -40,10 +42,11 @@ class CardLegalFormatsChoices(models.TextChoices):
 
 
 class Card(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=200)
     card_type = models.CharField(max_length=20, choices=CardCardTypeChoices.choices, default=CardCardTypeChoices.CREATURE)
     rarity = models.CharField(max_length=20, choices=CardRarityChoices.choices, default=CardRarityChoices.COMMON)
-    mana_cost = models.IntegerField(default=0)
+    mana_cost = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(20)], default=0)
     mana_colors = models.CharField(max_length=20, choices=CardManaColorsChoices.choices)
     attack = models.IntegerField(null=True, blank=True)
     defense = models.IntegerField(null=True, blank=True)
@@ -55,7 +58,9 @@ class Card(models.Model):
     legal_formats = models.CharField(max_length=20, choices=CardLegalFormatsChoices.choices)
     is_banned = models.BooleanField(default=False)
     is_restricted = models.BooleanField(default=False)
-    power_level = models.IntegerField(default=1)
+    power_level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)], default=1)
+    metadata = models.JSONField(default=dict, null=True, blank=True)
+    total_copies_in_circulation = models.BigIntegerField(default=0)
     set = models.ForeignKey("CardSet", on_delete=models.PROTECT, related_name="cards")
 
     class Meta:
@@ -64,7 +69,7 @@ class Card(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return str(self.name)
+        return str(self.public_id)
 
     # ── Business operations ──────────────────────────────────────────
 
@@ -83,6 +88,10 @@ class Card(models.Model):
     def unrestrict(self):
         # TODO: implement unrestrict
         pass
+
+    def replace(self, data):
+        # TODO: implement replace
+        return None
 
     def calculate_value(self):
         # TODO: implement calculate_value
@@ -105,6 +114,12 @@ class Card(models.Model):
             errors["power_level_range"] = "power_level must be between 1 and 10"
         if not (not ((self.is_banned is True and self.is_restricted is True))):
             errors["not_banned_and_restricted"] = "Card cannot be both banned and restricted at the same time"
+        if (self.card_type == CardCardTypeChoices.CREATURE) and self.attack is None:
+            errors["attack"] = "attack is required"
+        if (self.card_type == CardCardTypeChoices.CREATURE) and self.defense is None:
+            errors["defense"] = "defense is required"
+        if (self.card_type == CardCardTypeChoices.PLANESWALKER) and self.loyalty is None:
+            errors["loyalty"] = "loyalty is required"
         if errors:
             raise ValidationError(errors)
 
@@ -132,6 +147,17 @@ class Card(models.Model):
         pass
 
 
+class CardAuditLog(models.Model):
+    record = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='audit_logs')
+    field = models.CharField(max_length=100)
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+
 class CardSetSetTypeChoices(models.TextChoices):
     CORE = "Core", "Core"
     EXPANSION = "Expansion", "Expansion"
@@ -142,7 +168,7 @@ class CardSetSetTypeChoices(models.TextChoices):
 
 class CardSet(models.Model):
     name = models.CharField(max_length=200)
-    code = models.CharField(max_length=10, unique=True)
+    code = models.CharField(max_length=10, validators=[RegexValidator(r"[A-Z]{2,6}")], unique=True)
     release_date = models.DateField()
     rotation_date = models.DateField(null=True, blank=True)
     set_type = models.CharField(max_length=20, choices=CardSetSetTypeChoices.choices, default=CardSetSetTypeChoices.EXPANSION)
@@ -197,7 +223,7 @@ class CardRuling(models.Model):
     ruling_text = models.TextField()
     published_at = models.DateField()
     source = models.CharField(max_length=200)
-    card = models.ForeignKey("Card", on_delete=models.CASCADE)
+    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="rulings")
 
     class Meta:
         verbose_name = "Card Ruling"
@@ -237,7 +263,7 @@ class CardAbility(models.Model):
     keyword = models.CharField(max_length=100, null=True, blank=True)
     ability_text = models.TextField()
     timing = models.CharField(max_length=20, choices=CardAbilityTimingChoices.choices, null=True, blank=True)
-    card = models.ForeignKey("Card", on_delete=models.CASCADE)
+    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="abilities")
 
     class Meta:
         verbose_name = "Card Ability"
@@ -365,7 +391,7 @@ class Deck(models.Model):
 
 
 class DeckCard(models.Model):
-    quantity = models.IntegerField(default=1)
+    quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)], default=1)
     is_commander = models.BooleanField(default=False)
     deck = models.ForeignKey("Deck", on_delete=models.CASCADE, related_name="deck_cards")
     card = models.ForeignKey("Card", on_delete=models.PROTECT, related_name="deck_cards")
@@ -436,6 +462,7 @@ class DeckSideboardCard(models.Model):
 
 class DeckTag(models.Model):
     name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, null=True, blank=True)
     color = models.CharField(max_length=7, null=True, blank=True)
 
     class Meta:
@@ -480,6 +507,22 @@ def _card_validate_legality(sender, instance, **kwargs):
 @receiver(pre_delete, sender=Card)
 def _card_validate_not_in_use(sender, instance, **kwargs):
     instance._hook_validate_not_in_use(**kwargs)
+@receiver(pre_save, sender=Card)
+def _audit_card(sender, instance, **kwargs):
+    if not instance.pk: return
+    try:
+        old = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    for field in []:
+        old_val = getattr(old, field, None)
+        new_val = getattr(instance, field, None)
+        if str(old_val) != str(new_val):
+            CardAuditLog.objects.create(
+                record=old, field=field,
+                old_value=str(old_val), new_value=str(new_val)
+            )
+
 
 @receiver(post_save, sender=Deck)
 def _deck_recalculate_tournament_legal(sender, instance, **kwargs):

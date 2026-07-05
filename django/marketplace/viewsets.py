@@ -80,7 +80,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.select_related().all()
+    queryset = Order.objects.select_related().prefetch_related("items").all()
     serializer_class = OrderSerializer
     http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -417,7 +417,7 @@ class CouponViewSet(viewsets.ModelViewSet):
 
 
 class TradeListingViewSet(viewsets.ModelViewSet):
-    queryset = TradeListing.objects.select_related().all()
+    queryset = TradeListing.objects.select_related("card", "seller").all()
     serializer_class = TradeListingSerializer
     http_method_names = ['options', 'head', 'get', 'post', 'patch']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -459,6 +459,9 @@ class TradeListingViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="finalize")
     def finalize_auction(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "seller"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for finalize_auction")
         instance = self.get_object()
         result = instance.finalize_auction()
         from rest_framework.response import Response
@@ -743,6 +746,9 @@ class TradeDisputeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="resolve")
     def resolve(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["admin", "moderator"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for resolve")
         instance = self.get_object()
         resolution_text = request.data.get("resolution_text")
         result = instance.resolve(resolution_text)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+from players.models import Player
 
 
 class DraftSessionSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class DraftSessionSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "draft_type",
+            "pack_contents",
             "seats",
             "time_per_pick_seconds",
             "createdAt",
@@ -67,6 +69,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             "language",
             "view_count",
             "likes_count",
+            "total_views_alltime",
             "is_featured",
             "publishedAt",
             "createdAt",
@@ -76,6 +79,16 @@ class ArticleSerializer(serializers.ModelSerializer):
             "tags",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "status" in fields: fields["status"].read_only = True
+            if "view_count" in fields: fields["view_count"].read_only = True
+            if "likes_count" in fields: fields["likes_count"].read_only = True
+            if "created_at" in fields: fields["created_at"].read_only = True
+        return fields
 
 
 class ArticleTagSerializer(serializers.ModelSerializer):
@@ -100,7 +113,15 @@ class ArticleTagAssignmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class ArticleCommentAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ["id", "display_name", "avatar_url"]
+
+
 class ArticleCommentSerializer(serializers.ModelSerializer):
+    author_data = ArticleCommentAuthorSerializer(source="author", read_only=True)
+    author = serializers.PrimaryKeyRelatedField(queryset=Player.objects.all())
     createdAt = serializers.DateTimeField(source="created_at")
     class Meta:
         model = ArticleComment
@@ -112,6 +133,7 @@ class ArticleCommentSerializer(serializers.ModelSerializer):
             "article",
             "author",
             "parent_comment",
+            "author_data",
         ]
         read_only_fields = ["id"]
 

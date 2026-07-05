@@ -4,7 +4,7 @@ from .models import Player, PlayerSeasonStats, PlayerCollection, Friendship, Ach
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ["id", "display_name", "rank", "rating", "peak_rating"]
+    list_display = ["id", "public_id", "display_name", "rank", "rating"]
     search_fields = ["display_name", "rank", "bio"]
     list_filter = ["rank", "preferred_format", "user"]
 

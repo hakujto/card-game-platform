@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "tournaments",
     "marketplace",
     "content",
+    "wallet",
 ]
 
 MIDDLEWARE = [

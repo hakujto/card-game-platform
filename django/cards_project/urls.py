@@ -8,4 +8,5 @@ urlpatterns = [
     path("api/", include("tournaments.urls")),
     path("api/", include("marketplace.urls")),
     path("api/", include("content.urls")),
+    path("api/", include("wallet.urls")),
 ]

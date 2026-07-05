@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
+from players.models import Player
 
 
 class SeasonSerializer(serializers.ModelSerializer):
@@ -25,9 +26,11 @@ class TournamentSerializer(serializers.ModelSerializer):
         model = Tournament
         fields = [
             "id",
+            "public_id",
             "name",
             "description",
             "status",
+            "bracket_data",
             "format",
             "tournament_type",
             "max_players",
@@ -44,6 +47,14 @@ class TournamentSerializer(serializers.ModelSerializer):
             "judges",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "status" in fields: fields["status"].read_only = True
+            if "created_at" in fields: fields["created_at"].read_only = True
+        return fields
 
 
 class TournamentJudgeSerializer(serializers.ModelSerializer):
@@ -93,7 +104,23 @@ class TournamentRoundSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class MatchPlayer1Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ["id", "display_name"]
+
+
+class MatchPlayer2Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ["id", "display_name"]
+
+
 class MatchSerializer(serializers.ModelSerializer):
+    player1_data = MatchPlayer1Serializer(source="player1", read_only=True)
+    player1 = serializers.PrimaryKeyRelatedField(queryset=Player.objects.all())
+    player2_data = MatchPlayer2Serializer(source="player2", read_only=True)
+    player2 = serializers.PrimaryKeyRelatedField(queryset=Player.objects.all(), required=False, allow_null=True)
     startedAt = serializers.DateTimeField(source="started_at", required=False, allow_null=True)
     endedAt = serializers.DateTimeField(source="ended_at", required=False, allow_null=True)
     class Meta:
@@ -110,6 +137,8 @@ class MatchSerializer(serializers.ModelSerializer):
             "round",
             "player1",
             "player2",
+            "player1_data",
+            "player2_data",
         ]
         read_only_fields = ["id"]
 
@@ -121,6 +150,7 @@ class GameSerializer(serializers.ModelSerializer):
             "id",
             "game_number",
             "winner_side",
+            "complexity_score",
             "turns_played",
             "duration_seconds",
             "ended_by",
@@ -163,3 +193,11 @@ class AwardedPrizeSerializer(serializers.ModelSerializer):
             "player",
         ]
         read_only_fields = ["id"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            if "final_placement" in fields: fields["final_placement"].read_only = True
+            if "awarded_at" in fields: fields["awarded_at"].read_only = True
+        return fields

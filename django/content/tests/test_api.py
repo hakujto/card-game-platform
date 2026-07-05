@@ -7,7 +7,7 @@ from ..models import DraftSession, DraftParticipant, DraftPick, Article, Article
 class DraftSessionAPITest(APITestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         self.cardset = _dep_card_set
         self.obj = DraftSession.objects.create(card_set=_dep_card_set, seats=2, time_per_pick_seconds=1, created_at="2024-01-01T00:00:00Z")
         self.list_url = reverse("draft_session-list")
@@ -143,7 +143,7 @@ class DraftPickAPITest(APITestCase):
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_draft_participant = DraftParticipant.objects.create(seat_number=1, joined_at="2024-01-01T00:00:00Z", player=_dep_player)
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.player = _dep_player
@@ -200,7 +200,7 @@ class ArticleAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"title": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"excerpt": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_fails_when_published_requires_published_at_violated(self):

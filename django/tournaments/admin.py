@@ -11,7 +11,7 @@ class SeasonAdmin(admin.ModelAdmin):
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "description", "status", "format"]
+    list_display = ["id", "public_id", "name", "description", "status"]
     search_fields = ["name", "description", "status"]
     list_filter = ["status", "format", "tournament_type", "season", "organizer"]
 
@@ -46,7 +46,7 @@ class MatchAdmin(admin.ModelAdmin):
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
-    list_display = ["id", "game_number", "winner_side", "turns_played", "duration_seconds"]
+    list_display = ["id", "game_number", "winner_side", "complexity_score", "turns_played"]
     search_fields = ["winner_side", "ended_by"]
     list_filter = ["winner_side", "ended_by", "match", "winner"]
 

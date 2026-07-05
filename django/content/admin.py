@@ -4,7 +4,7 @@ from .models import DraftSession, DraftParticipant, DraftPick, Article, ArticleT
 
 @admin.register(DraftSession)
 class DraftSessionAdmin(admin.ModelAdmin):
-    list_display = ["id", "status", "draft_type", "seats", "time_per_pick_seconds"]
+    list_display = ["id", "status", "draft_type", "pack_contents", "seats"]
     search_fields = ["status", "draft_type"]
     list_filter = ["status", "draft_type", "card_set"]
 

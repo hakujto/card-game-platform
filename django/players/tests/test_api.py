@@ -32,7 +32,7 @@ class PlayerAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"display_name": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"bio": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_fails_when_rating_range_violated(self):
@@ -64,7 +64,7 @@ class PlayerCollectionAPITest(APITestCase):
     def setUp(self):
         _dep_player = Player.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.player = _dep_player
@@ -203,7 +203,7 @@ class PlayerAchievementAPITest(APITestCase):
 class CraftingRecipeAPITest(APITestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.cardset = _dep_card_set
@@ -242,7 +242,7 @@ class CraftingRecipeAPITest(APITestCase):
 class CraftingIngredientAPITest(APITestCase):
     def setUp(self):
         from cards.models import CardSet as _CardSetCls
-        _dep_card_set = _CardSetCls.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = _CardSetCls.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         from cards.models import Card as _CardCls
         _dep_card = _CardCls.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         _dep_crafting_recipe = CraftingRecipe.objects.create(dust_cost=1, result_card=_dep_card)

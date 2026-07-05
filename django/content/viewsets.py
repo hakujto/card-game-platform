@@ -248,6 +248,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="publish")
     def publish(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["editor", "admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for publish")
         instance = self.get_object()
         result = instance.publish()
         from rest_framework.response import Response
@@ -255,10 +258,24 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["editor", "admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for archive")
         instance = self.get_object()
         result = instance.archive()
         from rest_framework.response import Response
         return Response(status=204)
+
+    @action(detail=True, methods=["put"], url_path="replace")
+    def replace(self, request, pk=None):
+        if not hasattr(request.user, "role") or request.user.role not in ["editor", "admin"]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Insufficient role for replace")
+        instance = self.get_object()
+        data = request.data.get("data")
+        result = instance.replace(data)
+        from rest_framework.response import Response
+        return Response({"result": result})
 
     @action(detail=True, methods=["post"], url_path="view")
     def increment_view(self, request, pk=None):
@@ -415,7 +432,7 @@ class ArticleTagAssignmentViewSet(viewsets.ModelViewSet):
 
 
 class ArticleCommentViewSet(viewsets.ModelViewSet):
-    queryset = ArticleComment.objects.select_related().all()
+    queryset = ArticleComment.objects.select_related("author").all()
     serializer_class = ArticleCommentSerializer
     http_method_names = ['options', 'head', 'get', 'post', 'delete']
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]

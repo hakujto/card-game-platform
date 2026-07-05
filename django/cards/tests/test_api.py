@@ -6,7 +6,7 @@ from ..models import Card, CardSet, CardRuling, CardAbility, Deck, DeckCard, Dec
 
 class CardAPITest(APITestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         self.cardset = _dep_card_set
         self.obj = Card.objects.create(set=_dep_card_set, name="test", mana_cost=0, mana_colors="White", attack=0, defense=0, loyalty=None, description="test", legal_formats="Standard", is_banned=False, is_restricted=False, power_level=1)
         self.list_url = reverse("card-list")
@@ -43,7 +43,7 @@ class CardAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_update_returns_200(self):
-        res = self.client.patch(self.detail_url, {"name": "test"}, format="json")
+        res = self.client.patch(self.detail_url, {"flavor_text": "test"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_fails_when_creature_requires_stats_violated(self):
@@ -97,7 +97,7 @@ class CardAPITest(APITestCase):
 
 class CardSetAPITest(APITestCase):
     def setUp(self):
-        self.obj = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", rotation_date=None, total_cards=1)
+        self.obj = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", rotation_date=None, total_cards=1)
         self.list_url = reverse("card_set-list")
         self.detail_url = reverse("card_set-detail", args=[self.obj.pk])
 
@@ -112,7 +112,7 @@ class CardSetAPITest(APITestCase):
     def test_create_returns_201(self):
         data = {
             "name": "test",
-            "code": "test2",
+            "code": "BB",
             "release_date": "2024-01-01",
             "rotation_date": None,
             "total_cards": 1
@@ -130,26 +130,26 @@ class CardSetAPITest(APITestCase):
 
     def test_create_fails_when_total_cards_positive_violated(self):
         # Simple rule violated → 400
-        data = {"name": "test", "code": "test", "release_date": "2024-01-01", "total_cards": 0, "rotation_date": "2024-01-01", "is_rotated": True}
+        data = {"name": "test", "code": "AA", "release_date": "2024-01-01", "total_cards": 0, "rotation_date": "2024-01-01", "is_rotated": True}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_rotation_date_after_release_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"name": "test", "code": "test", "release_date": "2024-01-01", "total_cards": 0, "rotation_date": "2024-01-01"}
+        data = {"name": "test", "code": "AA", "release_date": "2024-01-01", "total_cards": 0, "rotation_date": "2024-01-01"}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_fails_when_rotated_set_has_rotation_date_violated(self):
         # IMPLIES: antecedent=true, consequent violated → 400
-        data = {"name": "test", "code": "test", "release_date": "2024-01-01", "total_cards": 0, "is_rotated": True, "rotation_date": None}
+        data = {"name": "test", "code": "AA", "release_date": "2024-01-01", "total_cards": 0, "is_rotated": True, "rotation_date": None}
         res = self.client.post(self.list_url, data, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class CardRulingAPITest(APITestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.cardset = _dep_card_set
         self.card = _dep_card
@@ -182,7 +182,7 @@ class CardRulingAPITest(APITestCase):
 
 class CardAbilityAPITest(APITestCase):
     def setUp(self):
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.cardset = _dep_card_set
         self.card = _dep_card
@@ -299,7 +299,7 @@ class DeckCardAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.player = _dep_player
         self.deck = _dep_deck
@@ -352,7 +352,7 @@ class DeckSideboardCardAPITest(APITestCase):
         from players.models import Player as _PlayerCls
         _dep_player = _PlayerCls.objects.create(display_name="test", created_at="2024-01-01T00:00:00Z")
         _dep_deck = Deck.objects.create(name="test", created_at="2024-01-01T00:00:00Z", updated_at="2024-01-01T00:00:00Z", player=_dep_player)
-        _dep_card_set = CardSet.objects.create(name="test", code="test", release_date="2024-01-01", total_cards=1)
+        _dep_card_set = CardSet.objects.create(name="test", code="AA", release_date="2024-01-01", total_cards=1)
         _dep_card = Card.objects.create(name="test", mana_colors="White", description="test", legal_formats="Standard", set=_dep_card_set)
         self.player = _dep_player
         self.deck = _dep_deck

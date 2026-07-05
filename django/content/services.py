@@ -126,6 +126,14 @@ class ArticleService:
         instance.save()
 
     @staticmethod
+    def replace(id, data):
+        from .models import Article
+        instance = Article.objects.get(pk=id)
+        result = instance.replace(data)
+        instance.save()
+        return result
+
+    @staticmethod
     def increment_view(id):
         from .models import Article
         instance = Article.objects.get(pk=id)
