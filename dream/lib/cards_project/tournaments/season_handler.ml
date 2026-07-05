@@ -140,6 +140,7 @@ let handler_season (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin — TODO: check X-Role header *)
        (* TODO: implement behavior activate *)
        respond_json 204 (`Null))
 
@@ -148,6 +149,7 @@ let handler_season (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin — TODO: check X-Role header *)
        (* TODO: implement behavior deactivate *)
        respond_json 204 (`Null))
 
@@ -156,6 +158,7 @@ let handler_season (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin — TODO: check X-Role header *)
        (* TODO: implement behavior finalize_rewards *)
        respond_json 204 (`Null))
 

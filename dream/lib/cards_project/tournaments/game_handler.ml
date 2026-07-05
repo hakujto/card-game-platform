@@ -32,19 +32,26 @@ let validate_game (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((not ((json_present j "duration_seconds")) || ((match (json_float_opt j "duration_seconds") with Some v -> v > 0. | None -> true)))) then errors := "Game duration must be greater than zero" :: !errors;
   if not ((not ((json_string_opt j "winner_side") = Some "Draw") || ((not (json_present j "winner_id"))))) then errors := "A draw cannot have a winner" :: !errors;
   if not ((not (((json_present j "winner_side") && (json_string_opt j "winner_side") <> Some "Draw")) || ((json_present j "winner_id")))) then errors := "A decisive game must have a winner player set" :: !errors;
+  (match json_float_opt j "game_number" with
+   | Some v when v < 1. -> errors := "game_number: must be >= 1" :: !errors
+   | _ -> ());
+  (match json_float_opt j "game_number" with
+   | Some v when v > 3. -> errors := "game_number: must be <= 3" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
   let game_number = match member "game_number" j with `Int i -> i | _ -> 0 in
   let winner_side = match member "winner_side" j with `String s -> Some s | _ -> None in
+  let complexity_score = match member "complexity_score" j with `Float f -> Some f | `Int i -> Some (float_of_int i) | _ -> None in
   let turns_played = match member "turns_played" j with `Int i -> Some i | _ -> None in
   let duration_seconds = match member "duration_seconds" j with `Int i -> Some i | _ -> None in
   let ended_by = match member "ended_by" j with `String s -> Some s | _ -> None in
   let replay_url = match member "replay_url" j with `String s -> Some s | _ -> None in
   let match_id = match member "match_id" j with `Int i -> i | _ -> 0 in
   let winner_id = match member "winner_id" j with `Int i -> Some i | _ -> None in
-  ((game_number, winner_side, turns_played, duration_seconds), (ended_by, replay_url, match_id, winner_id))
+  ((game_number, winner_side, complexity_score, turns_played), (duration_seconds, ended_by, replay_url, match_id), winner_id)
 
 let handler_game (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =

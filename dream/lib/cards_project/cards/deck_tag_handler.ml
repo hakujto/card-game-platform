@@ -4,8 +4,9 @@ open Lwt.Syntax
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
   let name = match member "name" j with `String s -> s | _ -> "" in
+  let slug = match member "slug" j with `String s -> Some s | _ -> None in
   let color = match member "color" j with `String s -> Some s | _ -> None in
-  (name, color)
+  (name, slug, color)
 
 let handler_deck_tag (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -81,8 +82,8 @@ let handler_deck_tag (db : (module Caqti_lwt.CONNECTION)) req =
        (try
           let j = Yojson.Safe.from_string body in
           let params = extract_insert_params j in
-          let (name, color) = params in
-          let upd_params = (name, color, id) in
+          let (name, slug, color) = params in
+          let upd_params = (name, slug, color, id) in
           let* upd = Db.exec Deck_tag_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))

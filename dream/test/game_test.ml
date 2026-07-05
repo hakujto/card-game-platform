@@ -74,6 +74,7 @@ let do_setup () =
   }|json} in
   setup_season_id := dep_id_season;
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -82,12 +83,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let dep_body_tournament = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let dep_body_tournament = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* (_, dep_id_tournament) = post_for_id "/api/tournaments" dep_body_tournament in
   setup_tournament_id := dep_id_tournament;
   let dep_body_tournament_round = Printf.sprintf "{\n    \"round_number\": 1,\n    \"status\": \"Pending\",\n    \"started_at\": null,\n    \"ended_at\": null,\n    \"time_limit_minutes\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in
@@ -96,7 +99,7 @@ let do_setup () =
   let dep_body_match = Printf.sprintf "{\n    \"table_number\": null,\n    \"status\": \"Pending\",\n    \"player1_wins\": 1,\n    \"player2_wins\": 1,\n    \"started_at\": null,\n    \"ended_at\": null,\n    \"result_notes\": null,\n    \"round_id\": %d,\n    \"player1_id\": %d,\n    \"player2_id\": null\n  }" !(setup_tournament_round_id) !(setup_player_id) in
   let* (_, dep_id_match) = post_for_id "/api/matches" dep_body_match in
   setup_match_id := dep_id_match;
-  let setup_body = Printf.sprintf "{\n    \"game_number\": 2,\n    \"winner_side\": \"not_Draw\",\n    \"ended_by\": null,\n    \"replay_url\": null,\n    \"match_id\": %d,\n    \"winner_id\": %d\n  }" !(setup_match_id) !(setup_player_id) in
+  let setup_body = Printf.sprintf "{\n    \"game_number\": 2,\n    \"winner_side\": \"Player1\",\n    \"complexity_score\": null,\n    \"ended_by\": null,\n    \"replay_url\": null,\n    \"match_id\": %d,\n    \"winner_id\": %d\n  }" !(setup_match_id) !(setup_player_id) in
   let* (_, main_id) = post_for_id "/api/games" setup_body in
   setup_game_id := main_id;
   Lwt.return_unit
@@ -109,7 +112,7 @@ let test_list_game () =
   Lwt.return_unit
 
 let test_create_game () =
-  let create_body = Printf.sprintf "{\n    \"game_number\": 2,\n    \"winner_side\": \"not_Draw\",\n    \"ended_by\": null,\n    \"replay_url\": null,\n    \"match_id\": %d,\n    \"winner_id\": %d\n  }" !(setup_match_id) !(setup_player_id) in
+  let create_body = Printf.sprintf "{\n    \"game_number\": 2,\n    \"winner_side\": \"Player1\",\n    \"complexity_score\": null,\n    \"ended_by\": null,\n    \"replay_url\": null,\n    \"match_id\": %d,\n    \"winner_id\": %d\n  }" !(setup_match_id) !(setup_player_id) in
   let* code = post "/api/games" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -124,7 +127,8 @@ let test_rule_game_number_range () =
   (* Rule: game_number_range — body violates the condition *)
   let body = {json|{
     "game_number": 4,
-    "winner_side": "not_Draw",
+    "winner_side": "Player1",
+    "complexity_score": null,
     "ended_by": null,
     "replay_url": null,
     "match_id": 1,
@@ -138,7 +142,8 @@ let test_rule_turns_played_positive () =
   (* Rule: turns_played_positive — body violates the condition *)
   let body = {json|{
     "game_number": 2,
-    "winner_side": "not_Draw",
+    "winner_side": "Player1",
+    "complexity_score": null,
     "turns_played": 0,
     "ended_by": null,
     "replay_url": null,
@@ -153,7 +158,8 @@ let test_rule_duration_positive () =
   (* Rule: duration_positive — body violates the condition *)
   let body = {json|{
     "game_number": 2,
-    "winner_side": "not_Draw",
+    "winner_side": "Player1",
+    "complexity_score": null,
     "duration_seconds": 0,
     "ended_by": null,
     "replay_url": null,
@@ -169,6 +175,7 @@ let test_rule_draw_has_no_winner () =
   let body = {json|{
     "game_number": 2,
     "winner_side": "Draw",
+    "complexity_score": null,
     "ended_by": null,
     "replay_url": null,
     "match_id": 1,
@@ -182,7 +189,8 @@ let test_rule_non_draw_requires_winner () =
   (* Rule: non_draw_requires_winner — body violates the condition *)
   let body = {json|{
     "game_number": 2,
-    "winner_side": "not_Draw",
+    "winner_side": "Player1",
+    "complexity_score": null,
     "ended_by": null,
     "replay_url": null,
     "match_id": 1

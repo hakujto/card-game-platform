@@ -2,5 +2,5 @@
 
 (library
  (name cards_project_lib)
- (libraries dream caqti caqti-lwt caqti-driver-sqlite3 yojson ppx_deriving_yojson.runtime lwt lwt.unix str)
+ (libraries dream caqti caqti-lwt caqti-driver-sqlite3 yojson ppx_deriving_yojson.runtime lwt lwt.unix str re re.perl)
  (preprocess (pps ppx_deriving_yojson)))

@@ -73,6 +73,7 @@ let do_setup () =
   }|json} in
   setup_season_id := dep_id_season;
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -81,12 +82,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let dep_body_tournament = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let dep_body_tournament = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* (_, dep_id_tournament) = post_for_id "/api/tournaments" dep_body_tournament in
   setup_tournament_id := dep_id_tournament;
   let dep_body_tournament_prize = Printf.sprintf "{\n    \"placement_from\": 1,\n    \"placement_to\": 1,\n    \"prize_type\": \"Currency\",\n    \"amount\": 1.0,\n    \"description\": null,\n    \"packs_count\": null,\n    \"season_points\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in

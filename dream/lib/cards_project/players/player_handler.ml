@@ -48,10 +48,15 @@ let validate_player (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "rating") with Some v -> v >= 0. && v <= 9999. | None -> true)) then errors := "Rating must be between 0 and 9999" :: !errors;
   if not ((match (json_float_opt j "peak_rating") with Some v -> v >= (Option.value (json_float_opt j "rating") ~default:0.) | None -> true)) then errors := "Peak rating must be greater than or equal to current rating" :: !errors;
   if not ((json_present j "display_name")) then errors := "Display name must not be empty" :: !errors;
+  (match json_string_opt j "country_code" with
+   | Some v when not (Re.execp (Re.compile (Re.Perl.re ~opts:[`Anchored] "[A-Z]{2}")) v) ->
+     errors := "country_code: invalid format" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
+  let public_id = match member "public_id" j with `String s -> s | _ -> "" in
   let display_name = match member "display_name" j with `String s -> s | _ -> "" in
   let rank = match member "rank" j with `String s -> s | _ -> "" in
   let rating = match member "rating" j with `Int i -> i | _ -> 0 in
@@ -60,10 +65,12 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let country_code = match member "country_code" j with `String s -> Some s | _ -> None in
   let avatar_url = match member "avatar_url" j with `String s -> Some s | _ -> None in
   let preferred_format = match member "preferred_format" j with `String s -> Some s | _ -> None in
+  let contact_email = match member "contact_email" j with `String s -> Some s | _ -> None in
+  let win_rate_cached = match member "win_rate_cached" j with `Float f -> Some f | `Int i -> Some (float_of_int i) | _ -> None in
   let is_verified = match member "is_verified" j with `Bool b -> b | _ -> false in
   let last_active_at = match member "last_active_at" j with `String s -> Some s | _ -> None in
   let user_id = match member "user_id" j with `Int i -> Some i | _ -> None in
-  ((display_name, rank, rating, peak_rating), (bio, country_code, avatar_url, preferred_format), (is_verified, last_active_at, user_id))
+  ((public_id, display_name, rank, rating), (peak_rating, bio, country_code, avatar_url), (preferred_format, contact_email, win_rate_cached, is_verified), (last_active_at, user_id))
 
 let handler_player (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -142,8 +149,8 @@ let handler_player (db : (module Caqti_lwt.CONNECTION)) req =
        (try
           let j = Yojson.Safe.from_string body in
           let params = extract_insert_params j in
-          let ((display_name, rank, rating, peak_rating), (bio, country_code, avatar_url, preferred_format), (is_verified, last_active_at, user_id)) = params in
-          let upd_params = ((display_name, rank, rating, peak_rating), (bio, country_code, avatar_url, preferred_format), (is_verified, last_active_at, user_id, id)) in
+          let ((public_id, display_name, rank, _rating), (_peak_rating, bio, country_code, avatar_url), (preferred_format, contact_email, win_rate_cached, is_verified), (last_active_at, user_id)) = params in
+          let upd_params = ((public_id, display_name, rank, bio), (country_code, avatar_url, preferred_format, contact_email), (win_rate_cached, is_verified, last_active_at, user_id), id) in
           let* upd = Db.exec Player_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))
@@ -202,6 +209,7 @@ let handler_player (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin — TODO: check X-Role header *)
        (* TODO: implement behavior verify *)
        respond_json 204 (`Null))
 

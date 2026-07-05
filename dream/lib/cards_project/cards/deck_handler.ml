@@ -142,8 +142,8 @@ let handler_deck (db : (module Caqti_lwt.CONNECTION)) req =
            | Error errs -> respond_json 422 (`Assoc [("errors", `List (List.map (fun e -> `String e) errs))])
            | Ok () ->
           let params = extract_insert_params j in
-          let ((name, description, format, is_public), (is_tournament_legal, archetype, wins, losses), (draws, player_id)) = params in
-          let upd_params = ((name, description, format, is_public), (is_tournament_legal, archetype, wins, losses), (draws, player_id, id)) in
+          let ((name, description, format, is_public), (is_tournament_legal, archetype, _wins, _losses), (_draws, player_id)) = params in
+          let upd_params = ((name, description, format, is_public), (is_tournament_legal, archetype, player_id, id)) in
           let* upd = Db.exec Deck_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))

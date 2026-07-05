@@ -45,8 +45,8 @@ let last_id_q =
   {sql| SELECT last_insert_rowid() |sql}
 
 let update_q =
-  Caqti_type.(t2 (t4 int string bool (option string)) (t3 int int int)) ->. Caqti_type.unit @@
-  {sql| UPDATE awarded_prizes SET final_placement = ?, awarded_at = ?, claimed = ?, claimed_at = ?, prize_id = ?, player_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
+  Caqti_type.(t2 (t4 bool (option string) int int) int) ->. Caqti_type.unit @@
+  {sql| UPDATE awarded_prizes SET claimed = ?, claimed_at = ?, prize_id = ?, player_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
 
 let delete_q =
   Caqti_type.int ->. Caqti_type.unit @@

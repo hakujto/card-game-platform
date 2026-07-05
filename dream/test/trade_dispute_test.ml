@@ -61,6 +61,7 @@ let setup_trade_dispute_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -69,6 +70,8 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -95,7 +98,7 @@ let test_get_trade_dispute () =
 let test_rule_resolved_at_requires_terminal_status () =
   (* Rule: resolved_at_requires_terminal_status — body violates the condition *)
   let body = {json|{
-    "status": "not_Resolved",
+    "status": "Open",
     "reason": "ItemNotReceived",
     "description": "test",
     "resolution": null,

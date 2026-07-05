@@ -50,13 +50,21 @@ let validate_tournament (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "entry_fee") with Some v -> v >= 0. | None -> true)) then errors := "Entry fee must not be negative" :: !errors;
   if not ((match (json_float_opt j "prize_pool") with Some v -> v >= 0. | None -> true)) then errors := "Prize pool must not be negative" :: !errors;
   if not ((not ((json_present j "end_time")) || ((match (json_float_opt j "end_time") with Some v -> v > (Option.value (json_float_opt j "start_time") ~default:0.) | None -> true)))) then errors := "End time must be after start time" :: !errors;
+  (match json_float_opt j "max_players" with
+   | Some v when v < 2. -> errors := "max_players: must be >= 2" :: !errors
+   | _ -> ());
+  (match json_float_opt j "max_players" with
+   | Some v when v > 512. -> errors := "max_players: must be <= 512" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
+  let public_id = match member "public_id" j with `String s -> s | _ -> "" in
   let name = match member "name" j with `String s -> s | _ -> "" in
   let description = match member "description" j with `String s -> Some s | _ -> None in
   let status = match member "status" j with `String s -> s | _ -> "" in
+  let bracket_data = match member "bracket_data" j with `String s -> Some s | _ -> None in
   let format = match member "format" j with `String s -> s | _ -> "" in
   let tournament_type = match member "tournament_type" j with `String s -> s | _ -> "" in
   let max_players = match member "max_players" j with `Int i -> i | _ -> 0 in
@@ -69,7 +77,7 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let rules_text = match member "rules_text" j with `String s -> Some s | _ -> None in
   let season_id = match member "season_id" j with `Int i -> i | _ -> 0 in
   let organizer_id = match member "organizer_id" j with `Int i -> i | _ -> 0 in
-  ((name, description, status, format), (tournament_type, max_players, entry_fee, prize_pool), (start_time, end_time, is_online, location), (rules_text, season_id, organizer_id))
+  (((public_id, name, description, status), (bracket_data, format, tournament_type, max_players), (entry_fee, prize_pool, start_time, end_time), (is_online, location, rules_text, season_id)), organizer_id)
 
 let handler_tournament (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -152,8 +160,8 @@ let handler_tournament (db : (module Caqti_lwt.CONNECTION)) req =
            | Error errs -> respond_json 422 (`Assoc [("errors", `List (List.map (fun e -> `String e) errs))])
            | Ok () ->
           let params = extract_insert_params j in
-          let ((name, description, status, format), (tournament_type, max_players, entry_fee, prize_pool), (start_time, end_time, is_online, location), (rules_text, season_id, organizer_id)) = params in
-          let upd_params = ((name, description, status, format), (tournament_type, max_players, entry_fee, prize_pool), (start_time, end_time, is_online, location), (rules_text, season_id, organizer_id, id)) in
+          let (((public_id, name, description, _status), (bracket_data, format, tournament_type, max_players), (entry_fee, prize_pool, start_time, end_time), (is_online, location, rules_text, season_id)), organizer_id) = params in
+          let upd_params = (((public_id, name, description, bracket_data), (format, tournament_type, max_players, entry_fee), (prize_pool, start_time, end_time, is_online), (location, rules_text, season_id, organizer_id)), id) in
           let* upd = Db.exec Tournament_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))

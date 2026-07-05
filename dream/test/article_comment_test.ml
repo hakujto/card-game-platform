@@ -62,6 +62,7 @@ let setup_article_comment_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -70,12 +71,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let dep_body_article = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"Draft\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 1,\n    \"likes_count\": 1,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
+  let dep_body_article = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"Draft\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 1,\n    \"likes_count\": 1,\n    \"total_views_alltime\": 1,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
   let* (_, dep_id_article) = post_for_id "/api/articles" dep_body_article in
   setup_article_id := dep_id_article;
   let setup_body = Printf.sprintf "{\n    \"body\": \"test\",\n    \"is_hidden\": false,\n    \"article_id\": %d,\n    \"author_id\": %d,\n    \"parent_comment_id\": null\n  }" !(setup_article_id) !(setup_player_id) in

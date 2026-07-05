@@ -61,6 +61,7 @@ let setup_order_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -69,12 +70,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let setup_body = Printf.sprintf "{\n    \"status\": \"not_Paid\",\n    \"total\": 0,\n    \"discount_applied\": 0,\n    \"currency\": \"test\",\n    \"payment_method\": null,\n    \"payment_reference\": null,\n    \"shipping_address\": null,\n    \"tracking_number\": null,\n    \"paid_at\": null,\n    \"player_id\": %d,\n    \"coupon_id\": null\n  }" !(setup_player_id) in
+  let setup_body = Printf.sprintf "{\n    \"status\": \"Pending\",\n    \"total\": 0,\n    \"discount_applied\": 0,\n    \"currency\": \"USD\",\n    \"payment_method\": null,\n    \"payment_reference\": null,\n    \"shipping_address\": null,\n    \"tracking_number\": null,\n    \"paid_at\": null,\n    \"player_id\": %d,\n    \"coupon_id\": null\n  }" !(setup_player_id) in
   let* (_, main_id) = post_for_id "/api/orders" setup_body in
   setup_order_id := main_id;
   Lwt.return_unit
@@ -92,7 +95,7 @@ let test_list_order () =
   Lwt.return_unit
 
 let test_create_order () =
-  let create_body = Printf.sprintf "{\n    \"status\": \"not_Paid\",\n    \"total\": 0,\n    \"discount_applied\": 0,\n    \"currency\": \"test\",\n    \"payment_method\": null,\n    \"payment_reference\": null,\n    \"shipping_address\": null,\n    \"tracking_number\": null,\n    \"paid_at\": null,\n    \"player_id\": %d,\n    \"coupon_id\": null\n  }" !(setup_player_id) in
+  let create_body = Printf.sprintf "{\n    \"status\": \"Pending\",\n    \"total\": 0,\n    \"discount_applied\": 0,\n    \"currency\": \"USD\",\n    \"payment_method\": null,\n    \"payment_reference\": null,\n    \"shipping_address\": null,\n    \"tracking_number\": null,\n    \"paid_at\": null,\n    \"player_id\": %d,\n    \"coupon_id\": null\n  }" !(setup_player_id) in
   let* code = post ~headers:auth_headers "/api/orders" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -109,7 +112,7 @@ let test_rule_paid_requires_paid_at () =
     "status": "Paid",
     "total": 0,
     "discount_applied": 0,
-    "currency": "test",
+    "currency": "USD",
     "payment_method": null,
     "payment_reference": null,
     "shipping_address": null,
@@ -127,7 +130,7 @@ let test_rule_shipped_requires_tracking () =
     "status": "Shipped",
     "total": 0,
     "discount_applied": 0,
-    "currency": "test",
+    "currency": "USD",
     "payment_method": null,
     "payment_reference": null,
     "shipping_address": null,
@@ -142,10 +145,10 @@ let test_rule_shipped_requires_tracking () =
 let test_rule_shipped_at_requires_shipped_status () =
   (* Rule: shipped_at_requires_shipped_status — body violates the condition *)
   let body = {json|{
-    "status": "not_Shipped",
+    "status": "Pending",
     "total": 0,
     "discount_applied": 0,
-    "currency": "test",
+    "currency": "USD",
     "payment_method": null,
     "payment_reference": null,
     "shipping_address": null,
@@ -162,10 +165,10 @@ let test_rule_shipped_at_requires_shipped_status () =
 let test_rule_total_not_negative () =
   (* Rule: total_not_negative — body violates the condition *)
   let body = {json|{
-    "status": "not_Paid",
+    "status": "Pending",
     "total": -1,
     "discount_applied": 0,
-    "currency": "test",
+    "currency": "USD",
     "payment_method": null,
     "payment_reference": null,
     "shipping_address": null,
@@ -181,10 +184,10 @@ let test_rule_total_not_negative () =
 let test_rule_discount_not_exceed_total () =
   (* Rule: discount_not_exceed_total — body violates the condition *)
   let body = {json|{
-    "status": "not_Paid",
+    "status": "Pending",
     "total": 0,
     "discount_applied": 1,
-    "currency": "test",
+    "currency": "USD",
     "payment_method": null,
     "payment_reference": null,
     "shipping_address": null,

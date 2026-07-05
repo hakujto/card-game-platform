@@ -40,10 +40,13 @@ let validate_trade_listing (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "quantity") with Some v -> v >= 1. && v <= 9999. | None -> true)) then errors := "Listing quantity must be between 1 and 9999" :: !errors;
   if not ((not ((json_string_opt j "listing_type") = Some "FixedPrice") || ((json_present j "asking_price")))) then errors := "Fixed price listing must have an asking price" :: !errors;
   if not ((not ((json_string_opt j "listing_type") = Some "Auction") || ((json_present j "auction_start_price") && (json_present j "auction_end_time")))) then errors := "Auction listing must have a start price and end time" :: !errors;
+  if json_string_opt j "listing_type" = Some "FixedPrice" && not (json_present j "asking_price") then
+    errors := "asking_price is required" :: !errors;
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
+  let public_id = match member "public_id" j with `String s -> s | _ -> "" in
   let status = match member "status" j with `String s -> s | _ -> "" in
   let listing_type = match member "listing_type" j with `String s -> s | _ -> "" in
   let asking_price = match member "asking_price" j with `Float f -> Some f | `Int i -> Some (float_of_int i) | _ -> None in
@@ -57,7 +60,7 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let expires_at = match member "expires_at" j with `String s -> Some s | _ -> None in
   let seller_id = match member "seller_id" j with `Int i -> i | _ -> 0 in
   let card_id = match member "card_id" j with `Int i -> i | _ -> 0 in
-  ((status, listing_type, asking_price, auction_start_price), (auction_current_bid, auction_end_time, foil, condition), (quantity, description, expires_at, seller_id), card_id)
+  ((public_id, status, listing_type, asking_price), (auction_start_price, auction_current_bid, auction_end_time, foil), (condition, quantity, description, expires_at), (seller_id, card_id))
 
 let handler_trade_listing (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -136,8 +139,8 @@ let handler_trade_listing (db : (module Caqti_lwt.CONNECTION)) req =
        (try
           let j = Yojson.Safe.from_string body in
           let params = extract_insert_params j in
-          let ((status, listing_type, asking_price, auction_start_price), (auction_current_bid, auction_end_time, foil, condition), (quantity, description, expires_at, seller_id), card_id) = params in
-          let upd_params = ((status, listing_type, asking_price, auction_start_price), (auction_current_bid, auction_end_time, foil, condition), (quantity, description, expires_at, seller_id), (card_id, id)) in
+          let ((public_id, _status, listing_type, asking_price), (auction_start_price, auction_current_bid, auction_end_time, foil), (condition, quantity, description, expires_at), (seller_id, card_id)) = params in
+          let upd_params = ((public_id, listing_type, asking_price, auction_start_price), (auction_current_bid, auction_end_time, foil, condition), (quantity, description, expires_at, seller_id), (card_id, id)) in
           let* upd = Db.exec Trade_listing_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))
@@ -276,6 +279,7 @@ let handler_trade_listing (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, seller — TODO: check X-Role header *)
        (* TODO: implement behavior finalize_auction *)
        respond_json 204 (`Null))
 

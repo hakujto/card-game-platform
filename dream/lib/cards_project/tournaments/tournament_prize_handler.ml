@@ -30,6 +30,12 @@ let validate_tournament_prize (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "placement_to") with Some v -> v >= (Option.value (json_float_opt j "placement_from") ~default:0.) | None -> true)) then errors := "placement_to must be greater than or equal to placement_from" :: !errors;
   if not ((match (json_float_opt j "placement_from") with Some v -> v > 0. | None -> true)) then errors := "placement_from must be greater than zero" :: !errors;
   if not ((match (json_float_opt j "amount") with Some v -> v >= 0. | None -> true)) then errors := "Prize amount must not be negative" :: !errors;
+  (match json_float_opt j "placement_from" with
+   | Some v when v < 1. -> errors := "placement_from: must be >= 1" :: !errors
+   | _ -> ());
+  (match json_float_opt j "placement_to" with
+   | Some v when v < 1. -> errors := "placement_to: must be >= 1" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

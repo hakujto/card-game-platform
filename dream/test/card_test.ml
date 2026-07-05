@@ -72,7 +72,7 @@ let do_setup () =
     "logo_url": null
   }|json} in
   setup_card_set_id := dep_id_card_set;
-  let setup_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"card_type\": \"not_Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
+  let setup_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-0000000000012\",\n    \"name\": \"Test Lightning Bolt\",\n    \"card_type\": \"Spell\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"metadata\": null,\n    \"total_copies_in_circulation\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
   let* (_, main_id) = post_for_id "/api/cards" setup_body in
   setup_card_id := main_id;
   Lwt.return_unit
@@ -90,7 +90,7 @@ let test_search_card () =
   Lwt.return_unit
 
 let test_create_card () =
-  let create_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"card_type\": \"not_Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
+  let create_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-00000000000122\",\n    \"name\": \"Test Lightning Bolt\",\n    \"card_type\": \"Spell\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"metadata\": null,\n    \"total_copies_in_circulation\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
   let* code = post "/api/cards" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -103,15 +103,22 @@ let test_get_card () =
 
 let test_update_card () =
   let url = Printf.sprintf "/api/cards/%d" !setup_card_id in
-  let update_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"card_type\": \"not_Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
+  let update_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-0000000000012\",\n    \"name\": \"Test Lightning Bolt\",\n    \"card_type\": \"Spell\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 10,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 5,\n    \"metadata\": null,\n    \"total_copies_in_circulation\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
   let* code = put url update_body in
   Alcotest.(check int) "update returns 200" 200 code;
+  Lwt.return_unit
+
+let test_patch_safe_card () =
+  (* @patch_safe: send only "flavor_text" in partial update *)
+  let* code = patch "/api/cards/1" {json|{"flavor_text": "test"}|json} in
+  Alcotest.(check bool) "patch_safe returns 200 or 404 or 400" true (code = 200 || code = 404 || code = 400);
   Lwt.return_unit
 
 let test_rule_creature_requires_stats () =
   (* Rule: creature_requires_stats — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
     "card_type": "Creature",
     "rarity": "Common",
     "mana_cost": 10,
@@ -125,6 +132,8 @@ let test_rule_creature_requires_stats () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -134,7 +143,8 @@ let test_rule_creature_requires_stats () =
 let test_rule_planeswalker_requires_loyalty () =
   (* Rule: planeswalker_requires_loyalty — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
     "card_type": "Planeswalker",
     "rarity": "Common",
     "mana_cost": 10,
@@ -149,6 +159,8 @@ let test_rule_planeswalker_requires_loyalty () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -158,7 +170,8 @@ let test_rule_planeswalker_requires_loyalty () =
 let test_rule_land_has_no_mana_cost () =
   (* Rule: land_has_no_mana_cost — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
     "card_type": "Land",
     "rarity": "Common",
     "mana_cost": 1,
@@ -173,6 +186,8 @@ let test_rule_land_has_no_mana_cost () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -182,8 +197,9 @@ let test_rule_land_has_no_mana_cost () =
 let test_rule_spell_or_artifact_no_loyalty () =
   (* Rule: spell_or_artifact_no_loyalty — body violates the condition *)
   let body = {json|{
-    "name": "test",
-    "card_type": "not_Creature",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
+    "card_type": "Spell",
     "rarity": "Common",
     "mana_cost": 10,
     "mana_colors": "White",
@@ -198,6 +214,8 @@ let test_rule_spell_or_artifact_no_loyalty () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -207,8 +225,9 @@ let test_rule_spell_or_artifact_no_loyalty () =
 let test_rule_mana_cost_range () =
   (* Rule: mana_cost_range — body violates the condition *)
   let body = {json|{
-    "name": "test",
-    "card_type": "not_Creature",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
+    "card_type": "Spell",
     "rarity": "Common",
     "mana_cost": 21,
     "mana_colors": "White",
@@ -222,6 +241,8 @@ let test_rule_mana_cost_range () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -231,8 +252,9 @@ let test_rule_mana_cost_range () =
 let test_rule_power_level_range () =
   (* Rule: power_level_range — body violates the condition *)
   let body = {json|{
-    "name": "test",
-    "card_type": "not_Creature",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
+    "card_type": "Spell",
     "rarity": "Common",
     "mana_cost": 10,
     "mana_colors": "White",
@@ -246,6 +268,8 @@ let test_rule_power_level_range () =
     "is_banned": false,
     "is_restricted": false,
     "power_level": 11,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -255,8 +279,9 @@ let test_rule_power_level_range () =
 let test_rule_not_banned_and_restricted () =
   (* Rule: not_banned_and_restricted — body violates the condition *)
   let body = {json|{
-    "name": "test",
-    "card_type": "not_Creature",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
+    "card_type": "Spell",
     "rarity": "Common",
     "mana_cost": 10,
     "mana_colors": "White",
@@ -270,6 +295,8 @@ let test_rule_not_banned_and_restricted () =
     "is_banned": true,
     "is_restricted": true,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -279,8 +306,9 @@ let test_rule_not_banned_and_restricted () =
 let test_rule_banned_card_not_in_legal_formats () =
   (* Rule: banned_card_not_in_legal_formats — body violates the condition *)
   let body = {json|{
-    "name": "test",
-    "card_type": "not_Creature",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Lightning Bolt",
+    "card_type": "Spell",
     "rarity": "Common",
     "mana_cost": 10,
     "mana_colors": "White",
@@ -290,10 +318,12 @@ let test_rule_banned_card_not_in_legal_formats () =
     "flavor_text": null,
     "image_url": null,
     "artist_name": null,
-    "legal_formats": "not_message",
+    "legal_formats": "Standard",
     "is_banned": true,
     "is_restricted": false,
     "power_level": 5,
+    "metadata": null,
+    "total_copies_in_circulation": 1,
     "set_id": 1
   }|json} in
   let* code = post "/api/cards" body in
@@ -306,6 +336,7 @@ let suite_card = [
   Alcotest.test_case "POST /api/cards returns 201" `Quick (lwt_run test_create_card);
   Alcotest.test_case "GET /api/cards/<id> returns 200" `Quick (lwt_run test_get_card);
   Alcotest.test_case "PUT /api/cards/<id> returns 200" `Quick (lwt_run test_update_card);
+  Alcotest.test_case "PATCH /api/cards/1 patch_safe field" `Quick (lwt_run test_patch_safe_card);
   Alcotest.test_case "POST /api/cards rule creature_requires_stats -> 422" `Quick (lwt_run test_rule_creature_requires_stats);
   Alcotest.test_case "POST /api/cards rule planeswalker_requires_loyalty -> 422" `Quick (lwt_run test_rule_planeswalker_requires_loyalty);
   Alcotest.test_case "POST /api/cards rule land_has_no_mana_cost -> 422" `Quick (lwt_run test_rule_land_has_no_mana_cost);

@@ -71,6 +71,7 @@ let do_setup () =
   }|json} in
   setup_season_id := dep_id_season;
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -79,12 +80,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let setup_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let setup_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-0000000000012\",\n    \"name\": \"Test Tournament Alpha\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* (_, main_id) = post_for_id "/api/tournaments" setup_body in
   setup_tournament_id := main_id;
   Lwt.return_unit
@@ -102,7 +105,7 @@ let test_search_tournament () =
   Lwt.return_unit
 
 let test_create_tournament () =
-  let create_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let create_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-00000000000122\",\n    \"name\": \"Test Tournament Alpha\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* code = post "/api/tournaments" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -115,17 +118,25 @@ let test_get_tournament () =
 
 let test_update_tournament () =
   let url = Printf.sprintf "/api/tournaments/%d" !setup_tournament_id in
-  let update_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let update_body = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-0000000000012\",\n    \"name\": \"Test Tournament Alpha\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 257,\n    \"entry_fee\": 0,\n    \"prize_pool\": 0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* code = put url update_body in
   Alcotest.(check int) "update returns 200" 200 code;
+  Lwt.return_unit
+
+let test_patch_safe_tournament () =
+  (* @patch_safe: send only "description" in partial update *)
+  let* code = patch "/api/tournaments/1" {json|{"description": "test"}|json} in
+  Alcotest.(check bool) "patch_safe returns 200 or 404 or 400" true (code = 200 || code = 404 || code = 400);
   Lwt.return_unit
 
 let test_rule_max_players_positive () =
   (* Rule: max_players_positive — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Tournament Alpha",
     "description": null,
     "status": "Draft",
+    "bracket_data": null,
     "format": "Standard",
     "tournament_type": "Swiss",
     "max_players": 513,
@@ -145,9 +156,11 @@ let test_rule_max_players_positive () =
 let test_rule_entry_fee_not_negative () =
   (* Rule: entry_fee_not_negative — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Tournament Alpha",
     "description": null,
     "status": "Draft",
+    "bracket_data": null,
     "format": "Standard",
     "tournament_type": "Swiss",
     "max_players": 257,
@@ -167,9 +180,11 @@ let test_rule_entry_fee_not_negative () =
 let test_rule_prize_pool_not_negative () =
   (* Rule: prize_pool_not_negative — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Tournament Alpha",
     "description": null,
     "status": "Draft",
+    "bracket_data": null,
     "format": "Standard",
     "tournament_type": "Swiss",
     "max_players": 257,
@@ -189,9 +204,11 @@ let test_rule_prize_pool_not_negative () =
 let test_rule_end_time_after_start () =
   (* Rule: end_time_after_start — body violates the condition *)
   let body = {json|{
-    "name": "test",
+    "public_id": "00000000-0000-0000-0000-0000000000012",
+    "name": "Test Tournament Alpha",
     "description": null,
     "status": "Draft",
+    "bracket_data": null,
     "format": "Standard",
     "tournament_type": "Swiss",
     "max_players": 257,
@@ -215,6 +232,7 @@ let suite_tournament = [
   Alcotest.test_case "POST /api/tournaments returns 201" `Quick (lwt_run test_create_tournament);
   Alcotest.test_case "GET /api/tournaments/<id> returns 200" `Quick (lwt_run test_get_tournament);
   Alcotest.test_case "PUT /api/tournaments/<id> returns 200" `Quick (lwt_run test_update_tournament);
+  Alcotest.test_case "PATCH /api/tournaments/1 patch_safe field" `Quick (lwt_run test_patch_safe_tournament);
   Alcotest.test_case "POST /api/tournaments rule max_players_positive -> 422" `Quick (lwt_run test_rule_max_players_positive);
   Alcotest.test_case "POST /api/tournaments rule entry_fee_not_negative -> 422" `Quick (lwt_run test_rule_entry_fee_not_negative);
   Alcotest.test_case "POST /api/tournaments rule prize_pool_not_negative -> 422" `Quick (lwt_run test_rule_prize_pool_not_negative);

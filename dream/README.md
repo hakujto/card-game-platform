@@ -124,6 +124,9 @@ Base URL: `http://localhost:3000`
 - `GET/POST` `/api/streams`
 - `GET/PUT/DELETE` `/api/streams/:id`
 
+### Wallet BC
+
+
 ## Tests
 
 ```bash
@@ -142,3 +145,4 @@ Bounded Contexts:
 - **Tournaments BC** (`lib/cards_project/tournaments/`) — Season, Tournament, TournamentJudge, TournamentRegistration, TournamentRound, Match, Game, TournamentPrize, AwardedPrize
 - **Marketplace BC** (`lib/cards_project/marketplace/`) — Product, Order, OrderItem, Coupon, TradeListing, TradeBid, TradeTransaction, CardPriceHistory, TradeDispute
 - **Content BC** (`lib/cards_project/content/`) — DraftSession, DraftParticipant, DraftPick, Article, ArticleTag, ArticleTagAssignment, ArticleComment, Stream
+- **Wallet BC** (`lib/cards_project/wallet/`) — 

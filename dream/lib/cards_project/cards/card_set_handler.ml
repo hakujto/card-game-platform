@@ -30,6 +30,10 @@ let validate_card_set (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "total_cards") with Some v -> v > 0. | None -> true)) then errors := "Card set must have at least one card" :: !errors;
   if not ((not ((json_present j "rotation_date")) || ((match (json_float_opt j "rotation_date") with Some v -> v > (Option.value (json_float_opt j "release_date") ~default:0.) | None -> true)))) then errors := "Rotation date must be after release date" :: !errors;
   if not ((not ((json_bool_opt j "is_rotated") = Some true) || ((json_present j "rotation_date")))) then errors := "Rotated set must have a rotation date" :: !errors;
+  (match json_string_opt j "code" with
+   | Some v when not (Re.execp (Re.compile (Re.Perl.re ~opts:[`Anchored] "[A-Z]{2,6}")) v) ->
+     errors := "code: invalid format" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

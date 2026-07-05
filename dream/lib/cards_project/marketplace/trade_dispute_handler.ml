@@ -205,6 +205,7 @@ let handler_trade_dispute (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, moderator — TODO: check X-Role header *)
        (* TODO: implement behavior resolve *)
        respond_json 204 (`Null))
 

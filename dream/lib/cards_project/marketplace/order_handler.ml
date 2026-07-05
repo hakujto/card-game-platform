@@ -13,7 +13,7 @@ let hook_notify_status_change () =
 let apply_projection_order (j : Yojson.Safe.t) : Yojson.Safe.t =
   match j with
   | `Assoc fields ->
-    let fields = List.filter (fun (k, _) -> not (List.mem k [])) fields in
+    let fields = List.filter (fun (k, _) -> not (List.mem k ["payment_reference"])) fields in
     let fields = List.map (fun (k, v) -> if k = "created_at" then ("created_at", v) else (k, v)) fields in
     let fields = List.map (fun (k, v) -> if k = "paid_at" then ("paid_at", v) else (k, v)) fields in
     let fields = List.map (fun (k, v) -> if k = "shipped_at" then ("shipped_at", v) else (k, v)) fields in
@@ -51,6 +51,14 @@ let validate_order (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((not ((json_string_opt j "status") = Some "Paid") || ((json_present j "paid_at")))) then errors := "Paid order must have paid_at set" :: !errors;
   if not ((not ((json_string_opt j "status") = Some "Shipped") || ((json_present j "tracking_number")))) then errors := "Shipped order must have a tracking number" :: !errors;
   if not ((not ((json_present j "shipped_at")) || ((json_string_opt j "status") = Some "Shipped"))) then errors := "shipped_at_requires_shipped_status" :: !errors;
+  (match json_string_opt j "currency" with
+   | Some v when not (Re.execp (Re.compile (Re.Perl.re ~opts:[`Anchored] "[A-Z]{3}")) v) ->
+     errors := "currency: invalid format" :: !errors
+   | _ -> ());
+  if json_string_opt j "status" = Some "Shipped" && not (json_present j "tracking_number") then
+    errors := "tracking_number is required" :: !errors;
+  if json_string_opt j "status" = Some "Paid" && not (json_present j "paid_at") then
+    errors := "paid_at is required" :: !errors;
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

@@ -51,7 +51,7 @@ let test_search_card_set () =
 let test_create_card_set () =
   let* code = post "/api/card_sets" {json|{
     "name": "test",
-    "code": "test2",
+    "code": "BC",
     "release_date": "2024-01-01",
     "set_type": "Core",
     "total_cards": 1,
@@ -70,7 +70,7 @@ let test_get_card_set () =
 let test_update_card_set () =
   let* code = put "/api/card_sets/1" {json|{
     "name": "test",
-    "code": "test2",
+    "code": "BC",
     "release_date": "2024-01-01",
     "set_type": "Core",
     "total_cards": 1,
@@ -85,7 +85,7 @@ let test_rule_total_cards_positive () =
   (* Rule: total_cards_positive — body violates the condition *)
   let body = {json|{
     "name": "test",
-    "code": "test2",
+    "code": "BC",
     "release_date": "2024-01-01",
     "set_type": "Core",
     "total_cards": 0,
@@ -101,7 +101,7 @@ let test_rule_rotation_date_after_release () =
   (* Rule: rotation_date_after_release — body violates the condition *)
   let body = {json|{
     "name": "test",
-    "code": "test2",
+    "code": "BC",
     "release_date": "2024-01-01",
     "rotation_date": 0,
     "set_type": "Core",
@@ -118,7 +118,7 @@ let test_rule_rotated_set_has_rotation_date () =
   (* Rule: rotated_set_has_rotation_date — body violates the condition *)
   let body = {json|{
     "name": "test",
-    "code": "test2",
+    "code": "BC",
     "release_date": "2024-01-01",
     "set_type": "Core",
     "total_cards": 1,

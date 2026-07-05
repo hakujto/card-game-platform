@@ -61,9 +61,26 @@ let last_id_q =
   {sql| SELECT last_insert_rowid() |sql}
 
 let update_q =
-  Caqti_type.(t4 (t4 string float float string) (t4 (option string) (option string) (option string) (option string)) (t4 (option string) (option string) int (option int)) int) ->. Caqti_type.unit @@
-  {sql| UPDATE orders SET status = ?, total = ?, discount_applied = ?, currency = ?, payment_method = ?, payment_reference = ?, shipping_address = ?, tracking_number = ?, paid_at = ?, shipped_at = ?, player_id = ?, coupon_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
+  Caqti_type.(t3 (t4 float float string (option string)) (t4 (option string) (option string) (option string) (option string)) (t3 int (option int) int)) ->. Caqti_type.unit @@
+  {sql| UPDATE orders SET total = ?, discount_applied = ?, currency = ?, payment_method = ?, payment_reference = ?, shipping_address = ?, tracking_number = ?, shipped_at = ?, player_id = ?, coupon_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
 
 let delete_q =
   Caqti_type.int ->. Caqti_type.unit @@
   {sql| DELETE FROM orders WHERE id = ? |sql}
+
+
+(* ── Audit log for Order ── *)
+type audit_log_t = {
+  id : int;
+  record_id : int;
+  field : string;
+  old_value : string option;
+  new_value : string option;
+  changed_by_id : int option;
+  changed_at : string;
+} [@@deriving yojson]
+
+let audit_log_insert_q =
+  Caqti_type.(t2 (t4 int string (option string) (option string)) (t2 (option int) string)) ->.
+  Caqti_type.unit @@
+  {sql| INSERT INTO order_audit_log (record_id, field, old_value, new_value, changed_by_id, changed_at) VALUES (?, ?, ?, ?, ?, ?) |sql}

@@ -61,6 +61,7 @@ let setup_article_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -69,12 +70,14 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let setup_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test2\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"not_Published\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
+  let setup_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test2\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"Draft\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"total_views_alltime\": 1,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
   let* (_, main_id) = post_for_id "/api/articles" setup_body in
   setup_article_id := main_id;
   Lwt.return_unit
@@ -92,7 +95,7 @@ let test_search_article () =
   Lwt.return_unit
 
 let test_create_article () =
-  let create_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test22\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"not_Published\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
+  let create_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test22\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"Draft\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"total_views_alltime\": 1,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
   let* code = post "/api/articles" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -105,9 +108,15 @@ let test_get_article () =
 
 let test_update_article () =
   let url = Printf.sprintf "/api/articles/%d" !setup_article_id in
-  let update_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test2\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"not_Published\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
+  let update_body = Printf.sprintf "{\n    \"title\": \"test\",\n    \"slug\": \"test2\",\n    \"body\": \"test\",\n    \"excerpt\": null,\n    \"cover_image_url\": null,\n    \"status\": \"Draft\",\n    \"article_type\": \"Guide\",\n    \"language\": \"EN\",\n    \"view_count\": 0,\n    \"likes_count\": 0,\n    \"total_views_alltime\": 1,\n    \"is_featured\": false,\n    \"published_at\": null,\n    \"author_id\": %d,\n    \"featured_deck_id\": null\n  }" !(setup_player_id) in
   let* code = put url update_body in
   Alcotest.(check int) "update returns 200" 200 code;
+  Lwt.return_unit
+
+let test_patch_safe_article () =
+  (* @patch_safe: send only "excerpt" in partial update *)
+  let* code = patch "/api/articles/1" {json|{"excerpt": "test"}|json} in
+  Alcotest.(check bool) "patch_safe returns 200 or 404 or 400" true (code = 200 || code = 404 || code = 400);
   Lwt.return_unit
 
 let test_rule_published_requires_published_at () =
@@ -123,6 +132,7 @@ let test_rule_published_requires_published_at () =
     "language": "EN",
     "view_count": 0,
     "likes_count": 0,
+    "total_views_alltime": 1,
     "is_featured": false,
     "author_id": 1,
     "featured_deck_id": null
@@ -139,11 +149,12 @@ let test_rule_view_count_not_negative () =
     "body": "test",
     "excerpt": null,
     "cover_image_url": null,
-    "status": "not_Published",
+    "status": "Draft",
     "article_type": "Guide",
     "language": "EN",
     "view_count": -1,
     "likes_count": 0,
+    "total_views_alltime": 1,
     "is_featured": false,
     "published_at": null,
     "author_id": 1,
@@ -161,11 +172,12 @@ let test_rule_likes_count_not_negative () =
     "body": "test",
     "excerpt": null,
     "cover_image_url": null,
-    "status": "not_Published",
+    "status": "Draft",
     "article_type": "Guide",
     "language": "EN",
     "view_count": 0,
     "likes_count": -1,
+    "total_views_alltime": 1,
     "is_featured": false,
     "published_at": null,
     "author_id": 1,
@@ -181,6 +193,7 @@ let suite_article = [
   Alcotest.test_case "POST /api/articles returns 201" `Quick (lwt_run test_create_article);
   Alcotest.test_case "GET /api/articles/<id> returns 200" `Quick (lwt_run test_get_article);
   Alcotest.test_case "PUT /api/articles/<id> returns 200" `Quick (lwt_run test_update_article);
+  Alcotest.test_case "PATCH /api/articles/1 patch_safe field" `Quick (lwt_run test_patch_safe_article);
   Alcotest.test_case "POST /api/articles rule published_requires_published_at -> 422" `Quick (lwt_run test_rule_published_requires_published_at);
   Alcotest.test_case "POST /api/articles rule view_count_not_negative -> 422" `Quick (lwt_run test_rule_view_count_not_negative);
   Alcotest.test_case "POST /api/articles rule likes_count_not_negative -> 422" `Quick (lwt_run test_rule_likes_count_not_negative);

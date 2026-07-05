@@ -72,6 +72,7 @@ let do_setup () =
   }|json} in
   setup_season_id := dep_id_season;
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -80,15 +81,17 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
   }|json} in
   setup_player_id := dep_id_player;
-  let dep_body_tournament = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
+  let dep_body_tournament = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"test\",\n    \"description\": null,\n    \"status\": \"Draft\",\n    \"bracket_data\": null,\n    \"format\": \"Standard\",\n    \"tournament_type\": \"Swiss\",\n    \"max_players\": 1,\n    \"entry_fee\": 1.0,\n    \"prize_pool\": 1.0,\n    \"start_time\": \"2024-01-01T00:00:00Z\",\n    \"end_time\": null,\n    \"is_online\": false,\n    \"location\": null,\n    \"rules_text\": null,\n    \"season_id\": %d,\n    \"organizer_id\": %d\n  }" !(setup_season_id) !(setup_player_id) in
   let* (_, dep_id_tournament) = post_for_id "/api/tournaments" dep_body_tournament in
   setup_tournament_id := dep_id_tournament;
-  let setup_body = Printf.sprintf "{\n    \"round_number\": 1,\n    \"status\": \"not_Completed\",\n    \"started_at\": null,\n    \"time_limit_minutes\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in
+  let setup_body = Printf.sprintf "{\n    \"round_number\": 1,\n    \"status\": \"Pending\",\n    \"started_at\": null,\n    \"time_limit_minutes\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in
   let* (_, main_id) = post_for_id "/api/tournament_rounds" setup_body in
   setup_tournament_round_id := main_id;
   Lwt.return_unit
@@ -101,7 +104,7 @@ let test_list_tournament_round () =
   Lwt.return_unit
 
 let test_create_tournament_round () =
-  let create_body = Printf.sprintf "{\n    \"round_number\": 1,\n    \"status\": \"not_Completed\",\n    \"started_at\": null,\n    \"time_limit_minutes\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in
+  let create_body = Printf.sprintf "{\n    \"round_number\": 1,\n    \"status\": \"Pending\",\n    \"started_at\": null,\n    \"time_limit_minutes\": 1,\n    \"tournament_id\": %d\n  }" !(setup_tournament_id) in
   let* code = post "/api/tournament_rounds" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -116,7 +119,7 @@ let test_rule_ended_after_started () =
   (* Rule: ended_after_started — body violates the condition *)
   let body = {json|{
     "round_number": 1,
-    "status": "not_Completed",
+    "status": "Pending",
     "started_at": null,
     "ended_at": 0,
     "time_limit_minutes": 1,
@@ -142,7 +145,7 @@ let test_rule_round_number_positive () =
   (* Rule: round_number_positive — body violates the condition *)
   let body = {json|{
     "round_number": 0,
-    "status": "not_Completed",
+    "status": "Pending",
     "started_at": null,
     "time_limit_minutes": 1,
     "tournament_id": 1
@@ -155,7 +158,7 @@ let test_rule_time_limit_positive () =
   (* Rule: time_limit_positive — body violates the condition *)
   let body = {json|{
     "round_number": 1,
-    "status": "not_Completed",
+    "status": "Pending",
     "started_at": null,
     "time_limit_minutes": 0,
     "tournament_id": 1

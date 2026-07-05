@@ -45,11 +45,12 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
   let status = match member "status" j with `String s -> s | _ -> "" in
   let draft_type = match member "draft_type" j with `String s -> s | _ -> "" in
+  let pack_contents = match member "pack_contents" j with `String s -> Some s | _ -> None in
   let seats = match member "seats" j with `Int i -> i | _ -> 0 in
   let time_per_pick_seconds = match member "time_per_pick_seconds" j with `Int i -> i | _ -> 0 in
   let completed_at = match member "completed_at" j with `String s -> Some s | _ -> None in
   let card_set_id = match member "card_set_id" j with `Int i -> i | _ -> 0 in
-  ((status, draft_type, seats, time_per_pick_seconds), (completed_at, card_set_id))
+  ((status, draft_type, pack_contents, seats), (time_per_pick_seconds, completed_at, card_set_id))
 
 let handler_draft_session (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =

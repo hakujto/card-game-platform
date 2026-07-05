@@ -72,7 +72,7 @@ let do_setup () =
     "logo_url": null
   }|json} in
   setup_card_set_id := dep_id_card_set;
-  let setup_body = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"seats\": 9,\n    \"time_per_pick_seconds\": 1,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
+  let setup_body = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"pack_contents\": null,\n    \"seats\": 9,\n    \"time_per_pick_seconds\": 1,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
   let* (_, main_id) = post_for_id "/api/draft_sessions" setup_body in
   setup_draft_session_id := main_id;
   Lwt.return_unit
@@ -85,7 +85,7 @@ let test_list_draft_session () =
   Lwt.return_unit
 
 let test_create_draft_session () =
-  let create_body = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"seats\": 9,\n    \"time_per_pick_seconds\": 1,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
+  let create_body = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"pack_contents\": null,\n    \"seats\": 9,\n    \"time_per_pick_seconds\": 1,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
   let* code = post "/api/draft_sessions" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -101,6 +101,7 @@ let test_rule_seats_range () =
   let body = {json|{
     "status": "WaitingForPlayers",
     "draft_type": "Booster",
+    "pack_contents": null,
     "seats": 17,
     "time_per_pick_seconds": 1,
     "card_set_id": 1
@@ -112,8 +113,9 @@ let test_rule_seats_range () =
 let test_rule_completed_at_requires_completed_status () =
   (* Rule: completed_at_requires_completed_status — body violates the condition *)
   let body = {json|{
-    "status": "not_Completed",
+    "status": "WaitingForPlayers",
     "draft_type": "Booster",
+    "pack_contents": null,
     "seats": 9,
     "time_per_pick_seconds": 1,
     "completed_at": "x",
@@ -128,6 +130,7 @@ let test_rule_time_per_pick_positive () =
   let body = {json|{
     "status": "WaitingForPlayers",
     "draft_type": "Booster",
+    "pack_contents": null,
     "seats": 9,
     "time_per_pick_seconds": 0,
     "card_set_id": 1

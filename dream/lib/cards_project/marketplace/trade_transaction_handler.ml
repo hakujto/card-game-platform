@@ -39,6 +39,8 @@ let validate_trade_transaction (j : Yojson.Safe.t) : (unit, string list) result 
   if not ((match (json_float_opt j "platform_fee") with Some v -> v >= 0. | None -> true)) then errors := "Platform fee must not be negative" :: !errors;
   if not ((match (json_float_opt j "final_price") with Some v -> v > 0. | None -> true)) then errors := "Transaction final price must be greater than zero" :: !errors;
   if not ((not ((json_string_opt j "status") = Some "Completed") || ((json_present j "completed_at")))) then errors := "Completed transaction must have a completed_at timestamp" :: !errors;
+  if json_string_opt j "status" = Some "Completed" && not (json_present j "completed_at") then
+    errors := "completed_at is required" :: !errors;
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

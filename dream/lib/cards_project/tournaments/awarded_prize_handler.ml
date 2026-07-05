@@ -38,6 +38,8 @@ let validate_awarded_prize (j : Yojson.Safe.t) : (unit, string list) result =
   let errors = ref [] in
   if not ((match (json_float_opt j "final_placement") with Some v -> v > 0. | None -> true)) then errors := "Final placement must be greater than zero" :: !errors;
   if not ((not ((json_bool_opt j "claimed") = Some true) || ((json_present j "claimed_at")))) then errors := "Claimed prize must have a claimed_at timestamp" :: !errors;
+  if json_string_opt j "claimed" = Some "true" && not (json_present j "claimed_at") then
+    errors := "claimed_at is required" :: !errors;
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

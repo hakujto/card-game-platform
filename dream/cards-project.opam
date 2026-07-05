@@ -17,7 +17,7 @@ depends: [
   "lwt_ppx"
   "alcotest"
   "cohttp-lwt-unix"
-  "str"
+  "re"
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]

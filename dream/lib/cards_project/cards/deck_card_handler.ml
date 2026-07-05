@@ -29,6 +29,12 @@ let validate_deck_card (j : Yojson.Safe.t) : (unit, string list) result =
   let errors = ref [] in
   if not ((match (json_float_opt j "quantity") with Some v -> v >= 1. && v <= 4. | None -> true)) then errors := "A deck can contain between 1 and 4 copies of a card" :: !errors;
   if not ((not ((json_bool_opt j "is_commander") = Some true) || ((json_float_opt j "quantity") = Some 1.))) then errors := "Commander card must appear exactly once in the deck" :: !errors;
+  (match json_float_opt j "quantity" with
+   | Some v when v < 1. -> errors := "quantity: must be >= 1" :: !errors
+   | _ -> ());
+  (match json_float_opt j "quantity" with
+   | Some v when v > 4. -> errors := "quantity: must be <= 4" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

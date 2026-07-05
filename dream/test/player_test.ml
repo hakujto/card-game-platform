@@ -50,6 +50,7 @@ let test_search_player () =
 
 let test_create_player () =
   let* code = post "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-0000000000012",
     "display_name": "x",
     "rank": "Bronze",
     "rating": 4999,
@@ -58,6 +59,8 @@ let test_create_player () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -72,6 +75,7 @@ let test_get_player () =
 
 let test_update_player () =
   let* code = patch "/api/players/1" {json|{
+    "public_id": "00000000-0000-0000-0000-0000000000012",
     "display_name": "x",
     "rank": "Bronze",
     "rating": 4999,
@@ -80,6 +84,8 @@ let test_update_player () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -87,9 +93,16 @@ let test_update_player () =
   Alcotest.(check bool) "update returns 200 or 403 or 404 or 500" true (code = 200 || code = 403 || code = 404 || code = 500);
   Lwt.return_unit
 
+let test_patch_safe_player () =
+  (* @patch_safe: send only "bio" in partial update *)
+  let* code = patch "/api/players/1" {json|{"bio": "test"}|json} in
+  Alcotest.(check bool) "patch_safe returns 200 or 404 or 400" true (code = 200 || code = 404 || code = 400);
+  Lwt.return_unit
+
 let test_rule_rating_range () =
   (* Rule: rating_range — body violates the condition *)
   let body = {json|{
+    "public_id": "00000000-0000-0000-0000-0000000000012",
     "display_name": "x",
     "rank": "Bronze",
     "rating": 10000,
@@ -98,6 +111,8 @@ let test_rule_rating_range () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -109,6 +124,7 @@ let test_rule_rating_range () =
 let test_rule_peak_rating_gte_rating () =
   (* Rule: peak_rating_gte_rating — body violates the condition *)
   let body = {json|{
+    "public_id": "00000000-0000-0000-0000-0000000000012",
     "display_name": "x",
     "rank": "Bronze",
     "rating": 4999,
@@ -117,6 +133,8 @@ let test_rule_peak_rating_gte_rating () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -128,6 +146,7 @@ let test_rule_peak_rating_gte_rating () =
 let test_rule_display_name_not_empty () =
   (* Rule: display_name_not_empty — body violates the condition *)
   let body = {json|{
+    "public_id": "00000000-0000-0000-0000-0000000000012",
     "rank": "Bronze",
     "rating": 4999,
     "peak_rating": 4999,
@@ -135,6 +154,8 @@ let test_rule_display_name_not_empty () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -149,6 +170,7 @@ let suite_player = [
   Alcotest.test_case "POST /api/players returns 201" `Quick (lwt_run test_create_player);
   Alcotest.test_case "GET /api/players/1 returns 200" `Quick (lwt_run test_get_player);
   Alcotest.test_case "PATCH /api/players/1 returns 200" `Quick (lwt_run test_update_player);
+  Alcotest.test_case "PATCH /api/players/1 patch_safe field" `Quick (lwt_run test_patch_safe_player);
   Alcotest.test_case "POST /api/players rule rating_range -> 422" `Quick (lwt_run test_rule_rating_range);
   Alcotest.test_case "POST /api/players rule peak_rating_gte_rating -> 422" `Quick (lwt_run test_rule_peak_rating_gte_rating);
   Alcotest.test_case "POST /api/players rule display_name_not_empty -> 422" `Quick (lwt_run test_rule_display_name_not_empty);

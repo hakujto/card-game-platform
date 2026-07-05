@@ -51,6 +51,7 @@ let test_search_deck_tag () =
 let test_create_deck_tag () =
   let* code = post "/api/deck_tags" {json|{
     "name": "test",
+    "slug": null,
     "color": null
   }|json} in
   Alcotest.(check int) "create returns 201" 201 code;
@@ -64,6 +65,7 @@ let test_get_deck_tag () =
 let test_update_deck_tag () =
   let* code = patch "/api/deck_tags/1" {json|{
     "name": "test",
+    "slug": null,
     "color": null
   }|json} in
   Alcotest.(check bool) "update returns 200 or 403 or 404 or 500" true (code = 200 || code = 403 || code = 404 || code = 500);

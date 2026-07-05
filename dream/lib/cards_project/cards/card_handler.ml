@@ -44,10 +44,29 @@ let validate_card (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((not ((json_string_opt j "card_type") = Some "Land") || ((json_float_opt j "mana_cost") = Some 0.))) then errors := "Land card must have zero mana cost" :: !errors;
   if not ((not ((json_string_opt j "card_type") <> Some "Planeswalker") || ((not (json_present j "loyalty"))))) then errors := "Only Planeswalker cards can have loyalty" :: !errors;
   if not ((not ((json_bool_opt j "is_banned") = Some true) || ((json_string_opt j "legal_formats") = Some "message"))) then errors := "banned_card_not_in_legal_formats" :: !errors;
+  (match json_float_opt j "mana_cost" with
+   | Some v when v < 0. -> errors := "mana_cost: must be >= 0" :: !errors
+   | _ -> ());
+  (match json_float_opt j "mana_cost" with
+   | Some v when v > 20. -> errors := "mana_cost: must be <= 20" :: !errors
+   | _ -> ());
+  (match json_float_opt j "power_level" with
+   | Some v when v < 1. -> errors := "power_level: must be >= 1" :: !errors
+   | _ -> ());
+  (match json_float_opt j "power_level" with
+   | Some v when v > 10. -> errors := "power_level: must be <= 10" :: !errors
+   | _ -> ());
+  if json_string_opt j "card_type" = Some "Creature" && not (json_present j "attack") then
+    errors := "attack is required" :: !errors;
+  if json_string_opt j "card_type" = Some "Creature" && not (json_present j "defense") then
+    errors := "defense is required" :: !errors;
+  if json_string_opt j "card_type" = Some "Planeswalker" && not (json_present j "loyalty") then
+    errors := "loyalty is required" :: !errors;
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
   let open Yojson.Safe.Util in
+  let public_id = match member "public_id" j with `String s -> s | _ -> "" in
   let name = match member "name" j with `String s -> s | _ -> "" in
   let card_type = match member "card_type" j with `String s -> s | _ -> "" in
   let rarity = match member "rarity" j with `String s -> s | _ -> "" in
@@ -64,8 +83,10 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let is_banned = match member "is_banned" j with `Bool b -> b | _ -> false in
   let is_restricted = match member "is_restricted" j with `Bool b -> b | _ -> false in
   let power_level = match member "power_level" j with `Int i -> i | _ -> 0 in
+  let metadata = match member "metadata" j with `String s -> Some s | _ -> None in
+  let total_copies_in_circulation = match member "total_copies_in_circulation" j with `Int i -> i | _ -> 0 in
   let set_id = match member "set_id" j with `Int i -> i | _ -> 0 in
-  (((name, card_type, rarity, mana_cost), (mana_colors, attack, defense, loyalty), (description, flavor_text, image_url, artist_name), (legal_formats, is_banned, is_restricted, power_level)), set_id)
+  (((public_id, name, card_type, rarity), (mana_cost, mana_colors, attack, defense), (loyalty, description, flavor_text, image_url), (artist_name, legal_formats, is_banned, is_restricted)), (power_level, metadata, total_copies_in_circulation, set_id))
 
 let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -148,8 +169,8 @@ let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
            | Error errs -> respond_json 422 (`Assoc [("errors", `List (List.map (fun e -> `String e) errs))])
            | Ok () ->
           let params = extract_insert_params j in
-          let (((name, card_type, rarity, mana_cost), (mana_colors, attack, defense, loyalty), (description, flavor_text, image_url, artist_name), (legal_formats, is_banned, is_restricted, power_level)), set_id) = params in
-          let upd_params = (((name, card_type, rarity, mana_cost), (mana_colors, attack, defense, loyalty), (description, flavor_text, image_url, artist_name), (legal_formats, is_banned, is_restricted, power_level)), (set_id, id)) in
+          let (((public_id, name, card_type, rarity), (mana_cost, mana_colors, attack, defense), (loyalty, description, flavor_text, image_url), (artist_name, legal_formats, _is_banned, _is_restricted)), (power_level, metadata, total_copies_in_circulation, set_id)) = params in
+          let upd_params = (((public_id, name, card_type, rarity), (mana_cost, mana_colors, attack, defense), (loyalty, description, flavor_text, image_url), (artist_name, legal_formats, power_level, metadata)), (total_copies_in_circulation, set_id, id)) in
           let* upd = Db.exec Card_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))
@@ -168,6 +189,7 @@ let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, moderator — TODO: check X-Role header *)
        (* TODO: implement behavior ban *)
        respond_json 204 (`Null))
 
@@ -176,6 +198,7 @@ let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, moderator — TODO: check X-Role header *)
        (* TODO: implement behavior unban *)
        respond_json 204 (`Null))
 
@@ -184,6 +207,7 @@ let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, moderator — TODO: check X-Role header *)
        (* TODO: implement behavior restrict *)
        respond_json 204 (`Null))
 
@@ -192,7 +216,17 @@ let handler_card (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: admin, moderator — TODO: check X-Role header *)
        (* TODO: implement behavior unrestrict *)
+       respond_json 204 (`Null))
+
+  (* PUT /api/cards/{id} - behavior replace *)
+  | `PUT, ["api"; "cards"; id_str; "_id"] ->
+    (match int_of_string_opt id_str with
+     | None -> respond_json 400 (`String "Invalid id")
+     | Some _id ->
+       (* RBAC: allowed roles: admin — TODO: check X-Role header *)
+       (* TODO: implement behavior replace *)
        respond_json 204 (`Null))
 
   (* GET /api/cards/{id}/value - behavior calculate_value *)

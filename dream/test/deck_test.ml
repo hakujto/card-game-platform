@@ -61,6 +61,7 @@ let setup_deck_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -69,6 +70,8 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -108,6 +111,12 @@ let test_update_deck () =
   let update_body = Printf.sprintf "{\n    \"name\": \"test\",\n    \"description\": null,\n    \"format\": \"Standard\",\n    \"is_public\": false,\n    \"is_tournament_legal\": false,\n    \"archetype\": null,\n    \"wins\": 0,\n    \"losses\": 0,\n    \"draws\": 0,\n    \"player_id\": %d\n  }" !(setup_player_id) in
   let* code = put url update_body in
   Alcotest.(check int) "update returns 200" 200 code;
+  Lwt.return_unit
+
+let test_patch_safe_deck () =
+  (* @patch_safe: send only "name" in partial update *)
+  let* code = patch "/api/decks/1" {json|{"name": "test"}|json} in
+  Alcotest.(check bool) "patch_safe returns 200 or 404 or 400" true (code = 200 || code = 404 || code = 400);
   Lwt.return_unit
 
 let test_delete_deck () =
@@ -194,6 +203,7 @@ let suite_deck = [
   Alcotest.test_case "POST /api/decks returns 201" `Quick (lwt_run test_create_deck);
   Alcotest.test_case "GET /api/decks/<id> returns 200" `Quick (lwt_run test_get_deck);
   Alcotest.test_case "PUT /api/decks/<id> returns 200" `Quick (lwt_run test_update_deck);
+  Alcotest.test_case "PATCH /api/decks/1 patch_safe field" `Quick (lwt_run test_patch_safe_deck);
   Alcotest.test_case "DELETE /api/decks/<id> returns 204" `Quick (lwt_run test_delete_deck);
   Alcotest.test_case "POST /api/decks rule wins_not_negative -> 422" `Quick (lwt_run test_rule_wins_not_negative);
   Alcotest.test_case "POST /api/decks rule losses_not_negative -> 422" `Quick (lwt_run test_rule_losses_not_negative);

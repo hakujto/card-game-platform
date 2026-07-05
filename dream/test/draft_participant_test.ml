@@ -74,10 +74,11 @@ let do_setup () =
     "logo_url": null
   }|json} in
   setup_card_set_id := dep_id_card_set;
-  let dep_body_draft_session = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"seats\": 1,\n    \"time_per_pick_seconds\": 1,\n    \"completed_at\": null,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
+  let dep_body_draft_session = Printf.sprintf "{\n    \"status\": \"WaitingForPlayers\",\n    \"draft_type\": \"Booster\",\n    \"pack_contents\": null,\n    \"seats\": 1,\n    \"time_per_pick_seconds\": 1,\n    \"completed_at\": null,\n    \"card_set_id\": %d\n  }" !(setup_card_set_id) in
   let* (_, dep_id_draft_session) = post_for_id "/api/draft_sessions" dep_body_draft_session in
   setup_draft_session_id := dep_id_draft_session;
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -86,6 +87,8 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null

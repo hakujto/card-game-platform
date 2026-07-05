@@ -57,3 +57,20 @@ let update_q =
 let delete_q =
   Caqti_type.int ->. Caqti_type.unit @@
   {sql| DELETE FROM trade_transactions WHERE id = ? |sql}
+
+
+(* ── Audit log for TradeTransaction ── *)
+type audit_log_t = {
+  id : int;
+  record_id : int;
+  field : string;
+  old_value : string option;
+  new_value : string option;
+  changed_by_id : int option;
+  changed_at : string;
+} [@@deriving yojson]
+
+let audit_log_insert_q =
+  Caqti_type.(t2 (t4 int string (option string) (option string)) (t2 (option int) string)) ->.
+  Caqti_type.unit @@
+  {sql| INSERT INTO trade_transaction_audit_log (record_id, field, old_value, new_value, changed_by_id, changed_at) VALUES (?, ?, ?, ?, ?, ?) |sql}

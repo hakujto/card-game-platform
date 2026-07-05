@@ -73,10 +73,10 @@ let do_setup () =
     "logo_url": null
   }|json} in
   setup_card_set_id := dep_id_card_set;
-  let dep_body_card = Printf.sprintf "{\n    \"name\": \"test\",\n    \"card_type\": \"Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 1,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"loyalty\": null,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
+  let dep_body_card = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"test\",\n    \"card_type\": \"Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 1,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"loyalty\": null,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 1,\n    \"metadata\": null,\n    \"total_copies_in_circulation\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
   let* (_, dep_id_card) = post_for_id "/api/cards" dep_body_card in
   setup_card_id := dep_id_card;
-  let setup_body = Printf.sprintf "{\n    \"ability_type\": \"not_Keyword\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
+  let setup_body = Printf.sprintf "{\n    \"ability_type\": \"Activated\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
   let* (_, main_id) = post_for_id "/api/card_abilities" setup_body in
   setup_card_ability_id := main_id;
   Lwt.return_unit
@@ -94,7 +94,7 @@ let test_search_card_ability () =
   Lwt.return_unit
 
 let test_create_card_ability () =
-  let create_body = Printf.sprintf "{\n    \"ability_type\": \"not_Keyword\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
+  let create_body = Printf.sprintf "{\n    \"ability_type\": \"Activated\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
   let* code = post "/api/card_abilities" create_body in
   Alcotest.(check int) "create returns 201" 201 code;
   Lwt.return_unit
@@ -107,7 +107,7 @@ let test_get_card_ability () =
 
 let test_update_card_ability () =
   let url = Printf.sprintf "/api/card_abilities/%d" !setup_card_ability_id in
-  let update_body = Printf.sprintf "{\n    \"ability_type\": \"not_Keyword\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
+  let update_body = Printf.sprintf "{\n    \"ability_type\": \"Activated\",\n    \"keyword\": \"test\",\n    \"ability_text\": \"test\",\n    \"timing\": null,\n    \"card_id\": %d\n  }" !(setup_card_id) in
   let* code = put url update_body in
   Alcotest.(check int) "update returns 200" 200 code;
   Lwt.return_unit

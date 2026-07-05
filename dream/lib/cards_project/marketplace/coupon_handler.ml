@@ -1,6 +1,13 @@
 (* Dream handlers for Coupon *)
 open Lwt.Syntax
 
+let apply_projection_coupon (j : Yojson.Safe.t) : Yojson.Safe.t =
+  match j with
+  | `Assoc fields ->
+    let fields = List.filter (fun (k, _) -> not (List.mem k ["uses_count"; "max_uses"])) fields in
+    `Assoc fields
+  | other -> other
+
 (* JSON field helpers *)
 let json_string_opt j key =
   match Yojson.Safe.Util.member key j with
@@ -31,6 +38,9 @@ let validate_coupon (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "discount_value") with Some v -> v > 0. | None -> true)) then errors := "Discount value must be greater than zero" :: !errors;
   if not ((not ((json_string_opt j "discount_type") = Some "Percent") || ((match (json_float_opt j "discount_value") with Some v -> v >= 1. && v <= 100. | None -> true)))) then errors := "Percent discount must be between 1 and 100" :: !errors;
   if not ((not ((json_present j "max_uses")) || ((match (json_float_opt j "uses_count") with Some v -> v <= (Option.value (json_float_opt j "max_uses") ~default:0.) | None -> true)))) then errors := "Coupon uses count cannot exceed max_uses" :: !errors;
+  (match json_float_opt j "discount_value" with
+   | Some v when v < 0.01 -> errors := "discount_value: must be >= 0.01" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =
@@ -72,7 +82,7 @@ let handler_coupon (db : (module Caqti_lwt.CONNECTION)) req =
            let s = (Coupon_model.row_to_t r).code in String.length s > 0 && (try ignore (Str.search_forward (Str.regexp_string q) s 0); true with Not_found -> false)) items in
        let json = `List (List.map (fun r ->
          let j = Coupon_model.to_yojson (Coupon_model.row_to_t r) in
-         j) filtered) in
+         apply_projection_coupon j) filtered) in
        respond_json 200 json)
 
   (* POST /api/coupons - create *)
@@ -97,7 +107,7 @@ let handler_coupon (db : (module Caqti_lwt.CONNECTION)) req =
               | Error e -> respond_json 500 (`String (Caqti_error.show e))
               | Ok (Some r) ->
                 let j = Coupon_model.to_yojson (Coupon_model.row_to_t r) in
-                respond_json 201 (j)
+                respond_json 201 (apply_projection_coupon j)
               | Ok None -> respond_json 404 (`String "Not found")))))
      with _ -> respond_json 400 (`String "Invalid JSON"))
 
@@ -112,7 +122,7 @@ let handler_coupon (db : (module Caqti_lwt.CONNECTION)) req =
         | Ok None -> respond_json 404 (`String "Not found")
         | Ok (Some r) ->
           let j = Coupon_model.to_yojson (Coupon_model.row_to_t r) in
-          respond_json 200 (j)))
+          respond_json 200 (apply_projection_coupon j)))
 
   (* PUT /api/coupons/:id - full update *)
   | `PUT, ["api"; "coupons"; id_str] ->
@@ -138,7 +148,7 @@ let handler_coupon (db : (module Caqti_lwt.CONNECTION)) req =
               | Ok None -> respond_json 404 (`String "Not found")
               | Ok (Some r) ->
                 let j = Coupon_model.to_yojson (Coupon_model.row_to_t r) in
-                respond_json 200 (j))))
+                respond_json 200 (apply_projection_coupon j))))
        with _ -> respond_json 400 (`String "Invalid JSON")))
 
   (* GET /api/coupons/{id}/valid - behavior is_valid *)

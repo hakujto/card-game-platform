@@ -51,7 +51,7 @@ let test_search_coupon () =
 let test_create_coupon () =
   let* code = post "/api/coupons" {json|{
     "code": "test2",
-    "discount_type": "not_Percent",
+    "discount_type": "Fixed",
     "discount_value": 1,
     "min_order_value": 0.0,
     "uses_count": 1,
@@ -70,7 +70,7 @@ let test_get_coupon () =
 let test_update_coupon () =
   let* code = put "/api/coupons/1" {json|{
     "code": "test2",
-    "discount_type": "not_Percent",
+    "discount_type": "Fixed",
     "discount_value": 1,
     "min_order_value": 0.0,
     "uses_count": 1,
@@ -85,7 +85,7 @@ let test_rule_valid_until_after_valid_from () =
   (* Rule: valid_until_after_valid_from — body violates the condition *)
   let body = {json|{
     "code": "test2",
-    "discount_type": "not_Percent",
+    "discount_type": "Fixed",
     "discount_value": 1,
     "min_order_value": 0.0,
     "uses_count": 1,
@@ -101,7 +101,7 @@ let test_rule_discount_value_positive () =
   (* Rule: discount_value_positive — body violates the condition *)
   let body = {json|{
     "code": "test2",
-    "discount_type": "not_Percent",
+    "discount_type": "Fixed",
     "discount_value": 0,
     "min_order_value": 0.0,
     "uses_count": 1,
@@ -133,7 +133,7 @@ let test_rule_uses_not_exceed_max () =
   (* Rule: uses_not_exceed_max — body violates the condition *)
   let body = {json|{
     "code": "test2",
-    "discount_type": "not_Percent",
+    "discount_type": "Fixed",
     "discount_value": 1,
     "min_order_value": 0.0,
     "max_uses": 1,

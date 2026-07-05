@@ -64,6 +64,7 @@ let setup_trade_transaction_id = ref 0
 
 let do_setup () =
   let* (_, dep_id_player) = post_for_id "/api/players" {json|{
+    "public_id": "00000000-0000-0000-0000-000000000001",
     "display_name": "test",
     "rank": "Bronze",
     "rating": 1,
@@ -72,6 +73,8 @@ let do_setup () =
     "country_code": null,
     "avatar_url": null,
     "preferred_format": null,
+    "contact_email": null,
+    "win_rate_cached": null,
     "is_verified": false,
     "last_active_at": null,
     "user_id": null
@@ -89,10 +92,10 @@ let do_setup () =
     "logo_url": null
   }|json} in
   setup_card_set_id := dep_id_card_set;
-  let dep_body_card = Printf.sprintf "{\n    \"name\": \"test\",\n    \"card_type\": \"Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 1,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"loyalty\": null,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
+  let dep_body_card = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"test\",\n    \"card_type\": \"Creature\",\n    \"rarity\": \"Common\",\n    \"mana_cost\": 1,\n    \"mana_colors\": \"White\",\n    \"attack\": 1,\n    \"defense\": 1,\n    \"loyalty\": null,\n    \"description\": \"test\",\n    \"flavor_text\": null,\n    \"image_url\": null,\n    \"artist_name\": null,\n    \"legal_formats\": \"Standard\",\n    \"is_banned\": false,\n    \"is_restricted\": false,\n    \"power_level\": 1,\n    \"metadata\": null,\n    \"total_copies_in_circulation\": 1,\n    \"set_id\": %d\n  }" !(setup_card_set_id) in
   let* (_, dep_id_card) = post_for_id "/api/cards" dep_body_card in
   setup_card_id := dep_id_card;
-  let dep_body_trade_listing = Printf.sprintf "{\n    \"status\": \"Active\",\n    \"listing_type\": \"FixedPrice\",\n    \"asking_price\": 1.0,\n    \"auction_start_price\": null,\n    \"auction_current_bid\": null,\n    \"auction_end_time\": null,\n    \"foil\": false,\n    \"condition\": \"Mint\",\n    \"quantity\": 1,\n    \"description\": null,\n    \"expires_at\": null,\n    \"seller_id\": %d,\n    \"card_id\": %d\n  }" !(setup_player_id) !(setup_card_id) in
+  let dep_body_trade_listing = Printf.sprintf "{\n    \"public_id\": \"00000000-0000-0000-0000-000000000001\",\n    \"status\": \"Active\",\n    \"listing_type\": \"FixedPrice\",\n    \"asking_price\": 1.0,\n    \"auction_start_price\": null,\n    \"auction_current_bid\": null,\n    \"auction_end_time\": null,\n    \"foil\": false,\n    \"condition\": \"Mint\",\n    \"quantity\": 1,\n    \"description\": null,\n    \"expires_at\": null,\n    \"seller_id\": %d,\n    \"card_id\": %d\n  }" !(setup_player_id) !(setup_card_id) in
   let* (_, dep_id_trade_listing) = post_for_id "/api/trade_listings" dep_body_trade_listing in
   setup_trade_listing_id := dep_id_trade_listing;
   setup_trade_transaction_id := 1;

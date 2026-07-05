@@ -61,8 +61,8 @@ let last_id_q =
   {sql| SELECT last_insert_rowid() |sql}
 
 let update_q =
-  Caqti_type.(t3 (t4 string (option string) string bool) (t4 bool (option string) int int) (t3 int int int)) ->. Caqti_type.unit @@
-  {sql| UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, wins = ?, losses = ?, draws = ?, player_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
+  Caqti_type.(t2 (t4 string (option string) string bool) (t4 bool (option string) int int)) ->. Caqti_type.unit @@
+  {sql| UPDATE decks SET name = ?, description = ?, format = ?, is_public = ?, is_tournament_legal = ?, archetype = ?, player_id = ?, updated_at = datetime('now') WHERE id = ? |sql}
 
 let delete_q =
   Caqti_type.int ->. Caqti_type.unit @@

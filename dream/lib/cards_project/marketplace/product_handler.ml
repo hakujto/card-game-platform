@@ -30,6 +30,12 @@ let validate_product (j : Yojson.Safe.t) : (unit, string list) result =
   if not ((match (json_float_opt j "price") with Some v -> v > 0. | None -> true)) then errors := "Product price must be greater than zero" :: !errors;
   if not ((match (json_float_opt j "stock") with Some v -> v >= 0. | None -> true)) then errors := "Product stock must not be negative" :: !errors;
   if not ((match (json_float_opt j "discount_percent") with Some v -> v >= 0. && v <= 100. | None -> true)) then errors := "Product discount percent must be between 0 and 100" :: !errors;
+  (match json_float_opt j "discount_percent" with
+   | Some v when v < 0. -> errors := "discount_percent: must be >= 0" :: !errors
+   | _ -> ());
+  (match json_float_opt j "discount_percent" with
+   | Some v when v > 100. -> errors := "discount_percent: must be <= 100" :: !errors
+   | _ -> ());
   if !errors = [] then Ok () else Error (List.rev !errors)
 
 let extract_insert_params (j : Yojson.Safe.t) =

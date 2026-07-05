@@ -59,11 +59,12 @@ let extract_insert_params (j : Yojson.Safe.t) =
   let language = match member "language" j with `String s -> s | _ -> "" in
   let view_count = match member "view_count" j with `Int i -> i | _ -> 0 in
   let likes_count = match member "likes_count" j with `Int i -> i | _ -> 0 in
+  let total_views_alltime = match member "total_views_alltime" j with `Int i -> i | _ -> 0 in
   let is_featured = match member "is_featured" j with `Bool b -> b | _ -> false in
   let published_at = match member "published_at" j with `String s -> Some s | _ -> None in
   let author_id = match member "author_id" j with `Int i -> i | _ -> 0 in
   let featured_deck_id = match member "featured_deck_id" j with `Int i -> Some i | _ -> None in
-  ((title, slug, body, excerpt), (cover_image_url, status, article_type, language), (view_count, likes_count, is_featured, published_at), (author_id, featured_deck_id))
+  ((title, slug, body, excerpt), (cover_image_url, status, article_type, language), (view_count, likes_count, total_views_alltime, is_featured), (published_at, author_id, featured_deck_id))
 
 let handler_article (db : (module Caqti_lwt.CONNECTION)) req =
   let respond_json status body =
@@ -146,8 +147,8 @@ let handler_article (db : (module Caqti_lwt.CONNECTION)) req =
            | Error errs -> respond_json 422 (`Assoc [("errors", `List (List.map (fun e -> `String e) errs))])
            | Ok () ->
           let params = extract_insert_params j in
-          let ((title, slug, body, excerpt), (cover_image_url, status, article_type, language), (view_count, likes_count, is_featured, published_at), (author_id, featured_deck_id)) = params in
-          let upd_params = ((title, slug, body, excerpt), (cover_image_url, status, article_type, language), (view_count, likes_count, is_featured, published_at), (author_id, featured_deck_id, id)) in
+          let ((title, slug, body, excerpt), (cover_image_url, _status, article_type, language), (_view_count, _likes_count, total_views_alltime, is_featured), (published_at, author_id, featured_deck_id)) = params in
+          let upd_params = ((title, slug, body, excerpt), (cover_image_url, article_type, language, total_views_alltime), (is_featured, published_at, author_id, featured_deck_id), id) in
           let* upd = Db.exec Article_model.update_q upd_params in
           (match upd with
            | Error e -> respond_json 500 (`String (Caqti_error.show e))
@@ -226,6 +227,7 @@ let handler_article (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: editor, admin — TODO: check X-Role header *)
        (* TODO: implement behavior publish *)
        respond_json 204 (`Null))
 
@@ -234,7 +236,17 @@ let handler_article (db : (module Caqti_lwt.CONNECTION)) req =
     (match int_of_string_opt id_str with
      | None -> respond_json 400 (`String "Invalid id")
      | Some _id ->
+       (* RBAC: allowed roles: editor, admin — TODO: check X-Role header *)
        (* TODO: implement behavior archive *)
+       respond_json 204 (`Null))
+
+  (* PUT /api/articles/{id} - behavior replace *)
+  | `PUT, ["api"; "articles"; id_str; "_id"] ->
+    (match int_of_string_opt id_str with
+     | None -> respond_json 400 (`String "Invalid id")
+     | Some _id ->
+       (* RBAC: allowed roles: editor, admin — TODO: check X-Role header *)
+       (* TODO: implement behavior replace *)
        respond_json 204 (`Null))
 
   (* POST /api/articles/{id}/view - behavior increment_view *)
