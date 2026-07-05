@@ -38,7 +38,7 @@ class TournamentRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class TournamentRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class TournamentRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/tournaments/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -77,7 +77,7 @@ class TournamentRoutesTest {
     @Test fun `transition Draft to Registration returns 403 for wrong role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -90,7 +90,7 @@ class TournamentRoutesTest {
     @Test fun `transition Draft to Registration returns 200 for allowed role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -103,10 +103,11 @@ class TournamentRoutesTest {
     @Test fun `transition Registration to Ongoing returns 403 for wrong role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Registration", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") {
             header("X-User-Role", "nobody")
         }
@@ -116,10 +117,11 @@ class TournamentRoutesTest {
     @Test fun `transition Registration to Ongoing returns 200 for allowed role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Registration", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") {
             header("X-User-Role", "Admin")
         }
@@ -129,10 +131,11 @@ class TournamentRoutesTest {
     @Test fun `transition Registration to Cancelled returns 403 for wrong role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Registration", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/registration-to-cancelled") {
             header("X-User-Role", "nobody")
         }
@@ -142,10 +145,11 @@ class TournamentRoutesTest {
     @Test fun `transition Registration to Cancelled returns 200 for allowed role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Registration", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/registration-to-cancelled") {
             header("X-User-Role", "Admin")
         }
@@ -155,10 +159,12 @@ class TournamentRoutesTest {
     @Test fun `transition Ongoing to Completed returns 403 for wrong role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Ongoing", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/ongoing-to-completed") {
             header("X-User-Role", "nobody")
         }
@@ -168,10 +174,12 @@ class TournamentRoutesTest {
     @Test fun `transition Ongoing to Completed returns 200 for allowed role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Ongoing", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/ongoing-to-completed") {
             header("X-User-Role", "Admin")
         }
@@ -181,10 +189,12 @@ class TournamentRoutesTest {
     @Test fun `transition Ongoing to Cancelled returns 403 for wrong role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Ongoing", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/ongoing-to-cancelled") {
             header("X-User-Role", "nobody")
         }
@@ -194,10 +204,12 @@ class TournamentRoutesTest {
     @Test fun `transition Ongoing to Cancelled returns 200 for allowed role`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Ongoing", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/ongoing-to-cancelled") {
             header("X-User-Role", "Admin")
         }
@@ -207,10 +219,13 @@ class TournamentRoutesTest {
     @Test fun `transition Completed to Draft returns 409`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Completed", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-ongoing") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/ongoing-to-completed") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/completed-to-draft")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }
@@ -218,10 +233,12 @@ class TournamentRoutesTest {
     @Test fun `transition Cancelled to Draft returns 409`() = testApp {
         val created = client.post("/api/tournaments") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "status": "Cancelled", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 1.00, "prize_pool": 1.00, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "format": "STANDARD", "tournament_type": "SWISS", "max_players": 8, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00", "is_online": true, "season_id": 1, "organizer_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/tournaments/$id/transitions/draft-to-registration") { header("X-User-Role", "Admin") }
+        client.patch("/api/tournaments/$id/transitions/registration-to-cancelled") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/tournaments/$id/transitions/cancelled-to-draft")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }

@@ -9,8 +9,6 @@ import io.ktor.server.routing.*
 
 fun validateArticle(req: ArticleRequest): List<String> {
     val errors = mutableListOf<String>()
-    if (!(req.viewCount >= 0)) errors.add("view_count_not_negative: validation failed")
-    if (!(req.likesCount >= 0)) errors.add("likes_count_not_negative: validation failed")
     return errors
 }
 
@@ -58,23 +56,35 @@ fun Route.articleRoutes() {
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                val req = call.receive<ArticleRequest>()
+                val req = call.receive<ArticlePatchRequest>()
                 val item = ArticleRepository.findById(id)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
-                val updated = ArticleRepository.update(id, req)
+                val updated = ArticleRepository.patch(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
             }
             post("/publish") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("editor", "admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for publish"))
                 // TODO: implement publish behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             post("/archive") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("editor", "admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for archive"))
                 // TODO: implement archive behavior
+                call.respond(HttpStatusCode.OK, mapOf("ok" to true))
+            }
+            put("/replace") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("editor", "admin")) return@put call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for replace"))
+                // TODO: implement replace behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             post("/view") {

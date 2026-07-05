@@ -13,6 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DeckTagTable : IntIdTable("deck_tag") {
     val name = varchar("name", 255)
+    val slug = text("slug").nullable()
     val color = varchar("color", 255).nullable()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
@@ -20,12 +21,14 @@ object DeckTagTable : IntIdTable("deck_tag") {
 
 data class DeckTagRequest(
     val name: String,
+    val slug: String? = null,
     val color: String? = null
 )
 
 data class DeckTagResponse(
     val id: Int,
     val name: String,
+    val slug: String? = null,
     val color: String? = null,
     val createdAt: String,
     val updatedAt: String
@@ -34,6 +37,7 @@ data class DeckTagResponse(
 fun ResultRow.toDeckTagResponse() = DeckTagResponse(
     id = this[DeckTagTable.id].value,
     name = this[DeckTagTable.name],
+    slug = this[DeckTagTable.slug],
     color = this[DeckTagTable.color],
     createdAt = this[DeckTagTable.createdAt].toString(),
     updatedAt = this[DeckTagTable.updatedAt].toString()
@@ -57,6 +61,7 @@ object DeckTagRepository {
     fun create(req: DeckTagRequest): DeckTagResponse = transaction {
         val inserted = DeckTagTable.insertAndGetId {
             it[name] = req.name
+            it[slug] = req.slug
             it[color] = req.color
         }
         DeckTagTable.selectAll().where { DeckTagTable.id eq inserted }.single().toDeckTagResponse()
@@ -65,6 +70,7 @@ object DeckTagRepository {
     fun update(id: Int, req: DeckTagRequest): DeckTagResponse? = transaction {
         val updated = DeckTagTable.update({ DeckTagTable.id eq id }) {
             it[name] = req.name
+            it[slug] = req.slug
             it[color] = req.color
         }
         if (updated == 0) return@transaction null

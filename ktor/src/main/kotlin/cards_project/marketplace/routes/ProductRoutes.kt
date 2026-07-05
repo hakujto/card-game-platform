@@ -11,6 +11,8 @@ fun validateProduct(req: ProductRequest): List<String> {
     val errors = mutableListOf<String>()
     if (!(req.price > java.math.BigDecimal("0"))) errors.add("price_positive: validation failed")
     if (!(req.stock >= 0)) errors.add("stock_not_negative: validation failed")
+    if (req.discountPercent < 0) errors.add("discount_percent must be >= 0")
+    if (req.discountPercent > 100) errors.add("discount_percent must be <= 100")
     return errors
 }
 
@@ -58,10 +60,10 @@ fun Route.productRoutes() {
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                val req = call.receive<ProductRequest>()
+                val req = call.receive<ProductPatchRequest>()
                 val item = ProductRepository.findById(id)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
-                val updated = ProductRepository.update(id, req)
+                val updated = ProductRepository.patch(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
             }

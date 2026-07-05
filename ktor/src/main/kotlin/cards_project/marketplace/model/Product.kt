@@ -47,6 +47,11 @@ data class ProductRequest(
     val cardSetId: Int? = null
 )
 
+data class ProductPatchRequest(
+    val description: String? = null,
+    val featured: Boolean? = null
+)
+
 data class ProductResponse(
     val id: Int,
     val name: String,
@@ -128,6 +133,16 @@ object ProductRepository {
             req.cardSetId?.let { v -> it[cardSetId] = EntityID(v, CardSetTable) }
         }
         if (updated == 0) return@transaction null
+        ProductTable.selectAll().where { ProductTable.id eq id }.singleOrNull()?.toProductResponse()
+    }
+
+    fun patch(id: Int, req: ProductPatchRequest): ProductResponse? = transaction {
+        if (req.description != null || req.featured != null) {
+            ProductTable.update({ ProductTable.id eq id }) {
+                req.description?.let { v -> it[description] = v }
+                req.featured?.let { v -> it[featured] = v }
+            }
+        }
         ProductTable.selectAll().where { ProductTable.id eq id }.singleOrNull()?.toProductResponse()
     }
 

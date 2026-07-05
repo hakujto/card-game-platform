@@ -28,9 +28,11 @@ enum class TournamentTournamentTypeType {
 }
 
 object TournamentTable : IntIdTable("tournament") {
+    val publicId = uuid("public_id").uniqueIndex()
     val name = varchar("name", 255)
     val description = text("description").nullable()
     val status = enumerationByName<TournamentStatusType>("status", 50).default(TournamentStatusType.DRAFT)
+    val bracketData = text("bracket_data").nullable()
     val format = enumerationByName<TournamentFormatType>("format", 50).default(TournamentFormatType.STANDARD)
     val tournamentType = enumerationByName<TournamentTournamentTypeType>("tournament_type", 50).default(TournamentTournamentTypeType.SWISS)
     val maxPlayers = integer("max_players")
@@ -48,9 +50,10 @@ object TournamentTable : IntIdTable("tournament") {
 }
 
 data class TournamentRequest(
+    val publicId: java.util.UUID,
     val name: String,
     val description: String? = null,
-    val status: TournamentStatusType,
+    val bracketData: String? = null,
     val format: TournamentFormatType,
     val tournamentType: TournamentTournamentTypeType,
     val maxPlayers: Int,
@@ -65,11 +68,19 @@ data class TournamentRequest(
     val organizerId: Int
 )
 
+data class TournamentPatchRequest(
+    val description: String? = null,
+    val location: String? = null,
+    val rulesText: String? = null
+)
+
 data class TournamentResponse(
     val id: Int,
+    val publicId: java.util.UUID,
     val name: String,
     val description: String? = null,
     val status: TournamentStatusType,
+    val bracketData: String? = null,
     val format: TournamentFormatType,
     val tournamentType: TournamentTournamentTypeType,
     val maxPlayers: Int,
@@ -88,9 +99,11 @@ data class TournamentResponse(
 
 fun ResultRow.toTournamentResponse() = TournamentResponse(
     id = this[TournamentTable.id].value,
+    publicId = this[TournamentTable.publicId],
     name = this[TournamentTable.name],
     description = this[TournamentTable.description],
     status = this[TournamentTable.status],
+    bracketData = this[TournamentTable.bracketData],
     format = this[TournamentTable.format],
     tournamentType = this[TournamentTable.tournamentType],
     maxPlayers = this[TournamentTable.maxPlayers],
@@ -124,9 +137,10 @@ object TournamentRepository {
 
     fun create(req: TournamentRequest): TournamentResponse = transaction {
         val inserted = TournamentTable.insertAndGetId {
+            it[publicId] = req.publicId
             it[name] = req.name
             it[description] = req.description
-            it[status] = req.status
+            it[bracketData] = req.bracketData
             it[format] = req.format
             it[tournamentType] = req.tournamentType
             it[maxPlayers] = req.maxPlayers
@@ -145,9 +159,10 @@ object TournamentRepository {
 
     fun update(id: Int, req: TournamentRequest): TournamentResponse? = transaction {
         val updated = TournamentTable.update({ TournamentTable.id eq id }) {
+            it[publicId] = req.publicId
             it[name] = req.name
             it[description] = req.description
-            it[status] = req.status
+            it[bracketData] = req.bracketData
             it[format] = req.format
             it[tournamentType] = req.tournamentType
             it[maxPlayers] = req.maxPlayers
@@ -162,6 +177,17 @@ object TournamentRepository {
             it[organizerId] = EntityID(req.organizerId, PlayerTable)
         }
         if (updated == 0) return@transaction null
+        TournamentTable.selectAll().where { TournamentTable.id eq id }.singleOrNull()?.toTournamentResponse()
+    }
+
+    fun patch(id: Int, req: TournamentPatchRequest): TournamentResponse? = transaction {
+        if (req.description != null || req.location != null || req.rulesText != null) {
+            TournamentTable.update({ TournamentTable.id eq id }) {
+                req.description?.let { v -> it[description] = v }
+                req.location?.let { v -> it[location] = v }
+                req.rulesText?.let { v -> it[rulesText] = v }
+            }
+        }
         TournamentTable.selectAll().where { TournamentTable.id eq id }.singleOrNull()?.toTournamentResponse()
     }
 
@@ -194,3 +220,32 @@ object TournamentRepository {
     }
 
 }
+
+object TournamentAuditLogTable : IntIdTable("tournaments_audit_log") {
+    val recordId = integer("record_id")
+    val field    = varchar("field", 100)
+    val oldValue = text("old_value").nullable()
+    val newValue = text("new_value").nullable()
+    val changedAt = datetime("changed_at").defaultExpression(CurrentDateTime)
+}
+
+data class TournamentAuditLog(
+    val id: Int,
+    val recordId: Int,
+    val field: String,
+    val oldValue: String?,
+    val newValue: String?,
+    val changedAt: String
+)
+
+data class TournamentCompleted(
+    val tournamentId: Int,
+    val seasonId: Int,
+    val completedAt: java.time.LocalDateTime
+)
+
+data class PlayerRegistered(
+    val tournamentId: Int,
+    val playerId: Int,
+    val registeredAt: java.time.LocalDateTime
+)

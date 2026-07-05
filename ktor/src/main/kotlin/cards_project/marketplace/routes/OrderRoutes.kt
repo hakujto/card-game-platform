@@ -11,6 +11,7 @@ fun validateOrder(req: OrderRequest): List<String> {
     val errors = mutableListOf<String>()
     if (!(req.total >= java.math.BigDecimal("0"))) errors.add("total_not_negative: validation failed")
     if (!(req.discountApplied <= req.total)) errors.add("discount_not_exceed_total: validation failed")
+    if (!Regex("[A-Z]{3}").matches(req.currency)) errors.add("currency must match pattern /[A-Z]{3}/")
     return errors
 }
 

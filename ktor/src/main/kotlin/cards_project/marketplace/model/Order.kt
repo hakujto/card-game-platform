@@ -40,7 +40,6 @@ object OrderTable : IntIdTable("order") {
 }
 
 data class OrderRequest(
-    val status: OrderStatusType,
     val total: java.math.BigDecimal,
     val discountApplied: java.math.BigDecimal,
     val currency: String,
@@ -48,7 +47,6 @@ data class OrderRequest(
     val paymentReference: String? = null,
     val shippingAddress: String? = null,
     val trackingNumber: String? = null,
-    val paidAt: java.time.LocalDateTime? = null,
     val shippedAt: java.time.LocalDateTime? = null,
     val playerId: Int,
     val couponId: Int? = null
@@ -102,7 +100,6 @@ object OrderRepository {
 
     fun create(req: OrderRequest): OrderResponse = transaction {
         val inserted = OrderTable.insertAndGetId {
-            it[status] = req.status
             it[total] = req.total
             it[discountApplied] = req.discountApplied
             it[currency] = req.currency
@@ -110,7 +107,6 @@ object OrderRepository {
             it[paymentReference] = req.paymentReference
             it[shippingAddress] = req.shippingAddress
             it[trackingNumber] = req.trackingNumber
-            it[paidAt] = req.paidAt
             it[shippedAt] = req.shippedAt
             it[playerId] = EntityID(req.playerId, PlayerTable)
             req.couponId?.let { v -> it[couponId] = EntityID(v, CouponTable) }
@@ -131,3 +127,39 @@ object OrderRepository {
     }
 
 }
+
+object OrderAuditLogTable : IntIdTable("orders_audit_log") {
+    val recordId = integer("record_id")
+    val field    = varchar("field", 100)
+    val oldValue = text("old_value").nullable()
+    val newValue = text("new_value").nullable()
+    val changedAt = datetime("changed_at").defaultExpression(CurrentDateTime)
+}
+
+data class OrderAuditLog(
+    val id: Int,
+    val recordId: Int,
+    val field: String,
+    val oldValue: String?,
+    val newValue: String?,
+    val changedAt: String
+)
+
+data class OrderPaid(
+    val orderId: Int,
+    val playerId: Int,
+    val total: java.math.BigDecimal,
+    val paymentMethod: String,
+    val paidAt: java.time.LocalDateTime
+)
+
+data class OrderShipped(
+    val orderId: Int,
+    val trackingNumber: String,
+    val shippedAt: java.time.LocalDateTime
+)
+
+data class OrderRefunded(
+    val orderId: Int,
+    val refundedAt: java.time.LocalDateTime
+)

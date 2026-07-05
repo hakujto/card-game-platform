@@ -9,6 +9,8 @@ import io.ktor.server.routing.*
 
 fun validateGame(req: GameRequest): List<String> {
     val errors = mutableListOf<String>()
+    if (req.gameNumber < 1) errors.add("game_number must be >= 1")
+    if (req.gameNumber > 3) errors.add("game_number must be <= 3")
     return errors
 }
 

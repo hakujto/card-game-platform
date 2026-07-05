@@ -11,6 +11,8 @@ fun validateTournament(req: TournamentRequest): List<String> {
     val errors = mutableListOf<String>()
     if (!(req.entryFee >= java.math.BigDecimal("0"))) errors.add("entry_fee_not_negative: validation failed")
     if (!(req.prizePool >= java.math.BigDecimal("0"))) errors.add("prize_pool_not_negative: validation failed")
+    if (req.maxPlayers < 2) errors.add("max_players must be >= 2")
+    if (req.maxPlayers > 512) errors.add("max_players must be <= 512")
     return errors
 }
 
@@ -58,10 +60,10 @@ fun Route.tournamentRoutes() {
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                val req = call.receive<TournamentRequest>()
+                val req = call.receive<TournamentPatchRequest>()
                 val item = TournamentRepository.findById(id)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
-                val updated = TournamentRepository.update(id, req)
+                val updated = TournamentRepository.patch(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
             }

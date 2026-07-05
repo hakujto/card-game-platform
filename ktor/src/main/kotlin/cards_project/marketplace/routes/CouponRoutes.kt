@@ -11,6 +11,7 @@ fun validateCoupon(req: CouponRequest): List<String> {
     val errors = mutableListOf<String>()
     if (!(req.validUntil > req.validFrom)) errors.add("valid_until_after_valid_from: validation failed")
     if (!(req.discountValue > java.math.BigDecimal("0"))) errors.add("discount_value_positive: validation failed")
+    if (req.discountValue < java.math.BigDecimal("0.01")) errors.add("discount_value must be >= 0.01")
     return errors
 }
 

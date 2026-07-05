@@ -45,10 +45,13 @@ data class DeckRequest(
     val isPublic: Boolean,
     val isTournamentLegal: Boolean,
     val archetype: DeckArchetypeType? = null,
-    val wins: Int,
-    val losses: Int,
-    val draws: Int,
     val playerId: Int
+)
+
+data class DeckPatchRequest(
+    val name: String? = null,
+    val description: String? = null,
+    val archetype: DeckArchetypeType? = null
 )
 
 data class DeckResponse(
@@ -106,9 +109,6 @@ object DeckRepository {
             it[isPublic] = req.isPublic
             it[isTournamentLegal] = req.isTournamentLegal
             it[archetype] = req.archetype
-            it[wins] = req.wins
-            it[losses] = req.losses
-            it[draws] = req.draws
             it[playerId] = EntityID(req.playerId, PlayerTable)
         }
         DeckTable.selectAll().where { DeckTable.id eq inserted }.single().toDeckResponse()
@@ -122,12 +122,20 @@ object DeckRepository {
             it[isPublic] = req.isPublic
             it[isTournamentLegal] = req.isTournamentLegal
             it[archetype] = req.archetype
-            it[wins] = req.wins
-            it[losses] = req.losses
-            it[draws] = req.draws
             it[playerId] = EntityID(req.playerId, PlayerTable)
         }
         if (updated == 0) return@transaction null
+        DeckTable.selectAll().where { DeckTable.id eq id }.singleOrNull()?.toDeckResponse()
+    }
+
+    fun patch(id: Int, req: DeckPatchRequest): DeckResponse? = transaction {
+        if (req.name != null || req.description != null || req.archetype != null) {
+            DeckTable.update({ DeckTable.id eq id }) {
+                req.name?.let { v -> it[name] = v }
+                req.description?.let { v -> it[description] = v }
+                req.archetype?.let { v -> it[archetype] = v }
+            }
+        }
         DeckTable.selectAll().where { DeckTable.id eq id }.singleOrNull()?.toDeckResponse()
     }
 

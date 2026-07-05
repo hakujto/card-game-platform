@@ -38,7 +38,7 @@ class CardAbilityRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/card_abilities") {
             contentType(ContentType.Application.Json)
-            setBody("""{"ability_type": "Keyword", "ability_text": "test", "card_id": 1}""")
+            setBody("""{"ability_type": "KEYWORD", "ability_text": "test", "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class CardAbilityRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/card_abilities") {
             contentType(ContentType.Application.Json)
-            setBody("""{"ability_type": "Keyword", "ability_text": "test", "card_id": 1}""")
+            setBody("""{"ability_type": "KEYWORD", "ability_text": "test", "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class CardAbilityRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/card_abilities") {
             contentType(ContentType.Application.Json)
-            setBody("""{"ability_type": "Keyword", "ability_text": "test", "card_id": 1}""")
+            setBody("""{"ability_type": "KEYWORD", "ability_text": "test", "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/card_abilities/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"ability_type": "Keyword", "ability_text": "test", "card_id": 1}""")
+            setBody("""{"ability_type": "KEYWORD", "ability_text": "test", "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -72,7 +72,7 @@ class CardAbilityRoutesTest {
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/card_abilities") {
             contentType(ContentType.Application.Json)
-            setBody("""{"ability_type": "Keyword", "ability_text": "test", "card_id": 1}""")
+            setBody("""{"ability_type": "KEYWORD", "ability_text": "test", "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

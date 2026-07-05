@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 fun validateCardSet(req: CardSetRequest): List<String> {
     val errors = mutableListOf<String>()
     if (!(req.totalCards > 0)) errors.add("total_cards_positive: validation failed")
+    if (!Regex("[A-Z]{2,6}").matches(req.code)) errors.add("code must match pattern /[A-Z]{2,6}/")
     return errors
 }
 

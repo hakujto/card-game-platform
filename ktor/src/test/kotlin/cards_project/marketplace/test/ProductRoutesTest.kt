@@ -38,7 +38,7 @@ class ProductRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/products") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "product_type": "SingleCard", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
+            setBody("""{"name": "test", "product_type": "SINGLECARD", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class ProductRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/products") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "product_type": "SingleCard", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
+            setBody("""{"name": "test", "product_type": "SINGLECARD", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class ProductRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/products") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "product_type": "SingleCard", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
+            setBody("""{"name": "test", "product_type": "SINGLECARD", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/products/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "product_type": "SingleCard", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
+            setBody("""{"name": "test", "product_type": "SINGLECARD", "price": 1.00, "stock": 1, "active": true, "discount_percent": 1, "featured": true}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

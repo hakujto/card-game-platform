@@ -38,7 +38,7 @@ class CouponRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/coupons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"code": "test", "discount_type": "Percent", "discount_value": 1.00, "min_order_value": 1.00, "uses_count": 1, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
+            setBody("""{"code": "test", "discount_type": "PERCENT", "discount_value": 1.00, "min_order_value": 1.00, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class CouponRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/coupons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"code": "test", "discount_type": "Percent", "discount_value": 1.00, "min_order_value": 1.00, "uses_count": 1, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
+            setBody("""{"code": "test", "discount_type": "PERCENT", "discount_value": 1.00, "min_order_value": 1.00, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class CouponRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/coupons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"code": "test", "discount_type": "Percent", "discount_value": 1.00, "min_order_value": 1.00, "uses_count": 1, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
+            setBody("""{"code": "test", "discount_type": "PERCENT", "discount_value": 1.00, "min_order_value": 1.00, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/coupons/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"code": "test", "discount_type": "Percent", "discount_value": 1.00, "min_order_value": 1.00, "uses_count": 1, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
+            setBody("""{"code": "test", "discount_type": "PERCENT", "discount_value": 1.00, "min_order_value": 1.00, "valid_from": "2024-01-01T00:00:00", "valid_until": "2024-12-31T00:00:00", "is_active": true}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

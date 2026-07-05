@@ -33,7 +33,7 @@ class TradeDisputeRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Open", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class TradeDisputeRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Open", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,7 +58,7 @@ class TradeDisputeRoutesTest {
     @Test fun `transition Open to UnderReview returns 403 for wrong role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Open", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -71,7 +71,7 @@ class TradeDisputeRoutesTest {
     @Test fun `transition Open to UnderReview returns 200 for allowed role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Open", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -84,10 +84,11 @@ class TradeDisputeRoutesTest {
     @Test fun `transition UnderReview to Resolved returns 403 for wrong role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "UnderReview", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/underreview-to-resolved") {
             header("X-User-Role", "nobody")
         }
@@ -97,10 +98,11 @@ class TradeDisputeRoutesTest {
     @Test fun `transition UnderReview to Resolved returns 200 for allowed role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "UnderReview", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/underreview-to-resolved") {
             header("X-User-Role", "Admin")
         }
@@ -110,10 +112,11 @@ class TradeDisputeRoutesTest {
     @Test fun `transition UnderReview to Escalated returns 403 for wrong role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "UnderReview", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/underreview-to-escalated") {
             header("X-User-Role", "nobody")
         }
@@ -123,10 +126,11 @@ class TradeDisputeRoutesTest {
     @Test fun `transition UnderReview to Escalated returns 200 for allowed role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "UnderReview", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/underreview-to-escalated") {
             header("X-User-Role", "Admin")
         }
@@ -136,10 +140,12 @@ class TradeDisputeRoutesTest {
     @Test fun `transition Escalated to Resolved returns 403 for wrong role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Escalated", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
+        client.patch("/api/trade_disputes/$id/transitions/underreview-to-escalated") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/escalated-to-resolved") {
             header("X-User-Role", "nobody")
         }
@@ -149,10 +155,12 @@ class TradeDisputeRoutesTest {
     @Test fun `transition Escalated to Resolved returns 200 for allowed role`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Escalated", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
+        client.patch("/api/trade_disputes/$id/transitions/underreview-to-escalated") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/escalated-to-resolved") {
             header("X-User-Role", "Admin")
         }
@@ -162,10 +170,12 @@ class TradeDisputeRoutesTest {
     @Test fun `transition Resolved to Open returns 409`() = testApp {
         val created = client.post("/api/trade_disputes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Resolved", "reason": "ItemNotReceived", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
+            setBody("""{"status": "OPEN", "reason": "ITEMNOTRECEIVED", "description": "test", "opened_at": "2024-01-01T00:00:00", "transaction_id": 1, "opened_by_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/trade_disputes/$id/transitions/open-to-underreview") { header("X-User-Role", "Admin") }
+        client.patch("/api/trade_disputes/$id/transitions/underreview-to-resolved") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/trade_disputes/$id/transitions/resolved-to-open")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }

@@ -38,7 +38,7 @@ class SeasonRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/seasons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "Standard", "is_active": true}""")
+            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "STANDARD", "is_active": true}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class SeasonRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/seasons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "Standard", "is_active": true}""")
+            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "STANDARD", "is_active": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class SeasonRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/seasons") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "Standard", "is_active": true}""")
+            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "STANDARD", "is_active": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/seasons/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "Standard", "is_active": true}""")
+            setBody("""{"name": "test", "start_date": "2024-01-01", "end_date": "2024-12-31", "format": "STANDARD", "is_active": true}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

@@ -38,7 +38,7 @@ class CardSetRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/card_sets") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}""")
+            setBody("""{"name": "test", "code": "AA", "release_date": "2024-01-01", "set_type": "CORE", "total_cards": 1, "is_rotated": true}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class CardSetRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/card_sets") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}""")
+            setBody("""{"name": "test", "code": "AA", "release_date": "2024-01-01", "set_type": "CORE", "total_cards": 1, "is_rotated": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class CardSetRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/card_sets") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}""")
+            setBody("""{"name": "test", "code": "AA", "release_date": "2024-01-01", "set_type": "CORE", "total_cards": 1, "is_rotated": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/card_sets/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "code": "test", "release_date": "2024-01-01", "set_type": "Core", "total_cards": 1, "is_rotated": true}""")
+            setBody("""{"name": "test", "code": "AA", "release_date": "2024-01-01", "set_type": "CORE", "total_cards": 1, "is_rotated": true}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

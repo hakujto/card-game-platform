@@ -33,7 +33,7 @@ class TournamentJudgeRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/tournament_judges") {
             contentType(ContentType.Application.Json)
-            setBody("""{"role": "HeadJudge", "tournament_id": 1, "player_id": 1}""")
+            setBody("""{"role": "HEADJUDGE", "tournament_id": 1, "player_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class TournamentJudgeRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/tournament_judges") {
             contentType(ContentType.Application.Json)
-            setBody("""{"role": "HeadJudge", "tournament_id": 1, "player_id": 1}""")
+            setBody("""{"role": "HEADJUDGE", "tournament_id": 1, "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -53,7 +53,7 @@ class TournamentJudgeRoutesTest {
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/tournament_judges") {
             contentType(ContentType.Application.Json)
-            setBody("""{"role": "HeadJudge", "tournament_id": 1, "player_id": 1}""")
+            setBody("""{"role": "HEADJUDGE", "tournament_id": 1, "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

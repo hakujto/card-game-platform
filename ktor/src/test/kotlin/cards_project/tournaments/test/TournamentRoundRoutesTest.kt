@@ -33,7 +33,7 @@ class TournamentRoundRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/tournament_rounds") {
             contentType(ContentType.Application.Json)
-            setBody("""{"round_number": 1, "status": "Pending", "time_limit_minutes": 1, "tournament_id": 1}""")
+            setBody("""{"round_number": 1, "status": "PENDING", "time_limit_minutes": 1, "tournament_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class TournamentRoundRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/tournament_rounds") {
             contentType(ContentType.Application.Json)
-            setBody("""{"round_number": 1, "status": "Pending", "time_limit_minutes": 1, "tournament_id": 1}""")
+            setBody("""{"round_number": 1, "status": "PENDING", "time_limit_minutes": 1, "tournament_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

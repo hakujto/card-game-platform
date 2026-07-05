@@ -25,6 +25,7 @@ enum class PlayerPreferredFormatType {
 }
 
 object PlayerTable : IntIdTable("player") {
+    val publicId = uuid("public_id").uniqueIndex()
     val displayName = varchar("display_name", 255).uniqueIndex()
     val rank = enumerationByName<PlayerRankType>("rank", 50).default(PlayerRankType.BRONZE)
     val rating = integer("rating").default(1000)
@@ -33,6 +34,8 @@ object PlayerTable : IntIdTable("player") {
     val countryCode = varchar("country_code", 255).nullable()
     val avatarUrl = text("avatar_url").nullable()
     val preferredFormat = enumerationByName<PlayerPreferredFormatType>("preferred_format", 50).nullable()
+    val contactEmail = varchar("contact_email", 254).nullable()
+    val winRateCached = double("win_rate_cached").nullable()
     val isVerified = bool("is_verified").default(false)
     val lastActiveAt = datetime("last_active_at").nullable()
     val userId = integer("user_id")
@@ -41,21 +44,30 @@ object PlayerTable : IntIdTable("player") {
 }
 
 data class PlayerRequest(
+    val publicId: java.util.UUID,
     val displayName: String,
     val rank: PlayerRankType,
-    val rating: Int,
-    val peakRating: Int,
     val bio: String? = null,
     val countryCode: String? = null,
     val avatarUrl: String? = null,
     val preferredFormat: PlayerPreferredFormatType? = null,
+    val contactEmail: String? = null,
+    val winRateCached: Double? = null,
     val isVerified: Boolean,
     val lastActiveAt: java.time.LocalDateTime? = null,
     val userId: Int
 )
 
+data class PlayerPatchRequest(
+    val bio: String? = null,
+    val countryCode: String? = null,
+    val avatarUrl: String? = null,
+    val preferredFormat: PlayerPreferredFormatType? = null
+)
+
 data class PlayerResponse(
     val id: Int,
+    val publicId: java.util.UUID,
     val displayName: String,
     val rank: PlayerRankType,
     val rating: Int,
@@ -64,6 +76,8 @@ data class PlayerResponse(
     val countryCode: String? = null,
     val avatarUrl: String? = null,
     val preferredFormat: PlayerPreferredFormatType? = null,
+    val contactEmail: String? = null,
+    val winRateCached: Double? = null,
     val isVerified: Boolean,
     val lastActiveAt: java.time.LocalDateTime? = null,
     val userId: Int,
@@ -73,6 +87,7 @@ data class PlayerResponse(
 
 fun ResultRow.toPlayerResponse() = PlayerResponse(
     id = this[PlayerTable.id].value,
+    publicId = this[PlayerTable.publicId],
     displayName = this[PlayerTable.displayName],
     rank = this[PlayerTable.rank],
     rating = this[PlayerTable.rating],
@@ -81,6 +96,8 @@ fun ResultRow.toPlayerResponse() = PlayerResponse(
     countryCode = this[PlayerTable.countryCode],
     avatarUrl = this[PlayerTable.avatarUrl],
     preferredFormat = this[PlayerTable.preferredFormat],
+    contactEmail = this[PlayerTable.contactEmail],
+    winRateCached = this[PlayerTable.winRateCached],
     isVerified = this[PlayerTable.isVerified],
     lastActiveAt = this[PlayerTable.lastActiveAt],
     userId = this[PlayerTable.userId],
@@ -105,14 +122,15 @@ object PlayerRepository {
 
     fun create(req: PlayerRequest): PlayerResponse = transaction {
         val inserted = PlayerTable.insertAndGetId {
+            it[publicId] = req.publicId
             it[displayName] = req.displayName
             it[rank] = req.rank
-            it[rating] = req.rating
-            it[peakRating] = req.peakRating
             it[bio] = req.bio
             it[countryCode] = req.countryCode
             it[avatarUrl] = req.avatarUrl
             it[preferredFormat] = req.preferredFormat
+            it[contactEmail] = req.contactEmail
+            it[winRateCached] = req.winRateCached
             it[isVerified] = req.isVerified
             it[lastActiveAt] = req.lastActiveAt
             it[userId] = req.userId
@@ -120,20 +138,15 @@ object PlayerRepository {
         PlayerTable.selectAll().where { PlayerTable.id eq inserted }.single().toPlayerResponse()
     }
 
-    fun update(id: Int, req: PlayerRequest): PlayerResponse? = transaction {
-        val updated = PlayerTable.update({ PlayerTable.id eq id }) {
-            it[displayName] = req.displayName
-            it[rank] = req.rank
-            it[rating] = req.rating
-            it[peakRating] = req.peakRating
-            it[bio] = req.bio
-            it[countryCode] = req.countryCode
-            it[avatarUrl] = req.avatarUrl
-            it[preferredFormat] = req.preferredFormat
-            it[isVerified] = req.isVerified
-            it[lastActiveAt] = req.lastActiveAt
+    fun patch(id: Int, req: PlayerPatchRequest): PlayerResponse? = transaction {
+        if (req.bio != null || req.countryCode != null || req.avatarUrl != null || req.preferredFormat != null) {
+            PlayerTable.update({ PlayerTable.id eq id }) {
+                req.bio?.let { v -> it[bio] = v }
+                req.countryCode?.let { v -> it[countryCode] = v }
+                req.avatarUrl?.let { v -> it[avatarUrl] = v }
+                req.preferredFormat?.let { v -> it[preferredFormat] = v }
+            }
         }
-        if (updated == 0) return@transaction null
         PlayerTable.selectAll().where { PlayerTable.id eq id }.singleOrNull()?.toPlayerResponse()
     }
 

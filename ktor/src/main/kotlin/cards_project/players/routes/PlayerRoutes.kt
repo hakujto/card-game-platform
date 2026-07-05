@@ -9,8 +9,8 @@ import io.ktor.server.routing.*
 
 fun validatePlayer(req: PlayerRequest): List<String> {
     val errors = mutableListOf<String>()
-    if (!(req.peakRating >= req.rating)) errors.add("peak_rating_gte_rating: validation failed")
     if (!(req.displayName != null)) errors.add("display_name_not_empty: validation failed")
+    if (req.countryCode != null && !Regex("[A-Z]{2}").matches(req.countryCode!!)) errors.add("country_code must match pattern /[A-Z]{2}/")
     return errors
 }
 
@@ -43,10 +43,10 @@ fun Route.playerRoutes() {
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                val req = call.receive<PlayerRequest>()
+                val req = call.receive<PlayerPatchRequest>()
                 val item = PlayerRepository.findById(id)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
-                val updated = PlayerRepository.update(id, req)
+                val updated = PlayerRepository.patch(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
             }
@@ -83,6 +83,8 @@ fun Route.playerRoutes() {
             post("/verify") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for verify"))
                 // TODO: implement verify behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }

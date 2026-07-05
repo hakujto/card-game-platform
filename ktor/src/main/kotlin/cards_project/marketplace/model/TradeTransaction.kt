@@ -81,3 +81,28 @@ object TradeTransactionRepository {
     }
 
 }
+
+object TradeTransactionAuditLogTable : IntIdTable("trade_transactions_audit_log") {
+    val recordId = integer("record_id")
+    val field    = varchar("field", 100)
+    val oldValue = text("old_value").nullable()
+    val newValue = text("new_value").nullable()
+    val changedAt = datetime("changed_at").defaultExpression(CurrentDateTime)
+}
+
+data class TradeTransactionAuditLog(
+    val id: Int,
+    val recordId: Int,
+    val field: String,
+    val oldValue: String?,
+    val newValue: String?,
+    val changedAt: String
+)
+
+data class TransactionCompleted(
+    val transactionId: Int,
+    val buyerId: Int,
+    val sellerId: Int,
+    val finalPrice: java.math.BigDecimal,
+    val completedAt: java.time.LocalDateTime
+)

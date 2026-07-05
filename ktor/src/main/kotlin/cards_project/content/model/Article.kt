@@ -28,7 +28,7 @@ enum class ArticleLanguageType {
 
 object ArticleTable : IntIdTable("article") {
     val title = varchar("title", 255)
-    val slug = varchar("slug", 255).uniqueIndex()
+    val slug = text("slug").uniqueIndex()
     val body = text("body")
     val excerpt = text("excerpt").nullable()
     val coverImageUrl = text("cover_image_url").nullable()
@@ -37,6 +37,7 @@ object ArticleTable : IntIdTable("article") {
     val language = enumerationByName<ArticleLanguageType>("language", 50).default(ArticleLanguageType.EN)
     val viewCount = integer("view_count").default(0)
     val likesCount = integer("likes_count").default(0)
+    val totalViewsAlltime = long("total_views_alltime").default(0)
     val isFeatured = bool("is_featured").default(false)
     val publishedAt = datetime("published_at").nullable()
     val authorId = reference("author_id", PlayerTable, onDelete = ReferenceOption.RESTRICT)
@@ -51,15 +52,19 @@ data class ArticleRequest(
     val body: String,
     val excerpt: String? = null,
     val coverImageUrl: String? = null,
-    val status: ArticleStatusType,
     val articleType: ArticleArticleTypeType,
     val language: ArticleLanguageType,
-    val viewCount: Int,
-    val likesCount: Int,
+    val totalViewsAlltime: Long,
     val isFeatured: Boolean,
     val publishedAt: java.time.LocalDateTime? = null,
     val authorId: Int,
     val featuredDeckId: Int? = null
+)
+
+data class ArticlePatchRequest(
+    val excerpt: String? = null,
+    val coverImageUrl: String? = null,
+    val isFeatured: Boolean? = null
 )
 
 data class ArticleResponse(
@@ -74,6 +79,7 @@ data class ArticleResponse(
     val language: ArticleLanguageType,
     val viewCount: Int,
     val likesCount: Int,
+    val totalViewsAlltime: Long,
     val isFeatured: Boolean,
     val publishedAt: java.time.LocalDateTime? = null,
     val authorId: Int,
@@ -94,6 +100,7 @@ fun ResultRow.toArticleResponse() = ArticleResponse(
     language = this[ArticleTable.language],
     viewCount = this[ArticleTable.viewCount],
     likesCount = this[ArticleTable.likesCount],
+    totalViewsAlltime = this[ArticleTable.totalViewsAlltime],
     isFeatured = this[ArticleTable.isFeatured],
     publishedAt = this[ArticleTable.publishedAt],
     authorId = this[ArticleTable.authorId].value,
@@ -124,11 +131,9 @@ object ArticleRepository {
             it[body] = req.body
             it[excerpt] = req.excerpt
             it[coverImageUrl] = req.coverImageUrl
-            it[status] = req.status
             it[articleType] = req.articleType
             it[language] = req.language
-            it[viewCount] = req.viewCount
-            it[likesCount] = req.likesCount
+            it[totalViewsAlltime] = req.totalViewsAlltime
             it[isFeatured] = req.isFeatured
             it[publishedAt] = req.publishedAt
             it[authorId] = EntityID(req.authorId, PlayerTable)
@@ -144,17 +149,26 @@ object ArticleRepository {
             it[body] = req.body
             it[excerpt] = req.excerpt
             it[coverImageUrl] = req.coverImageUrl
-            it[status] = req.status
             it[articleType] = req.articleType
             it[language] = req.language
-            it[viewCount] = req.viewCount
-            it[likesCount] = req.likesCount
+            it[totalViewsAlltime] = req.totalViewsAlltime
             it[isFeatured] = req.isFeatured
             it[publishedAt] = req.publishedAt
             it[authorId] = EntityID(req.authorId, PlayerTable)
             req.featuredDeckId?.let { v -> it[featuredDeckId] = EntityID(v, DeckTable) }
         }
         if (updated == 0) return@transaction null
+        ArticleTable.selectAll().where { ArticleTable.id eq id }.singleOrNull()?.toArticleResponse()
+    }
+
+    fun patch(id: Int, req: ArticlePatchRequest): ArticleResponse? = transaction {
+        if (req.excerpt != null || req.coverImageUrl != null || req.isFeatured != null) {
+            ArticleTable.update({ ArticleTable.id eq id }) {
+                req.excerpt?.let { v -> it[excerpt] = v }
+                req.coverImageUrl?.let { v -> it[coverImageUrl] = v }
+                req.isFeatured?.let { v -> it[isFeatured] = v }
+            }
+        }
         ArticleTable.selectAll().where { ArticleTable.id eq id }.singleOrNull()?.toArticleResponse()
     }
 

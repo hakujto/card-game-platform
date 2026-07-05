@@ -37,7 +37,7 @@ class PlayerCollectionRoutesTest {
         val r = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class PlayerCollectionRoutesTest {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -60,7 +60,7 @@ class PlayerCollectionRoutesTest {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -74,14 +74,14 @@ class PlayerCollectionRoutesTest {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.patch("/api/player_collections/$id") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -90,7 +90,7 @@ class PlayerCollectionRoutesTest {
         val created = client.post("/api/player_collections") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"quantity": 1, "foil": true, "condition": "Mint", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "Purchase", "player_id": $ownerId, "card_id": 1}""")
+            setBody("""{"quantity": 1, "foil": true, "condition": "MINT", "acquired_at": "2024-01-01T00:00:00", "acquired_via": "PURCHASE", "player_id": $ownerId, "card_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

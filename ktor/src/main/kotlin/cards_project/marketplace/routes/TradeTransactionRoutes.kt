@@ -12,6 +12,7 @@ fun validateTradeTransaction(req: TradeTransactionRequest): List<String> {
     if (!(req.platformFee <= req.finalPrice)) errors.add("fee_not_exceed_price: validation failed")
     if (!(req.platformFee >= java.math.BigDecimal("0"))) errors.add("fee_not_negative: validation failed")
     if (!(req.finalPrice > java.math.BigDecimal("0"))) errors.add("final_price_positive: validation failed")
+    if ((req.status == TradeTransactionStatusType.COMPLETED) && req.completedAt == null) errors.add("completed_at is required when condition is met")
     return errors
 }
 

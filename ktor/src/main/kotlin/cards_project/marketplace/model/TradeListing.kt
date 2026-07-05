@@ -27,6 +27,7 @@ enum class TradeListingConditionType {
 }
 
 object TradeListingTable : IntIdTable("trade_listing") {
+    val publicId = uuid("public_id").uniqueIndex()
     val status = enumerationByName<TradeListingStatusType>("status", 50).default(TradeListingStatusType.ACTIVE)
     val listingType = enumerationByName<TradeListingListingTypeType>("listing_type", 50).default(TradeListingListingTypeType.FIXEDPRICE)
     val askingPrice = decimal("asking_price", 19, 4).nullable()
@@ -45,7 +46,7 @@ object TradeListingTable : IntIdTable("trade_listing") {
 }
 
 data class TradeListingRequest(
-    val status: TradeListingStatusType,
+    val publicId: java.util.UUID,
     val listingType: TradeListingListingTypeType,
     val askingPrice: java.math.BigDecimal? = null,
     val auctionStartPrice: java.math.BigDecimal? = null,
@@ -62,6 +63,7 @@ data class TradeListingRequest(
 
 data class TradeListingResponse(
     val id: Int,
+    val publicId: java.util.UUID,
     val status: TradeListingStatusType,
     val listingType: TradeListingListingTypeType,
     val askingPrice: java.math.BigDecimal? = null,
@@ -81,6 +83,7 @@ data class TradeListingResponse(
 
 fun ResultRow.toTradeListingResponse() = TradeListingResponse(
     id = this[TradeListingTable.id].value,
+    publicId = this[TradeListingTable.publicId],
     status = this[TradeListingTable.status],
     listingType = this[TradeListingTable.listingType],
     askingPrice = this[TradeListingTable.askingPrice],
@@ -115,7 +118,7 @@ object TradeListingRepository {
 
     fun create(req: TradeListingRequest): TradeListingResponse = transaction {
         val inserted = TradeListingTable.insertAndGetId {
-            it[status] = req.status
+            it[publicId] = req.publicId
             it[listingType] = req.listingType
             it[askingPrice] = req.askingPrice
             it[auctionStartPrice] = req.auctionStartPrice
@@ -134,7 +137,7 @@ object TradeListingRepository {
 
     fun update(id: Int, req: TradeListingRequest): TradeListingResponse? = transaction {
         val updated = TradeListingTable.update({ TradeListingTable.id eq id }) {
-            it[status] = req.status
+            it[publicId] = req.publicId
             it[listingType] = req.listingType
             it[askingPrice] = req.askingPrice
             it[auctionStartPrice] = req.auctionStartPrice

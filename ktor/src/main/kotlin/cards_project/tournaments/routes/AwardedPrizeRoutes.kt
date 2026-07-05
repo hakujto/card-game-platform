@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 
 fun validateAwardedPrize(req: AwardedPrizeRequest): List<String> {
     val errors = mutableListOf<String>()
-    if (!(req.finalPlacement > 0)) errors.add("final_placement_positive: validation failed")
+    if ((req.claimed == true) && req.claimedAt == null) errors.add("claimed_at is required when condition is met")
     return errors
 }
 

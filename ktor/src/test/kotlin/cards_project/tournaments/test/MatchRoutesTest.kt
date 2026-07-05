@@ -33,7 +33,7 @@ class MatchRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class MatchRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,7 +58,7 @@ class MatchRoutesTest {
     @Test fun `transition Pending to Active returns 403 for wrong role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -71,7 +71,7 @@ class MatchRoutesTest {
     @Test fun `transition Pending to Active returns 200 for allowed role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -84,10 +84,11 @@ class MatchRoutesTest {
     @Test fun `transition Active to Completed returns 403 for wrong role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Active", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/active-to-completed") {
             header("X-User-Role", "nobody")
         }
@@ -97,10 +98,11 @@ class MatchRoutesTest {
     @Test fun `transition Active to Completed returns 200 for allowed role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Active", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/active-to-completed") {
             header("X-User-Role", "Judge")
         }
@@ -110,10 +112,11 @@ class MatchRoutesTest {
     @Test fun `transition Active to Draw returns 403 for wrong role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Active", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/active-to-draw") {
             header("X-User-Role", "nobody")
         }
@@ -123,10 +126,11 @@ class MatchRoutesTest {
     @Test fun `transition Active to Draw returns 200 for allowed role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Active", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/active-to-draw") {
             header("X-User-Role", "Judge")
         }
@@ -136,7 +140,7 @@ class MatchRoutesTest {
     @Test fun `transition Pending to BYE returns 403 for wrong role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -149,7 +153,7 @@ class MatchRoutesTest {
     @Test fun `transition Pending to BYE returns 200 for allowed role`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -162,10 +166,12 @@ class MatchRoutesTest {
     @Test fun `transition Completed to Active returns 409`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Completed", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
+        client.patch("/api/matches/$id/transitions/active-to-completed") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/completed-to-active")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }
@@ -173,10 +179,12 @@ class MatchRoutesTest {
     @Test fun `transition Draw to Active returns 409`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Draw", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-active") { header("X-User-Role", "Judge") }
+        client.patch("/api/matches/$id/transitions/active-to-draw") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/draw-to-active")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }
@@ -184,10 +192,11 @@ class MatchRoutesTest {
     @Test fun `transition BYE to Active returns 409`() = testApp {
         val created = client.post("/api/matches") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "BYE", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
+            setBody("""{"status": "PENDING", "player1_wins": 1, "player2_wins": 1, "round_id": 1, "player1_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/matches/$id/transitions/pending-to-bye") { header("X-User-Role", "Judge") }
         val r = client.patch("/api/matches/$id/transitions/bye-to-active")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }

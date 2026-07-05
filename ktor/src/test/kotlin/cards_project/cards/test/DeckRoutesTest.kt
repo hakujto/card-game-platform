@@ -38,7 +38,7 @@ class DeckRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/decks") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}""")
+            setBody("""{"name": "test", "format": "STANDARD", "is_public": true, "is_tournament_legal": true, "player_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class DeckRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/decks") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}""")
+            setBody("""{"name": "test", "format": "STANDARD", "is_public": true, "is_tournament_legal": true, "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class DeckRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/decks") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}""")
+            setBody("""{"name": "test", "format": "STANDARD", "is_public": true, "is_tournament_legal": true, "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/decks/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}""")
+            setBody("""{"name": "test", "format": "STANDARD", "is_public": true, "is_tournament_legal": true, "player_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -72,7 +72,7 @@ class DeckRoutesTest {
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/decks") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "format": "Standard", "is_public": true, "is_tournament_legal": true, "wins": 1, "losses": 1, "draws": 1, "player_id": 1}""")
+            setBody("""{"name": "test", "format": "STANDARD", "is_public": true, "is_tournament_legal": true, "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

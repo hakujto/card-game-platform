@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 
 fun validateTradeListing(req: TradeListingRequest): List<String> {
     val errors = mutableListOf<String>()
+    if ((req.listingType == TradeListingListingTypeType.FIXEDPRICE) && req.askingPrice == null) errors.add("asking_price is required when condition is met")
     return errors
 }
 
@@ -76,6 +77,8 @@ fun Route.tradeListingRoutes() {
             post("/api/trade-listings/{id}/finalize") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin", "seller")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for finalize_auction"))
                 // TODO: implement finalize_auction behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }

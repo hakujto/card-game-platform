@@ -38,7 +38,7 @@ class CardRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/cards") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "SPELL", "rarity": "COMMON", "mana_cost": 1, "mana_colors": "WHITE", "attack": 1, "defense": 1, "loyalty": 1, "description": "test", "legal_formats": "STANDARD", "power_level": 3, "total_copies_in_circulation": 1, "set_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class CardRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/cards") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "SPELL", "rarity": "COMMON", "mana_cost": 1, "mana_colors": "WHITE", "attack": 1, "defense": 1, "loyalty": 1, "description": "test", "legal_formats": "STANDARD", "power_level": 3, "total_copies_in_circulation": 1, "set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class CardRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/cards") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "SPELL", "rarity": "COMMON", "mana_cost": 1, "mana_colors": "WHITE", "attack": 1, "defense": 1, "loyalty": 1, "description": "test", "legal_formats": "STANDARD", "power_level": 3, "total_copies_in_circulation": 1, "set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/cards/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "SPELL", "rarity": "COMMON", "mana_cost": 1, "mana_colors": "WHITE", "attack": 1, "defense": 1, "loyalty": 1, "description": "test", "legal_formats": "STANDARD", "power_level": 3, "total_copies_in_circulation": 1, "set_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

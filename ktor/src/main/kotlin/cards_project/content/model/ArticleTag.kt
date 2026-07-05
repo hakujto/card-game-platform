@@ -13,7 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object ArticleTagTable : IntIdTable("article_tag") {
     val name = varchar("name", 255)
-    val slug = varchar("slug", 255).uniqueIndex()
+    val slug = text("slug").uniqueIndex()
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 }

@@ -25,6 +25,7 @@ enum class GameEndedByType {
 object GameTable : IntIdTable("game") {
     val gameNumber = integer("game_number")
     val winnerSide = enumerationByName<GameWinnerSideType>("winner_side", 50).nullable()
+    val complexityScore = double("complexity_score").nullable()
     val turnsPlayed = integer("turns_played").nullable()
     val durationSeconds = integer("duration_seconds").nullable()
     val endedBy = enumerationByName<GameEndedByType>("ended_by", 50).nullable()
@@ -38,6 +39,7 @@ object GameTable : IntIdTable("game") {
 data class GameRequest(
     val gameNumber: Int,
     val winnerSide: GameWinnerSideType? = null,
+    val complexityScore: Double? = null,
     val turnsPlayed: Int? = null,
     val durationSeconds: Int? = null,
     val endedBy: GameEndedByType? = null,
@@ -50,6 +52,7 @@ data class GameResponse(
     val id: Int,
     val gameNumber: Int,
     val winnerSide: GameWinnerSideType? = null,
+    val complexityScore: Double? = null,
     val turnsPlayed: Int? = null,
     val durationSeconds: Int? = null,
     val endedBy: GameEndedByType? = null,
@@ -64,6 +67,7 @@ fun ResultRow.toGameResponse() = GameResponse(
     id = this[GameTable.id].value,
     gameNumber = this[GameTable.gameNumber],
     winnerSide = this[GameTable.winnerSide],
+    complexityScore = this[GameTable.complexityScore],
     turnsPlayed = this[GameTable.turnsPlayed],
     durationSeconds = this[GameTable.durationSeconds],
     endedBy = this[GameTable.endedBy],
@@ -88,6 +92,7 @@ object GameRepository {
         val inserted = GameTable.insertAndGetId {
             it[gameNumber] = req.gameNumber
             it[winnerSide] = req.winnerSide
+            it[complexityScore] = req.complexityScore
             it[turnsPlayed] = req.turnsPlayed
             it[durationSeconds] = req.durationSeconds
             it[endedBy] = req.endedBy

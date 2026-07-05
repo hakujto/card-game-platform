@@ -9,9 +9,6 @@ import io.ktor.server.routing.*
 
 fun validateDeck(req: DeckRequest): List<String> {
     val errors = mutableListOf<String>()
-    if (!(req.wins >= 0)) errors.add("wins_not_negative: validation failed")
-    if (!(req.losses >= 0)) errors.add("losses_not_negative: validation failed")
-    if (!(req.draws >= 0)) errors.add("draws_not_negative: validation failed")
     return errors
 }
 
@@ -59,10 +56,10 @@ fun Route.deckRoutes() {
             patch {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
-                val req = call.receive<DeckRequest>()
+                val req = call.receive<DeckPatchRequest>()
                 val item = DeckRepository.findById(id)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
-                val updated = DeckRepository.update(id, req)
+                val updated = DeckRepository.patch(id, req)
                     ?: return@patch call.respond(HttpStatusCode.NotFound, mapOf("error" to "not found"))
                 call.respond(updated)
             }

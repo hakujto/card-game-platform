@@ -67,18 +67,24 @@ fun Route.seasonRoutes() {
             post("/activate") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for activate"))
                 // TODO: implement activate behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             post("/deactivate") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for deactivate"))
                 // TODO: implement deactivate behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }
             post("/finalize") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for finalize_rewards"))
                 // TODO: implement finalize_rewards behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }

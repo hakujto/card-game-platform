@@ -33,7 +33,7 @@ class TournamentPrizeRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/tournament_prizes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
+            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "CURRENCY", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class TournamentPrizeRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/tournament_prizes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
+            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "CURRENCY", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -53,13 +53,13 @@ class TournamentPrizeRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/tournament_prizes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
+            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "CURRENCY", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/tournament_prizes/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
+            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "CURRENCY", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -67,7 +67,7 @@ class TournamentPrizeRoutesTest {
     @Test fun `delete returns 204`() = testApp {
         val created = client.post("/api/tournament_prizes") {
             contentType(ContentType.Application.Json)
-            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "Currency", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
+            setBody("""{"placement_from": 1, "placement_to": 1, "prize_type": "CURRENCY", "amount": 1.00, "season_points": 1, "tournament_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

@@ -38,7 +38,7 @@ class PlayerRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/players") {
             contentType(ContentType.Application.Json)
-            setBody("""{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "user_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "BRONZE", "is_verified": true, "user_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class PlayerRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/players") {
             contentType(ContentType.Application.Json)
-            setBody("""{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "user_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "BRONZE", "is_verified": true, "user_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class PlayerRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/players") {
             contentType(ContentType.Application.Json)
-            setBody("""{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "user_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "BRONZE", "is_verified": true, "user_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.patch("/api/players/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "user_id": 1}""")
+            setBody("""{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "BRONZE", "is_verified": true, "user_id": 1}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

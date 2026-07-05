@@ -37,7 +37,7 @@ class TournamentRegistrationRoutesTest {
         val r = client.post("/api/tournament_registrations") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Registered", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
+            setBody("""{"status": "REGISTERED", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class TournamentRegistrationRoutesTest {
         val created = client.post("/api/tournament_registrations") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Registered", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
+            setBody("""{"status": "REGISTERED", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -60,7 +60,7 @@ class TournamentRegistrationRoutesTest {
         val created = client.post("/api/tournament_registrations") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Registered", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
+            setBody("""{"status": "REGISTERED", "points_earned": 1, "registered_at": "2024-01-01T00:00:00", "tournament_id": 1, "player_id": $ownerId, "deck_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int

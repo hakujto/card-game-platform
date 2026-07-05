@@ -33,7 +33,7 @@ class DraftSessionRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -41,7 +41,7 @@ class DraftSessionRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,7 +58,7 @@ class DraftSessionRoutesTest {
     @Test fun `transition WaitingForPlayers to Drafting returns 200`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -69,10 +69,11 @@ class DraftSessionRoutesTest {
     @Test fun `transition Drafting to Completed returns 200`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Drafting", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/draft_sessions/$id/transitions/waitingforplayers-to-drafting")
         val r = client.patch("/api/draft_sessions/$id/transitions/drafting-to-completed")
         assertEquals(HttpStatusCode.OK, r.status)
     }
@@ -80,10 +81,11 @@ class DraftSessionRoutesTest {
     @Test fun `transition Drafting to Abandoned returns 403 for wrong role`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Drafting", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/draft_sessions/$id/transitions/waitingforplayers-to-drafting")
         val r = client.patch("/api/draft_sessions/$id/transitions/drafting-to-abandoned") {
             header("X-User-Role", "nobody")
         }
@@ -93,10 +95,11 @@ class DraftSessionRoutesTest {
     @Test fun `transition Drafting to Abandoned returns 200 for allowed role`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Drafting", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/draft_sessions/$id/transitions/waitingforplayers-to-drafting")
         val r = client.patch("/api/draft_sessions/$id/transitions/drafting-to-abandoned") {
             header("X-User-Role", "Admin")
         }
@@ -106,7 +109,7 @@ class DraftSessionRoutesTest {
     @Test fun `transition WaitingForPlayers to Abandoned returns 403 for wrong role`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -119,7 +122,7 @@ class DraftSessionRoutesTest {
     @Test fun `transition WaitingForPlayers to Abandoned returns 200 for allowed role`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "WaitingForPlayers", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -132,10 +135,12 @@ class DraftSessionRoutesTest {
     @Test fun `transition Completed to Drafting returns 409`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Completed", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/draft_sessions/$id/transitions/waitingforplayers-to-drafting")
+        client.patch("/api/draft_sessions/$id/transitions/drafting-to-completed")
         val r = client.patch("/api/draft_sessions/$id/transitions/completed-to-drafting")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }
@@ -143,10 +148,11 @@ class DraftSessionRoutesTest {
     @Test fun `transition Abandoned to Drafting returns 409`() = testApp {
         val created = client.post("/api/draft_sessions") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Abandoned", "draft_type": "Booster", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
+            setBody("""{"status": "WAITINGFORPLAYERS", "draft_type": "BOOSTER", "seats": 1, "time_per_pick_seconds": 1, "card_set_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/draft_sessions/$id/transitions/waitingforplayers-to-abandoned") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/draft_sessions/$id/transitions/abandoned-to-drafting")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }

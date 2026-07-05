@@ -37,7 +37,7 @@ class OrderRoutesTest {
         val r = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Pending", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": $ownerId}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": $ownerId}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class OrderRoutesTest {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Pending", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": $ownerId}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": $ownerId}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -60,7 +60,7 @@ class OrderRoutesTest {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
             ownerHeaders.forEach { (k, v) -> header(k, v) }
-            setBody("""{"status": "Pending", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": $ownerId}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": $ownerId}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -78,7 +78,7 @@ class OrderRoutesTest {
     @Test fun `transition Pending to Paid returns 200`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -89,10 +89,11 @@ class OrderRoutesTest {
     @Test fun `transition Paid to Processing returns 403 for wrong role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Paid", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
         val r = client.patch("/api/orders/$id/transitions/paid-to-processing") {
             header("X-User-Role", "nobody")
         }
@@ -102,10 +103,11 @@ class OrderRoutesTest {
     @Test fun `transition Paid to Processing returns 200 for allowed role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Paid", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
         val r = client.patch("/api/orders/$id/transitions/paid-to-processing") {
             header("X-User-Role", "Admin")
         }
@@ -115,10 +117,12 @@ class OrderRoutesTest {
     @Test fun `transition Processing to Shipped returns 403 for wrong role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Processing", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/processing-to-shipped") {
             header("X-User-Role", "nobody")
         }
@@ -128,10 +132,12 @@ class OrderRoutesTest {
     @Test fun `transition Processing to Shipped returns 200 for allowed role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Processing", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/processing-to-shipped") {
             header("X-User-Role", "Admin")
         }
@@ -141,10 +147,13 @@ class OrderRoutesTest {
     @Test fun `transition Shipped to Completed returns 403 for wrong role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Shipped", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/shipped-to-completed") {
             header("X-User-Role", "nobody")
         }
@@ -154,10 +163,13 @@ class OrderRoutesTest {
     @Test fun `transition Shipped to Completed returns 200 for allowed role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Shipped", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/shipped-to-completed") {
             header("X-User-Role", "Admin")
         }
@@ -167,7 +179,7 @@ class OrderRoutesTest {
     @Test fun `transition Pending to Cancelled returns 200`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Pending", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -178,10 +190,11 @@ class OrderRoutesTest {
     @Test fun `transition Paid to Cancelled returns 403 for wrong role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Paid", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
         val r = client.patch("/api/orders/$id/transitions/paid-to-cancelled") {
             header("X-User-Role", "nobody")
         }
@@ -191,10 +204,11 @@ class OrderRoutesTest {
     @Test fun `transition Paid to Cancelled returns 200 for allowed role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Paid", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
         val r = client.patch("/api/orders/$id/transitions/paid-to-cancelled") {
             header("X-User-Role", "Admin")
         }
@@ -204,10 +218,14 @@ class OrderRoutesTest {
     @Test fun `transition Completed to Refunded returns 403 for wrong role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Completed", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/shipped-to-completed") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/completed-to-refunded") {
             header("X-User-Role", "nobody")
         }
@@ -217,10 +235,14 @@ class OrderRoutesTest {
     @Test fun `transition Completed to Refunded returns 200 for allowed role`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Completed", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/shipped-to-completed") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/completed-to-refunded") {
             header("X-User-Role", "Admin")
         }
@@ -230,10 +252,15 @@ class OrderRoutesTest {
     @Test fun `transition Refunded to Completed returns 409`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Refunded", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/shipped-to-completed") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/completed-to-refunded") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/refunded-to-completed")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }
@@ -241,10 +268,14 @@ class OrderRoutesTest {
     @Test fun `transition Completed to Cancelled returns 409`() = testApp {
         val created = client.post("/api/orders") {
             contentType(ContentType.Application.Json)
-            setBody("""{"status": "Completed", "total": 1.00, "discount_applied": 1.00, "currency": "test", "player_id": 1}""")
+            setBody("""{"total": 29.99, "discount_applied": 1.00, "currency": "USD", "tracking_number": "test", "player_id": 1}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
+        client.patch("/api/orders/$id/transitions/pending-to-paid")
+        client.patch("/api/orders/$id/transitions/paid-to-processing") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/processing-to-shipped") { header("X-User-Role", "Admin") }
+        client.patch("/api/orders/$id/transitions/shipped-to-completed") { header("X-User-Role", "Admin") }
         val r = client.patch("/api/orders/$id/transitions/completed-to-cancelled")
         assertEquals(HttpStatusCode.Conflict, r.status)
     }

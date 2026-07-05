@@ -38,7 +38,7 @@ class AchievementRoutesTest {
     @Test fun `create returns 201`() = testApp {
         val r = client.post("/api/achievements") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "Common", "is_hidden": true}""")
+            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "COMMON", "is_hidden": true}""")
         }
         assertEquals(HttpStatusCode.Created, r.status)
     }
@@ -46,7 +46,7 @@ class AchievementRoutesTest {
     @Test fun `get by id returns 200`() = testApp {
         val created = client.post("/api/achievements") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "Common", "is_hidden": true}""")
+            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "COMMON", "is_hidden": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
@@ -58,13 +58,13 @@ class AchievementRoutesTest {
     @Test fun `update returns 200`() = testApp {
         val created = client.post("/api/achievements") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "Common", "is_hidden": true}""")
+            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "COMMON", "is_hidden": true}""")
         }
         val json = Json.parseToJsonElement(created.bodyAsText()).jsonObject
         val id = json["id"]!!.jsonPrimitive.int
         val r = client.put("/api/achievements/$id") {
             contentType(ContentType.Application.Json)
-            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "Common", "is_hidden": true}""")
+            setBody("""{"name": "test", "description": "test", "points": 1, "rarity": "COMMON", "is_hidden": true}""")
         }
         assertEquals(HttpStatusCode.OK, r.status)
     }

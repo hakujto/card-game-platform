@@ -26,8 +26,6 @@ object AwardedPrizeTable : IntIdTable("awarded_prize") {
 }
 
 data class AwardedPrizeRequest(
-    val finalPlacement: Int,
-    val awardedAt: java.time.LocalDateTime,
     val claimed: Boolean,
     val claimedAt: java.time.LocalDateTime? = null,
     val prizeId: Int,

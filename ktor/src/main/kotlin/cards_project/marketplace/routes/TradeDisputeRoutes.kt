@@ -46,6 +46,8 @@ fun Route.tradeDisputeRoutes() {
             post("/api/disputes/{id}/resolve") {
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "invalid id"))
+                val userRole = call.request.headers["X-User-Role"]
+                if (userRole !in listOf("admin", "moderator")) return@post call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Insufficient role for resolve"))
                 // TODO: implement resolve behavior
                 call.respond(HttpStatusCode.OK, mapOf("ok" to true))
             }

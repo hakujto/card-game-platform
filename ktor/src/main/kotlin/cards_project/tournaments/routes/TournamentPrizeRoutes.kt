@@ -12,6 +12,8 @@ fun validateTournamentPrize(req: TournamentPrizeRequest): List<String> {
     if (!(req.placementTo >= req.placementFrom)) errors.add("placement_range_valid: validation failed")
     if (!(req.placementFrom > 0)) errors.add("placement_from_positive: validation failed")
     if (!(req.amount >= java.math.BigDecimal("0"))) errors.add("amount_not_negative: validation failed")
+    if (req.placementFrom < 1) errors.add("placement_from must be >= 1")
+    if (req.placementTo < 1) errors.add("placement_to must be >= 1")
     return errors
 }
 

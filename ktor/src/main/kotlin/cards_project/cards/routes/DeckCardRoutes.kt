@@ -9,6 +9,8 @@ import io.ktor.server.routing.*
 
 fun validateDeckCard(req: DeckCardRequest): List<String> {
     val errors = mutableListOf<String>()
+    if (req.quantity < 1) errors.add("quantity must be >= 1")
+    if (req.quantity > 4) errors.add("quantity must be <= 4")
     return errors
 }
 
