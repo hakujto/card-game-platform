@@ -33,7 +33,7 @@ public class PlayerControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/players")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"displayName\": \"test\", \"createdAt\": \"2024-01-01T00:00:00\", \"peakRating\": 1000 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"displayName\": \"test_player_001\", \"createdAt\": \"2024-01-01T00:00:00\", \"peakRating\": 1000, \"countryCode\": \"AA\", \"rank\": \"Bronze\", \"rating\": 1000 }"))
             .andExpect(status().isCreated());
     }
     @Test
@@ -48,7 +48,7 @@ public class PlayerControllerTest {
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/players/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"displayName\": \"test\"}"))
+            .content("{\"publicId\": \"00000000-0000-0000-0000-000000000001\"}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -59,7 +59,7 @@ public class PlayerControllerTest {
         // Rating must be between 0 and 9999 → 400 (Bean Validation)
         mockMvc.perform(post("/api/players")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"displayName\": \"test\", \"rank\": \"BRONZE\", \"peakRating\": 1, \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"rating\": 10000 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"displayName\": \"test\", \"rank\": \"BRONZE\", \"peakRating\": 1, \"isVerified\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"rating\": 10000 }"))
             .andExpect(status().isBadRequest());
     }
 }

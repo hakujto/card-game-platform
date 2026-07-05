@@ -43,6 +43,7 @@ public class TradeListingService {
     }
 
     public void applyPatch(TradeListing entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("publicId") && patch.get("publicId") != null) entity.setPublicId(java.util.UUID.fromString(patch.get("publicId").toString()));
         if (patch.containsKey("status")) entity.setStatus(TradeListingStatusType.valueOf(patch.get("status").toString()));
         if (patch.containsKey("listingType")) entity.setListingType(TradeListingListingTypeType.valueOf(patch.get("listingType").toString()));
         if (patch.containsKey("askingPrice") && patch.get("askingPrice") != null) entity.setAskingPrice(new java.math.BigDecimal(patch.get("askingPrice").toString()));

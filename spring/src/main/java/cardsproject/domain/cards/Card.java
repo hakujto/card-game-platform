@@ -1,6 +1,8 @@
 package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
+import java.util.UUID;
+import jakarta.validation.constraints.*;
 import java.util.Objects;
 
 @Entity
@@ -11,11 +13,15 @@ public class Card {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private UUID publicId;
     private String name = "";
     @Enumerated(EnumType.STRING)
     private CardCardTypeType cardType;
     @Enumerated(EnumType.STRING)
     private CardRarityType rarity;
+    @Min(0)
+    @Max(20)
     private Integer manaCost = 0;
     @Enumerated(EnumType.STRING)
     private CardManaColorsType manaColors;
@@ -30,7 +36,11 @@ public class Card {
     private CardLegalFormatsType legalFormats;
     private Boolean isBanned = false;
     private Boolean isRestricted = false;
+    @Min(1)
+    @Max(10)
     private Integer powerLevel = 1;
+    private String metadata;
+    private Long totalCopiesInCirculation = 0L;
 
     // @ManyToOne -> CardSet, onDelete=PROTECT, relatedName=cards
     @Column(name = "set_id")
@@ -38,6 +48,8 @@ public class Card {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public UUID getPublicId() { return publicId; }
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public CardCardTypeType getCardType() { return cardType; }
@@ -70,6 +82,10 @@ public class Card {
     public void setIsRestricted(Boolean isRestricted) { this.isRestricted = isRestricted; }
     public Integer getPowerLevel() { return powerLevel; }
     public void setPowerLevel(Integer powerLevel) { this.powerLevel = powerLevel; }
+    public String getMetadata() { return metadata; }
+    public void setMetadata(String metadata) { this.metadata = metadata; }
+    public Long getTotalCopiesInCirculation() { return totalCopiesInCirculation; }
+    public void setTotalCopiesInCirculation(Long totalCopiesInCirculation) { this.totalCopiesInCirculation = totalCopiesInCirculation; }
     public Long getSetId() { return setId; }
     public void setSetId(Long setId) { this.setId = setId; }
 
@@ -89,6 +105,10 @@ public class Card {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void unrestrict() {
         // TODO: implement unrestrict
+    }
+    public Boolean replace(com.fasterxml.jackson.databind.JsonNode data) {
+        // TODO: implement replace
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public java.math.BigDecimal calculateValue() {
@@ -119,6 +139,21 @@ public class Card {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isNotBannedAndRestrictedValid() {
         return !((Boolean.TRUE.equals(getIsBanned()) && Boolean.TRUE.equals(getIsRestricted())));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "attack is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isAttackRequiredWhenValid() {
+        return !(CardCardTypeType.CREATURE.equals(getCardType())) || getAttack() != null;
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "defense is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isDefenseRequiredWhenValid() {
+        return !(CardCardTypeType.CREATURE.equals(getCardType())) || getDefense() != null;
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "loyalty is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isLoyaltyRequiredWhenValid() {
+        return !(CardCardTypeType.PLANESWALKER.equals(getCardType())) || getLoyalty() != null;
     }
 
     // ── Lifecycle hooks ──────────────────────────────────────────────

@@ -37,6 +37,7 @@ public class GameService {
     public void applyPatch(Game entity, java.util.Map<String, Object> patch) {
         if (patch.containsKey("gameNumber") && patch.get("gameNumber") != null) entity.setGameNumber(Integer.valueOf(patch.get("gameNumber").toString()));
         if (patch.containsKey("winnerSide")) entity.setWinnerSide(GameWinnerSideType.valueOf(patch.get("winnerSide").toString()));
+        if (patch.containsKey("complexityScore") && patch.get("complexityScore") != null) entity.setComplexityScore(Double.valueOf(patch.get("complexityScore").toString()));
         if (patch.containsKey("turnsPlayed") && patch.get("turnsPlayed") != null) entity.setTurnsPlayed(Integer.valueOf(patch.get("turnsPlayed").toString()));
         if (patch.containsKey("durationSeconds") && patch.get("durationSeconds") != null) entity.setDurationSeconds(Integer.valueOf(patch.get("durationSeconds").toString()));
         if (patch.containsKey("endedBy")) entity.setEndedBy(GameEndedByType.valueOf(patch.get("endedBy").toString()));

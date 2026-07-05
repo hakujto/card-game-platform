@@ -3,6 +3,7 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,6 +19,7 @@ public class Order {
     private OrderStatusType status;
     private BigDecimal total = new BigDecimal("0");
     private BigDecimal discountApplied = new BigDecimal("0");
+    @Pattern(regexp = "[A-Z]{3}")
     private String currency = "USD";
     @Enumerated(EnumType.STRING)
     private OrderPaymentMethodType paymentMethod;
@@ -47,6 +49,7 @@ public class Order {
     public void setCurrency(String currency) { this.currency = currency; }
     public OrderPaymentMethodType getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(OrderPaymentMethodType paymentMethod) { this.paymentMethod = paymentMethod; }
+    @JsonIgnore
     public String getPaymentReference() { return paymentReference; }
     public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }
     public String getShippingAddress() { return shippingAddress; }
@@ -109,6 +112,16 @@ public class Order {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isDiscountNotExceedTotalValid() {
         return (getDiscountApplied() == null || (getTotal() != null && getDiscountApplied().compareTo(getTotal()) <= 0));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "tracking_number is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isTrackingNumberRequiredWhenValid() {
+        return !(OrderStatusType.SHIPPED.equals(getStatus())) || getTrackingNumber() != null;
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "paid_at is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isPaidAtRequiredWhenValid() {
+        return !(OrderStatusType.PAID.equals(getStatus())) || getPaidAt() != null;
     }
 
     // ── Lifecycle state machine ──────────────────────────────────────

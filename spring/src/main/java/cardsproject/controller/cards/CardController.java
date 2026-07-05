@@ -35,13 +35,6 @@ public class CardController {
             .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Card not found")));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Card entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Card not found"));
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
     public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
         return service.findById(id).<ResponseEntity<?>>map(entity -> {
@@ -51,6 +44,7 @@ public class CardController {
     }
 
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/{id}/ban")
     public ResponseEntity<Void> ban(@PathVariable Long id) {
         try {
@@ -63,6 +57,7 @@ public class CardController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/{id}/unban")
     public ResponseEntity<Void> unban(@PathVariable Long id) {
         try {
@@ -75,6 +70,7 @@ public class CardController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/{id}/restrict")
     public ResponseEntity<Void> restrict(@PathVariable Long id) {
         try {
@@ -87,11 +83,24 @@ public class CardController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/{id}/unrestrict")
     public ResponseEntity<Void> unrestrict(@PathVariable Long id) {
         try {
             service.unrestrict(id);
             return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<Boolean> replace(@PathVariable Long id, @RequestBody com.fasterxml.jackson.databind.JsonNode data) {
+        try {
+            return ResponseEntity.ok(service.replace(id, data));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(409).body(null);
         } catch (RuntimeException e) {

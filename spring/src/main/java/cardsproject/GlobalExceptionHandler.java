@@ -15,8 +15,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
-        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
-            .map(e -> e.getField() + ": " + e.getDefaultMessage())
+        List<String> errors = ex.getBindingResult().getAllErrors().stream()
+            .map(e -> e instanceof org.springframework.validation.FieldError fe
+                ? fe.getField() + ": " + fe.getDefaultMessage()
+                : e.getDefaultMessage())
             .collect(Collectors.toList());
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", 400);

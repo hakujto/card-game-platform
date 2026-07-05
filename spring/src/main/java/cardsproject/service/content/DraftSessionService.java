@@ -37,6 +37,7 @@ public class DraftSessionService {
     public void applyPatch(DraftSession entity, java.util.Map<String, Object> patch) {
         if (patch.containsKey("status")) entity.setStatus(DraftSessionStatusType.valueOf(patch.get("status").toString()));
         if (patch.containsKey("draftType")) entity.setDraftType(DraftSessionDraftTypeType.valueOf(patch.get("draftType").toString()));
+        if (patch.containsKey("packContents") && patch.get("packContents") != null) entity.setPackContents(patch.get("packContents").toString());
         if (patch.containsKey("seats") && patch.get("seats") != null) entity.setSeats(Integer.valueOf(patch.get("seats").toString()));
         if (patch.containsKey("timePerPickSeconds") && patch.get("timePerPickSeconds") != null) entity.setTimePerPickSeconds(Integer.valueOf(patch.get("timePerPickSeconds").toString()));
         if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));

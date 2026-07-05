@@ -2,6 +2,7 @@ package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "card_sets")
@@ -13,6 +14,7 @@ public class CardSet {
 
     private String name = "";
     @Column(unique = true)
+    @Pattern(regexp = "[A-Z]{2,6}")
     private String code = "";
     private LocalDate releaseDate;
     private LocalDate rotationDate;

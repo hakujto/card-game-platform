@@ -45,6 +45,7 @@ public class CardService {
     }
 
     public void applyPatch(Card entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("publicId") && patch.get("publicId") != null) entity.setPublicId(java.util.UUID.fromString(patch.get("publicId").toString()));
         if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
         if (patch.containsKey("cardType")) entity.setCardType(CardCardTypeType.valueOf(patch.get("cardType").toString()));
         if (patch.containsKey("rarity")) entity.setRarity(CardRarityType.valueOf(patch.get("rarity").toString()));
@@ -61,6 +62,8 @@ public class CardService {
         if (patch.containsKey("isBanned") && patch.get("isBanned") != null) entity.setIsBanned(Boolean.valueOf(patch.get("isBanned").toString()));
         if (patch.containsKey("isRestricted") && patch.get("isRestricted") != null) entity.setIsRestricted(Boolean.valueOf(patch.get("isRestricted").toString()));
         if (patch.containsKey("powerLevel") && patch.get("powerLevel") != null) entity.setPowerLevel(Integer.valueOf(patch.get("powerLevel").toString()));
+        if (patch.containsKey("metadata") && patch.get("metadata") != null) entity.setMetadata(patch.get("metadata").toString());
+        if (patch.containsKey("totalCopiesInCirculation") && patch.get("totalCopiesInCirculation") != null) entity.setTotalCopiesInCirculation(Long.valueOf(patch.get("totalCopiesInCirculation").toString()));
         if (patch.containsKey("setId") && patch.get("setId") != null) entity.setSetId(Long.valueOf(patch.get("setId").toString()));
     }
     private void validate(Card entity) {
@@ -97,6 +100,14 @@ public class CardService {
             .orElseThrow(() -> new RuntimeException("Card not found: " + id));
         entity.unrestrict();
         repository.save(entity);
+    }
+
+    public Boolean replace(Long id, com.fasterxml.jackson.databind.JsonNode data) {
+        Card entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Card not found: " + id));
+        Boolean result = entity.replace(data);
+        repository.save(entity);
+        return result;
     }
 
     public java.math.BigDecimal calculateValue(Long id) {

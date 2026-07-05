@@ -1,6 +1,7 @@
 package cardsproject.domain.tournaments;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "games")
@@ -10,9 +11,12 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Min(1)
+    @Max(3)
     private Integer gameNumber = 0;
     @Enumerated(EnumType.STRING)
     private GameWinnerSideType winnerSide;
+    private Double complexityScore;
     private Integer turnsPlayed;
     private Integer durationSeconds;
     @Enumerated(EnumType.STRING)
@@ -32,6 +36,8 @@ public class Game {
     public void setGameNumber(Integer gameNumber) { this.gameNumber = gameNumber; }
     public GameWinnerSideType getWinnerSide() { return winnerSide; }
     public void setWinnerSide(GameWinnerSideType winnerSide) { this.winnerSide = winnerSide; }
+    public Double getComplexityScore() { return complexityScore; }
+    public void setComplexityScore(Double complexityScore) { this.complexityScore = complexityScore; }
     public Integer getTurnsPlayed() { return turnsPlayed; }
     public void setTurnsPlayed(Integer turnsPlayed) { this.turnsPlayed = turnsPlayed; }
     public Integer getDurationSeconds() { return durationSeconds; }

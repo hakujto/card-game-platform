@@ -17,6 +17,7 @@ public class DraftSession {
     private DraftSessionStatusType status;
     @Enumerated(EnumType.STRING)
     private DraftSessionDraftTypeType draftType;
+    private String packContents;
     private Integer seats = 8;
     private Integer timePerPickSeconds = 30;
     private LocalDateTime createdAt;
@@ -32,6 +33,8 @@ public class DraftSession {
     public void setStatus(DraftSessionStatusType status) { this.status = status; }
     public DraftSessionDraftTypeType getDraftType() { return draftType; }
     public void setDraftType(DraftSessionDraftTypeType draftType) { this.draftType = draftType; }
+    public String getPackContents() { return packContents; }
+    public void setPackContents(String packContents) { this.packContents = packContents; }
     public Integer getSeats() { return seats; }
     public void setSeats(Integer seats) { this.seats = seats; }
     public Integer getTimePerPickSeconds() { return timePerPickSeconds; }

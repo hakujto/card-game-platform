@@ -53,6 +53,7 @@ public class ArticleService {
         if (patch.containsKey("language")) entity.setLanguage(ArticleLanguageType.valueOf(patch.get("language").toString()));
         if (patch.containsKey("viewCount") && patch.get("viewCount") != null) entity.setViewCount(Integer.valueOf(patch.get("viewCount").toString()));
         if (patch.containsKey("likesCount") && patch.get("likesCount") != null) entity.setLikesCount(Integer.valueOf(patch.get("likesCount").toString()));
+        if (patch.containsKey("totalViewsAlltime") && patch.get("totalViewsAlltime") != null) entity.setTotalViewsAlltime(Long.valueOf(patch.get("totalViewsAlltime").toString()));
         if (patch.containsKey("isFeatured") && patch.get("isFeatured") != null) entity.setIsFeatured(Boolean.valueOf(patch.get("isFeatured").toString()));
         if (patch.containsKey("publishedAt") && patch.get("publishedAt") != null) entity.setPublishedAt(java.time.LocalDateTime.parse(patch.get("publishedAt").toString()));
         if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
@@ -76,6 +77,14 @@ public class ArticleService {
             .orElseThrow(() -> new RuntimeException("Article not found: " + id));
         entity.archive();
         repository.save(entity);
+    }
+
+    public Boolean replace(Long id, com.fasterxml.jackson.databind.JsonNode data) {
+        Article entity = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Article not found: " + id));
+        Boolean result = entity.replace(data);
+        repository.save(entity);
+        return result;
     }
 
     public void incrementView(Long id) {

@@ -35,13 +35,6 @@ public class ArticleController {
             .orElse(ResponseEntity.status(404).body(java.util.Map.of("error", "Article not found")));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Article entity) {
-        if (service.findById(id).isEmpty()) return ResponseEntity.status(404).body(java.util.Map.of("error", "Article not found"));
-        entity.setId(id);
-        return ResponseEntity.ok(service.save(entity));
-    }
-
     @PatchMapping("/{id}")
     public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody java.util.Map<String, Object> patch) {
         return service.findById(id).<ResponseEntity<?>>map(entity -> {
@@ -51,6 +44,7 @@ public class ArticleController {
     }
 
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
     @PostMapping("/{id}/publish")
     public ResponseEntity<Void> publish(@PathVariable Long id) {
         try {
@@ -63,11 +57,24 @@ public class ArticleController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
     @PostMapping("/{id}/archive")
     public ResponseEntity<Void> archive(@PathVariable Long id) {
         try {
             service.archive(id);
             return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_EDITOR', 'ROLE_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<Boolean> replace(@PathVariable Long id, @RequestBody com.fasterxml.jackson.databind.JsonNode data) {
+        try {
+            return ResponseEntity.ok(service.replace(id, data));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(409).body(null);
         } catch (RuntimeException e) {

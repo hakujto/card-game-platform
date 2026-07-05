@@ -41,6 +41,7 @@ public class PlayerService {
     }
 
     public void applyPatch(Player entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("publicId") && patch.get("publicId") != null) entity.setPublicId(java.util.UUID.fromString(patch.get("publicId").toString()));
         if (patch.containsKey("displayName") && patch.get("displayName") != null) entity.setDisplayName(patch.get("displayName").toString());
         if (patch.containsKey("rank")) entity.setRank(PlayerRankType.valueOf(patch.get("rank").toString()));
         if (patch.containsKey("rating") && patch.get("rating") != null) entity.setRating(Integer.valueOf(patch.get("rating").toString()));
@@ -49,6 +50,8 @@ public class PlayerService {
         if (patch.containsKey("countryCode") && patch.get("countryCode") != null) entity.setCountryCode(patch.get("countryCode").toString());
         if (patch.containsKey("avatarUrl") && patch.get("avatarUrl") != null) entity.setAvatarUrl(patch.get("avatarUrl").toString());
         if (patch.containsKey("preferredFormat")) entity.setPreferredFormat(PlayerPreferredFormatType.valueOf(patch.get("preferredFormat").toString()));
+        if (patch.containsKey("contactEmail") && patch.get("contactEmail") != null) entity.setContactEmail(patch.get("contactEmail").toString());
+        if (patch.containsKey("winRateCached") && patch.get("winRateCached") != null) entity.setWinRateCached(Double.valueOf(patch.get("winRateCached").toString()));
         if (patch.containsKey("isVerified") && patch.get("isVerified") != null) entity.setIsVerified(Boolean.valueOf(patch.get("isVerified").toString()));
         if (patch.containsKey("createdAt") && patch.get("createdAt") != null) entity.setCreatedAt(java.time.LocalDateTime.parse(patch.get("createdAt").toString()));
         if (patch.containsKey("lastActiveAt") && patch.get("lastActiveAt") != null) entity.setLastActiveAt(java.time.LocalDateTime.parse(patch.get("lastActiveAt").toString()));

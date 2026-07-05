@@ -48,6 +48,7 @@ public class TradeDisputeController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping("/{id}/resolve")
     public ResponseEntity<Void> resolve(@PathVariable Long id, @RequestBody java.util.Map<String,Object> body) {
         try {

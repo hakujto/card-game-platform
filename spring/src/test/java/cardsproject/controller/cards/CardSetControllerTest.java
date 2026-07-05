@@ -33,7 +33,7 @@ public class CardSetControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/card_sets")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1, \"rotationDate\": null, \"isRotated\": null }"))
+            .content("{ \"name\": \"test\", \"code\": \"AA\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1, \"rotationDate\": null, \"isRotated\": null }"))
             .andExpect(status().isCreated());
     }
     @Test
@@ -48,7 +48,7 @@ public class CardSetControllerTest {
     void update_returns200or404() throws Exception {
         mockMvc.perform(put("/api/card_sets/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"code\": \"test\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1, \"rotationDate\": null, \"isRotated\": null }"))
+            .content("{ \"name\": \"test\", \"code\": \"AA\", \"releaseDate\": \"2024-01-01\", \"totalCards\": 1, \"rotationDate\": null, \"isRotated\": null }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;

@@ -1,7 +1,9 @@
 package cardsproject.domain.players;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,16 +16,21 @@ public class Player {
     private Long id;
 
     @Column(unique = true)
+    private UUID publicId;
+    @Column(unique = true)
     private String displayName = "";
     @Enumerated(EnumType.STRING)
     private PlayerRankType rank;
     private Integer rating = 1000;
     private Integer peakRating = 1000;
     private String bio;
+    @Pattern(regexp = "[A-Z]{2}")
     private String countryCode;
     private String avatarUrl;
     @Enumerated(EnumType.STRING)
     private PlayerPreferredFormatType preferredFormat;
+    private String contactEmail;
+    private Double winRateCached;
     private Boolean isVerified = false;
     private LocalDateTime createdAt;
     private LocalDateTime lastActiveAt;
@@ -37,6 +44,8 @@ public class Player {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public UUID getPublicId() { return publicId; }
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public PlayerRankType getRank() { return rank; }
@@ -53,6 +62,10 @@ public class Player {
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public PlayerPreferredFormatType getPreferredFormat() { return preferredFormat; }
     public void setPreferredFormat(PlayerPreferredFormatType preferredFormat) { this.preferredFormat = preferredFormat; }
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+    public Double getWinRateCached() { return winRateCached; }
+    public void setWinRateCached(Double winRateCached) { this.winRateCached = winRateCached; }
     public Boolean getIsVerified() { return isVerified; }
     public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
     @JsonProperty("createdAt")

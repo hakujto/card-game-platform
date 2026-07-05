@@ -33,7 +33,7 @@ public class TournamentControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"maxPlayers\": 2, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"Test Tournament Alpha\", \"maxPlayers\": 8, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null, \"entryFee\": 0, \"prizePool\": 0 }"))
             .andExpect(status().isCreated());
     }
     @Test
@@ -48,7 +48,7 @@ public class TournamentControllerTest {
     void update_returns200or404() throws Exception {
         mockMvc.perform(put("/api/tournaments/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"maxPlayers\": 2, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"Test Tournament Alpha\", \"maxPlayers\": 8, \"startTime\": \"2024-01-01T00:00:00\", \"createdAt\": \"2024-01-01T00:00:00\", \"endTime\": null, \"entryFee\": 0, \"prizePool\": 0 }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -58,7 +58,7 @@ public class TournamentControllerTest {
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/tournaments/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"name\": \"test\"}"))
+            .content("{\"publicId\": \"00000000-0000-0000-0000-000000000001\"}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -69,7 +69,7 @@ public class TournamentControllerTest {
         // Tournament must allow between 2 and 512 players → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"maxPlayers\": 513 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"maxPlayers\": 513 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -78,7 +78,7 @@ public class TournamentControllerTest {
         // Entry fee must not be negative → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"entryFee\": -1 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"entryFee\": -1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -87,7 +87,7 @@ public class TournamentControllerTest {
         // Prize pool must not be negative → 400 (Bean Validation)
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"prizePool\": -1 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\", \"prizePool\": -1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -96,7 +96,7 @@ public class TournamentControllerTest {
         // End time must be after start time: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/tournaments")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"status\": \"DRAFT\", \"format\": \"STANDARD\", \"tournamentType\": \"SWISS\", \"maxPlayers\": 1, \"entryFee\": 0.00, \"prizePool\": 0.00, \"startTime\": \"2024-01-01T00:00:00\", \"isOnline\": true, \"createdAt\": \"2024-01-01T00:00:00\", \"seasonId\": 1, \"organizerId\": 1, \"endTime\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isBadRequest());
     }
     @Test

@@ -2,6 +2,7 @@ package cardsproject.domain.tournaments;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "tournament_prizes")
@@ -11,7 +12,9 @@ public class TournamentPrize {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Min(1)
     private Integer placementFrom = 0;
+    @Min(1)
     private Integer placementTo = 0;
     @Enumerated(EnumType.STRING)
     private TournamentPrizePrizeTypeType prizeType;

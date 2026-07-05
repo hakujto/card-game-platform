@@ -2,6 +2,7 @@ package cardsproject.domain.marketplace;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "products")
@@ -17,6 +18,8 @@ public class Product {
     private BigDecimal price = BigDecimal.ZERO;
     private Integer stock = 0;
     private Boolean active = true;
+    @Min(0)
+    @Max(100)
     private Integer discountPercent = 0;
     private String description;
     private String imageUrl;

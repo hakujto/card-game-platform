@@ -1,6 +1,7 @@
 package cardsproject.domain.cards;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.util.Objects;
 
 @Entity
@@ -11,6 +12,8 @@ public class DeckCard {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Min(1)
+    @Max(4)
     private Integer quantity = 1;
     private Boolean isCommander = false;
 

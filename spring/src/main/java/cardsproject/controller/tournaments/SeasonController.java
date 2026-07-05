@@ -51,6 +51,7 @@ public class SeasonController {
     }
 
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable Long id) {
         try {
@@ -63,6 +64,7 @@ public class SeasonController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
         try {
@@ -75,6 +77,7 @@ public class SeasonController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizeRewards(@PathVariable Long id) {
         try {

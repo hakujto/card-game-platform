@@ -82,4 +82,9 @@ public class TradeTransaction {
     public boolean isFinalPricePositiveValid() {
         return (getFinalPrice() == null || getFinalPrice().compareTo(new java.math.BigDecimal("0")) > 0);
     }
+    @jakarta.validation.constraints.AssertTrue(message = "completed_at is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isCompletedAtRequiredWhenValid() {
+        return !(TradeTransactionStatusType.COMPLETED.equals(getStatus())) || getCompletedAt() != null;
+    }
 }

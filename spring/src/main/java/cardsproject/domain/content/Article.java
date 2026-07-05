@@ -27,6 +27,7 @@ public class Article {
     private ArticleLanguageType language;
     private Integer viewCount = 0;
     private Integer likesCount = 0;
+    private Long totalViewsAlltime = 0L;
     private Boolean isFeatured = false;
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
@@ -63,6 +64,8 @@ public class Article {
     public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
     public Integer getLikesCount() { return likesCount; }
     public void setLikesCount(Integer likesCount) { this.likesCount = likesCount; }
+    public Long getTotalViewsAlltime() { return totalViewsAlltime; }
+    public void setTotalViewsAlltime(Long totalViewsAlltime) { this.totalViewsAlltime = totalViewsAlltime; }
     public Boolean getIsFeatured() { return isFeatured; }
     public void setIsFeatured(Boolean isFeatured) { this.isFeatured = isFeatured; }
     @JsonProperty("publishedAt")
@@ -87,6 +90,10 @@ public class Article {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void archive() {
         // TODO: implement archive
+    }
+    public Boolean replace(com.fasterxml.jackson.databind.JsonNode data) {
+        // TODO: implement replace
+        return null;
     }
     @com.fasterxml.jackson.annotation.JsonIgnore
     public void incrementView() {

@@ -101,6 +101,7 @@ public class PlayerController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/{id}/verify")
     public ResponseEntity<Void> verify(@PathVariable Long id) {
         try {

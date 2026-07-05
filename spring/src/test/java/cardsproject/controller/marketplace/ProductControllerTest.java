@@ -58,7 +58,7 @@ public class ProductControllerTest {
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/products/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"name\": \"test\"}"))
+            .content("{\"featured\": true}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;

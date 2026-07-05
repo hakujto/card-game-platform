@@ -33,7 +33,7 @@ public class TradeListingControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"createdAt\": \"2024-01-01T00:00:00\" }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"createdAt\": \"2024-01-01T00:00:00\" }"))
             .andExpect(status().isCreated());
     }
     @Test
@@ -48,7 +48,7 @@ public class TradeListingControllerTest {
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/trade_listings/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"foil\": true}"))
+            .content("{\"publicId\": \"00000000-0000-0000-0000-000000000001\"}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -59,7 +59,7 @@ public class TradeListingControllerTest {
         // Fixed price listing must have an asking price: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -68,7 +68,7 @@ public class TradeListingControllerTest {
         // Auction listing must have a start price and end time: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"AUCTION\", \"auctionStartPrice\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"quantity\": 1, \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"AUCTION\", \"auctionStartPrice\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -77,7 +77,7 @@ public class TradeListingControllerTest {
         // Listing quantity must be between 1 and 9999 → 400 (Bean Validation)
         mockMvc.perform(post("/api/trade_listings")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": 0.00, \"listingType\": \"AUCTION\", \"auctionStartPrice\": 0.00, \"auctionEndTime\": \"2024-01-01T00:00:00\", \"quantity\": 10000 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"status\": \"ACTIVE\", \"foil\": true, \"condition\": \"MINT\", \"createdAt\": \"2024-01-01T00:00:00\", \"sellerId\": 1, \"cardId\": 1, \"listingType\": \"FIXEDPRICE\", \"askingPrice\": 0.00, \"listingType\": \"AUCTION\", \"auctionStartPrice\": 0.00, \"auctionEndTime\": \"2024-01-01T00:00:00\", \"quantity\": 10000 }"))
             .andExpect(status().isBadRequest());
     }
     @Test

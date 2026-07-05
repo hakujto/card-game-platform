@@ -91,6 +91,7 @@ public class TradeListingController {
         }
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_SELLER')")
     @PostMapping("/{id}/finalize")
     public ResponseEntity<Void> finalizeAuction(@PathVariable Long id) {
         try {

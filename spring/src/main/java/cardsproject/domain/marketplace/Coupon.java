@@ -3,6 +3,8 @@ package cardsproject.domain.marketplace;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "coupons")
@@ -16,6 +18,7 @@ public class Coupon {
     private String code = "";
     @Enumerated(EnumType.STRING)
     private CouponDiscountTypeType discountType;
+    @DecimalMin("0.01")
     private BigDecimal discountValue = BigDecimal.ZERO;
     private BigDecimal minOrderValue = new BigDecimal("0");
     private Integer maxUses;
@@ -34,8 +37,10 @@ public class Coupon {
     public void setDiscountValue(BigDecimal discountValue) { this.discountValue = discountValue; }
     public BigDecimal getMinOrderValue() { return minOrderValue; }
     public void setMinOrderValue(BigDecimal minOrderValue) { this.minOrderValue = minOrderValue; }
+    @JsonIgnore
     public Integer getMaxUses() { return maxUses; }
     public void setMaxUses(Integer maxUses) { this.maxUses = maxUses; }
+    @JsonIgnore
     public Integer getUsesCount() { return usesCount; }
     public void setUsesCount(Integer usesCount) { this.usesCount = usesCount; }
     public LocalDateTime getValidFrom() { return validFrom; }

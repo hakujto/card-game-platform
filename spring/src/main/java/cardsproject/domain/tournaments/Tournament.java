@@ -1,8 +1,10 @@
 package cardsproject.domain.tournaments;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,14 +16,19 @@ public class Tournament {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private UUID publicId;
     private String name = "";
     private String description;
     @Enumerated(EnumType.STRING)
     private TournamentStatusType status;
+    private String bracketData;
     @Enumerated(EnumType.STRING)
     private TournamentFormatType format;
     @Enumerated(EnumType.STRING)
     private TournamentTournamentTypeType tournamentType;
+    @Min(2)
+    @Max(512)
     private Integer maxPlayers = 0;
     private BigDecimal entryFee = new BigDecimal("0");
     private BigDecimal prizePool = new BigDecimal("0");
@@ -43,12 +50,16 @@ public class Tournament {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public UUID getPublicId() { return publicId; }
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public TournamentStatusType getStatus() { return status; }
     public void setStatus(TournamentStatusType status) { this.status = status; }
+    public String getBracketData() { return bracketData; }
+    public void setBracketData(String bracketData) { this.bracketData = bracketData; }
     public TournamentFormatType getFormat() { return format; }
     public void setFormat(TournamentFormatType format) { this.format = format; }
     public TournamentTournamentTypeType getTournamentType() { return tournamentType; }

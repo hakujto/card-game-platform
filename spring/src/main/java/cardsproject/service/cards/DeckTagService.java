@@ -40,6 +40,7 @@ public class DeckTagService {
 
     public void applyPatch(DeckTag entity, java.util.Map<String, Object> patch) {
         if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
+        if (patch.containsKey("slug") && patch.get("slug") != null) entity.setSlug(patch.get("slug").toString());
         if (patch.containsKey("color") && patch.get("color") != null) entity.setColor(patch.get("color").toString());
     }
 

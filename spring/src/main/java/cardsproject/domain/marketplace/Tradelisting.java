@@ -1,6 +1,7 @@
 package cardsproject.domain.marketplace;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +15,8 @@ public class TradeListing {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private UUID publicId;
     @Enumerated(EnumType.STRING)
     private TradeListingStatusType status;
     @Enumerated(EnumType.STRING)
@@ -39,6 +42,8 @@ public class TradeListing {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public UUID getPublicId() { return publicId; }
+    public void setPublicId(UUID publicId) { this.publicId = publicId; }
     public TradeListingStatusType getStatus() { return status; }
     public void setStatus(TradeListingStatusType status) { this.status = status; }
     public TradeListingListingTypeType getListingType() { return listingType; }
@@ -98,6 +103,11 @@ public class TradeListing {
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isQuantityPositiveValid() {
         return (getQuantity() == null || (getQuantity() >= 1 && getQuantity() <= 9999));
+    }
+    @jakarta.validation.constraints.AssertTrue(message = "asking_price is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isAskingPriceRequiredWhenValid() {
+        return !(TradeListingListingTypeType.FIXEDPRICE.equals(getListingType())) || getAskingPrice() != null;
     }
 
     // ── Lifecycle state machine ──────────────────────────────────────

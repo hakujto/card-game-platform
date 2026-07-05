@@ -33,7 +33,7 @@ public class CardControllerTest {
     void create_returns201() throws Exception {
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"manaCost\": 0, \"loyalty\": null, \"isBanned\": null, \"isRestricted\": false }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"Test Lightning Bolt\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"manaCost\": 1, \"loyalty\": null, \"isBanned\": null, \"isRestricted\": false, \"cardType\": \"Spell\", \"rarity\": \"Common\", \"powerLevel\": 3 }"))
             .andExpect(status().isCreated());
     }
     @Test
@@ -48,7 +48,7 @@ public class CardControllerTest {
     void update_returns200or404() throws Exception {
         mockMvc.perform(put("/api/cards/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"manaCost\": 0, \"loyalty\": null, \"isBanned\": null, \"isRestricted\": false }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"Test Lightning Bolt\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"manaCost\": 1, \"loyalty\": null, \"isBanned\": null, \"isRestricted\": false, \"cardType\": \"Spell\", \"rarity\": \"Common\", \"powerLevel\": 3 }"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -58,7 +58,7 @@ public class CardControllerTest {
     void patch_returns200or404() throws Exception {
         mockMvc.perform(patch("/api/cards/1")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"name\": \"test\"}"))
+            .content("{\"publicId\": \"00000000-0000-0000-0000-000000000001\"}"))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status == 200 || status == 404 || status == 403;
@@ -69,7 +69,7 @@ public class CardControllerTest {
         // Creature card must have attack and defense: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -78,7 +78,7 @@ public class CardControllerTest {
         // Planeswalker card must have loyalty: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": null }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": null }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -87,7 +87,7 @@ public class CardControllerTest {
         // Land card must have zero mana cost: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"cardType\": \"LAND\", \"manaCost\": 1 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"LAND\", \"manaCost\": 1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -96,7 +96,7 @@ public class CardControllerTest {
         // Only Planeswalker cards can have loyalty: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"loyalty\": 1 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isBanned\": true, \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"loyalty\": 1 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -105,7 +105,7 @@ public class CardControllerTest {
         // mana_cost must be between 0 and 20 → 400 (Bean Validation)
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"loyalty\": null, \"isBanned\": true, \"legalFormats\": \"message\", \"manaCost\": 21 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"loyalty\": null, \"isBanned\": true, \"legalFormats\": \"message\", \"manaCost\": 21 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -114,7 +114,7 @@ public class CardControllerTest {
         // power_level must be between 1 and 10 → 400 (Bean Validation)
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"isRestricted\": true, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"manaCost\": 0, \"loyalty\": null, \"isBanned\": true, \"legalFormats\": \"message\", \"powerLevel\": 11 }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"isRestricted\": true, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"manaCost\": 0, \"loyalty\": null, \"isBanned\": true, \"legalFormats\": \"message\", \"powerLevel\": 11 }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -123,7 +123,7 @@ public class CardControllerTest {
         // Card cannot be both banned and restricted at the same time → 400 (Bean Validation)
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"powerLevel\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"manaCost\": 0, \"loyalty\": null, \"legalFormats\": \"message\", \"isBanned\": true, \"isRestricted\": true }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"rarity\": \"COMMON\", \"manaColors\": \"WHITE\", \"description\": \"test\", \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"cardType\": \"CREATURE\", \"attack\": 1, \"defense\": 1, \"cardType\": \"PLANESWALKER\", \"loyalty\": 1, \"cardType\": \"LAND\", \"manaCost\": 0, \"loyalty\": null, \"legalFormats\": \"message\", \"isBanned\": true, \"isRestricted\": true }"))
             .andExpect(status().isBadRequest());
     }
 
@@ -132,7 +132,7 @@ public class CardControllerTest {
         // banned_card_not_in_legal_formats: antecedent true, consequent missing → 400
         mockMvc.perform(post("/api/cards")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"name\": \"test\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isRestricted\": true, \"powerLevel\": 1, \"setId\": 1, \"isBanned\": true }"))
+            .content("{ \"publicId\": \"00000000-0000-0000-0000-000000000001\", \"name\": \"test\", \"cardType\": \"CREATURE\", \"rarity\": \"COMMON\", \"manaCost\": 1, \"manaColors\": \"WHITE\", \"description\": \"test\", \"legalFormats\": \"STANDARD\", \"isRestricted\": true, \"powerLevel\": 1, \"totalCopiesInCirculation\": 1, \"setId\": 1, \"isBanned\": true }"))
             .andExpect(status().isBadRequest());
     }
 }

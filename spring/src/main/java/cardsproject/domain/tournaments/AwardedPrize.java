@@ -54,4 +54,9 @@ public class AwardedPrize {
     public boolean isFinalPlacementPositiveValid() {
         return (getFinalPlacement() == null || getFinalPlacement() > 0);
     }
+    @jakarta.validation.constraints.AssertTrue(message = "claimed_at is required")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isClaimedAtRequiredWhenValid() {
+        return !(Boolean.TRUE.equals(getClaimed())) || getClaimedAt() != null;
+    }
 }

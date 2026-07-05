@@ -43,9 +43,11 @@ public class TournamentService {
     }
 
     public void applyPatch(Tournament entity, java.util.Map<String, Object> patch) {
+        if (patch.containsKey("publicId") && patch.get("publicId") != null) entity.setPublicId(java.util.UUID.fromString(patch.get("publicId").toString()));
         if (patch.containsKey("name") && patch.get("name") != null) entity.setName(patch.get("name").toString());
         if (patch.containsKey("description") && patch.get("description") != null) entity.setDescription(patch.get("description").toString());
         if (patch.containsKey("status")) entity.setStatus(TournamentStatusType.valueOf(patch.get("status").toString()));
+        if (patch.containsKey("bracketData") && patch.get("bracketData") != null) entity.setBracketData(patch.get("bracketData").toString());
         if (patch.containsKey("format")) entity.setFormat(TournamentFormatType.valueOf(patch.get("format").toString()));
         if (patch.containsKey("tournamentType")) entity.setTournamentType(TournamentTournamentTypeType.valueOf(patch.get("tournamentType").toString()));
         if (patch.containsKey("maxPlayers") && patch.get("maxPlayers") != null) entity.setMaxPlayers(Integer.valueOf(patch.get("maxPlayers").toString()));
