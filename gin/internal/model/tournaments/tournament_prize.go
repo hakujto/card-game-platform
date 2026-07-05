@@ -20,8 +20,8 @@ const (
 
 // TournamentPrizeCreateRequest is the POST body.
 type TournamentPrizeCreateRequest struct {
-	PlacementFrom int `json:"placement_from"`
-	PlacementTo int `json:"placement_to"`
+	PlacementFrom int `json:"placement_from" binding:"min=1"`
+	PlacementTo int `json:"placement_to" binding:"min=1"`
 	PrizeType TournamentPrizePrizeTypeType `json:"prize_type" binding:"required"`
 	Amount types.Decimal `json:"amount"`
 	Description *string `json:"description"`

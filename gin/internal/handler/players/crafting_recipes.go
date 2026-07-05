@@ -23,10 +23,10 @@ func (h *CraftingRecipeHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.GET("/:id/api/crafting-recipes/{id}/can-craft", h.CanCraft)
-	g.POST("/:id/api/crafting-recipes/{id}/craft", h.ExecuteCraft)
-	g.POST("/:id/api/crafting-recipes/{id}/disable", h.Disable)
-	g.POST("/:id/api/crafting-recipes/{id}/enable", h.Enable)
+	g.GET("/:id/can-craft", h.CanCraft)
+	g.POST("/:id/craft", h.ExecuteCraft)
+	g.POST("/:id/disable", h.Disable)
+	g.POST("/:id/enable", h.Enable)
 }
 
 func (h *CraftingRecipeHandler) List(c *gin.Context) {

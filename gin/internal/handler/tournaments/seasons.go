@@ -103,6 +103,11 @@ func (h *SeasonHandler) Update(c *gin.Context) {
 func (h *SeasonHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *SeasonHandler) Activate(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesActivate := []string{"admin"}
+	roleOkActivate := false
+	for _, r := range allowedRolesActivate { if r == userRole { roleOkActivate = true; break } }
+	if !roleOkActivate { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for activate"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Season
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -116,6 +121,11 @@ func (h *SeasonHandler) Activate(c *gin.Context) {
 }
 
 func (h *SeasonHandler) Deactivate(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesDeactivate := []string{"admin"}
+	roleOkDeactivate := false
+	for _, r := range allowedRolesDeactivate { if r == userRole { roleOkDeactivate = true; break } }
+	if !roleOkDeactivate { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for deactivate"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Season
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -129,6 +139,11 @@ func (h *SeasonHandler) Deactivate(c *gin.Context) {
 }
 
 func (h *SeasonHandler) FinalizeRewards(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesFinalizeRewards := []string{"admin"}
+	roleOkFinalizeRewards := false
+	for _, r := range allowedRolesFinalizeRewards { if r == userRole { roleOkFinalizeRewards = true; break } }
+	if !roleOkFinalizeRewards { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for finalize_rewards"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Season
 	if err := h.db.First(&row, id).Error; err != nil {

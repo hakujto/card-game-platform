@@ -23,8 +23,8 @@ func (h *ArticleTagHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
-	g.PATCH("/:id/api/article-tags/{id}/rename", h.Rename)
-	g.GET("/:id/api/article-tags/{id}/article-count", h.ArticleCount)
+	g.PATCH("/:id/rename", h.Rename)
+	g.GET("/:id/article-count", h.ArticleCount)
 }
 
 func (h *ArticleTagHandler) List(c *gin.Context) {

@@ -92,6 +92,11 @@ func (h *TradeDisputeHandler) Escalate(c *gin.Context) {
 }
 
 func (h *TradeDisputeHandler) Resolve(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesResolve := []string{"admin", "moderator"}
+	roleOkResolve := false
+	for _, r := range allowedRolesResolve { if r == userRole { roleOkResolve = true; break } }
+	if !roleOkResolve { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for resolve"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.TradeDispute
 	if err := h.db.First(&row, id).Error; err != nil {

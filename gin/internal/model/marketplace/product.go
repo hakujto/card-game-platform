@@ -24,7 +24,7 @@ type ProductCreateRequest struct {
 	Price types.Decimal `json:"price"`
 	Stock int `json:"stock"`
 	Active bool `json:"active"`
-	DiscountPercent int `json:"discount_percent"`
+	DiscountPercent int `json:"discount_percent" binding:"min=0,max=100"`
 	Description *string `json:"description"`
 	ImageUrl *string `json:"image_url"`
 	Featured bool `json:"featured"`

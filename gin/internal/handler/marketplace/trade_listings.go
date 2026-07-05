@@ -22,11 +22,11 @@ func (h *TradeListingHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
 	g.PATCH("/:id", h.Patch)
-	g.POST("/:id/api/trade-listings/{id}/close", h.Close)
-	g.PATCH("/:id/api/trade-listings/{id}/extend", h.Extend)
-	g.DELETE("/:id/api/trade-listings/{id}/cancel", h.Cancel)
-	g.GET("/:id/api/trade-listings/{id}/expired", h.IsExpired)
-	g.POST("/:id/api/trade-listings/{id}/finalize", h.FinalizeAuction)
+	g.POST("/:id/close", h.Close)
+	g.PATCH("/:id/extend", h.Extend)
+	g.DELETE("/:id/cancel", h.Cancel)
+	g.GET("/:id/expired", h.IsExpired)
+	g.POST("/:id/finalize", h.FinalizeAuction)
 	g.PATCH("/:id/transitions/pending-to-active", h.TransitionPendingToActive)
 	g.PATCH("/:id/transitions/active-to-sold", h.TransitionActiveToSold)
 	g.PATCH("/:id/transitions/active-to-expired", h.TransitionActiveToExpired)
@@ -60,6 +60,7 @@ func (h *TradeListingHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.TradeListing{}
+	row.PublicId = req.PublicId
 	row.Status = req.Status
 	row.ListingType = req.ListingType
 	row.AskingPrice = req.AskingPrice
@@ -172,6 +173,11 @@ func (h *TradeListingHandler) IsExpired(c *gin.Context) {
 }
 
 func (h *TradeListingHandler) FinalizeAuction(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesFinalizeAuction := []string{"admin", "seller"}
+	roleOkFinalizeAuction := false
+	for _, r := range allowedRolesFinalizeAuction { if r == userRole { roleOkFinalizeAuction = true; break } }
+	if !roleOkFinalizeAuction { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for finalize_auction"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.TradeListing
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -312,6 +318,9 @@ func (h *TradeListingHandler) TransitionExpiredToActive(c *gin.Context) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateTradeListing(req *model.TradeListingCreateRequest) []string {
 	var errs []string
+	if (req.ListingType == model.TradeListingListingTypeType_FixedPrice) && req.AskingPrice == nil {
+		errs = append(errs, "asking_price is required")
+	}
 	if !((!( req.ListingType == model.TradeListingListingTypeType_FixedPrice ) || (req.AskingPrice != nil))) {
 		errs = append(errs, "Fixed price listing must have an asking price")
 	}
@@ -326,6 +335,7 @@ func validateTradeListing(req *model.TradeListingCreateRequest) []string {
 
 func toCreateRequestTradeListing(m *model.TradeListing) model.TradeListingCreateRequest {
 	return model.TradeListingCreateRequest{
+		PublicId: m.PublicId,
 		Status: m.Status,
 		ListingType: m.ListingType,
 		AskingPrice: m.AskingPrice,

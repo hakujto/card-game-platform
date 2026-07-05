@@ -69,7 +69,7 @@ func TestTournament_Create(t *testing.T) {
 	_ = depSeason1ID
 	depPlayer1ID := createDepPlayer(t, r, db)
 	_ = depPlayer1ID
-	body := map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason1ID, "organizer_id": depPlayer1ID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason1ID, "organizer_id": depPlayer1ID}
 	result := postTournament(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -81,7 +81,7 @@ func TestTournament_Get(t *testing.T) {
 	_ = depSeason2ID
 	depPlayer2ID := createDepPlayer(t, r, db)
 	_ = depPlayer2ID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason2ID, "organizer_id": depPlayer2ID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason2ID, "organizer_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/tournaments/"+id, nil)
@@ -96,9 +96,9 @@ func TestTournament_Update(t *testing.T) {
 	_ = depSeason3ID
 	depPlayer3ID := createDepPlayer(t, r, db)
 	_ = depPlayer3ID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason3ID, "organizer_id": depPlayer3ID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeason3ID, "organizer_id": depPlayer3ID})
 	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "test"}
+	upBody := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/tournaments/"+id, bytes.NewBuffer(b))
@@ -114,7 +114,7 @@ func TestTournament_Transition_Draft_To_Registration(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/draft-to-registration", nil)
@@ -129,7 +129,7 @@ func TestTournament_Transition_Registration_To_Ongoing(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/registration-to-ongoing", nil)
@@ -144,7 +144,7 @@ func TestTournament_Transition_Registration_To_Cancelled(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/registration-to-cancelled", nil)
@@ -159,7 +159,7 @@ func TestTournament_Transition_Ongoing_To_Completed(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/ongoing-to-completed", nil)
@@ -174,7 +174,7 @@ func TestTournament_Transition_Ongoing_To_Cancelled(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/ongoing-to-cancelled", nil)
@@ -189,7 +189,7 @@ func TestTournament_Transition_Completed_To_Draft(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/completed-to-draft", nil)
@@ -204,7 +204,7 @@ func TestTournament_Transition_Cancelled_To_Draft(t *testing.T) {
 	_ = depSeasonTID
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postTournament(t, r, db, map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
+	created := postTournament(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Tournament Alpha", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 2, "entry_fee": 0, "prize_pool": 0, "start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-01T00:00:01Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonTID, "organizer_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/tournaments/"+id+"/transitions/cancelled-to-draft", nil)
@@ -219,7 +219,7 @@ func TestTournament_Rule_MaxPlayersPositive_Violated(t *testing.T) {
 	_ = depSeasonRID
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 513, "entry_fee": 0.0, "prize_pool": 0.0, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 513, "entry_fee": 0.0, "prize_pool": 0.0, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/tournaments", bytes.NewBuffer(b))
@@ -235,7 +235,7 @@ func TestTournament_Rule_EntryFeeNotNegative_Violated(t *testing.T) {
 	_ = depSeasonRID
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": -1, "prize_pool": 0.0, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": -1, "prize_pool": 0.0, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/tournaments", bytes.NewBuffer(b))
@@ -251,7 +251,7 @@ func TestTournament_Rule_PrizePoolNotNegative_Violated(t *testing.T) {
 	_ = depSeasonRID
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 0.0, "prize_pool": -1, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "status": "Draft", "format": "Standard", "tournament_type": "Swiss", "max_players": 1, "entry_fee": 0.0, "prize_pool": -1, "start_time": "2024-01-01T00:00:00Z", "is_online": true, "created_at": "2024-01-01T00:00:00Z", "season_id": depSeasonRID, "organizer_id": depPlayerRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/tournaments", bytes.NewBuffer(b))

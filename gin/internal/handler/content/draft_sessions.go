@@ -21,10 +21,10 @@ func (h *DraftSessionHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.POST("/:id/api/draft-sessions/{id}/start", h.Start)
-	g.POST("/:id/api/draft-sessions/{id}/abandon", h.Abandon)
-	g.POST("/:id/api/draft-sessions/{id}/complete", h.Complete)
-	g.GET("/:id/api/draft-sessions/{id}/full", h.IsFull)
+	g.POST("/:id/start", h.Start)
+	g.POST("/:id/abandon", h.Abandon)
+	g.POST("/:id/complete", h.Complete)
+	g.GET("/:id/full", h.IsFull)
 	g.PATCH("/:id/transitions/waitingforplayers-to-drafting", h.TransitionWaitingForPlayersToDrafting)
 	g.PATCH("/:id/transitions/drafting-to-completed", h.TransitionDraftingToCompleted)
 	g.PATCH("/:id/transitions/drafting-to-abandoned", h.TransitionDraftingToAbandoned)
@@ -55,6 +55,7 @@ func (h *DraftSessionHandler) Create(c *gin.Context) {
 	row := model.DraftSession{}
 	row.Status = req.Status
 	row.DraftType = req.DraftType
+	row.PackContents = req.PackContents
 	row.Seats = req.Seats
 	row.TimePerPickSeconds = req.TimePerPickSeconds
 	row.CompletedAt = req.CompletedAt
@@ -251,6 +252,7 @@ func toCreateRequestDraftSession(m *model.DraftSession) model.DraftSessionCreate
 	return model.DraftSessionCreateRequest{
 		Status: m.Status,
 		DraftType: m.DraftType,
+		PackContents: m.PackContents,
 		Seats: m.Seats,
 		TimePerPickSeconds: m.TimePerPickSeconds,
 		CompletedAt: m.CompletedAt,

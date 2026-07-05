@@ -47,6 +47,7 @@ func (h *GameHandler) Create(c *gin.Context) {
 	row := model.Game{}
 	row.GameNumber = req.GameNumber
 	row.WinnerSide = req.WinnerSide
+	row.ComplexityScore = req.ComplexityScore
 	row.TurnsPlayed = req.TurnsPlayed
 	row.DurationSeconds = req.DurationSeconds
 	row.EndedBy = req.EndedBy
@@ -128,6 +129,7 @@ func toCreateRequestGame(m *model.Game) model.GameCreateRequest {
 	return model.GameCreateRequest{
 		GameNumber: m.GameNumber,
 		WinnerSide: m.WinnerSide,
+		ComplexityScore: m.ComplexityScore,
 		TurnsPlayed: m.TurnsPlayed,
 		DurationSeconds: m.DurationSeconds,
 		EndedBy: m.EndedBy,

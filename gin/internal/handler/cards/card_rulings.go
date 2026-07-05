@@ -22,8 +22,8 @@ func (h *CardRulingHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
 	g.DELETE("/:id", h.Delete)
-	g.GET("/:id/api/card-rulings/{id}/current", h.IsCurrent)
-	g.GET("/:id/api/card-rulings/{id}/supersedes", h.SupersedesPrevious)
+	g.GET("/:id/current", h.IsCurrent)
+	g.GET("/:id/supersedes", h.SupersedesPrevious)
 }
 
 func (h *CardRulingHandler) List(c *gin.Context) {

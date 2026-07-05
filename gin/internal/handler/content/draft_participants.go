@@ -21,8 +21,8 @@ func (h *DraftParticipantHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("", h.List)
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
-	g.POST("/:id/api/draft-participants/{id}/pick", h.PickCard)
-	g.GET("/:id/api/draft-participants/{id}/card-count", h.DraftedCardCount)
+	g.POST("/:id/pick", h.PickCard)
+	g.GET("/:id/card-count", h.DraftedCardCount)
 }
 
 func (h *DraftParticipantHandler) List(c *gin.Context) {

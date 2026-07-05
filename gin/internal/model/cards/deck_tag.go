@@ -10,12 +10,14 @@ import (
 // DeckTagCreateRequest is the POST body.
 type DeckTagCreateRequest struct {
 	Name string `json:"name" binding:"required"`
+	Slug *string `json:"slug"`
 	Color *string `json:"color"`
 }
 
 // DeckTagUpdateRequest is the PUT/PATCH body — all fields optional.
 type DeckTagUpdateRequest struct {
 	Name *string `json:"name"`
+	Slug *string `json:"slug"`
 	Color *string `json:"color"`
 }
 
@@ -25,12 +27,14 @@ type DeckTagResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Name string `json:"name"`
+	Slug *string `json:"slug"`
 	Color *string `json:"color"`
 }
 
 type DeckTag struct {
 	gorm.Model
 	Name string `gorm:"column:name;not null"`
+	Slug *string `gorm:"column:slug"`
 	Color *string `gorm:"column:color"`
 	DeckAssignments []DeckTagAssignment `gorm:"foreignKey:TagID"`
 }
@@ -41,12 +45,14 @@ func (m *DeckTag) ToResponse() DeckTagResponse {
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 		Name: m.Name,
+		Slug: m.Slug,
 		Color: m.Color,
 	}
 }
 
 func (m *DeckTag) ApplyUpdate(req DeckTagUpdateRequest) {
 	if req.Name != nil { m.Name = *req.Name }
+	if req.Slug != nil { m.Slug = req.Slug }
 	if req.Color != nil { m.Color = req.Color }
 }
 

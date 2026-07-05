@@ -30,6 +30,7 @@ const (
 
 // PlayerCreateRequest is the POST body.
 type PlayerCreateRequest struct {
+	PublicId string `json:"public_id" binding:"required"`
 	DisplayName string `json:"display_name" binding:"required"`
 	Rank PlayerRankType `json:"rank" binding:"required"`
 	Rating int `json:"rating"`
@@ -38,6 +39,8 @@ type PlayerCreateRequest struct {
 	CountryCode *string `json:"country_code"`
 	AvatarUrl *string `json:"avatar_url"`
 	PreferredFormat *PlayerPreferredFormatType `json:"preferred_format"`
+	ContactEmail *string `json:"contact_email"`
+	WinRateCached *float64 `json:"win_rate_cached"`
 	IsVerified bool `json:"is_verified"`
 	LastActiveAt *string `json:"last_active_at"`
 	UserID uint `json:"user_id"`
@@ -45,14 +48,15 @@ type PlayerCreateRequest struct {
 
 // PlayerUpdateRequest is the PUT/PATCH body — all fields optional.
 type PlayerUpdateRequest struct {
+	PublicId *string `json:"public_id"`
 	DisplayName *string `json:"display_name"`
 	Rank *PlayerRankType `json:"rank"`
-	Rating *int `json:"rating"`
-	PeakRating *int `json:"peak_rating"`
 	Bio *string `json:"bio"`
 	CountryCode *string `json:"country_code"`
 	AvatarUrl *string `json:"avatar_url"`
 	PreferredFormat *PlayerPreferredFormatType `json:"preferred_format"`
+	ContactEmail *string `json:"contact_email"`
+	WinRateCached *float64 `json:"win_rate_cached"`
 	IsVerified *bool `json:"is_verified"`
 	LastActiveAt *string `json:"last_active_at"`
 	UserID *uint `json:"user_id"`
@@ -63,6 +67,7 @@ type PlayerResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	PublicId string `json:"public_id"`
 	DisplayName string `json:"display_name"`
 	Rank PlayerRankType `json:"rank"`
 	Rating int `json:"rating"`
@@ -71,6 +76,8 @@ type PlayerResponse struct {
 	CountryCode *string `json:"country_code"`
 	AvatarUrl *string `json:"avatar_url"`
 	PreferredFormat *PlayerPreferredFormatType `json:"preferred_format"`
+	ContactEmail *string `json:"contact_email"`
+	WinRateCached *float64 `json:"win_rate_cached"`
 	IsVerified bool `json:"is_verified"`
 	LastActiveAt *string `json:"lastActiveAt"`
 	UserID uint `json:"user_id"`
@@ -78,6 +85,7 @@ type PlayerResponse struct {
 
 type Player struct {
 	gorm.Model
+	PublicId string `gorm:"column:public_id;type:varchar(36);not null;uniqueIndex"`
 	DisplayName string `gorm:"column:display_name;not null;uniqueIndex"`
 	Rank PlayerRankType `gorm:"column:rank;not null;default:'Bronze'"`
 	Rating int `gorm:"column:rating;not null;default:1000"`
@@ -86,6 +94,8 @@ type Player struct {
 	CountryCode *string `gorm:"column:country_code"`
 	AvatarUrl *string `gorm:"column:avatar_url"`
 	PreferredFormat *PlayerPreferredFormatType `gorm:"column:preferred_format"`
+	ContactEmail *string `gorm:"column:contact_email"`
+	WinRateCached *float64 `gorm:"column:win_rate_cached"`
 	IsVerified bool `gorm:"column:is_verified;default:false"`
 	LastActiveAt *string `gorm:"column:last_active_at"`
 	UserID uint `gorm:"column:user_id;unique;constraint:OnDelete:CASCADE"`
@@ -101,6 +111,7 @@ func (m *Player) ToResponse() PlayerResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		PublicId: m.PublicId,
 		DisplayName: m.DisplayName,
 		Rank: m.Rank,
 		Rating: m.Rating,
@@ -109,6 +120,8 @@ func (m *Player) ToResponse() PlayerResponse {
 		CountryCode: m.CountryCode,
 		AvatarUrl: m.AvatarUrl,
 		PreferredFormat: m.PreferredFormat,
+		ContactEmail: m.ContactEmail,
+		WinRateCached: m.WinRateCached,
 		IsVerified: m.IsVerified,
 		LastActiveAt: m.LastActiveAt,
 		UserID: m.UserID,
@@ -116,14 +129,15 @@ func (m *Player) ToResponse() PlayerResponse {
 }
 
 func (m *Player) ApplyUpdate(req PlayerUpdateRequest) {
+	if req.PublicId != nil { m.PublicId = *req.PublicId }
 	if req.DisplayName != nil { m.DisplayName = *req.DisplayName }
 	if req.Rank != nil { m.Rank = *req.Rank }
-	if req.Rating != nil { m.Rating = *req.Rating }
-	if req.PeakRating != nil { m.PeakRating = *req.PeakRating }
 	if req.Bio != nil { m.Bio = req.Bio }
 	if req.CountryCode != nil { m.CountryCode = req.CountryCode }
 	if req.AvatarUrl != nil { m.AvatarUrl = req.AvatarUrl }
 	if req.PreferredFormat != nil { m.PreferredFormat = req.PreferredFormat }
+	if req.ContactEmail != nil { m.ContactEmail = req.ContactEmail }
+	if req.WinRateCached != nil { m.WinRateCached = req.WinRateCached }
 	if req.IsVerified != nil { m.IsVerified = *req.IsVerified }
 	if req.LastActiveAt != nil { m.LastActiveAt = req.LastActiveAt }
 	if req.UserID != nil { m.UserID = *req.UserID }

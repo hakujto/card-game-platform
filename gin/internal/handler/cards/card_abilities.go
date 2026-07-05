@@ -24,8 +24,8 @@ func (h *CardAbilityHandler) RegisterRoutes(r gin.IRouter) {
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
-	g.GET("/:id/api/card-abilities/{id}/usable", h.IsUsableAt)
-	g.GET("/:id/api/card-abilities/{id}/describe", h.Describe)
+	g.GET("/:id/usable", h.IsUsableAt)
+	g.GET("/:id/describe", h.Describe)
 }
 
 func (h *CardAbilityHandler) List(c *gin.Context) {

@@ -58,7 +58,7 @@ func TestCoupon_Search(t *testing.T) {
 func TestCoupon_Create(t *testing.T) {
 	db, r := setupCouponDB(t)
 	_ = db
-	body := map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "uses_count": 1, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true}
+	body := map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true}
 	result := postCoupon(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -66,7 +66,7 @@ func TestCoupon_Create(t *testing.T) {
 func TestCoupon_Get(t *testing.T) {
 	db, r := setupCouponDB(t)
 	_ = db
-	created := postCoupon(t, r, db, map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "uses_count": 1, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true})
+	created := postCoupon(t, r, db, map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/coupons/"+id, nil)
@@ -77,7 +77,7 @@ func TestCoupon_Get(t *testing.T) {
 func TestCoupon_Update(t *testing.T) {
 	db, r := setupCouponDB(t)
 	_ = db
-	created := postCoupon(t, r, db, map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "uses_count": 1, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true})
+	created := postCoupon(t, r, db, map[string]interface{}{"code": "test", "discount_type": "Percent", "discount_value": 1, "min_order_value": 0.0, "valid_from": "2024-01-01T00:00:00Z", "valid_until": "2024-01-01T00:00:01Z", "is_active": true})
 	id := fmt.Sprintf("%v", created["id"])
 	upBody := map[string]interface{}{"code": "test"}
 	b, _ := json.Marshal(upBody)

@@ -20,7 +20,7 @@ func (h *DraftPickHandler) RegisterRoutes(r gin.IRouter) {
 	g := r.Group("/api/draft_picks")
 	g.GET("", h.List)
 	g.GET("/:id", h.Get)
-	g.GET("/:id/api/draft-picks/{id}/first-pick", h.IsFirstPick)
+	g.GET("/:id/first-pick", h.IsFirstPick)
 }
 
 func (h *DraftPickHandler) List(c *gin.Context) {

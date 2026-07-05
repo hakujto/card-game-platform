@@ -79,7 +79,7 @@ func TestProduct_Update(t *testing.T) {
 	_ = db
 	created := postProduct(t, r, db, map[string]interface{}{"name": "test", "product_type": "SingleCard", "price": 1, "stock": 0, "active": true, "discount_percent": 1, "featured": true})
 	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "test"}
+	upBody := map[string]interface{}{"featured": true}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/products/"+id, bytes.NewBuffer(b))

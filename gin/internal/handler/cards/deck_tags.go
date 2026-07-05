@@ -23,8 +23,8 @@ func (h *DeckTagHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
-	g.PATCH("/:id/api/deck-tags/{id}/rename", h.Rename)
-	g.POST("/:id/api/deck-tags/{id}/merge", h.MergeInto)
+	g.PATCH("/:id/rename", h.Rename)
+	g.POST("/:id/merge", h.MergeInto)
 }
 
 func (h *DeckTagHandler) List(c *gin.Context) {
@@ -50,6 +50,7 @@ func (h *DeckTagHandler) Create(c *gin.Context) {
 	}
 	row := model.DeckTag{}
 	row.Name = req.Name
+	row.Slug = req.Slug
 	row.Color = req.Color
 	if err := h.db.Create(&row).Error; err != nil {
 		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }

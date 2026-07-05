@@ -2,6 +2,7 @@ package handler_marketplace
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -395,6 +396,15 @@ func (h *OrderHandler) hookNotifyStatusChange(row *model.Order) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateOrder(req *model.OrderCreateRequest) []string {
 	var errs []string
+	if matched, _ := regexp.MatchString(`[A-Z]{3}`, req.Currency); !matched {
+		errs = append(errs, "currency has invalid format")
+	}
+	if (req.Status == model.OrderStatusType_Shipped) && req.TrackingNumber == nil {
+		errs = append(errs, "tracking_number is required")
+	}
+	if (req.Status == model.OrderStatusType_Paid) && req.PaidAt == nil {
+		errs = append(errs, "paid_at is required")
+	}
 	if !((!( req.Status == model.OrderStatusType_Paid ) || (req.PaidAt != nil))) {
 		errs = append(errs, "Paid order must have paid_at set")
 	}

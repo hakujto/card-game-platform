@@ -109,6 +109,9 @@ func (h *TradeTransactionHandler) SellerNet(c *gin.Context) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateTradeTransaction(req *model.TradeTransactionCreateRequest) []string {
 	var errs []string
+	if (req.Status == model.TradeTransactionStatusType_Completed) && req.CompletedAt == nil {
+		errs = append(errs, "completed_at is required")
+	}
 	if !(float64(req.PlatformFee) <= float64(req.FinalPrice)) {
 		errs = append(errs, "Platform fee cannot exceed the final price")
 	}

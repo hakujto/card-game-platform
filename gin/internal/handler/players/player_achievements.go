@@ -20,8 +20,8 @@ func (h *PlayerAchievementHandler) RegisterRoutes(r gin.IRouter) {
 	g := r.Group("/api/player_achievements")
 	g.GET("", h.List)
 	g.GET("/:id", h.Get)
-	g.PATCH("/:id/api/player-achievements/{id}/progress", h.IncrementProgress)
-	g.POST("/:id/api/player-achievements/{id}/complete", h.Complete)
+	g.PATCH("/:id/progress", h.IncrementProgress)
+	g.POST("/:id/complete", h.Complete)
 }
 
 func (h *PlayerAchievementHandler) List(c *gin.Context) {

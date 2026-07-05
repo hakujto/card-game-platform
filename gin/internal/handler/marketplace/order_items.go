@@ -22,7 +22,7 @@ func (h *OrderItemHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
 	g.DELETE("/:id", h.Delete)
-	g.GET("/:id/api/order-items/{id}/total", h.LineTotal)
+	g.GET("/:id/total", h.LineTotal)
 }
 
 func (h *OrderItemHandler) List(c *gin.Context) {

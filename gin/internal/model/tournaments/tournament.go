@@ -6,8 +6,10 @@ import (
 	"gorm.io/gorm"
 	"cards_project/internal/types"
 	"fmt"
+	"encoding/json"
 )
 
+var _ = json.RawMessage{}
 type TournamentStatusType string
 const (
 	TournamentStatusType_Draft TournamentStatusType = "Draft"
@@ -37,12 +39,14 @@ const (
 
 // TournamentCreateRequest is the POST body.
 type TournamentCreateRequest struct {
+	PublicId string `json:"public_id" binding:"required"`
 	Name string `json:"name" binding:"required"`
 	Description *string `json:"description"`
 	Status TournamentStatusType `json:"status" binding:"required"`
+	BracketData *json.RawMessage `json:"bracket_data"`
 	Format TournamentFormatType `json:"format" binding:"required"`
 	TournamentType TournamentTournamentTypeType `json:"tournament_type" binding:"required"`
-	MaxPlayers int `json:"max_players"`
+	MaxPlayers int `json:"max_players" binding:"min=2,max=512"`
 	EntryFee types.Decimal `json:"entry_fee"`
 	PrizePool types.Decimal `json:"prize_pool"`
 	StartTime string `json:"start_time" binding:"required"`
@@ -56,9 +60,10 @@ type TournamentCreateRequest struct {
 
 // TournamentUpdateRequest is the PUT/PATCH body — all fields optional.
 type TournamentUpdateRequest struct {
+	PublicId *string `json:"public_id"`
 	Name *string `json:"name"`
 	Description *string `json:"description"`
-	Status *TournamentStatusType `json:"status"`
+	BracketData *json.RawMessage `json:"bracket_data"`
 	Format *TournamentFormatType `json:"format"`
 	TournamentType *TournamentTournamentTypeType `json:"tournament_type"`
 	MaxPlayers *int `json:"max_players"`
@@ -78,9 +83,11 @@ type TournamentResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	PublicId string `json:"public_id"`
 	Name string `json:"name"`
 	Description *string `json:"description"`
 	Status TournamentStatusType `json:"status"`
+	BracketData *json.RawMessage `json:"bracket_data"`
 	Format TournamentFormatType `json:"format"`
 	TournamentType TournamentTournamentTypeType `json:"tournament_type"`
 	MaxPlayers int `json:"max_players"`
@@ -97,9 +104,11 @@ type TournamentResponse struct {
 
 type Tournament struct {
 	gorm.Model
+	PublicId string `gorm:"column:public_id;type:varchar(36);not null;uniqueIndex"`
 	Name string `gorm:"column:name;not null"`
 	Description *string `gorm:"column:description;type:text"`
 	Status TournamentStatusType `gorm:"column:status;not null;default:'Draft'"`
+	BracketData *json.RawMessage `gorm:"column:bracket_data;type:text"`
 	Format TournamentFormatType `gorm:"column:format;not null;default:'Standard'"`
 	TournamentType TournamentTournamentTypeType `gorm:"column:tournament_type;not null;default:'Swiss'"`
 	MaxPlayers int `gorm:"column:max_players;not null"`
@@ -123,9 +132,11 @@ func (m *Tournament) ToResponse() TournamentResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		PublicId: m.PublicId,
 		Name: m.Name,
 		Description: m.Description,
 		Status: m.Status,
+		BracketData: m.BracketData,
 		Format: m.Format,
 		TournamentType: m.TournamentType,
 		MaxPlayers: m.MaxPlayers,
@@ -142,9 +153,10 @@ func (m *Tournament) ToResponse() TournamentResponse {
 }
 
 func (m *Tournament) ApplyUpdate(req TournamentUpdateRequest) {
+	if req.PublicId != nil { m.PublicId = *req.PublicId }
 	if req.Name != nil { m.Name = *req.Name }
 	if req.Description != nil { m.Description = req.Description }
-	if req.Status != nil { m.Status = *req.Status }
+	if req.BracketData != nil { m.BracketData = req.BracketData }
 	if req.Format != nil { m.Format = *req.Format }
 	if req.TournamentType != nil { m.TournamentType = *req.TournamentType }
 	if req.MaxPlayers != nil { m.MaxPlayers = *req.MaxPlayers }

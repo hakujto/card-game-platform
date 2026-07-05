@@ -5,8 +5,10 @@ import (
 
 	"gorm.io/gorm"
 	"fmt"
+	"encoding/json"
 )
 
+var _ = json.RawMessage{}
 type CardCardTypeType string
 const (
 	CardCardTypeType_Creature CardCardTypeType = "Creature"
@@ -48,10 +50,11 @@ const (
 
 // CardCreateRequest is the POST body.
 type CardCreateRequest struct {
+	PublicId string `json:"public_id" binding:"required"`
 	Name string `json:"name" binding:"required"`
 	CardType CardCardTypeType `json:"card_type" binding:"required"`
 	Rarity CardRarityType `json:"rarity" binding:"required"`
-	ManaCost int `json:"mana_cost"`
+	ManaCost int `json:"mana_cost" binding:"min=0,max=20"`
 	ManaColors CardManaColorsType `json:"mana_colors" binding:"required"`
 	Attack *int `json:"attack"`
 	Defense *int `json:"defense"`
@@ -63,12 +66,15 @@ type CardCreateRequest struct {
 	LegalFormats CardLegalFormatsType `json:"legal_formats" binding:"required"`
 	IsBanned bool `json:"is_banned"`
 	IsRestricted bool `json:"is_restricted"`
-	PowerLevel int `json:"power_level"`
+	PowerLevel int `json:"power_level" binding:"min=1,max=10"`
+	Metadata *json.RawMessage `json:"metadata"`
+	TotalCopiesInCirculation int64 `json:"total_copies_in_circulation"`
 	SetID uint `json:"set_id"`
 }
 
 // CardUpdateRequest is the PUT/PATCH body — all fields optional.
 type CardUpdateRequest struct {
+	PublicId *string `json:"public_id"`
 	Name *string `json:"name"`
 	CardType *CardCardTypeType `json:"card_type"`
 	Rarity *CardRarityType `json:"rarity"`
@@ -82,9 +88,9 @@ type CardUpdateRequest struct {
 	ImageUrl *string `json:"image_url"`
 	ArtistName *string `json:"artist_name"`
 	LegalFormats *CardLegalFormatsType `json:"legal_formats"`
-	IsBanned *bool `json:"is_banned"`
-	IsRestricted *bool `json:"is_restricted"`
 	PowerLevel *int `json:"power_level"`
+	Metadata *json.RawMessage `json:"metadata"`
+	TotalCopiesInCirculation *int64 `json:"total_copies_in_circulation"`
 	SetID *uint `json:"set_id"`
 }
 
@@ -93,6 +99,7 @@ type CardResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	PublicId string `json:"public_id"`
 	Name string `json:"name"`
 	CardType CardCardTypeType `json:"card_type"`
 	Rarity CardRarityType `json:"rarity"`
@@ -109,11 +116,14 @@ type CardResponse struct {
 	IsBanned bool `json:"is_banned"`
 	IsRestricted bool `json:"is_restricted"`
 	PowerLevel int `json:"power_level"`
+	Metadata *json.RawMessage `json:"metadata"`
+	TotalCopiesInCirculation int64 `json:"total_copies_in_circulation"`
 	SetID uint `json:"set_id"`
 }
 
 type Card struct {
 	gorm.Model
+	PublicId string `gorm:"column:public_id;type:varchar(36);not null;uniqueIndex"`
 	Name string `gorm:"column:name;not null"`
 	CardType CardCardTypeType `gorm:"column:card_type;not null;default:'Creature'"`
 	Rarity CardRarityType `gorm:"column:rarity;not null;default:'Common'"`
@@ -130,6 +140,8 @@ type Card struct {
 	IsBanned bool `gorm:"column:is_banned;default:false"`
 	IsRestricted bool `gorm:"column:is_restricted;default:false"`
 	PowerLevel int `gorm:"column:power_level;not null;default:1"`
+	Metadata *json.RawMessage `gorm:"column:metadata;type:text"`
+	TotalCopiesInCirculation int64 `gorm:"column:total_copies_in_circulation;not null;default:0"`
 	SetID uint `gorm:"column:set_id;constraint:OnDelete:RESTRICT"`
 	Rulings []CardRuling `gorm:"foreignKey:CardID"`
 	Abilities []CardAbility `gorm:"foreignKey:CardID"`
@@ -142,6 +154,7 @@ func (m *Card) ToResponse() CardResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		PublicId: m.PublicId,
 		Name: m.Name,
 		CardType: m.CardType,
 		Rarity: m.Rarity,
@@ -158,11 +171,14 @@ func (m *Card) ToResponse() CardResponse {
 		IsBanned: m.IsBanned,
 		IsRestricted: m.IsRestricted,
 		PowerLevel: m.PowerLevel,
+		Metadata: m.Metadata,
+		TotalCopiesInCirculation: m.TotalCopiesInCirculation,
 		SetID: m.SetID,
 	}
 }
 
 func (m *Card) ApplyUpdate(req CardUpdateRequest) {
+	if req.PublicId != nil { m.PublicId = *req.PublicId }
 	if req.Name != nil { m.Name = *req.Name }
 	if req.CardType != nil { m.CardType = *req.CardType }
 	if req.Rarity != nil { m.Rarity = *req.Rarity }
@@ -176,9 +192,9 @@ func (m *Card) ApplyUpdate(req CardUpdateRequest) {
 	if req.ImageUrl != nil { m.ImageUrl = req.ImageUrl }
 	if req.ArtistName != nil { m.ArtistName = req.ArtistName }
 	if req.LegalFormats != nil { m.LegalFormats = *req.LegalFormats }
-	if req.IsBanned != nil { m.IsBanned = *req.IsBanned }
-	if req.IsRestricted != nil { m.IsRestricted = *req.IsRestricted }
 	if req.PowerLevel != nil { m.PowerLevel = *req.PowerLevel }
+	if req.Metadata != nil { m.Metadata = req.Metadata }
+	if req.TotalCopiesInCirculation != nil { m.TotalCopiesInCirculation = *req.TotalCopiesInCirculation }
 	if req.SetID != nil { m.SetID = *req.SetID }
 }
 
@@ -198,6 +214,10 @@ func (m *Card) Restrict()  error {
 
 func (m *Card) Unrestrict()  error {
 	return fmt.Errorf("Unrestrict: not implemented")
+}
+
+func (m *Card) Replace(data interface{})  (bool, error) {
+	return false, fmt.Errorf("Replace: not implemented")
 }
 
 func (m *Card) CalculateValue()  (float64, error) {

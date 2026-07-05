@@ -58,6 +58,7 @@ func (h *CardHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.Card{}
+	row.PublicId = req.PublicId
 	row.Name = req.Name
 	row.CardType = req.CardType
 	row.Rarity = req.Rarity
@@ -74,6 +75,8 @@ func (h *CardHandler) Create(c *gin.Context) {
 	row.IsBanned = req.IsBanned
 	row.IsRestricted = req.IsRestricted
 	row.PowerLevel = req.PowerLevel
+	row.Metadata = req.Metadata
+	row.TotalCopiesInCirculation = req.TotalCopiesInCirculation
 	row.SetID = req.SetID
 	if err := h.db.Create(&row).Error; err != nil {
 		if handler.IsUniqueViolation(err) { handler.UnprocessableError(c, "Value must be unique"); return }
@@ -118,6 +121,11 @@ func (h *CardHandler) Update(c *gin.Context) {
 func (h *CardHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *CardHandler) Ban(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesBan := []string{"admin", "moderator"}
+	roleOkBan := false
+	for _, r := range allowedRolesBan { if r == userRole { roleOkBan = true; break } }
+	if !roleOkBan { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for ban"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Card
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -131,6 +139,11 @@ func (h *CardHandler) Ban(c *gin.Context) {
 }
 
 func (h *CardHandler) Unban(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesUnban := []string{"admin", "moderator"}
+	roleOkUnban := false
+	for _, r := range allowedRolesUnban { if r == userRole { roleOkUnban = true; break } }
+	if !roleOkUnban { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for unban"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Card
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -144,6 +157,11 @@ func (h *CardHandler) Unban(c *gin.Context) {
 }
 
 func (h *CardHandler) Restrict(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesRestrict := []string{"admin", "moderator"}
+	roleOkRestrict := false
+	for _, r := range allowedRolesRestrict { if r == userRole { roleOkRestrict = true; break } }
+	if !roleOkRestrict { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for restrict"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Card
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -157,6 +175,11 @@ func (h *CardHandler) Restrict(c *gin.Context) {
 }
 
 func (h *CardHandler) Unrestrict(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesUnrestrict := []string{"admin", "moderator"}
+	roleOkUnrestrict := false
+	for _, r := range allowedRolesUnrestrict { if r == userRole { roleOkUnrestrict = true; break } }
+	if !roleOkUnrestrict { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for unrestrict"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Card
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -167,6 +190,31 @@ func (h *CardHandler) Unrestrict(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *CardHandler) Replace(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesReplace := []string{"admin"}
+	roleOkReplace := false
+	for _, r := range allowedRolesReplace { if r == userRole { roleOkReplace = true; break } }
+	if !roleOkReplace { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for replace"}); return }
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Card
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Card"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	data := func() string {
+		v, ok := body["data"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	result, err := row.Replace(data)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func (h *CardHandler) CalculateValue(c *gin.Context) {
@@ -234,6 +282,15 @@ func (h *CardHandler) hookValidateNotInUse(row *model.Card) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateCard(req *model.CardCreateRequest) []string {
 	var errs []string
+	if (req.CardType == model.CardCardTypeType_Creature) && req.Attack == nil {
+		errs = append(errs, "attack is required")
+	}
+	if (req.CardType == model.CardCardTypeType_Creature) && req.Defense == nil {
+		errs = append(errs, "defense is required")
+	}
+	if (req.CardType == model.CardCardTypeType_Planeswalker) && req.Loyalty == nil {
+		errs = append(errs, "loyalty is required")
+	}
 	if !((!( req.CardType == model.CardCardTypeType_Creature ) || (req.Attack != nil && req.Defense != nil))) {
 		errs = append(errs, "Creature card must have attack and defense")
 	}
@@ -263,6 +320,7 @@ func validateCard(req *model.CardCreateRequest) []string {
 
 func toCreateRequestCard(m *model.Card) model.CardCreateRequest {
 	return model.CardCreateRequest{
+		PublicId: m.PublicId,
 		Name: m.Name,
 		CardType: m.CardType,
 		Rarity: m.Rarity,
@@ -279,6 +337,8 @@ func toCreateRequestCard(m *model.Card) model.CardCreateRequest {
 		IsBanned: m.IsBanned,
 		IsRestricted: m.IsRestricted,
 		PowerLevel: m.PowerLevel,
+		Metadata: m.Metadata,
+		TotalCopiesInCirculation: m.TotalCopiesInCirculation,
 		SetID: m.SetID,
 	}
 }

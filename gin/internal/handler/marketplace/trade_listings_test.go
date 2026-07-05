@@ -70,7 +70,7 @@ func TestTradeListing_Create(t *testing.T) {
 	_ = depCardSet1ID
 	depCard1ID := createDepCard(t, r, db)
 	_ = depCard1ID
-	body := map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer1ID, "card_id": depCard1ID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer1ID, "card_id": depCard1ID}
 	result := postTradeListing(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -84,7 +84,7 @@ func TestTradeListing_Get(t *testing.T) {
 	_ = depCardSet2ID
 	depCard2ID := createDepCard(t, r, db)
 	_ = depCard2ID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer2ID, "card_id": depCard2ID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer2ID, "card_id": depCard2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/trade_listings/"+id, nil)
@@ -101,9 +101,9 @@ func TestTradeListing_Update(t *testing.T) {
 	_ = depCardSet3ID
 	depCard3ID := createDepCard(t, r, db)
 	_ = depCard3ID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer3ID, "card_id": depCard3ID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayer3ID, "card_id": depCard3ID})
 	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"foil": true}
+	upBody := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id, bytes.NewBuffer(b))
@@ -121,7 +121,7 @@ func TestTradeListing_Transition_Pending_To_Active(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/pending-to-active", nil)
@@ -138,7 +138,7 @@ func TestTradeListing_Transition_Active_To_Sold(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/active-to-sold", nil)
@@ -155,7 +155,7 @@ func TestTradeListing_Transition_Active_To_Expired(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/active-to-expired", nil)
@@ -172,7 +172,7 @@ func TestTradeListing_Transition_Active_To_Cancelled(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/active-to-cancelled", nil)
@@ -189,7 +189,7 @@ func TestTradeListing_Transition_Sold_To_Active(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/sold-to-active", nil)
@@ -206,7 +206,7 @@ func TestTradeListing_Transition_Expired_To_Active(t *testing.T) {
 	_ = depCardSetTID
 	depCardTID := createDepCard(t, r, db)
 	_ = depCardTID
-	created := postTradeListing(t, r, db, map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
+	created := postTradeListing(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "asking_price": 0.0, "auction_start_price": 0.0, "auction_end_time": "2024-01-01T00:00:00Z", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerTID, "card_id": depCardTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/trade_listings/"+id+"/transitions/expired-to-active", nil)
@@ -223,7 +223,7 @@ func TestTradeListing_Rule_FixedPriceRequiresAskingPrice_Violated(t *testing.T) 
 	_ = depCardSetRID
 	depCardRID := createDepCard(t, r, db)
 	_ = depCardRID
-	body := map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID, "asking_price": nil}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID, "asking_price": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/trade_listings", bytes.NewBuffer(b))
@@ -241,7 +241,7 @@ func TestTradeListing_Rule_AuctionRequiresStartPriceAndEndTime_Violated(t *testi
 	_ = depCardSetRID
 	depCardRID := createDepCard(t, r, db)
 	_ = depCardRID
-	body := map[string]interface{}{"status": "Active", "listing_type": "Auction", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID, "auction_start_price": nil}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "Auction", "foil": true, "condition": "Mint", "quantity": 1, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID, "auction_start_price": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/trade_listings", bytes.NewBuffer(b))
@@ -259,7 +259,7 @@ func TestTradeListing_Rule_QuantityPositive_Violated(t *testing.T) {
 	_ = depCardSetRID
 	depCardRID := createDepCard(t, r, db)
 	_ = depCardRID
-	body := map[string]interface{}{"status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 10000, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "status": "Active", "listing_type": "FixedPrice", "foil": true, "condition": "Mint", "quantity": 10000, "created_at": "2024-01-01T00:00:00Z", "seller_id": depPlayerRID, "card_id": depCardRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/trade_listings", bytes.NewBuffer(b))

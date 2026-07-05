@@ -49,9 +49,6 @@ type DeckUpdateRequest struct {
 	IsPublic *bool `json:"is_public"`
 	IsTournamentLegal *bool `json:"is_tournament_legal"`
 	Archetype *DeckArchetypeType `json:"archetype"`
-	Wins *int `json:"wins"`
-	Losses *int `json:"losses"`
-	Draws *int `json:"draws"`
 	PlayerID *uint `json:"player_id"`
 }
 
@@ -114,9 +111,6 @@ func (m *Deck) ApplyUpdate(req DeckUpdateRequest) {
 	if req.IsPublic != nil { m.IsPublic = *req.IsPublic }
 	if req.IsTournamentLegal != nil { m.IsTournamentLegal = *req.IsTournamentLegal }
 	if req.Archetype != nil { m.Archetype = req.Archetype }
-	if req.Wins != nil { m.Wins = *req.Wins }
-	if req.Losses != nil { m.Losses = *req.Losses }
-	if req.Draws != nil { m.Draws = *req.Draws }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 }
 

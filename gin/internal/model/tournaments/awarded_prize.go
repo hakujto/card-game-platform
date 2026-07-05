@@ -19,8 +19,6 @@ type AwardedPrizeCreateRequest struct {
 
 // AwardedPrizeUpdateRequest is the PUT/PATCH body — all fields optional.
 type AwardedPrizeUpdateRequest struct {
-	FinalPlacement *int `json:"final_placement"`
-	AwardedAt *string `json:"awarded_at"`
 	Claimed *bool `json:"claimed"`
 	ClaimedAt *string `json:"claimed_at"`
 	PrizeID *uint `json:"prize_id"`
@@ -65,8 +63,6 @@ func (m *AwardedPrize) ToResponse() AwardedPrizeResponse {
 }
 
 func (m *AwardedPrize) ApplyUpdate(req AwardedPrizeUpdateRequest) {
-	if req.FinalPlacement != nil { m.FinalPlacement = *req.FinalPlacement }
-	if req.AwardedAt != nil { m.AwardedAt = *req.AwardedAt }
 	if req.Claimed != nil { m.Claimed = *req.Claimed }
 	if req.ClaimedAt != nil { m.ClaimedAt = req.ClaimedAt }
 	if req.PrizeID != nil { m.PrizeID = *req.PrizeID }

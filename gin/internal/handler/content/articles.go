@@ -71,6 +71,7 @@ func (h *ArticleHandler) Create(c *gin.Context) {
 	row.Language = req.Language
 	row.ViewCount = req.ViewCount
 	row.LikesCount = req.LikesCount
+	row.TotalViewsAlltime = req.TotalViewsAlltime
 	row.IsFeatured = req.IsFeatured
 	row.PublishedAt = req.PublishedAt
 	row.AuthorID = req.AuthorID
@@ -118,6 +119,11 @@ func (h *ArticleHandler) Update(c *gin.Context) {
 func (h *ArticleHandler) Patch(c *gin.Context) { h.Update(c) }
 
 func (h *ArticleHandler) Publish(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesPublish := []string{"editor", "admin"}
+	roleOkPublish := false
+	for _, r := range allowedRolesPublish { if r == userRole { roleOkPublish = true; break } }
+	if !roleOkPublish { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for publish"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Article
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -131,6 +137,11 @@ func (h *ArticleHandler) Publish(c *gin.Context) {
 }
 
 func (h *ArticleHandler) Archive(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesArchive := []string{"editor", "admin"}
+	roleOkArchive := false
+	for _, r := range allowedRolesArchive { if r == userRole { roleOkArchive = true; break } }
+	if !roleOkArchive { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for archive"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Article
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -141,6 +152,31 @@ func (h *ArticleHandler) Archive(c *gin.Context) {
 	if err != nil { handler.DbError(c, err); return }
 	h.db.Save(&row)
 	c.Status(http.StatusNoContent)
+}
+
+func (h *ArticleHandler) Replace(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesReplace := []string{"editor", "admin"}
+	roleOkReplace := false
+	for _, r := range allowedRolesReplace { if r == userRole { roleOkReplace = true; break } }
+	if !roleOkReplace { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for replace"}); return }
+	id, ok := handler.ParseID(c); if !ok { return }
+	var row model.Article
+	if err := h.db.First(&row, id).Error; err != nil {
+		if handler.IsRecordNotFound(err) { handler.NotFound(c, "Article"); return }
+		handler.DbError(c, err); return
+	}
+	var body map[string]interface{}
+	_ = c.ShouldBindJSON(&body)
+	data := func() string {
+		v, ok := body["data"]; if !ok { return "" }
+		s, ok := v.(string); if !ok { return "" }
+		return s
+	}()
+	result, err := row.Replace(data)
+	if err != nil { handler.DbError(c, err); return }
+	h.db.Save(&row)
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
 
 func (h *ArticleHandler) IncrementView(c *gin.Context) {
@@ -312,6 +348,7 @@ func toCreateRequestArticle(m *model.Article) model.ArticleCreateRequest {
 		Language: m.Language,
 		ViewCount: m.ViewCount,
 		LikesCount: m.LikesCount,
+		TotalViewsAlltime: m.TotalViewsAlltime,
 		IsFeatured: m.IsFeatured,
 		PublishedAt: m.PublishedAt,
 		AuthorID: m.AuthorID,

@@ -20,7 +20,7 @@ func (h *AwardedPrizeHandler) RegisterRoutes(r gin.IRouter) {
 	g := r.Group("/api/awarded_prizes")
 	g.GET("", h.List)
 	g.GET("/:id", h.Get)
-	g.POST("/:id/api/awarded-prizes/{id}/claim", h.Claim)
+	g.POST("/:id/claim", h.Claim)
 }
 
 func (h *AwardedPrizeHandler) List(c *gin.Context) {
@@ -79,6 +79,9 @@ func (h *AwardedPrizeHandler) SetClaimed(c *gin.Context) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateAwardedPrize(req *model.AwardedPrizeCreateRequest) []string {
 	var errs []string
+	if (req.Claimed == true) && req.ClaimedAt == nil {
+		errs = append(errs, "claimed_at is required")
+	}
 	if !((!( req.Claimed ) || (req.ClaimedAt != nil))) {
 		errs = append(errs, "Claimed prize must have a claimed_at timestamp")
 	}

@@ -66,7 +66,7 @@ func TestOrder_Create(t *testing.T) {
 	_ = db
 	depPlayer1ID := createDepPlayer(t, r, db)
 	_ = depPlayer1ID
-	body := map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
+	body := map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer1ID}
 	result := postOrder(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -76,7 +76,7 @@ func TestOrder_Get(t *testing.T) {
 	_ = db
 	depPlayer2ID := createDepPlayer(t, r, db)
 	_ = depPlayer2ID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayer2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/orders/"+id, nil)
@@ -90,7 +90,7 @@ func TestOrder_Transition_Pending_To_Paid(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-paid", nil)
@@ -103,7 +103,7 @@ func TestOrder_Transition_Pending_To_Paid_On_PaymentMethod_Violated(t *testing.T
 	_ = db
 	depPlayerOID := createDepPlayer(t, r, db)
 	_ = depPlayerOID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Pending", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-paid", nil)
@@ -116,7 +116,7 @@ func TestOrder_Transition_Paid_To_Processing(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-processing", nil)
@@ -129,7 +129,7 @@ func TestOrder_Transition_Processing_To_Shipped(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
@@ -142,7 +142,7 @@ func TestOrder_Transition_Processing_To_Shipped_On_TrackingNumber_Violated(t *te
 	_ = db
 	depPlayerOID := createDepPlayer(t, r, db)
 	_ = depPlayerOID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Processing", "total": 0, "discount_applied": 0.0, "currency": "xxx", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Processing", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerOID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/processing-to-shipped", nil)
@@ -156,7 +156,7 @@ func TestOrder_Transition_Shipped_To_Completed(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/shipped-to-completed", nil)
@@ -169,7 +169,7 @@ func TestOrder_Transition_Pending_To_Cancelled(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/pending-to-cancelled", nil)
@@ -182,7 +182,7 @@ func TestOrder_Transition_Paid_To_Cancelled(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/paid-to-cancelled", nil)
@@ -195,7 +195,7 @@ func TestOrder_Transition_Completed_To_Refunded(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/completed-to-refunded", nil)
@@ -208,7 +208,7 @@ func TestOrder_Transition_Refunded_To_Completed(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/refunded-to-completed", nil)
@@ -221,7 +221,7 @@ func TestOrder_Transition_Completed_To_Cancelled(t *testing.T) {
 	_ = db
 	depPlayerTID := createDepPlayer(t, r, db)
 	_ = depPlayerTID
-	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 0, "discount_applied": 0.0, "currency": "xxx", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
+	created := postOrder(t, r, db, map[string]interface{}{"status": "Shipped", "total": 29.99, "discount_applied": 0.0, "currency": "USD", "tracking_number": "test", "created_at": "2024-01-01T00:00:00Z", "paid_at": "2024-01-01T00:00:00Z", "player_id": depPlayerTID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/orders/"+id+"/transitions/completed-to-cancelled", nil)
@@ -234,7 +234,7 @@ func TestOrder_Rule_PaidRequiresPaidAt_Violated(t *testing.T) {
 	_ = db
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"status": "Paid", "total": 0.0, "discount_applied": 0.0, "currency": "xxx", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID, "paid_at": nil}
+	body := map[string]interface{}{"status": "Paid", "total": 0.0, "discount_applied": 0.0, "currency": "AAA", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID, "paid_at": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/orders", bytes.NewBuffer(b))
@@ -248,7 +248,7 @@ func TestOrder_Rule_ShippedRequiresTracking_Violated(t *testing.T) {
 	_ = db
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"status": "Shipped", "total": 0.0, "discount_applied": 0.0, "currency": "xxx", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID, "tracking_number": nil}
+	body := map[string]interface{}{"status": "Shipped", "total": 0.0, "discount_applied": 0.0, "currency": "AAA", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID, "tracking_number": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/orders", bytes.NewBuffer(b))
@@ -262,7 +262,7 @@ func TestOrder_Rule_TotalNotNegative_Violated(t *testing.T) {
 	_ = db
 	depPlayerRID := createDepPlayer(t, r, db)
 	_ = depPlayerRID
-	body := map[string]interface{}{"status": "Pending", "total": -1, "discount_applied": 0.0, "currency": "xxx", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
+	body := map[string]interface{}{"status": "Pending", "total": -1, "discount_applied": 0.0, "currency": "AAA", "created_at": "2024-01-01T00:00:00Z", "player_id": depPlayerRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/orders", bytes.NewBuffer(b))

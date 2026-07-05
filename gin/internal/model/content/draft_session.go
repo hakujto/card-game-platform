@@ -5,8 +5,10 @@ import (
 
 	"gorm.io/gorm"
 	"fmt"
+	"encoding/json"
 )
 
+var _ = json.RawMessage{}
 type DraftSessionStatusType string
 const (
 	DraftSessionStatusType_WaitingForPlayers DraftSessionStatusType = "WaitingForPlayers"
@@ -26,6 +28,7 @@ const (
 type DraftSessionCreateRequest struct {
 	Status DraftSessionStatusType `json:"status" binding:"required"`
 	DraftType DraftSessionDraftTypeType `json:"draft_type" binding:"required"`
+	PackContents *json.RawMessage `json:"pack_contents"`
 	Seats int `json:"seats"`
 	TimePerPickSeconds int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completed_at"`
@@ -36,6 +39,7 @@ type DraftSessionCreateRequest struct {
 type DraftSessionUpdateRequest struct {
 	Status *DraftSessionStatusType `json:"status"`
 	DraftType *DraftSessionDraftTypeType `json:"draft_type"`
+	PackContents *json.RawMessage `json:"pack_contents"`
 	Seats *int `json:"seats"`
 	TimePerPickSeconds *int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completed_at"`
@@ -49,6 +53,7 @@ type DraftSessionResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Status DraftSessionStatusType `json:"status"`
 	DraftType DraftSessionDraftTypeType `json:"draft_type"`
+	PackContents *json.RawMessage `json:"pack_contents"`
 	Seats int `json:"seats"`
 	TimePerPickSeconds int `json:"time_per_pick_seconds"`
 	CompletedAt *string `json:"completedAt"`
@@ -59,6 +64,7 @@ type DraftSession struct {
 	gorm.Model
 	Status DraftSessionStatusType `gorm:"column:status;not null;default:'WaitingForPlayers'"`
 	DraftType DraftSessionDraftTypeType `gorm:"column:draft_type;not null;default:'Booster'"`
+	PackContents *json.RawMessage `gorm:"column:pack_contents;type:text"`
 	Seats int `gorm:"column:seats;not null;default:8"`
 	TimePerPickSeconds int `gorm:"column:time_per_pick_seconds;not null;default:30"`
 	CompletedAt *string `gorm:"column:completed_at"`
@@ -73,6 +79,7 @@ func (m *DraftSession) ToResponse() DraftSessionResponse {
 		UpdatedAt: m.UpdatedAt,
 		Status: m.Status,
 		DraftType: m.DraftType,
+		PackContents: m.PackContents,
 		Seats: m.Seats,
 		TimePerPickSeconds: m.TimePerPickSeconds,
 		CompletedAt: m.CompletedAt,
@@ -83,6 +90,7 @@ func (m *DraftSession) ToResponse() DraftSessionResponse {
 func (m *DraftSession) ApplyUpdate(req DraftSessionUpdateRequest) {
 	if req.Status != nil { m.Status = *req.Status }
 	if req.DraftType != nil { m.DraftType = *req.DraftType }
+	if req.PackContents != nil { m.PackContents = req.PackContents }
 	if req.Seats != nil { m.Seats = *req.Seats }
 	if req.TimePerPickSeconds != nil { m.TimePerPickSeconds = *req.TimePerPickSeconds }
 	if req.CompletedAt != nil { m.CompletedAt = req.CompletedAt }

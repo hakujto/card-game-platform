@@ -65,9 +65,11 @@ func (h *TournamentHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.Tournament{}
+	row.PublicId = req.PublicId
 	row.Name = req.Name
 	row.Description = req.Description
 	row.Status = req.Status
+	row.BracketData = req.BracketData
 	row.Format = req.Format
 	row.TournamentType = req.TournamentType
 	row.MaxPlayers = req.MaxPlayers
@@ -397,9 +399,11 @@ func validateTournament(req *model.TournamentCreateRequest) []string {
 
 func toCreateRequestTournament(m *model.Tournament) model.TournamentCreateRequest {
 	return model.TournamentCreateRequest{
+		PublicId: m.PublicId,
 		Name: m.Name,
 		Description: m.Description,
 		Status: m.Status,
+		BracketData: m.BracketData,
 		Format: m.Format,
 		TournamentType: m.TournamentType,
 		MaxPlayers: m.MaxPlayers,

@@ -2,6 +2,7 @@ package handler_players
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -56,6 +57,7 @@ func (h *PlayerHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": msgs}); return
 	}
 	row := model.Player{}
+	row.PublicId = req.PublicId
 	row.DisplayName = req.DisplayName
 	row.Rank = req.Rank
 	row.Rating = req.Rating
@@ -64,6 +66,8 @@ func (h *PlayerHandler) Create(c *gin.Context) {
 	row.CountryCode = req.CountryCode
 	row.AvatarUrl = req.AvatarUrl
 	row.PreferredFormat = req.PreferredFormat
+	row.ContactEmail = req.ContactEmail
+	row.WinRateCached = req.WinRateCached
 	row.IsVerified = req.IsVerified
 	row.LastActiveAt = req.LastActiveAt
 	row.UserID = req.UserID
@@ -169,6 +173,11 @@ func (h *PlayerHandler) WinRate(c *gin.Context) {
 }
 
 func (h *PlayerHandler) Verify(c *gin.Context) {
+	userRole, _ := c.Get("user_role")
+	allowedRolesVerify := []string{"admin"}
+	roleOkVerify := false
+	for _, r := range allowedRolesVerify { if r == userRole { roleOkVerify = true; break } }
+	if !roleOkVerify { c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient role for verify"}); return }
 	id, ok := handler.ParseID(c); if !ok { return }
 	var row model.Player
 	if err := h.db.First(&row, id).Error; err != nil {
@@ -213,6 +222,11 @@ func (h *PlayerHandler) hookUpdateRank(row *model.Player) {
 // ── Validation rules ─────────────────────────────────────────────
 func validatePlayer(req *model.PlayerCreateRequest) []string {
 	var errs []string
+	if req.CountryCode != nil {
+		if matched, _ := regexp.MatchString(`[A-Z]{2}`, *req.CountryCode); !matched {
+			errs = append(errs, "country_code has invalid format")
+		}
+	}
 	if !((req.Rating >= 0 && req.Rating <= 9999)) {
 		errs = append(errs, "Rating must be between 0 and 9999")
 	}
@@ -227,6 +241,7 @@ func validatePlayer(req *model.PlayerCreateRequest) []string {
 
 func toCreateRequestPlayer(m *model.Player) model.PlayerCreateRequest {
 	return model.PlayerCreateRequest{
+		PublicId: m.PublicId,
 		DisplayName: m.DisplayName,
 		Rank: m.Rank,
 		Rating: m.Rating,
@@ -235,6 +250,8 @@ func toCreateRequestPlayer(m *model.Player) model.PlayerCreateRequest {
 		CountryCode: m.CountryCode,
 		AvatarUrl: m.AvatarUrl,
 		PreferredFormat: m.PreferredFormat,
+		ContactEmail: m.ContactEmail,
+		WinRateCached: m.WinRateCached,
 		IsVerified: m.IsVerified,
 		LastActiveAt: m.LastActiveAt,
 		UserID: m.UserID,

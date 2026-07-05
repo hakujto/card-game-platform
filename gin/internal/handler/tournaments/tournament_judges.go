@@ -22,8 +22,7 @@ func (h *TournamentJudgeHandler) RegisterRoutes(r gin.IRouter) {
 	g.POST("", h.Create)
 	g.GET("/:id", h.Get)
 	g.DELETE("/:id", h.Delete)
-	g.POST("/:id/api/tournament-judges/{id}/promote", h.PromoteToHead)
-	g.DELETE("/:id/api/tournament-judges/{id}", h.Remove)
+	g.POST("/:id/promote", h.PromoteToHead)
 }
 
 func (h *TournamentJudgeHandler) List(c *gin.Context) {

@@ -58,7 +58,7 @@ func TestPlayer_Search(t *testing.T) {
 func TestPlayer_Create(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
-	body := map[string]interface{}{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "Bronze", "rating": 1000, "peak_rating": 1000, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
 	result := postPlayer(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -66,7 +66,7 @@ func TestPlayer_Create(t *testing.T) {
 func TestPlayer_Get(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
-	created := postPlayer(t, r, db, map[string]interface{}{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"})
+	created := postPlayer(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "Bronze", "rating": 1000, "peak_rating": 1000, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/players/"+id, nil)
@@ -77,9 +77,9 @@ func TestPlayer_Get(t *testing.T) {
 func TestPlayer_Update(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
-	created := postPlayer(t, r, db, map[string]interface{}{"display_name": "test", "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"})
+	created := postPlayer(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test_player_001", "rank": "Bronze", "rating": 1000, "peak_rating": 1000, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"})
 	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"display_name": "test"}
+	upBody := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PATCH", "/api/players/"+id, bytes.NewBuffer(b))
@@ -91,7 +91,7 @@ func TestPlayer_Update(t *testing.T) {
 func TestPlayer_Rule_RatingRange_Violated(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
-	body := map[string]interface{}{"display_name": "test", "rank": "Bronze", "rating": 10000, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": "test", "rank": "Bronze", "rating": 10000, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/players", bytes.NewBuffer(b))
@@ -103,7 +103,7 @@ func TestPlayer_Rule_RatingRange_Violated(t *testing.T) {
 func TestPlayer_Rule_DisplayNameNotEmpty_Violated(t *testing.T) {
 	db, r := setupPlayerDB(t)
 	_ = db
-	body := map[string]interface{}{"display_name": nil, "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "display_name": nil, "rank": "Bronze", "rating": 1, "peak_rating": 1, "is_verified": true, "created_at": "2024-01-01T00:00:00Z"}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/players", bytes.NewBuffer(b))

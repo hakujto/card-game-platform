@@ -24,8 +24,9 @@ const (
 
 // GameCreateRequest is the POST body.
 type GameCreateRequest struct {
-	GameNumber int `json:"game_number"`
+	GameNumber int `json:"game_number" binding:"min=1,max=3"`
 	WinnerSide *GameWinnerSideType `json:"winner_side"`
+	ComplexityScore *float64 `json:"complexity_score"`
 	TurnsPlayed *int `json:"turns_played"`
 	DurationSeconds *int `json:"duration_seconds"`
 	EndedBy *GameEndedByType `json:"ended_by"`
@@ -38,6 +39,7 @@ type GameCreateRequest struct {
 type GameUpdateRequest struct {
 	GameNumber *int `json:"game_number"`
 	WinnerSide *GameWinnerSideType `json:"winner_side"`
+	ComplexityScore *float64 `json:"complexity_score"`
 	TurnsPlayed *int `json:"turns_played"`
 	DurationSeconds *int `json:"duration_seconds"`
 	EndedBy *GameEndedByType `json:"ended_by"`
@@ -53,6 +55,7 @@ type GameResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	GameNumber int `json:"game_number"`
 	WinnerSide *GameWinnerSideType `json:"winner_side"`
+	ComplexityScore *float64 `json:"complexity_score"`
 	TurnsPlayed *int `json:"turns_played"`
 	DurationSeconds *int `json:"duration_seconds"`
 	EndedBy *GameEndedByType `json:"ended_by"`
@@ -65,6 +68,7 @@ type Game struct {
 	gorm.Model
 	GameNumber int `gorm:"column:game_number;not null"`
 	WinnerSide *GameWinnerSideType `gorm:"column:winner_side"`
+	ComplexityScore *float64 `gorm:"column:complexity_score"`
 	TurnsPlayed *int `gorm:"column:turns_played"`
 	DurationSeconds *int `gorm:"column:duration_seconds"`
 	EndedBy *GameEndedByType `gorm:"column:ended_by"`
@@ -80,6 +84,7 @@ func (m *Game) ToResponse() GameResponse {
 		UpdatedAt: m.UpdatedAt,
 		GameNumber: m.GameNumber,
 		WinnerSide: m.WinnerSide,
+		ComplexityScore: m.ComplexityScore,
 		TurnsPlayed: m.TurnsPlayed,
 		DurationSeconds: m.DurationSeconds,
 		EndedBy: m.EndedBy,
@@ -92,6 +97,7 @@ func (m *Game) ToResponse() GameResponse {
 func (m *Game) ApplyUpdate(req GameUpdateRequest) {
 	if req.GameNumber != nil { m.GameNumber = *req.GameNumber }
 	if req.WinnerSide != nil { m.WinnerSide = req.WinnerSide }
+	if req.ComplexityScore != nil { m.ComplexityScore = req.ComplexityScore }
 	if req.TurnsPlayed != nil { m.TurnsPlayed = req.TurnsPlayed }
 	if req.DurationSeconds != nil { m.DurationSeconds = req.DurationSeconds }
 	if req.EndedBy != nil { m.EndedBy = req.EndedBy }

@@ -61,7 +61,7 @@ func TestCard_Create(t *testing.T) {
 	_ = db
 	depCardSet1ID := createDepCardSet(t, r, db)
 	_ = depCardSet1ID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "set_id": depCardSet1ID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "Spell", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSet1ID}
 	result := postCard(t, r, db, body)
 	assert.NotNil(t, result["id"])
 }
@@ -71,7 +71,7 @@ func TestCard_Get(t *testing.T) {
 	_ = db
 	depCardSet2ID := createDepCardSet(t, r, db)
 	_ = depCardSet2ID
-	created := postCard(t, r, db, map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "set_id": depCardSet2ID})
+	created := postCard(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "Spell", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSet2ID})
 	id := fmt.Sprintf("%v", created["id"])
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/cards/"+id, nil)
@@ -84,9 +84,9 @@ func TestCard_Update(t *testing.T) {
 	_ = db
 	depCardSet3ID := createDepCardSet(t, r, db)
 	_ = depCardSet3ID
-	created := postCard(t, r, db, map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "set_id": depCardSet3ID})
+	created := postCard(t, r, db, map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "Test Lightning Bolt", "card_type": "Spell", "rarity": "Common", "mana_cost": 0, "mana_colors": "White", "attack": 1, "defense": 1, "loyalty": nil, "description": "test", "legal_formats": "Standard", "is_banned": false, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSet3ID})
 	id := fmt.Sprintf("%v", created["id"])
-	upBody := map[string]interface{}{"name": "test"}
+	upBody := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001"}
 	b, _ := json.Marshal(upBody)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/cards/"+id, bytes.NewBuffer(b))
@@ -100,7 +100,7 @@ func TestCard_Rule_CreatureRequiresStats_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": depCardSetRID, "attack": nil}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID, "attack": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -114,7 +114,7 @@ func TestCard_Rule_PlaneswalkerRequiresLoyalty_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Planeswalker", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": depCardSetRID, "loyalty": nil}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Planeswalker", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID, "loyalty": nil}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -128,7 +128,7 @@ func TestCard_Rule_LandHasNoManaCost_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": depCardSetRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Land", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -142,7 +142,7 @@ func TestCard_Rule_SpellOrArtifactNoLoyalty_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": depCardSetRID, "loyalty": 1}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID, "loyalty": 1}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -156,7 +156,7 @@ func TestCard_Rule_ManaCostRange_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 21, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "set_id": depCardSetRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 21, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -170,7 +170,7 @@ func TestCard_Rule_PowerLevelRange_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 11, "set_id": depCardSetRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": true, "is_restricted": true, "power_level": 11, "total_copies_in_circulation": 1, "set_id": depCardSetRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -184,7 +184,7 @@ func TestCard_Rule_NotBannedAndRestricted_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": "true", "is_restricted": "true", "power_level": 1, "set_id": depCardSetRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": "true", "is_restricted": "true", "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))
@@ -198,7 +198,7 @@ func TestCard_Rule_BannedCardNotInLegalFormats_Violated(t *testing.T) {
 	_ = db
 	depCardSetRID := createDepCardSet(t, r, db)
 	_ = depCardSetRID
-	body := map[string]interface{}{"name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": "true", "is_restricted": true, "power_level": 1, "set_id": depCardSetRID}
+	body := map[string]interface{}{"public_id": "00000000-0000-0000-0000-000000000001", "name": "test", "card_type": "Creature", "rarity": "Common", "mana_cost": 1, "mana_colors": "White", "description": "test", "legal_formats": "Standard", "is_banned": "true", "is_restricted": true, "power_level": 1, "total_copies_in_circulation": 1, "set_id": depCardSetRID}
 	b, _ := json.Marshal(body)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/cards", bytes.NewBuffer(b))

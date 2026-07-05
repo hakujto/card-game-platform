@@ -23,8 +23,8 @@ func (h *DeckCardHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PATCH("/:id", h.Patch)
 	g.DELETE("/:id", h.Delete)
-	g.PATCH("/:id/api/deck-cards/{id}/increment", h.Increment)
-	g.PATCH("/:id/api/deck-cards/{id}/decrement", h.Decrement)
+	g.PATCH("/:id/increment", h.Increment)
+	g.PATCH("/:id/decrement", h.Decrement)
 }
 
 func (h *DeckCardHandler) List(c *gin.Context) {

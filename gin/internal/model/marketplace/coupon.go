@@ -18,7 +18,7 @@ const (
 type CouponCreateRequest struct {
 	Code string `json:"code" binding:"required"`
 	DiscountType CouponDiscountTypeType `json:"discount_type" binding:"required"`
-	DiscountValue types.Decimal `json:"discount_value"`
+	DiscountValue types.Decimal `json:"discount_value" binding:"min=0.01"`
 	MinOrderValue types.Decimal `json:"min_order_value"`
 	MaxUses *int `json:"max_uses"`
 	UsesCount int `json:"uses_count"`
@@ -49,8 +49,8 @@ type CouponResponse struct {
 	DiscountType CouponDiscountTypeType `json:"discount_type"`
 	DiscountValue types.Decimal `json:"discount_value"`
 	MinOrderValue types.Decimal `json:"min_order_value"`
-	MaxUses *int `json:"max_uses"`
-	UsesCount int `json:"uses_count"`
+	MaxUses *int `json:"-"`
+	UsesCount int `json:"-"`
 	ValidFrom string `json:"valid_from"`
 	ValidUntil string `json:"valid_until"`
 	IsActive bool `json:"is_active"`

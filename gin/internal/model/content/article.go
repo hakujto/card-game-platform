@@ -47,6 +47,7 @@ type ArticleCreateRequest struct {
 	Language ArticleLanguageType `json:"language" binding:"required"`
 	ViewCount int `json:"view_count"`
 	LikesCount int `json:"likes_count"`
+	TotalViewsAlltime int64 `json:"total_views_alltime"`
 	IsFeatured bool `json:"is_featured"`
 	PublishedAt *string `json:"published_at"`
 	AuthorID uint `json:"author_id"`
@@ -60,11 +61,9 @@ type ArticleUpdateRequest struct {
 	Body *string `json:"body"`
 	Excerpt *string `json:"excerpt"`
 	CoverImageUrl *string `json:"cover_image_url"`
-	Status *ArticleStatusType `json:"status"`
 	ArticleType *ArticleArticleTypeType `json:"article_type"`
 	Language *ArticleLanguageType `json:"language"`
-	ViewCount *int `json:"view_count"`
-	LikesCount *int `json:"likes_count"`
+	TotalViewsAlltime *int64 `json:"total_views_alltime"`
 	IsFeatured *bool `json:"is_featured"`
 	PublishedAt *string `json:"published_at"`
 	AuthorID *uint `json:"author_id"`
@@ -86,6 +85,7 @@ type ArticleResponse struct {
 	Language ArticleLanguageType `json:"language"`
 	ViewCount int `json:"view_count"`
 	LikesCount int `json:"likes_count"`
+	TotalViewsAlltime int64 `json:"total_views_alltime"`
 	IsFeatured bool `json:"is_featured"`
 	PublishedAt *string `json:"publishedAt"`
 	AuthorID uint `json:"author_id"`
@@ -104,6 +104,7 @@ type Article struct {
 	Language ArticleLanguageType `gorm:"column:language;not null;default:'EN'"`
 	ViewCount int `gorm:"column:view_count;not null;default:0"`
 	LikesCount int `gorm:"column:likes_count;not null;default:0"`
+	TotalViewsAlltime int64 `gorm:"column:total_views_alltime;not null;default:0"`
 	IsFeatured bool `gorm:"column:is_featured;default:false"`
 	PublishedAt *string `gorm:"column:published_at"`
 	AuthorID uint `gorm:"column:author_id;constraint:OnDelete:RESTRICT"`
@@ -127,6 +128,7 @@ func (m *Article) ToResponse() ArticleResponse {
 		Language: m.Language,
 		ViewCount: m.ViewCount,
 		LikesCount: m.LikesCount,
+		TotalViewsAlltime: m.TotalViewsAlltime,
 		IsFeatured: m.IsFeatured,
 		PublishedAt: m.PublishedAt,
 		AuthorID: m.AuthorID,
@@ -140,11 +142,9 @@ func (m *Article) ApplyUpdate(req ArticleUpdateRequest) {
 	if req.Body != nil { m.Body = *req.Body }
 	if req.Excerpt != nil { m.Excerpt = req.Excerpt }
 	if req.CoverImageUrl != nil { m.CoverImageUrl = req.CoverImageUrl }
-	if req.Status != nil { m.Status = *req.Status }
 	if req.ArticleType != nil { m.ArticleType = *req.ArticleType }
 	if req.Language != nil { m.Language = *req.Language }
-	if req.ViewCount != nil { m.ViewCount = *req.ViewCount }
-	if req.LikesCount != nil { m.LikesCount = *req.LikesCount }
+	if req.TotalViewsAlltime != nil { m.TotalViewsAlltime = *req.TotalViewsAlltime }
 	if req.IsFeatured != nil { m.IsFeatured = *req.IsFeatured }
 	if req.PublishedAt != nil { m.PublishedAt = req.PublishedAt }
 	if req.AuthorID != nil { m.AuthorID = *req.AuthorID }
@@ -175,6 +175,10 @@ func (m *Article) Publish()  error {
 
 func (m *Article) Archive()  error {
 	return fmt.Errorf("Archive: not implemented")
+}
+
+func (m *Article) Replace(data interface{})  (bool, error) {
+	return false, fmt.Errorf("Replace: not implemented")
 }
 
 func (m *Article) IncrementView()  error {

@@ -35,6 +35,7 @@ const (
 
 // TradeListingCreateRequest is the POST body.
 type TradeListingCreateRequest struct {
+	PublicId string `json:"public_id" binding:"required"`
 	Status TradeListingStatusType `json:"status" binding:"required"`
 	ListingType TradeListingListingTypeType `json:"listing_type" binding:"required"`
 	AskingPrice *types.Decimal `json:"asking_price"`
@@ -52,7 +53,7 @@ type TradeListingCreateRequest struct {
 
 // TradeListingUpdateRequest is the PUT/PATCH body — all fields optional.
 type TradeListingUpdateRequest struct {
-	Status *TradeListingStatusType `json:"status"`
+	PublicId *string `json:"public_id"`
 	ListingType *TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
 	AuctionStartPrice *types.Decimal `json:"auction_start_price"`
@@ -72,6 +73,7 @@ type TradeListingResponse struct {
 	ID        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	PublicId string `json:"public_id"`
 	Status TradeListingStatusType `json:"status"`
 	ListingType TradeListingListingTypeType `json:"listing_type"`
 	AskingPrice *types.Decimal `json:"asking_price"`
@@ -89,6 +91,7 @@ type TradeListingResponse struct {
 
 type TradeListing struct {
 	gorm.Model
+	PublicId string `gorm:"column:public_id;type:varchar(36);not null;uniqueIndex"`
 	Status TradeListingStatusType `gorm:"column:status;not null;default:'Active'"`
 	ListingType TradeListingListingTypeType `gorm:"column:listing_type;not null;default:'FixedPrice'"`
 	AskingPrice *types.Decimal `gorm:"column:asking_price;type:decimal(10,2)"`
@@ -111,6 +114,7 @@ func (m *TradeListing) ToResponse() TradeListingResponse {
 		ID:        m.ID,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		PublicId: m.PublicId,
 		Status: m.Status,
 		ListingType: m.ListingType,
 		AskingPrice: m.AskingPrice,
@@ -128,7 +132,7 @@ func (m *TradeListing) ToResponse() TradeListingResponse {
 }
 
 func (m *TradeListing) ApplyUpdate(req TradeListingUpdateRequest) {
-	if req.Status != nil { m.Status = *req.Status }
+	if req.PublicId != nil { m.PublicId = *req.PublicId }
 	if req.ListingType != nil { m.ListingType = *req.ListingType }
 	if req.AskingPrice != nil { m.AskingPrice = req.AskingPrice }
 	if req.AuctionStartPrice != nil { m.AuctionStartPrice = req.AuctionStartPrice }

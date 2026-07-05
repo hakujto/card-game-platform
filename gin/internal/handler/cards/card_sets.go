@@ -2,6 +2,7 @@ package handler_cards
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -23,10 +24,10 @@ func (h *CardSetHandler) RegisterRoutes(r gin.IRouter) {
 	g.GET("/:id", h.Get)
 	g.PUT("/:id", h.Update)
 	g.PATCH("/:id", h.Patch)
-	g.GET("/:id/api/card-sets/{id}/standard-legal", h.IsLegalInStandard)
-	g.GET("/:id/api/card-sets/{id}/legal", h.IsLegalInFormat)
-	g.GET("/:id/api/card-sets/{id}/rarity-count", h.CardCountByRarity)
-	g.POST("/:id/api/card-sets/{id}/rotate", h.RotateOut)
+	g.GET("/:id/standard-legal", h.IsLegalInStandard)
+	g.GET("/:id/legal", h.IsLegalInFormat)
+	g.GET("/:id/rarity-count", h.CardCountByRarity)
+	g.POST("/:id/rotate", h.RotateOut)
 }
 
 func (h *CardSetHandler) List(c *gin.Context) {
@@ -175,6 +176,9 @@ func (h *CardSetHandler) RotateOut(c *gin.Context) {
 // ── Validation rules ─────────────────────────────────────────────
 func validateCardSet(req *model.CardSetCreateRequest) []string {
 	var errs []string
+	if matched, _ := regexp.MatchString(`[A-Z]{2,6}`, req.Code); !matched {
+		errs = append(errs, "code has invalid format")
+	}
 	if !(req.TotalCards > 0) {
 		errs = append(errs, "Card set must have at least one card")
 	}

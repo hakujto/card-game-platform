@@ -9,7 +9,7 @@ import (
 
 // DeckCardCreateRequest is the POST body.
 type DeckCardCreateRequest struct {
-	Quantity int `json:"quantity"`
+	Quantity int `json:"quantity" binding:"min=1,max=4"`
 	IsCommander bool `json:"is_commander"`
 	DeckID uint `json:"deck_id"`
 	CardID uint `json:"card_id"`

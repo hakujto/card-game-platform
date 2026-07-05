@@ -45,7 +45,6 @@ type OrderCreateRequest struct {
 
 // OrderUpdateRequest is the PUT/PATCH body — all fields optional.
 type OrderUpdateRequest struct {
-	Status *OrderStatusType `json:"status"`
 	Total *types.Decimal `json:"total"`
 	DiscountApplied *types.Decimal `json:"discount_applied"`
 	Currency *string `json:"currency"`
@@ -53,7 +52,6 @@ type OrderUpdateRequest struct {
 	PaymentReference *string `json:"payment_reference"`
 	ShippingAddress *string `json:"shipping_address"`
 	TrackingNumber *string `json:"tracking_number"`
-	PaidAt *string `json:"paid_at"`
 	ShippedAt *string `json:"shipped_at"`
 	PlayerID *uint `json:"player_id"`
 	CouponID *uint `json:"coupon_id"`
@@ -69,7 +67,7 @@ type OrderResponse struct {
 	DiscountApplied types.Decimal `json:"discount_applied"`
 	Currency string `json:"currency"`
 	PaymentMethod *OrderPaymentMethodType `json:"payment_method"`
-	PaymentReference *string `json:"payment_reference"`
+	PaymentReference *string `json:"-"`
 	ShippingAddress *string `json:"shipping_address"`
 	TrackingNumber *string `json:"tracking_number"`
 	PaidAt *string `json:"paidAt"`
@@ -116,7 +114,6 @@ func (m *Order) ToResponse() OrderResponse {
 }
 
 func (m *Order) ApplyUpdate(req OrderUpdateRequest) {
-	if req.Status != nil { m.Status = *req.Status }
 	if req.Total != nil { m.Total = *req.Total }
 	if req.DiscountApplied != nil { m.DiscountApplied = *req.DiscountApplied }
 	if req.Currency != nil { m.Currency = *req.Currency }
@@ -124,7 +121,6 @@ func (m *Order) ApplyUpdate(req OrderUpdateRequest) {
 	if req.PaymentReference != nil { m.PaymentReference = req.PaymentReference }
 	if req.ShippingAddress != nil { m.ShippingAddress = req.ShippingAddress }
 	if req.TrackingNumber != nil { m.TrackingNumber = req.TrackingNumber }
-	if req.PaidAt != nil { m.PaidAt = req.PaidAt }
 	if req.ShippedAt != nil { m.ShippedAt = req.ShippedAt }
 	if req.PlayerID != nil { m.PlayerID = *req.PlayerID }
 	if req.CouponID != nil { m.CouponID = req.CouponID }
