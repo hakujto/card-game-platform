@@ -1,0 +1,39 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: "0.17.0"
+      - name: Install SQLite
+        run: sudo apt-get install -y libsqlite3-dev
+      - name: Fetch dependencies
+        run: zig build --fetch || true
+      - name: Patch zap for Zig 0.17
+        run: |
+          ZAP_BUILD=$(find zig-pkg -name "build.zig" -path "*/zap-*" 2>/dev/null | head -1)
+          if [ -n "$ZAP_BUILD" ] && grep -q "getEnvVarOwned" "$ZAP_BUILD"; then
+            chmod +w "$ZAP_BUILD"
+            sed -i 's/if (std\.process\.getEnvVarOwned(b\.allocator, "ZAP_USE_OPENSSL")) |val| {/if (std.posix.getenv("ZAP_USE_OPENSSL")) |val| {/' "$ZAP_BUILD"
+            sed -i '/defer b\.allocator\.free(val);/d' "$ZAP_BUILD"
+          fi
+          FACILIO_BUILD=$(find zig-pkg -name "build.zig" -path "*/facil.io*" 2>/dev/null | head -1)
+          if [ -n "$FACILIO_BUILD" ] && grep -q "\.Debug" "$FACILIO_BUILD"; then
+            chmod +w "$FACILIO_BUILD"
+            sed -i 's/optimize != \.Debug/optimize != .debug/g' "$FACILIO_BUILD"
+          fi
+          if [ -n "$ZAP_BUILD" ] && grep -q 'const exe_mod = b.addModule(ex_name' "$ZAP_BUILD"; then
+            chmod +w "$ZAP_BUILD"
+            sed -i 's/const exe_mod = b.addModule(ex_name,/const exe_mod = b.createModule(/' "$ZAP_BUILD"
+            sed -i 's/const tests_module = self.b.addModule(test_name,/const tests_module = self.b.createModule(/' "$ZAP_BUILD"
+          fi
+      - name: Build
+        run: zig build
+      - name: Test
+        run: zig build test

@@ -1,0 +1,6 @@
+.zig-cache/
+zig-out/
+*.db
+*.sqlite
+.env
+.DS_Store
