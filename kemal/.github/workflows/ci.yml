@@ -1,0 +1,18 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: "1.10"
+      - name: Install shards
+        run: shards install
+      - name: Build
+        run: mkdir -p bin && crystal build src/cards_project.cr -o bin/cards_project
+      - name: Test
+        run: bin/cards_project & SERVER_PID=$!; sleep 4; crystal spec; STATUS=$?; kill $SERVER_PID 2>/dev/null; exit $STATUS

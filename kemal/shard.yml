@@ -1,0 +1,16 @@
+name: cards_project
+version: 0.1.0
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+    version: ~> 1.4
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+    version: ~> 0.24
+
+crystal: ">= 1.10.0"
+
+targets:
+  cards_project:
+    main: src/cards_project.cr

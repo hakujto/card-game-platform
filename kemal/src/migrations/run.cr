@@ -1,0 +1,52 @@
+require "../db"
+require "./cards"
+require "./players"
+require "./tournaments"
+require "./marketplace"
+require "./content"
+
+# Run all migrations at startup
+db = AppDB.db
+Migrations.create_cards(db)
+Migrations.create_card_sets(db)
+Migrations.create_card_rulings(db)
+Migrations.create_card_abilities(db)
+Migrations.create_decks(db)
+Migrations.create_deck_cards(db)
+Migrations.create_deck_sideboard_cards(db)
+Migrations.create_deck_tags(db)
+Migrations.create_deck_tag_assignments(db)
+Migrations.create_players(db)
+Migrations.create_player_season_statses(db)
+Migrations.create_player_collections(db)
+Migrations.create_friendships(db)
+Migrations.create_achievements(db)
+Migrations.create_player_achievements(db)
+Migrations.create_crafting_recipes(db)
+Migrations.create_crafting_ingredients(db)
+Migrations.create_seasons(db)
+Migrations.create_tournaments(db)
+Migrations.create_tournament_judges(db)
+Migrations.create_tournament_registrations(db)
+Migrations.create_tournament_rounds(db)
+Migrations.create_matches(db)
+Migrations.create_games(db)
+Migrations.create_tournament_prizes(db)
+Migrations.create_awarded_prizes(db)
+Migrations.create_products(db)
+Migrations.create_orders(db)
+Migrations.create_order_items(db)
+Migrations.create_coupons(db)
+Migrations.create_trade_listings(db)
+Migrations.create_trade_bids(db)
+Migrations.create_trade_transactions(db)
+Migrations.create_card_price_histories(db)
+Migrations.create_trade_disputes(db)
+Migrations.create_draft_sessions(db)
+Migrations.create_draft_participants(db)
+Migrations.create_draft_picks(db)
+Migrations.create_articles(db)
+Migrations.create_article_tags(db)
+Migrations.create_article_tag_assignments(db)
+Migrations.create_article_comments(db)
+Migrations.create_streams(db)
