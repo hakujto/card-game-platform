@@ -1,0 +1,40 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+
+@Injectable()
+export class CardRulingService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.cardRuling.findMany();
+  }
+
+  async findOne(id: number) {
+    return this.prisma.cardRuling.findUnique({ where: { id } });
+  }
+
+  async create(data: any) {
+    return this.prisma.cardRuling.create({ data });
+  }
+
+  async update(id: number, data: any) {
+    return this.prisma.cardRuling.update({ where: { id }, data });
+  }
+
+  async remove(id: number) {
+    return this.prisma.cardRuling.delete({ where: { id } });
+  }
+
+  async is_current(id: number): Promise<boolean> {
+    const entity = await this.prisma.cardRuling.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardRuling not found: ' + id);
+    // TODO: implement is_current domain logic
+    return undefined as any;
+  }
+  async supersedes_previous(id: number): Promise<boolean> {
+    const entity = await this.prisma.cardRuling.findUnique({ where: { id } });
+    if (!entity) throw new Error('CardRuling not found: ' + id);
+    // TODO: implement supersedes_previous domain logic
+    return undefined as any;
+  }
+}

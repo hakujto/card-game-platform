@@ -1,0 +1,81 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+
+@Injectable()
+export class CardService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.card.findMany();
+  }
+
+  async findOne(id: number) {
+    return this.prisma.card.findUnique({ where: { id } });
+  }
+
+  async create(data: any) {
+    return this.prisma.card.create({ data });
+  }
+
+  async update(id: number, data: any) {
+    return this.prisma.card.update({ where: { id }, data });
+  }
+
+  async remove(id: number) {
+    return this.prisma.card.delete({ where: { id } });
+  }
+
+  async ban(id: number): Promise<void> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement ban domain logic
+  }
+  async unban(id: number): Promise<void> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement unban domain logic
+  }
+  async restrict(id: number): Promise<void> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement restrict domain logic
+  }
+  async unrestrict(id: number): Promise<void> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement unrestrict domain logic
+  }
+  async replace(id: number, data: unknown): Promise<boolean> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement replace domain logic
+    return undefined as any;
+  }
+  async calculate_value(id: number): Promise<number> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement calculate_value domain logic
+    return undefined as any;
+  }
+  async apply_rarity_bonus(id: number, multiplier: number): Promise<number> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement apply_rarity_bonus domain logic
+    return undefined as any;
+  }
+  async is_legal_in_format(id: number, format: string): Promise<boolean> {
+    const entity = await this.prisma.card.findUnique({ where: { id } });
+    if (!entity) throw new Error('Card not found: ' + id);
+    // TODO: implement is_legal_in_format domain logic
+    return undefined as any;
+  }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async validateLegality(entity: any): Promise<void> {
+    // TODO: implement validate_legality
+  }
+
+  async validateNotInUse(entity: any): Promise<void> {
+    // TODO: implement validate_not_in_use
+  }
+}

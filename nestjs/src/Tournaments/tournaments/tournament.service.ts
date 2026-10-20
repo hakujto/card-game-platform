@@ -1,0 +1,81 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+
+@Injectable()
+export class TournamentService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.tournament.findMany();
+  }
+
+  async findOne(id: number) {
+    return this.prisma.tournament.findUnique({ where: { id } });
+  }
+
+  async create(data: any) {
+    return this.prisma.tournament.create({ data });
+  }
+
+  async update(id: number, data: any) {
+    return this.prisma.tournament.update({ where: { id }, data });
+  }
+
+  async remove(id: number) {
+    return this.prisma.tournament.delete({ where: { id } });
+  }
+
+  async start(id: number): Promise<void> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement start domain logic
+  }
+  async cancel(id: number): Promise<void> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement cancel domain logic
+  }
+  async complete(id: number): Promise<void> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement complete domain logic
+  }
+  async generate_round(id: number): Promise<void> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement generate_round domain logic
+  }
+  async calculate_prize_distribution(id: number): Promise<number> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement calculate_prize_distribution domain logic
+    return undefined as any;
+  }
+  async register_player(id: number, playerId: number, deckId: number): Promise<void> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement register_player domain logic
+  }
+  async is_full(id: number): Promise<boolean> {
+    const entity = await this.prisma.tournament.findUnique({ where: { id } });
+    if (!entity) throw new Error('Tournament not found: ' + id);
+    // TODO: implement is_full domain logic
+    return undefined as any;
+  }
+  // ── Lifecycle hooks ──────────────────────────────────────────────
+
+  async syncSeasonStats(entity: any): Promise<void> {
+    // TODO: implement sync_season_stats
+  }
+
+  async preventDeleteIfOngoing(entity: any): Promise<void> {
+    // TODO: implement prevent_delete_if_ongoing
+  }
+  emitTournamentCompleted(tournamentId: number, seasonId: number, completedAt: string): void {
+    // TODO: emit TournamentCompleted event
+  }
+
+  emitPlayerRegistered(tournamentId: number, playerId: number, registeredAt: string): void {
+    // TODO: emit PlayerRegistered event
+  }
+}

@@ -1,0 +1,1044 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  createdAt DateTime @default(now())
+  playerProfile  Player[]  @relation("PlayerUser")
+}
+
+model Card {
+  id  Int  @id @default(autoincrement())
+  cardType  CardCardTypeEnum?
+  rarity  CardRarityEnum?
+  manaColors  CardManaColorsEnum?
+  legalFormats  CardLegalFormatsEnum?
+  publicId  String @unique
+  name  String
+  manaCost  Int @default(0)
+  attack  Int?
+  defense  Int?
+  loyalty  Int?
+  description  String
+  flavorText  String?
+  imageUrl  String?
+  artistName  String?
+  isBanned  Boolean @default(false)
+  isRestricted  Boolean @default(false)
+  powerLevel  Int @default(1)
+  metadata  Json?
+  totalCopiesInCirculation  BigInt @default(0)
+  setId  Int?
+  set    CardSet?  @relation("CardSet", fields: [setId], references: [id], onDelete: Restrict)
+  rulings  CardRuling[]  @relation("CardRulingCard")
+  abilities  CardAbility[]  @relation("CardAbilityCard")
+  deckCards  DeckCard[]  @relation("DeckCardCard")
+  sideboardDecks  DeckSideboardCard[]  @relation("DeckSideboardCardCard")
+  playerCollections  PlayerCollection[]  @relation("PlayerCollectionCard")
+  craftingRecipes  CraftingRecipe[]  @relation("CraftingRecipeResultCard")
+  usedInRecipes  CraftingIngredient[]  @relation("CraftingIngredientCard")
+  shopProduct  Product[]  @relation("ProductCard")
+  tradeListings  TradeListing[]  @relation("TradeListingCard")
+  priceHistory  CardPriceHistory[]  @relation("CardPriceHistoryCard")
+  draftPicks  DraftPick[]  @relation("DraftPickCard")
+}
+
+model CardSet {
+  id  Int  @id @default(autoincrement())
+  setType  CardSetSetTypeEnum?
+  name  String
+  code  String @unique
+  releaseDate  DateTime
+  rotationDate  DateTime?
+  totalCards  Int @default(0)
+  isRotated  Boolean @default(false)
+  description  String?
+  logoUrl  String?
+  cards  Card[]  @relation("CardSet")
+  shopProducts  Product[]  @relation("ProductCardSet")
+  draftSessions  DraftSession[]  @relation("DraftSessionCardSet")
+}
+
+model CardRuling {
+  id  Int  @id @default(autoincrement())
+  rulingText  String
+  publishedAt  DateTime
+  source  String
+  cardId  Int?
+  card    Card?  @relation("CardRulingCard", fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model CardAbility {
+  id  Int  @id @default(autoincrement())
+  abilityType  CardAbilityAbilityTypeEnum?
+  timing  CardAbilityTimingEnum?
+  keyword  String?
+  abilityText  String
+  cardId  Int?
+  card    Card?  @relation("CardAbilityCard", fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Deck {
+  id  Int  @id @default(autoincrement())
+  format  DeckFormatEnum?
+  archetype  DeckArchetypeEnum?
+  name  String
+  description  String?
+  isPublic  Boolean @default(false)
+  isTournamentLegal  Boolean @default(false)
+  wins  Int @default(0)
+  losses  Int @default(0)
+  draws  Int @default(0)
+  createdAt  DateTime
+  updatedAt  DateTime
+  playerId  Int?
+  player    Player?  @relation("DeckPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  deckCards  DeckCard[]  @relation("DeckCardDeck")
+  sideboardCards  DeckSideboardCard[]  @relation("DeckSideboardCardDeck")
+  tagAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentDeck")
+  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationDeck")
+  articles  Article[]  @relation("ArticleFeaturedDeck")
+}
+
+model DeckCard {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  isCommander  Boolean @default(false)
+  deckId  Int?
+  deck    Deck?  @relation("DeckCardDeck", fields: [deckId], references: [id], onDelete: Cascade)
+  cardId  Int?
+  card    Card?  @relation("DeckCardCard", fields: [cardId], references: [id], onDelete: Restrict)
+}
+
+model DeckSideboardCard {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  deckId  Int?
+  deck    Deck?  @relation("DeckSideboardCardDeck", fields: [deckId], references: [id], onDelete: Cascade)
+  cardId  Int?
+  card    Card?  @relation("DeckSideboardCardCard", fields: [cardId], references: [id], onDelete: Restrict)
+}
+
+model DeckTag {
+  id  Int  @id @default(autoincrement())
+  name  String
+  slug  String?
+  color  String?
+  deckAssignments  DeckTagAssignment[]  @relation("DeckTagAssignmentTag")
+}
+
+model DeckTagAssignment {
+  id  Int  @id @default(autoincrement())
+  deckId  Int?
+  deck    Deck?  @relation("DeckTagAssignmentDeck", fields: [deckId], references: [id], onDelete: Cascade)
+  tagId  Int?
+  tag    DeckTag?  @relation("DeckTagAssignmentTag", fields: [tagId], references: [id], onDelete: Cascade)
+}
+
+model Player {
+  id  Int  @id @default(autoincrement())
+  rank  PlayerRankEnum?
+  preferredFormat  PlayerPreferredFormatEnum?
+  publicId  String @unique
+  displayName  String @unique
+  rating  Int @default(1000)
+  peakRating  Int @default(1000)
+  bio  String?
+  countryCode  String?
+  avatarUrl  String?
+  contactEmail  String?
+  winRateCached  Float?
+  isVerified  Boolean @default(false)
+  createdAt  DateTime
+  lastActiveAt  DateTime?
+  userId  Int? @unique
+  user    User?  @relation("PlayerUser", fields: [userId], references: [id], onDelete: Cascade)
+  decks  Deck[]  @relation("DeckPlayer")
+  seasonStats  PlayerSeasonStats[]  @relation("PlayerSeasonStatsPlayer")
+  collection  PlayerCollection[]  @relation("PlayerCollectionPlayer")
+  sentFriendRequests  Friendship[]  @relation("FriendshipRequester")
+  receivedFriendRequests  Friendship[]  @relation("FriendshipReceiver")
+  achievementRecords  PlayerAchievement[]  @relation("PlayerAchievementPlayer")
+  organizedTournaments  Tournament[]  @relation("TournamentOrganizer")
+  judgeRoles  TournamentJudge[]  @relation("TournamentJudgePlayer")
+  tournamentRegistrations  TournamentRegistration[]  @relation("TournamentRegistrationPlayer")
+  matchesAsPlayer1  Match[]  @relation("MatchPlayer1")
+  matchesAsPlayer2  Match[]  @relation("MatchPlayer2")
+  wonGames  Game[]  @relation("GameWinner")
+  awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePlayer")
+  orders  Order[]  @relation("OrderPlayer")
+  tradeListings  TradeListing[]  @relation("TradeListingSeller")
+  bids  TradeBid[]  @relation("TradeBidBidder")
+  purchases  TradeTransaction[]  @relation("TradeTransactionBuyer")
+  sales  TradeTransaction[]  @relation("TradeTransactionSeller")
+  disputesOpened  TradeDispute[]  @relation("TradeDisputeOpenedBy")
+  disputesResolved  TradeDispute[]  @relation("TradeDisputeResolvedBy")
+  draftSessions  DraftParticipant[]  @relation("DraftParticipantPlayer")
+  articles  Article[]  @relation("ArticleAuthor")
+  articleComments  ArticleComment[]  @relation("ArticleCommentAuthor")
+  streams  Stream[]  @relation("StreamStreamer")
+}
+
+model PlayerSeasonStats {
+  id  Int  @id @default(autoincrement())
+  highestRank  PlayerSeasonStatsHighestRankEnum?
+  wins  Int @default(0)
+  losses  Int @default(0)
+  draws  Int @default(0)
+  tournamentWins  Int @default(0)
+  seasonPoints  Int @default(0)
+  playerId  Int?
+  player    Player?  @relation("PlayerSeasonStatsPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  seasonId  Int?
+  season    Season?  @relation("PlayerSeasonStatsSeason", fields: [seasonId], references: [id], onDelete: Cascade)
+}
+
+model PlayerCollection {
+  id  Int  @id @default(autoincrement())
+  condition  PlayerCollectionConditionEnum?
+  acquiredVia  PlayerCollectionAcquiredViaEnum?
+  quantity  Int @default(1)
+  foil  Boolean @default(false)
+  acquiredAt  DateTime
+  playerId  Int?
+  player    Player?  @relation("PlayerCollectionPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  cardId  Int?
+  card    Card?  @relation("PlayerCollectionCard", fields: [cardId], references: [id], onDelete: Restrict)
+}
+
+model Friendship {
+  id  Int  @id @default(autoincrement())
+  status  FriendshipStatusEnum?
+  createdAt  DateTime
+  requesterId  Int?
+  requester    Player?  @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  Int?
+  receiver    Player?  @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id  Int  @id @default(autoincrement())
+  rarity  AchievementRarityEnum?
+  name  String
+  description  String
+  iconUrl  String?
+  points  Int @default(10)
+  isHidden  Boolean @default(false)
+  playerRecords  PlayerAchievement[]  @relation("PlayerAchievementAchievement")
+}
+
+model PlayerAchievement {
+  id  Int  @id @default(autoincrement())
+  earnedAt  DateTime
+  progress  Int @default(0)
+  isCompleted  Boolean @default(false)
+  playerId  Int?
+  player    Player?  @relation("PlayerAchievementPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  achievementId  Int?
+  achievement    Achievement?  @relation("PlayerAchievementAchievement", fields: [achievementId], references: [id], onDelete: Restrict)
+}
+
+model CraftingRecipe {
+  id  Int  @id @default(autoincrement())
+  dustCost  Int @default(0)
+  isAvailable  Boolean @default(true)
+  resultCardId  Int?
+  resultCard    Card?  @relation("CraftingRecipeResultCard", fields: [resultCardId], references: [id], onDelete: Restrict)
+  ingredients  CraftingIngredient[]  @relation("CraftingIngredientRecipe")
+}
+
+model CraftingIngredient {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(1)
+  recipeId  Int?
+  recipe    CraftingRecipe?  @relation("CraftingIngredientRecipe", fields: [recipeId], references: [id], onDelete: Cascade)
+  cardId  Int?
+  card    Card?  @relation("CraftingIngredientCard", fields: [cardId], references: [id], onDelete: Restrict)
+}
+
+model Season {
+  id  Int  @id @default(autoincrement())
+  format  SeasonFormatEnum?
+  name  String
+  startDate  DateTime
+  endDate  DateTime
+  isActive  Boolean @default(false)
+  rewardDescription  String?
+  playerStats  PlayerSeasonStats[]  @relation("PlayerSeasonStatsSeason")
+  tournaments  Tournament[]  @relation("TournamentSeason")
+}
+
+model Tournament {
+  id  Int  @id @default(autoincrement())
+  status  TournamentStatusEnum?
+  format  TournamentFormatEnum?
+  tournamentType  TournamentTournamentTypeEnum?
+  publicId  String @unique
+  name  String
+  description  String?
+  bracketData  Json?
+  maxPlayers  Int @default(0)
+  entryFee  Decimal @default(0)
+  prizePool  Decimal @default(0)
+  startTime  DateTime
+  endTime  DateTime?
+  isOnline  Boolean @default(true)
+  location  String?
+  rulesText  String?
+  createdAt  DateTime
+  seasonId  Int?
+  season    Season?  @relation("TournamentSeason", fields: [seasonId], references: [id], onDelete: Restrict)
+  organizerId  Int?
+  organizer    Player?  @relation("TournamentOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  judgeAssignments  TournamentJudge[]  @relation("TournamentJudgeTournament")
+  registrations  TournamentRegistration[]  @relation("TournamentRegistrationTournament")
+  rounds  TournamentRound[]  @relation("TournamentRoundTournament")
+  prizes  TournamentPrize[]  @relation("TournamentPrizeTournament")
+  streams  Stream[]  @relation("StreamTournament")
+}
+
+model TournamentJudge {
+  id  Int  @id @default(autoincrement())
+  role  TournamentJudgeRoleEnum?
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentJudgeTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  playerId  Int?
+  player    Player?  @relation("TournamentJudgePlayer", fields: [playerId], references: [id], onDelete: Restrict)
+}
+
+model TournamentRegistration {
+  id  Int  @id @default(autoincrement())
+  status  TournamentRegistrationStatusEnum?
+  seed  Int?
+  finalStanding  Int?
+  pointsEarned  Int @default(0)
+  registeredAt  DateTime
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentRegistrationTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  playerId  Int?
+  player    Player?  @relation("TournamentRegistrationPlayer", fields: [playerId], references: [id], onDelete: Restrict)
+  deckId  Int?
+  deck    Deck?  @relation("TournamentRegistrationDeck", fields: [deckId], references: [id], onDelete: Restrict)
+}
+
+model TournamentRound {
+  id  Int  @id @default(autoincrement())
+  status  TournamentRoundStatusEnum?
+  roundNumber  Int @default(0)
+  startedAt  DateTime?
+  endedAt  DateTime?
+  timeLimitMinutes  Int @default(50)
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentRoundTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches  Match[]  @relation("MatchRound")
+}
+
+model Match {
+  id  Int  @id @default(autoincrement())
+  status  MatchStatusEnum?
+  tableNumber  Int?
+  player1Wins  Int @default(0)
+  player2Wins  Int @default(0)
+  startedAt  DateTime?
+  endedAt  DateTime?
+  resultNotes  String?
+  roundId  Int?
+  round    TournamentRound?  @relation("MatchRound", fields: [roundId], references: [id], onDelete: Cascade)
+  player1Id  Int?
+  player1    Player?  @relation("MatchPlayer1", fields: [player1Id], references: [id], onDelete: Restrict)
+  player2Id  Int?
+  player2    Player?  @relation("MatchPlayer2", fields: [player2Id], references: [id], onDelete: SetNull)
+  games  Game[]  @relation("GameMatch")
+}
+
+model Game {
+  id  Int  @id @default(autoincrement())
+  winnerSide  GameWinnerSideEnum?
+  endedBy  GameEndedByEnum?
+  gameNumber  Int @default(0)
+  complexityScore  Float?
+  turnsPlayed  Int?
+  durationSeconds  Int?
+  replayUrl  String?
+  matchId  Int?
+  match    Match?  @relation("GameMatch", fields: [matchId], references: [id], onDelete: Cascade)
+  winnerId  Int?
+  winner    Player?  @relation("GameWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+}
+
+model TournamentPrize {
+  id  Int  @id @default(autoincrement())
+  prizeType  TournamentPrizePrizeTypeEnum?
+  placementFrom  Int @default(0)
+  placementTo  Int @default(0)
+  amount  Decimal @default(0)
+  description  String?
+  packsCount  Int?
+  seasonPoints  Int @default(0)
+  tournamentId  Int?
+  tournament    Tournament?  @relation("TournamentPrizeTournament", fields: [tournamentId], references: [id], onDelete: Cascade)
+  awardedPrizes  AwardedPrize[]  @relation("AwardedPrizePrize")
+}
+
+model AwardedPrize {
+  id  Int  @id @default(autoincrement())
+  finalPlacement  Int @default(0)
+  awardedAt  DateTime
+  claimed  Boolean @default(false)
+  claimedAt  DateTime?
+  prizeId  Int?
+  prize    TournamentPrize?  @relation("AwardedPrizePrize", fields: [prizeId], references: [id], onDelete: Restrict)
+  playerId  Int?
+  player    Player?  @relation("AwardedPrizePlayer", fields: [playerId], references: [id], onDelete: Restrict)
+}
+
+model Product {
+  id  Int  @id @default(autoincrement())
+  productType  ProductProductTypeEnum?
+  name  String
+  price  Decimal @default(0)
+  stock  Int @default(0)
+  active  Boolean @default(true)
+  discountPercent  Int @default(0)
+  description  String?
+  imageUrl  String?
+  featured  Boolean @default(false)
+  cardId  Int? @unique
+  card    Card?  @relation("ProductCard", fields: [cardId], references: [id], onDelete: SetNull)
+  cardSetId  Int?
+  cardSet    CardSet?  @relation("ProductCardSet", fields: [cardSetId], references: [id], onDelete: SetNull)
+  orderItems  OrderItem[]  @relation("OrderItemProduct")
+}
+
+model Order {
+  id  Int  @id @default(autoincrement())
+  status  OrderStatusEnum?
+  paymentMethod  OrderPaymentMethodEnum?
+  total  Decimal @default(0)
+  discountApplied  Decimal @default(0)
+  currency  String @default("USD")
+  paymentReference  String?
+  shippingAddress  String?
+  trackingNumber  String?
+  createdAt  DateTime
+  paidAt  DateTime?
+  shippedAt  DateTime?
+  playerId  Int?
+  player    Player?  @relation("OrderPlayer", fields: [playerId], references: [id], onDelete: Restrict)
+  couponId  Int?
+  coupon    Coupon?  @relation("OrderCoupon", fields: [couponId], references: [id], onDelete: SetNull)
+  items  OrderItem[]  @relation("OrderItemOrder")
+}
+
+model OrderItem {
+  id  Int  @id @default(autoincrement())
+  quantity  Int @default(0)
+  priceAtPurchase  Decimal @default(0)
+  foil  Boolean @default(false)
+  orderId  Int?
+  order    Order?  @relation("OrderItemOrder", fields: [orderId], references: [id], onDelete: Cascade)
+  productId  Int?
+  product    Product?  @relation("OrderItemProduct", fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model Coupon {
+  id  Int  @id @default(autoincrement())
+  discountType  CouponDiscountTypeEnum?
+  code  String @unique
+  discountValue  Decimal @default(0)
+  minOrderValue  Decimal @default(0)
+  maxUses  Int?
+  usesCount  Int @default(0)
+  validFrom  DateTime
+  validUntil  DateTime
+  isActive  Boolean @default(true)
+  orders  Order[]  @relation("OrderCoupon")
+}
+
+model TradeListing {
+  id  Int  @id @default(autoincrement())
+  status  TradeListingStatusEnum?
+  listingType  TradeListingListingTypeEnum?
+  condition  TradeListingConditionEnum?
+  publicId  String @unique
+  askingPrice  Decimal?
+  auctionStartPrice  Decimal?
+  auctionCurrentBid  Decimal?
+  auctionEndTime  DateTime?
+  foil  Boolean @default(false)
+  quantity  Int @default(1)
+  description  String?
+  createdAt  DateTime
+  expiresAt  DateTime?
+  sellerId  Int?
+  seller    Player?  @relation("TradeListingSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  cardId  Int?
+  card    Card?  @relation("TradeListingCard", fields: [cardId], references: [id], onDelete: Restrict)
+  bids  TradeBid[]  @relation("TradeBidListing")
+  transaction  TradeTransaction[]  @relation("TradeTransactionListing")
+}
+
+model TradeBid {
+  id  Int  @id @default(autoincrement())
+  amount  Decimal @default(0)
+  placedAt  DateTime
+  isWinning  Boolean @default(false)
+  listingId  Int?
+  listing    TradeListing?  @relation("TradeBidListing", fields: [listingId], references: [id], onDelete: Cascade)
+  bidderId  Int?
+  bidder    Player?  @relation("TradeBidBidder", fields: [bidderId], references: [id], onDelete: Restrict)
+}
+
+model TradeTransaction {
+  id  Int  @id @default(autoincrement())
+  status  TradeTransactionStatusEnum?
+  finalPrice  Decimal @default(0)
+  platformFee  Decimal @default(0)
+  completedAt  DateTime?
+  listingId  Int? @unique
+  listing    TradeListing?  @relation("TradeTransactionListing", fields: [listingId], references: [id], onDelete: Restrict)
+  buyerId  Int?
+  buyer    Player?  @relation("TradeTransactionBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  sellerId  Int?
+  seller    Player?  @relation("TradeTransactionSeller", fields: [sellerId], references: [id], onDelete: Restrict)
+  dispute  TradeDispute[]  @relation("TradeDisputeTransaction")
+}
+
+model CardPriceHistory {
+  id  Int  @id @default(autoincrement())
+  priceDate  DateTime
+  avgPrice  Decimal @default(0)
+  minPrice  Decimal @default(0)
+  maxPrice  Decimal @default(0)
+  volume  Int @default(0)
+  foil  Boolean @default(false)
+  cardId  Int?
+  card    Card?  @relation("CardPriceHistoryCard", fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model TradeDispute {
+  id  Int  @id @default(autoincrement())
+  status  TradeDisputeStatusEnum?
+  reason  TradeDisputeReasonEnum?
+  description  String
+  resolution  String?
+  openedAt  DateTime
+  resolvedAt  DateTime?
+  transactionId  Int? @unique
+  transaction    TradeTransaction?  @relation("TradeDisputeTransaction", fields: [transactionId], references: [id], onDelete: Cascade)
+  openedById  Int?
+  openedBy    Player?  @relation("TradeDisputeOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
+  resolvedById  Int?
+  resolvedBy    Player?  @relation("TradeDisputeResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+}
+
+model DraftSession {
+  id  Int  @id @default(autoincrement())
+  status  DraftSessionStatusEnum?
+  draftType  DraftSessionDraftTypeEnum?
+  packContents  Json?
+  seats  Int @default(8)
+  timePerPickSeconds  Int @default(30)
+  createdAt  DateTime
+  completedAt  DateTime?
+  cardSetId  Int?
+  cardSet    CardSet?  @relation("DraftSessionCardSet", fields: [cardSetId], references: [id], onDelete: Restrict)
+  participants  DraftParticipant[]  @relation("DraftParticipantSession")
+}
+
+model DraftParticipant {
+  id  Int  @id @default(autoincrement())
+  seatNumber  Int @default(0)
+  joinedAt  DateTime
+  sessionId  Int?
+  session    DraftSession?  @relation("DraftParticipantSession", fields: [sessionId], references: [id], onDelete: Cascade)
+  playerId  Int?
+  player    Player?  @relation("DraftParticipantPlayer", fields: [playerId], references: [id], onDelete: Restrict)
+  picks  DraftPick[]  @relation("DraftPickParticipant")
+}
+
+model DraftPick {
+  id  Int  @id @default(autoincrement())
+  pickNumber  Int @default(0)
+  packNumber  Int @default(0)
+  pickedAt  DateTime
+  participantId  Int?
+  participant    DraftParticipant?  @relation("DraftPickParticipant", fields: [participantId], references: [id], onDelete: Cascade)
+  cardId  Int?
+  card    Card?  @relation("DraftPickCard", fields: [cardId], references: [id], onDelete: Restrict)
+}
+
+model Article {
+  id  Int  @id @default(autoincrement())
+  status  ArticleStatusEnum?
+  articleType  ArticleArticleTypeEnum?
+  language  ArticleLanguageEnum?
+  title  String
+  slug  String @unique
+  body  String
+  excerpt  String?
+  coverImageUrl  String?
+  viewCount  Int @default(0)
+  likesCount  Int @default(0)
+  totalViewsAlltime  BigInt @default(0)
+  isFeatured  Boolean @default(false)
+  publishedAt  DateTime?
+  createdAt  DateTime
+  updatedAt  DateTime
+  authorId  Int?
+  author    Player?  @relation("ArticleAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  featuredDeckId  Int?
+  featuredDeck    Deck?  @relation("ArticleFeaturedDeck", fields: [featuredDeckId], references: [id], onDelete: SetNull)
+  tagAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentArticle")
+  comments  ArticleComment[]  @relation("ArticleCommentArticle")
+}
+
+model ArticleTag {
+  id  Int  @id @default(autoincrement())
+  name  String
+  slug  String @unique
+  articleAssignments  ArticleTagAssignment[]  @relation("ArticleTagAssignmentTag")
+}
+
+model ArticleTagAssignment {
+  id  Int  @id @default(autoincrement())
+  articleId  Int?
+  article    Article?  @relation("ArticleTagAssignmentArticle", fields: [articleId], references: [id], onDelete: Cascade)
+  tagId  Int?
+  tag    ArticleTag?  @relation("ArticleTagAssignmentTag", fields: [tagId], references: [id], onDelete: Cascade)
+}
+
+model ArticleComment {
+  id  Int  @id @default(autoincrement())
+  body  String
+  isHidden  Boolean @default(false)
+  createdAt  DateTime
+  articleId  Int?
+  article    Article?  @relation("ArticleCommentArticle", fields: [articleId], references: [id], onDelete: Cascade)
+  authorId  Int?
+  author    Player?  @relation("ArticleCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  parentCommentId  Int?
+  parentComment    ArticleComment?  @relation("ArticleCommentParentComment", fields: [parentCommentId], references: [id], onDelete: SetNull)
+  replies  ArticleComment[]  @relation("ArticleCommentParentComment")
+}
+
+model Stream {
+  id  Int  @id @default(autoincrement())
+  status  StreamStatusEnum?
+  platform  StreamPlatformEnum?
+  language  StreamLanguageEnum?
+  title  String
+  streamUrl  String
+  isOfficial  Boolean @default(false)
+  viewerCountPeak  Int @default(0)
+  scheduledStart  DateTime
+  actualStart  DateTime?
+  endedAt  DateTime?
+  vodUrl  String?
+  tournamentId  Int?
+  tournament    Tournament?  @relation("StreamTournament", fields: [tournamentId], references: [id], onDelete: SetNull)
+  streamerId  Int?
+  streamer    Player?  @relation("StreamStreamer", fields: [streamerId], references: [id], onDelete: Restrict)
+}
+
+enum CardCardTypeEnum {
+  CREATURE
+  SPELL
+  LAND
+  ARTIFACT
+  ENCHANTMENT
+  PLANESWALKER
+}
+
+enum CardRarityEnum {
+  COMMON
+  UNCOMMON
+  RARE
+  MYTHICRARE
+  LEGENDARY
+}
+
+enum CardManaColorsEnum {
+  WHITE
+  BLUE
+  BLACK
+  RED
+  GREEN
+  COLORLESS
+}
+
+enum CardLegalFormatsEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+model CardAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("cards_audit_logs")
+}
+
+enum CardSetSetTypeEnum {
+  CORE
+  EXPANSION
+  SUPPLEMENTAL
+  MASTERS
+  DRAFT
+}
+
+enum CardAbilityAbilityTypeEnum {
+  KEYWORD
+  ACTIVATED
+  TRIGGERED
+  STATIC
+}
+
+enum CardAbilityTimingEnum {
+  ANY
+  SORCERY
+  INSTANT
+  COMBAT
+}
+
+enum DeckFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum DeckArchetypeEnum {
+  AGGRO
+  CONTROL
+  MIDRANGE
+  COMBO
+  PRISON
+  TEMPO
+}
+
+enum PlayerRankEnum {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  GRANDMASTER
+}
+
+enum PlayerPreferredFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum PlayerSeasonStatsHighestRankEnum {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  GRANDMASTER
+}
+
+enum PlayerCollectionConditionEnum {
+  MINT
+  NEARMINT
+  EXCELLENT
+  GOOD
+  PLAYED
+}
+
+enum PlayerCollectionAcquiredViaEnum {
+  PURCHASE
+  TRADE
+  TOURNAMENTREWARD
+  PACK
+  CRAFT
+}
+
+enum FriendshipStatusEnum {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+enum AchievementRarityEnum {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum SeasonFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum TournamentStatusEnum {
+  DRAFT
+  REGISTRATION
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TournamentFormatEnum {
+  STANDARD
+  EXTENDED
+  LEGACY
+  VINTAGE
+  COMMANDER
+  DRAFT
+}
+
+enum TournamentTournamentTypeEnum {
+  SWISS
+  SINGLEELIMINATION
+  DOUBLEELIMINATION
+  ROUNDROBIN
+}
+
+model TournamentAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("tournaments_audit_logs")
+}
+
+enum TournamentJudgeRoleEnum {
+  HEADJUDGE
+  JUDGE
+  SCOREKEEPERJUDGE
+}
+
+enum TournamentRegistrationStatusEnum {
+  REGISTERED
+  WAITLISTED
+  WITHDRAWN
+  DISQUALIFIED
+}
+
+enum TournamentRoundStatusEnum {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum MatchStatusEnum {
+  PENDING
+  ACTIVE
+  COMPLETED
+  BYE
+  DRAW
+}
+
+enum GameWinnerSideEnum {
+  PLAYER1
+  PLAYER2
+  DRAW
+}
+
+enum GameEndedByEnum {
+  NORMAL
+  TIMEOUT
+  CONCESSION
+  DRAWOFFER
+}
+
+enum TournamentPrizePrizeTypeEnum {
+  CURRENCY
+  CARDS
+  BOOSTERPACKS
+  TROPHY
+  SEASONPOINTS
+  MIXED
+}
+
+enum ProductProductTypeEnum {
+  SINGLECARD
+  BOOSTERPACK
+  BUNDLE
+  PRECONSTRUCTEDDECK
+  ACCESSORY
+}
+
+enum OrderStatusEnum {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderPaymentMethodEnum {
+  CARD
+  PAYPAL
+  CRYPTO
+  PLATFORMCREDITS
+}
+
+model OrderAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("orders_audit_logs")
+}
+
+enum CouponDiscountTypeEnum {
+  PERCENT
+  FIXED
+}
+
+enum TradeListingStatusEnum {
+  ACTIVE
+  SOLD
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum TradeListingListingTypeEnum {
+  FIXEDPRICE
+  AUCTION
+  TRADEOFFER
+}
+
+enum TradeListingConditionEnum {
+  MINT
+  NEARMINT
+  EXCELLENT
+  GOOD
+  PLAYED
+}
+
+enum TradeTransactionStatusEnum {
+  PENDING
+  COMPLETED
+  DISPUTED
+  REFUNDED
+}
+
+model TradeTransactionAuditLog {
+  id          Int      @id @default(autoincrement())
+  record_id   Int
+  field       String
+  old_value   String?
+  new_value   String?
+  changed_at  DateTime @default(now())
+
+  @@map("trade_transactions_audit_logs")
+}
+
+enum TradeDisputeStatusEnum {
+  OPEN
+  UNDERREVIEW
+  RESOLVED
+  ESCALATED
+}
+
+enum TradeDisputeReasonEnum {
+  ITEMNOTRECEIVED
+  ITEMNOTASDESCRIBED
+  FRAUDSUSPECTED
+  OTHER
+}
+
+enum DraftSessionStatusEnum {
+  WAITINGFORPLAYERS
+  DRAFTING
+  COMPLETED
+  ABANDONED
+}
+
+enum DraftSessionDraftTypeEnum {
+  BOOSTER
+  CUBE
+  ROCHESTER
+}
+
+enum ArticleStatusEnum {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ArticleArticleTypeEnum {
+  GUIDE
+  TIERLIST
+  MATCHUP
+  NEWS
+  SPOTLIGHT
+  DECKLIST
+}
+
+enum ArticleLanguageEnum {
+  EN
+  DE
+  FR
+  IT
+  ES
+  JP
+  PT
+}
+
+enum StreamStatusEnum {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
+enum StreamPlatformEnum {
+  TWITCH
+  YOUTUBE
+  KICKSTREAM
+  PLATFORM
+}
+
+enum StreamLanguageEnum {
+  EN
+  DE
+  FR
+  IT
+  ES
+  JP
+  PT
+}
