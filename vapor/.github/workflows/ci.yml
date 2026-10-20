@@ -1,0 +1,33 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vapor
+          POSTGRES_PASSWORD: vapor
+          POSTGRES_DB: vapor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: "5.9"
+      - name: Build
+        run: swift build -c release --disable-sandbox
+      - name: Test
+        env:
+          DB_HOST: localhost
+          DB_USER: vapor
+          DB_PASS: vapor
+          DB_NAME: vapor
+        run: swift test
