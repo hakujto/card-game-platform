@@ -1,0 +1,109 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <AssemblyName>CardsProject</AssemblyName>
+    <RootNamespace>cards_project</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Database.fs" />
+    <Compile Include="cards/CardTypes.fs" />
+    <Compile Include="cards/CardSetTypes.fs" />
+    <Compile Include="cards/CardRulingTypes.fs" />
+    <Compile Include="cards/CardAbilityTypes.fs" />
+    <Compile Include="cards/DeckTypes.fs" />
+    <Compile Include="cards/DeckCardTypes.fs" />
+    <Compile Include="cards/DeckSideboardCardTypes.fs" />
+    <Compile Include="cards/DeckTagTypes.fs" />
+    <Compile Include="cards/DeckTagAssignmentTypes.fs" />
+    <Compile Include="players/PlayerTypes.fs" />
+    <Compile Include="players/PlayerSeasonStatsTypes.fs" />
+    <Compile Include="players/PlayerCollectionTypes.fs" />
+    <Compile Include="players/FriendshipTypes.fs" />
+    <Compile Include="players/AchievementTypes.fs" />
+    <Compile Include="players/PlayerAchievementTypes.fs" />
+    <Compile Include="players/CraftingRecipeTypes.fs" />
+    <Compile Include="players/CraftingIngredientTypes.fs" />
+    <Compile Include="tournaments/SeasonTypes.fs" />
+    <Compile Include="tournaments/TournamentTypes.fs" />
+    <Compile Include="tournaments/TournamentJudgeTypes.fs" />
+    <Compile Include="tournaments/TournamentRegistrationTypes.fs" />
+    <Compile Include="tournaments/TournamentRoundTypes.fs" />
+    <Compile Include="tournaments/MatchTypes.fs" />
+    <Compile Include="tournaments/GameTypes.fs" />
+    <Compile Include="tournaments/TournamentPrizeTypes.fs" />
+    <Compile Include="tournaments/AwardedPrizeTypes.fs" />
+    <Compile Include="marketplace/ProductTypes.fs" />
+    <Compile Include="marketplace/OrderTypes.fs" />
+    <Compile Include="marketplace/OrderItemTypes.fs" />
+    <Compile Include="marketplace/CouponTypes.fs" />
+    <Compile Include="marketplace/TradeListingTypes.fs" />
+    <Compile Include="marketplace/TradeBidTypes.fs" />
+    <Compile Include="marketplace/TradeTransactionTypes.fs" />
+    <Compile Include="marketplace/CardPriceHistoryTypes.fs" />
+    <Compile Include="marketplace/TradeDisputeTypes.fs" />
+    <Compile Include="content/DraftSessionTypes.fs" />
+    <Compile Include="content/DraftParticipantTypes.fs" />
+    <Compile Include="content/DraftPickTypes.fs" />
+    <Compile Include="content/ArticleTypes.fs" />
+    <Compile Include="content/ArticleTagTypes.fs" />
+    <Compile Include="content/ArticleTagAssignmentTypes.fs" />
+    <Compile Include="content/ArticleCommentTypes.fs" />
+    <Compile Include="content/StreamTypes.fs" />
+    <Compile Include="cards/CardHandler.fs" />
+    <Compile Include="cards/CardSetHandler.fs" />
+    <Compile Include="cards/CardRulingHandler.fs" />
+    <Compile Include="cards/CardAbilityHandler.fs" />
+    <Compile Include="cards/DeckHandler.fs" />
+    <Compile Include="cards/DeckCardHandler.fs" />
+    <Compile Include="cards/DeckSideboardCardHandler.fs" />
+    <Compile Include="cards/DeckTagHandler.fs" />
+    <Compile Include="cards/DeckTagAssignmentHandler.fs" />
+    <Compile Include="players/PlayerHandler.fs" />
+    <Compile Include="players/PlayerSeasonStatsHandler.fs" />
+    <Compile Include="players/PlayerCollectionHandler.fs" />
+    <Compile Include="players/FriendshipHandler.fs" />
+    <Compile Include="players/AchievementHandler.fs" />
+    <Compile Include="players/PlayerAchievementHandler.fs" />
+    <Compile Include="players/CraftingRecipeHandler.fs" />
+    <Compile Include="players/CraftingIngredientHandler.fs" />
+    <Compile Include="tournaments/SeasonHandler.fs" />
+    <Compile Include="tournaments/TournamentHandler.fs" />
+    <Compile Include="tournaments/TournamentJudgeHandler.fs" />
+    <Compile Include="tournaments/TournamentRegistrationHandler.fs" />
+    <Compile Include="tournaments/TournamentRoundHandler.fs" />
+    <Compile Include="tournaments/MatchHandler.fs" />
+    <Compile Include="tournaments/GameHandler.fs" />
+    <Compile Include="tournaments/TournamentPrizeHandler.fs" />
+    <Compile Include="tournaments/AwardedPrizeHandler.fs" />
+    <Compile Include="marketplace/ProductHandler.fs" />
+    <Compile Include="marketplace/OrderHandler.fs" />
+    <Compile Include="marketplace/OrderItemHandler.fs" />
+    <Compile Include="marketplace/CouponHandler.fs" />
+    <Compile Include="marketplace/TradeListingHandler.fs" />
+    <Compile Include="marketplace/TradeBidHandler.fs" />
+    <Compile Include="marketplace/TradeTransactionHandler.fs" />
+    <Compile Include="marketplace/CardPriceHistoryHandler.fs" />
+    <Compile Include="marketplace/TradeDisputeHandler.fs" />
+    <Compile Include="content/DraftSessionHandler.fs" />
+    <Compile Include="content/DraftParticipantHandler.fs" />
+    <Compile Include="content/DraftPickHandler.fs" />
+    <Compile Include="content/ArticleHandler.fs" />
+    <Compile Include="content/ArticleTagHandler.fs" />
+    <Compile Include="content/ArticleTagAssignmentHandler.fs" />
+    <Compile Include="content/ArticleCommentHandler.fs" />
+    <Compile Include="content/StreamHandler.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Giraffe" Version="7.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="schema.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>CardsProject.Tests</AssemblyName>
+    <RootNamespace>cards_project</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="TestHelpers.fs" />
+    <Compile Include="cards/CardTests.fs" />
+    <Compile Include="cards/CardSetTests.fs" />
+    <Compile Include="cards/CardRulingTests.fs" />
+    <Compile Include="cards/CardAbilityTests.fs" />
+    <Compile Include="cards/DeckTests.fs" />
+    <Compile Include="cards/DeckCardTests.fs" />
+    <Compile Include="cards/DeckSideboardCardTests.fs" />
+    <Compile Include="cards/DeckTagTests.fs" />
+    <Compile Include="cards/DeckTagAssignmentTests.fs" />
+    <Compile Include="players/PlayerTests.fs" />
+    <Compile Include="players/PlayerSeasonStatsTests.fs" />
+    <Compile Include="players/PlayerCollectionTests.fs" />
+    <Compile Include="players/FriendshipTests.fs" />
+    <Compile Include="players/AchievementTests.fs" />
+    <Compile Include="players/PlayerAchievementTests.fs" />
+    <Compile Include="players/CraftingRecipeTests.fs" />
+    <Compile Include="players/CraftingIngredientTests.fs" />
+    <Compile Include="tournaments/SeasonTests.fs" />
+    <Compile Include="tournaments/TournamentTests.fs" />
+    <Compile Include="tournaments/TournamentJudgeTests.fs" />
+    <Compile Include="tournaments/TournamentRegistrationTests.fs" />
+    <Compile Include="tournaments/TournamentRoundTests.fs" />
+    <Compile Include="tournaments/MatchTests.fs" />
+    <Compile Include="tournaments/GameTests.fs" />
+    <Compile Include="tournaments/TournamentPrizeTests.fs" />
+    <Compile Include="tournaments/AwardedPrizeTests.fs" />
+    <Compile Include="marketplace/ProductTests.fs" />
+    <Compile Include="marketplace/OrderTests.fs" />
+    <Compile Include="marketplace/OrderItemTests.fs" />
+    <Compile Include="marketplace/CouponTests.fs" />
+    <Compile Include="marketplace/TradeListingTests.fs" />
+    <Compile Include="marketplace/TradeBidTests.fs" />
+    <Compile Include="marketplace/TradeTransactionTests.fs" />
+    <Compile Include="marketplace/CardPriceHistoryTests.fs" />
+    <Compile Include="marketplace/TradeDisputeTests.fs" />
+    <Compile Include="content/DraftSessionTests.fs" />
+    <Compile Include="content/DraftParticipantTests.fs" />
+    <Compile Include="content/DraftPickTests.fs" />
+    <Compile Include="content/ArticleTests.fs" />
+    <Compile Include="content/ArticleTagTests.fs" />
+    <Compile Include="content/ArticleTagAssignmentTests.fs" />
+    <Compile Include="content/ArticleCommentTests.fs" />
+    <Compile Include="content/StreamTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../src/cards_project.fsproj" />
+  </ItemGroup>
+</Project>
